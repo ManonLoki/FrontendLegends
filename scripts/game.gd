@@ -177,20 +177,12 @@ func _process(delta: float) -> void:
 		return
 	if npc_menu_open:
 		_position_npc_menu()
+	var direction := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down") + virtual_direction
+	var requested_step := _apply_facing_input(direction)
 	if move_cooldown <= 0.0:
-		var direction := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down") + virtual_direction
 		if direction.length() > 0.0:
 			player_moving = true
-			var step := Vector2i(signi(int(direction.x)), signi(int(direction.y)))
-			if step.x != 0: step.y = 0
-			# Turn to face the pressed direction immediately, even if the tile
-			# ahead turns out to be blocked (e.g. by an NPC) — otherwise the
-			# early return below skips facing/sprite updates entirely and the
-			# player can never turn toward a stationary NPC to interact with it.
-			if facing != step:
-				facing = step
-				_refresh_nearby_npc()
-				queue_redraw()
+			var step := requested_step
 			var next_tile := player_tile + step
 			if map_context and (not map_context.is_walkable(next_tile.x, next_tile.y) or _npc_occupies_tile(next_tile)):
 				message = "前方不可通行"
@@ -220,6 +212,20 @@ func _process(delta: float) -> void:
 			_end_battle("你离开了战斗")
 		else:
 			_toggle_menu()
+
+func _apply_facing_input(direction: Vector2) -> Vector2i:
+	if direction.length() <= 0.0:
+		return Vector2i.ZERO
+	var requested_step := Vector2i(signi(int(direction.x)), signi(int(direction.y)))
+	if requested_step.x != 0:
+		requested_step.y = 0
+	# 转向不受移动冷却限制。玩家按下方向后必须立即以新朝向解析交互，
+	# 否则 0.15 秒移动冷却内仍会错误命中旧方向的对象。
+	if facing != requested_step:
+		facing = requested_step
+		_refresh_nearby_npc()
+		queue_redraw()
+	return requested_step
 
 func _update_continuous_skill_actions(delta: float) -> void:
 	if learn_open and not learning_skill_id.is_empty():
@@ -349,6 +355,8 @@ func _dispatch_virtual_key(keycode: int) -> void:
 	_input(event)
 
 func _interact() -> void:
+	# 不信任跨帧缓存；打开任何交互 HUD 前按玩家当前朝向重新解析目标。
+	_refresh_nearby_npc()
 	if nearby_npc_id.is_empty():
 		if not _interact_prop():
 			message = "面前没有可交互对象"

@@ -265,6 +265,12 @@ func _run() -> void:
 	game.facing = Vector2i.RIGHT
 	game._refresh_nearby_npc()
 	_assert_true(game.nearby_npc_id.is_empty(), "NPC 位于玩家侧面时不得触发交互")
+	game.nearby_npc_id = "dao_shi"
+	game._interact()
+	_assert_true(not game.npc_menu_open, "交互触发前必须重验当前朝向，不得使用旧 NPC 缓存")
+	game.move_cooldown = 1.0
+	game._apply_facing_input(Vector2.UP)
+	_assert_true(game.facing == Vector2i.UP and game.nearby_npc_id == "dao_shi", "移动冷却期间方向输入也必须立即更新交互朝向")
 	game.player_tile = Vector2i(12, 7)
 	game.facing = Vector2i.UP
 	_assert_true(game._has_front_interactable(), "玩家正面紧邻 Props 时应允许交互")
