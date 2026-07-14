@@ -59,6 +59,8 @@ func _run() -> void:
 	_assert_true(runtime_bounty.get("skillLevels", {}).keys().size() == 5 and runtime_bounty.get("equippedSkillIds", []).size() == 5, "悬赏目标应缩放并装备五项基础技能")
 	var darkxue_map := TiledMapLoader.new()
 	_assert_true(darkxue_map.load_file("res://assets/Map/maps/LoreWorld/KaiyuanTown/DarkXue.tmx"), "应能加载 DARK学室内地图")
+	_assert_true(not darkxue_map.npc_object_at_tile(7, 6).is_empty(), "NPC point 对象应命中脚下单格")
+	_assert_true(darkxue_map.npc_object_at_tile(8, 6).is_empty(), "NPC point 对象不得扩张命中相邻格")
 	var bounty_tile: Vector2i = darkxue_map.pick_dynamic_npc_tile()
 	_assert_true(bounty_tile.x >= 0 and darkxue_map.is_walkable(bounty_tile.x, bounty_tile.y) and darkxue_map.is_walkable(bounty_tile.x, bounty_tile.y - 1), "室内悬赏 NPC 应落在身前无墙的可行走格")
 	_assert_true(darkxue_map.npc_object_at_tile(bounty_tile.x, bounty_tile.y).is_empty(), "动态悬赏 NPC 不应与固定 NPC 重叠")
@@ -236,7 +238,7 @@ func _run() -> void:
 	_assert_true(covered_map_size.x >= 480.0 and covered_map_size.y >= 320.0, "小地图应等比 cover 相机，不得产生黑边")
 	game._layout_game_view()
 	var design_rect := Rect2(Vector2.ZERO, Vector2(480.0, 320.0))
-	for panel in [game.map_badge_panel, game.menu_panel, game.dialogue_panel, game.details_panel, game.battle_panel]:
+	for panel in [game.map_badge_panel, game.menu_panel, game.dialogue_panel, game.details_panel, game.tree_confirm_panel, game.battle_panel]:
 		_assert_true(design_rect.encloses(Rect2(panel.position, panel.size)), "%s 必须完整位于设计画布内" % panel.name)
 	game.nearby_npc_id = "jiu_ri"
 	game._start_battle()
@@ -247,9 +249,27 @@ func _run() -> void:
 	game.battle_panel.visible = false
 	game._clear_battle_widgets()
 	_assert_true(game._prop_display_name({"name": "电脑", "properties": {"questGiver": "darkxue_computer"}}) == "电脑", "Props 对话标题应使用 Tiled 对象名")
+	# 歪脖树使用独立 HUD，不得修改或复用 NPC 菜单的正文状态。
+	game.npc_menu_content.visible = false
+	game._show_delete_confirm()
+	_assert_true(game.tree_confirm_panel.visible and not game.tree_confirm_content.text.is_empty(), "歪脖树独立确认 HUD 不应显示为空白面板")
+	_assert_true(not game.npc_menu_content.visible and not game.npc_menu_panel.visible, "歪脖树 HUD 不应复用或改变 NPC 菜单")
+	game._close_delete_confirm()
 	game.map_context = darkxue_map
 	_assert_true(game._npc_occupies_tile(Vector2i(7, 6)), "室内固定 NPC 所在格应阻挡玩家移动")
 	_assert_true(not game._npc_occupies_tile(Vector2i(8, 6)), "NPC 碰撞只应占脚下格，不应误挡相邻格")
+	game.player_tile = Vector2i(7, 7)
+	game.facing = Vector2i.UP
+	game._refresh_nearby_npc()
+	_assert_true(game.nearby_npc_id == "dao_shi", "玩家正面紧邻 NPC 时应允许交互")
+	game.facing = Vector2i.RIGHT
+	game._refresh_nearby_npc()
+	_assert_true(game.nearby_npc_id.is_empty(), "NPC 位于玩家侧面时不得触发交互")
+	game.player_tile = Vector2i(12, 7)
+	game.facing = Vector2i.UP
+	_assert_true(game._has_front_interactable(), "玩家正面紧邻 Props 时应允许交互")
+	game.facing = Vector2i.LEFT
+	_assert_true(not game._has_front_interactable(), "Props 位于玩家侧面时不得触发交互")
 	var pages: Array[String] = game._paginate_dialogue("第一行\n第二行")
 	_assert_true(pages.size() == 2 and pages[0] == "第一行" and pages[1] == "第二行", "对话正文每个逻辑行应独占一页")
 	game._show_dialogue("测试", "单页")

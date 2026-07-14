@@ -150,7 +150,16 @@ func _transaction_at_tile(col: int, row: int) -> bool:
 	return false
 
 func _object_occupies_tile(object: Dictionary, tile_rect: Rect2) -> bool:
-	var object_size := Vector2(float(object.get("width", tile_width)), float(object.get("height", tile_height)))
+	var raw_width := float(object.get("width", 0.0))
+	var raw_height := float(object.get("height", 0.0))
+	# 与原项目 TileGeometry.tileOverlapsObject 一致：无 gid 的零尺寸 point
+	# 对象（地图 NPC 的常见格式）只占 floor(x/tileW), floor(y/tileH) 单格。
+	if int(object.get("gid", 0)) == 0 and raw_width <= 0.0 and raw_height <= 0.0:
+		return Vector2i(
+			floori(float(object.get("x", 0.0)) / tile_width),
+			floori(float(object.get("y", 0.0)) / tile_height),
+		) == Vector2i(floori(tile_rect.position.x / tile_width), floori(tile_rect.position.y / tile_height))
+	var object_size := Vector2(raw_width if raw_width > 0.0 else tile_width, raw_height if raw_height > 0.0 else tile_height)
 	if object_size.x <= 0.0:
 		object_size.x = float(tile_width)
 	if object_size.y <= 0.0:
@@ -159,7 +168,7 @@ func _object_occupies_tile(object: Dictionary, tile_rect: Rect2) -> bool:
 	if int(object.get("gid", 0)) != 0:
 		object_position.y -= object_size.y
 	var object_rect := Rect2(object_position, object_size)
-	return object_rect.intersects(tile_rect) or tile_rect.encloses(object_rect)
+	return object_rect.intersects(tile_rect)
 
 func transaction_for_arrival(from_map: String, to_map: String, cyber := false) -> Dictionary:
 	var candidates: Array[Dictionary] = []

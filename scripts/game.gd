@@ -24,6 +24,8 @@ var message := "欢迎来到开源镇"
 @onready var npc_portrait: TextureRect = $HUD/Details/Content/Portrait
 @onready var dialogue_panel: PanelContainer = $HUD/Dialogue
 @onready var dialogue_content: Label = $HUD/Dialogue/Content
+@onready var tree_confirm_panel: PanelContainer = $HUD/TreeConfirm
+@onready var tree_confirm_content: Label = $HUD/TreeConfirm/Content
 @onready var npc_menu_panel: PanelContainer = $HUD/NpcMenu
 @onready var npc_menu_content: Label = $HUD/NpcMenu/Content
 var nearby_npc_id := ""
@@ -205,6 +207,9 @@ func _process(delta: float) -> void:
 			player_moving = false
 	if accept_requested:
 		accept_requested = false
+		# 确认键可能在移动/转向后的下一帧才消费；触发瞬间重新按当前位置与
+		# 当前朝向解析面前一格，禁止使用已经失效的 NPC 缓存。
+		_refresh_nearby_npc()
 		if not nearby_npc_id.is_empty() or _has_front_interactable():
 			_interact()
 		elif not menu_open and not battle_active:
@@ -407,21 +412,20 @@ func _show_delete_confirm() -> void:
 	delete_confirm_open = true
 	delete_confirm_index = 1
 	npc_menu_open = false
-	npc_menu_panel.visible = true
+	npc_menu_panel.visible = false
+	tree_confirm_panel.visible = true
 	_layout_delete_confirm()
 	_refresh_delete_confirm()
 
 func _layout_delete_confirm() -> void:
 	var scale := _display_scale()
 	var panel_size := Vector2(360.0, 118.0) * scale
-	npc_menu_panel.position = (DESIGN_SIZE - panel_size) * 0.5
-	npc_menu_panel.size = panel_size
-	npc_menu_content.add_theme_font_size_override("font_size", maxi(12, int(round(13.0 * scale))))
-	npc_menu_content.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	npc_menu_content.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	tree_confirm_panel.position = (DESIGN_SIZE - panel_size) * 0.5
+	tree_confirm_panel.size = panel_size
+	tree_confirm_content.add_theme_font_size_override("font_size", maxi(12, int(round(13.0 * scale))))
 
 func _refresh_delete_confirm() -> void:
-	npc_menu_content.text = "这棵歪脖树正合上吊。真要吊死吗？（存档将被删除）\n\n%s    %s" % [_cursor("吊死", delete_confirm_index == 0), _cursor("再想想", delete_confirm_index == 1)]
+	tree_confirm_content.text = "这棵歪脖树正合上吊。真要吊死吗？（存档将被删除）\n\n%s    %s" % [_cursor("吊死", delete_confirm_index == 0), _cursor("再想想", delete_confirm_index == 1)]
 
 func _handle_delete_confirm_key(key: Key) -> void:
 	if key == KEY_ESCAPE:
@@ -441,9 +445,7 @@ func _handle_delete_confirm_key(key: Key) -> void:
 
 func _close_delete_confirm() -> void:
 	delete_confirm_open = false
-	npc_menu_panel.visible = false
-	npc_menu_content.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	npc_menu_content.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	tree_confirm_panel.visible = false
 
 func _has_front_interactable() -> bool:
 	if not map_context:
@@ -1215,7 +1217,7 @@ func _apply_hud_theme() -> void:
 	var paper := Color("f8f6ee")
 	var ink := Color("4b4943")
 	var warm_paper := Color("fcfbf6")
-	for panel in [map_badge_panel, details_panel, npc_menu_panel, menu_panel, battle_panel]:
+	for panel in [map_badge_panel, details_panel, tree_confirm_panel, npc_menu_panel, menu_panel, battle_panel]:
 		panel.add_theme_stylebox_override("panel", _ui_box(paper, ink, 1))
 		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var dialogue_box := _ui_box(warm_paper, ink, 1)
@@ -1227,7 +1229,7 @@ func _apply_hud_theme() -> void:
 	map_badge.add_theme_color_override("font_color", Color("302f2b"))
 	map_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	npc_portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for label in [details_content, npc_menu_content, menu_content, battle_content, dialogue_content]:
+	for label in [details_content, tree_confirm_content, npc_menu_content, menu_content, battle_content, dialogue_content]:
 		label.add_theme_color_override("font_color", Color("302f2b"))
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	dialogue_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE

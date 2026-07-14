@@ -114,6 +114,25 @@ theme_override_colors/font_color = Color(0.12, 0.12, 0.12, 1)
 autowrap_mode = 2
 text = "对话"
 
+[node name="TreeConfirm" type="PanelContainer" parent="HUD"]
+visible = false
+offset_left = 60.0
+offset_top = 101.0
+offset_right = 420.0
+offset_bottom = 219.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
+
+[node name="Content" type="Label" parent="HUD/TreeConfirm"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 13
+theme_override_fonts/font = ExtResource("3")
+theme_override_colors/font_color = Color(0.12, 0.12, 0.12, 1)
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "歪脖树"
+
 [node name="NpcMenu" type="PanelContainer" parent="HUD"]
 visible = false
 offset_left = 180.0
