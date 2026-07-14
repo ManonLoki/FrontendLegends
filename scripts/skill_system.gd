@@ -1,5 +1,9 @@
 extends Node
 
+const LEARNING_TICK_SECONDS := 1.0 / 30.0
+const MEDITATION_TICK_SECONDS := 1.0 / 30.0
+const PRACTICE_TICK_SECONDS := 1.0 / 6.0
+
 const THEMES := ["code", "tune", "arch", "parry", "knowledge"]
 
 func create_default_skills() -> Dictionary:
@@ -429,13 +433,13 @@ func meditate_tick() -> Dictionary:
 			GameState.combat_state.mp = 0
 			vitals.neigong = mini(cap, neigong + 1)
 			GameState.profile.vitals = vitals
-			GameState.advance_time(1.0 / 60.0)
+			GameState.advance_time(MEDITATION_TICK_SECONDS)
 			if vitals.neigong >= cap:
 				return {"ok": true, "message": "冥想圆满，精力最大值提升至 %d，已达内功所限。" % vitals.neigong}
 			return {"ok": true, "message": "冥想圆满，精力最大值提升至 %d。" % vitals.neigong}
 		return {"ok": false, "message": "冥想已满，无需继续冥想。"}
-	# 原项目的冥想以 60 FPS 标准帧推进；每个有效 tick 同步推进 1/60 秒游戏时钟。
-	GameState.advance_time(1.0 / 60.0)
+	# 冥想以 30 Hz 推进；每个有效 tick 同步推进 1/30 秒游戏时钟。
+	GameState.advance_time(MEDITATION_TICK_SECONDS)
 	return {"ok": true, "message": "你凝神冥想，当前精力 %d / %d。" % [GameState.combat_state.mp, maximum]}
 
 func meditation_progress() -> Dictionary:
@@ -482,8 +486,8 @@ func practice_tick(skill_id: String) -> Dictionary:
 		return {"ok": false, "message": "体力不足，练不动功。"}
 	GameState.combat_state.mp -= mp_cost
 	GameState.combat_state.hp -= hp_cost
-	# 对齐 SaveManager.practicePlayerSkillTick：只有实际练功成功才推进 1 秒。
-	GameState.advance_time(1.0)
+	# 练功以 6 Hz 推进；每个有效 tick 同步推进 1/6 秒游戏时钟。
+	GameState.advance_time(PRACTICE_TICK_SECONDS)
 	var next_progress := current_progress + gain
 	if next_progress >= required:
 		skills.levels[skill_id] = current + 1

@@ -231,8 +231,8 @@ func _update_continuous_skill_actions(delta: float) -> void:
 	if learn_open and not learning_skill_id.is_empty():
 		learning_tick_accumulator += maxf(0.0, delta)
 		var learn_changed := false
-		while learning_tick_accumulator >= 1.0 / 60.0 and not learning_skill_id.is_empty():
-			learning_tick_accumulator -= 1.0 / 60.0
+		while learning_tick_accumulator >= SkillSystem.LEARNING_TICK_SECONDS and not learning_skill_id.is_empty():
+			learning_tick_accumulator -= SkillSystem.LEARNING_TICK_SECONDS
 			var result: Dictionary = SkillSystem.learn_tick(nearby_npc_id, learning_skill_id)
 			message = str(result.get("message", ""))
 			learn_changed = true
@@ -244,8 +244,8 @@ func _update_continuous_skill_actions(delta: float) -> void:
 			_render_learning_progress()
 	if practice_open and not practicing_skill_id.is_empty():
 		practice_tick_accumulator += maxf(0.0, delta)
-		while practice_tick_accumulator >= 1.0 and not practicing_skill_id.is_empty():
-			practice_tick_accumulator -= 1.0
+		while practice_tick_accumulator >= SkillSystem.PRACTICE_TICK_SECONDS and not practicing_skill_id.is_empty():
+			practice_tick_accumulator -= SkillSystem.PRACTICE_TICK_SECONDS
 			var before := SkillSystem.practice_progress(practicing_skill_id)
 			var result: Dictionary = SkillSystem.practice_tick(practicing_skill_id)
 			message = str(result.get("message", ""))
@@ -256,8 +256,8 @@ func _update_continuous_skill_actions(delta: float) -> void:
 	if meditation_open:
 		meditation_tick_accumulator += maxf(0.0, delta)
 		var meditation_changed := false
-		while meditation_tick_accumulator >= 1.0 / 60.0 and meditation_open:
-			meditation_tick_accumulator -= 1.0 / 60.0
+		while meditation_tick_accumulator >= SkillSystem.MEDITATION_TICK_SECONDS and meditation_open:
+			meditation_tick_accumulator -= SkillSystem.MEDITATION_TICK_SECONDS
 			var result: Dictionary = SkillSystem.meditate_tick()
 			message = str(result.get("message", ""))
 			if not bool(result.get("ok", false)):

@@ -74,7 +74,12 @@ func _run() -> void:
 	_assert_true(not learn_result.has("reason"), "学习 tick 应实际推进")
 	_assert_true(is_equal_approx(game_state.game_time_sec, before_time), "学习 tick 不应重复推进全局时钟")
 
-	# 练功：有效 tick 推进 1 秒，并消耗精力。
+	# 连续动作频率：学习/冥想 30 Hz，练功 6 Hz。
+	_assert_true(is_equal_approx(skill_system.LEARNING_TICK_SECONDS, 1.0 / 30.0), "学习应每秒推进 30 次")
+	_assert_true(is_equal_approx(skill_system.MEDITATION_TICK_SECONDS, 1.0 / 30.0), "冥想应每秒推进 30 次")
+	_assert_true(is_equal_approx(skill_system.PRACTICE_TICK_SECONDS, 1.0 / 6.0), "练功应每秒推进 6 次")
+
+	# 练功：有效 tick 推进 1/6 秒，并消耗精力。
 	var skills: Dictionary = skill_system.ensure_skills()
 	skills.levels.basicStrength = 5
 	skills.levels.ng_code_decorator = 1
@@ -84,9 +89,9 @@ func _run() -> void:
 	before_time = game_state.game_time_sec
 	var practice_result: Dictionary = skill_system.practice_tick("ng_code_decorator")
 	_assert_true(bool(practice_result.get("ok", false)), "练功 tick 应成功")
-	_assert_true(is_equal_approx(game_state.game_time_sec - before_time, 1.0), "练功 tick 未推进 1 秒")
+	_assert_true(is_equal_approx(game_state.game_time_sec - before_time, 1.0 / 6.0), "练功 tick 未推进 1/6 秒")
 
-	# 冥想：装备基础/高级架构后，有效标准帧推进 1/60 秒。
+	# 冥想：装备基础/高级架构后，有效 tick 推进 1/30 秒。
 	skills.levels.basicConstitution = 2
 	skills.levels.ng_arch_zone = 1
 	skills.equipped_special.arch = "ng_arch_zone"
@@ -95,7 +100,7 @@ func _run() -> void:
 	before_time = game_state.game_time_sec
 	var meditation_result: Dictionary = skill_system.meditate_tick()
 	_assert_true(bool(meditation_result.get("ok", false)), "冥想 tick 应成功")
-	_assert_true(is_equal_approx(game_state.game_time_sec - before_time, 1.0 / 60.0), "冥想 tick 未推进 1/60 秒")
+	_assert_true(is_equal_approx(game_state.game_time_sec - before_time, 1.0 / 30.0), "冥想 tick 未推进 1/30 秒")
 
 	# 学习经验曲线：覆盖基础/门派、低/中/满级与悟性倍率，锁定原项目取整顺序。
 	var basic_def: Dictionary = data_registry.get_skill("basicStrength")
@@ -316,7 +321,7 @@ func _run() -> void:
 	game._handle_learn_key(KEY_SPACE)
 	_assert_true(not str(game.learning_skill_id).is_empty() and game.learning_progress_widgets.size() == 1, "选中功法按空格后才应显示并启动进度条")
 	game_state.profile.vitals.potential = 0
-	game._update_continuous_skill_actions(0.02)
+	game._update_continuous_skill_actions(skill_system.LEARNING_TICK_SECONDS)
 	_assert_true(str(game.learning_skill_id).is_empty() and game.learning_progress_widgets.is_empty(), "潜能不足无法继续学习后进度条应消失")
 	var selected_skill: String = game.learn_items[game.learn_index]
 	var selected_definition: Dictionary = data_registry.get_skill(selected_skill)
@@ -328,7 +333,7 @@ func _run() -> void:
 	game_state.profile.vitals.money = 100000
 	var money_before := int(game_state.profile.vitals.money)
 	game._handle_learn_key(KEY_SPACE)
-	game._update_continuous_skill_actions(0.02)
+	game._update_continuous_skill_actions(skill_system.LEARNING_TICK_SECONDS)
 	_assert_true(skill_system.level(selected_skill) == selected_level + 1, "最后 1 点潜能应在同一 tick 完成升级")
 	_assert_true(int(game_state.profile.vitals.potential) == 0, "每个有效学习 tick 应只消耗 1 点潜能")
 	_assert_true(int(game_state.profile.vitals.money) == money_before - ceili(float(selected_required) * 0.8), "升级 Token 学费应为本级经验需求的 80% 向上取整")
