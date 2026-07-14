@@ -64,7 +64,8 @@ func advance_time(seconds: float) -> void:
 func save_game() -> void:
 	if not has_profile():
 		return
-	var data := {"version": SAVE_VERSION, "profile": profile, "game_time_sec": game_time_sec, "combat_state": combat_state, "inventory": inventory, "equipment": equipment, "item_cooldowns": item_cooldowns}
+	# 对齐原项目：穿戴状态仅在本局内存中存在，不进入存档。
+	var data := {"version": SAVE_VERSION, "profile": profile, "game_time_sec": game_time_sec, "combat_state": combat_state, "inventory": inventory, "item_cooldowns": item_cooldowns}
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
 		file.store_string(JSON.stringify(data))
@@ -80,10 +81,8 @@ func load_game() -> bool:
 	game_time_sec = float(parsed.get("game_time_sec", 0.0))
 	combat_state = parsed.get("combat_state", {"hp": 1, "mp": 0, "injury": 0})
 	inventory = parsed.get("inventory", {})
-	equipment = parsed.get("equipment", {"weapon": "", "armor": "", "shoe": "", "accessory1": "", "accessory2": ""})
-	if equipment.has("accessory"):
-		equipment.accessory1 = equipment.get("accessory", "")
-		equipment.erase("accessory")
+	# 旧档可能带 equipment；按原设定读档后一律空手，不恢复该字段。
+	equipment = {"weapon": "", "armor": "", "shoe": "", "accessory1": "", "accessory2": ""}
 	item_cooldowns = parsed.get("item_cooldowns", {})
 	if profile.has("skills"):
 		SkillSystem.ensure_skills()

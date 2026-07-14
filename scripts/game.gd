@@ -72,15 +72,20 @@ var learn_all_items: Array[String] = []
 var learn_categories: Array[String] = []
 var learn_category_index := 0
 var learn_focus_category := true
+var learning_skill_id := ""
+var learning_tick_accumulator := 0.0
 var inventory_open := false
 var inventory_items: Array[String] = []
 var inventory_categories: Array[String] = ["食物", "药物", "武器", "防具", "鞋子", "饰品", "其他", "丢弃"]
 var inventory_category_index := 0
 var inventory_index := 0
 var inventory_focus_category := true
+var inventory_feedback := ""
 var practice_open := false
 var practice_index := 0
 var practice_items: Array[String] = []
+var practicing_skill_id := ""
+var practice_tick_accumulator := 0.0
 var skill_book_open := false
 var skill_book_categories: Array[String] = ["编码", "思维", "架构", "招架", "灵感"]
 var skill_book_category_index := 0
@@ -89,12 +94,16 @@ var skill_book_items: Array[String] = []
 var skill_book_index := 0
 var meditation_open := false
 var meditation_widgets: Array[Control] = []
+var learning_progress_widgets: Array[Control] = []
+var meditation_tick_accumulator := 0.0
 var SKILL_BOOK_THEMES: Array[String] = ["code", "tune", "arch", "parry", "knowledge"]
 var dialogue_open := false
 var dialogue_pages: Array[String] = []
 var dialogue_page_index := 0
 var dialogue_speaker := ""
 var dialogue_locked_until_msec := 0
+var dialogue_auto_close_at_msec := 0
+var dialogue_after_last := Callable()
 var map_transitioning := false
 var has_loaded_map := false
 var delete_confirm_open := false
@@ -117,12 +126,15 @@ const SYSTEM_ITEMS := ["赛博传送", "摸鱼", "疗伤", "保存", "退出"]
 const LEARN_CATEGORY_ORDER: Array[String] = ["编码", "思维", "架构", "招架", "灵感"]
 
 func _ready() -> void:
+	# 任务槽、冷却、环计数与动态悬赏均为本局内存态，不随存档恢复。
+	QuestSystem.reset_runtime()
 	MOBILE_ORIENTATION.apply()
 	_install_virtual_controls()
 	_apply_hud_theme()
 	_load_player_sprite_regions()
 	get_viewport().size_changed.connect(_layout_game_view)
 	_layout_game_view()
+	_update_dialogue_auto_close()
 	menu_content.text = ""
 	_load_initial_map()
 	queue_redraw()
@@ -133,6 +145,10 @@ func _process(delta: float) -> void:
 	# after _ready() (e.g. fullscreen-on-gesture in mobile_orientation.gd) and
 	# leave panels frozen at a stale size/position from an earlier viewport reading.
 	_layout_game_view()
+	# 原项目的 PlayerSurvivalController 无论 HUD 是否打开都持续推进唯一游戏时钟；
+	# 学习依赖这条基础时间轴，练功/冥想另有动作快进。
+	GameState.advance_time(delta)
+	_update_continuous_skill_actions(delta)
 	# HUDs are modal: freeze world simulation, including the player's held direction,
 	# while menus, dialogue, battle, or detail panels are visible.
 	if _has_modal_input():
@@ -149,7 +165,6 @@ func _process(delta: float) -> void:
 		animation_timer = 0.0
 		animation_frame = 0
 		queue_redraw()
-	GameState.advance_time(delta)
 	auto_save_timer += delta
 	if auto_save_timer >= 30.0:
 		auto_save_timer = 0.0
@@ -201,6 +216,47 @@ func _process(delta: float) -> void:
 		else:
 			_toggle_menu()
 
+func _update_continuous_skill_actions(delta: float) -> void:
+	if learn_open and not learning_skill_id.is_empty():
+		learning_tick_accumulator += maxf(0.0, delta)
+		var learn_changed := false
+		while learning_tick_accumulator >= 1.0 / 60.0 and not learning_skill_id.is_empty():
+			learning_tick_accumulator -= 1.0 / 60.0
+			var result: Dictionary = SkillSystem.learn_tick(nearby_npc_id, learning_skill_id)
+			message = str(result.get("message", ""))
+			learn_changed = true
+			# 原项目在升级成功或资源/门槛阻断时停止持续研习。
+			if bool(result.get("ok", false)) or not str(result.get("reason", "")).is_empty():
+				learning_skill_id = ""
+		if learn_changed:
+			_refresh_learn_list()
+			_render_learning_progress()
+	if practice_open and not practicing_skill_id.is_empty():
+		practice_tick_accumulator += maxf(0.0, delta)
+		while practice_tick_accumulator >= 1.0 and not practicing_skill_id.is_empty():
+			practice_tick_accumulator -= 1.0
+			var before := SkillSystem.practice_progress(practicing_skill_id)
+			var result: Dictionary = SkillSystem.practice_tick(practicing_skill_id)
+			message = str(result.get("message", ""))
+			var after := SkillSystem.practice_progress(practicing_skill_id)
+			if not bool(result.get("ok", false)) or (before == after and int(after.get("current", 0)) == 0):
+				practicing_skill_id = ""
+			_refresh_practice()
+	if meditation_open:
+		meditation_tick_accumulator += maxf(0.0, delta)
+		var meditation_changed := false
+		while meditation_tick_accumulator >= 1.0 / 60.0 and meditation_open:
+			meditation_tick_accumulator -= 1.0 / 60.0
+			var result: Dictionary = SkillSystem.meditate_tick()
+			message = str(result.get("message", ""))
+			if not bool(result.get("ok", false)):
+				_close_meditation()
+				_show_dialogue("冥想", message)
+				break
+			meditation_changed = true
+		if meditation_changed and meditation_open:
+			_render_meditation_progress()
+
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		MOBILE_ORIENTATION.request_from_user_gesture()
@@ -214,8 +270,6 @@ func _input(event: InputEvent) -> void:
 				if Time.get_ticks_msec() < dialogue_locked_until_msec:
 					return
 				_advance_dialogue()
-			elif event.keycode == KEY_ESCAPE:
-				_close_dialogue()
 			return
 		if trade_open:
 			_handle_trade_key(event.keycode)
@@ -322,15 +376,32 @@ func _interact_prop() -> bool:
 		_show_delete_confirm()
 		return true
 	elif not str(properties.get("questGiver", "")).is_empty():
-		message = QuestSystem.interact_npc(str(properties.get("questGiver", "")))
+		var quest_endpoint := str(properties.get("questGiver", ""))
+		var detailed: Dictionary = QuestSystem.begin_novice_completion(quest_endpoint)
+		if not detailed.is_empty():
+			message = str(detailed.get("message", ""))
+			var after_last := Callable()
+			if bool(detailed.get("can_finish", false)):
+				after_last = func() -> String: return QuestSystem.finish_novice_completion(quest_endpoint)
+			_show_dialogue(_prop_display_name(object), message, float(detailed.get("lock_seconds", 0.0)), after_last)
+			_refresh_status()
+			return true
+		message = QuestSystem.interact_npc(quest_endpoint)
 	else:
 		message = str(properties.get("text", "已查看。"))
 	if event != "deleteSave" and (not str(properties.get("text", "")).is_empty() or not str(properties.get("questGiver", "")).is_empty() or event == "bountyBoard"):
-		_show_dialogue(str(properties.get("displayName", "告示")), message, 5.0 if not str(properties.get("questGiver", "")).is_empty() else 0.0)
+		_show_dialogue(_prop_display_name(object), message)
 	else:
 		_show_details(message)
 	_refresh_status()
 	return true
+
+func _prop_display_name(object: Dictionary) -> String:
+	var properties: Dictionary = object.get("properties", {})
+	var display_name := str(properties.get("displayName", "")).strip_edges()
+	if display_name.is_empty():
+		display_name = str(object.get("name", "")).strip_edges()
+	return display_name if not display_name.is_empty() else "告示"
 
 func _show_delete_confirm() -> void:
 	delete_confirm_open = true
@@ -635,6 +706,14 @@ func _refresh_trade_items() -> void:
 	_refresh_trade_list()
 
 func _handle_learn_key(key: Key) -> void:
+	if not learning_skill_id.is_empty():
+		if key in [KEY_ESCAPE, KEY_SPACE]:
+			learning_skill_id = ""
+			learning_tick_accumulator = 0.0
+			message = "已停止研习。"
+			_clear_learning_progress_widgets()
+			_refresh_learn_list()
+		return
 	if key == KEY_ESCAPE:
 		if learn_focus_category:
 			learn_open = false
@@ -664,8 +743,10 @@ func _handle_learn_key(key: Key) -> void:
 		_refresh_learn_list()
 	elif not learn_focus_category and key == KEY_SPACE:
 		if not learn_items.is_empty():
-			var result: Dictionary = SkillSystem.learn_tick(nearby_npc_id, learn_items[learn_index])
-			message = result.message
+			learning_skill_id = learn_items[learn_index]
+			learning_tick_accumulator = 0.0
+			message = "开始研习【%s】。" % DataRegistry.get_skill(learning_skill_id).get("name", learning_skill_id)
+			_render_learning_progress()
 	_refresh_learn_list()
 
 func _refresh_learn_list() -> void:
@@ -681,16 +762,6 @@ func _render_learn_widgets() -> void:
 	var split := area.x * 0.34
 	var row := 28.0 * scale
 	var content_top := _detail_chrome("学习")
-	if not learn_focus_category and not learn_items.is_empty():
-		var progress: Dictionary = SkillSystem.learning_progress(learn_items[learn_index])
-		var meter := UI_PROGRESS_METER.new()
-		meter.position = Vector2(pad * 1.6, content_top)
-		meter.size = Vector2(area.x - pad * 3.2, 26.0 * scale)
-		meter.set_font_size(maxi(11, int(round(12.0 * scale))))
-		meter.set_progress(int(progress.get("current", 0)), int(progress.get("total", 1)))
-		details_content.add_child(meter)
-		details_widgets.append(meter)
-		content_top += 36.0 * scale
 	var list_bottom := area.y - 55.0 * scale
 	_detail_rule(Vector2(split, content_top), Vector2(split + 1.0, list_bottom), Color("77736b"))
 	for index in learn_categories.size():
@@ -715,11 +786,29 @@ func _render_learn_widgets() -> void:
 	if not learn_focus_category and not learn_items.is_empty():
 		var focused_id := learn_items[learn_index]
 		var focused_progress: Dictionary = SkillSystem.learning_progress(focused_id)
-		footer = "研习【%s】，进度 %d/%d。　空格 继续学习　·　←/ESC 返回" % [DataRegistry.get_skill(focused_id).get("name", focused_id), focused_progress.get("current", 0), focused_progress.get("total", 1)]
+		footer = "研习【%s】，进度 %d/%d。　%s" % [DataRegistry.get_skill(focused_id).get("name", focused_id), focused_progress.get("current", 0), focused_progress.get("total", 1), "研习中 · 空格/ESC 停止" if learning_skill_id == focused_id else "空格 开始研习 · ←/ESC 返回"]
 	_detail_label(footer, Rect2(Vector2(pad, area.y - 42.0 * scale), Vector2(area.x - pad * 2.0, 30.0 * scale)), 11, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
 
 func _learn_teach_cap(skill_id: String) -> int:
 	return SkillSystem.teach_cap(nearby_npc_id, skill_id)
+
+func _render_learning_progress() -> void:
+	_clear_learning_progress_widgets()
+	if learning_skill_id.is_empty():
+		return
+	var progress: Dictionary = SkillSystem.learning_progress(learning_skill_id)
+	var meter := UI_PROGRESS_METER.new()
+	hud.add_child(meter)
+	learning_progress_widgets.append(meter)
+	_layout_top_progress_meter(meter)
+	meter.set_font_size(maxi(11, int(round(12.0 * _display_scale()))))
+	meter.set_progress(int(progress.get("current", 0)), int(progress.get("total", 1)))
+
+func _clear_learning_progress_widgets() -> void:
+	for widget in learning_progress_widgets:
+		if is_instance_valid(widget):
+			widget.free()
+	learning_progress_widgets.clear()
 
 func _skill_category(skill_id: String) -> String:
 	var theme := str(DataRegistry.get_skill(skill_id).get("theme", ""))
@@ -755,6 +844,13 @@ func _open_practice() -> void:
 	_refresh_practice()
 
 func _handle_practice_key(key: Key) -> void:
+	if not practicing_skill_id.is_empty():
+		if key in [KEY_ESCAPE, KEY_SPACE]:
+			practicing_skill_id = ""
+			practice_tick_accumulator = 0.0
+			message = "已停止练功。"
+			_refresh_practice()
+		return
 	if key == KEY_ESCAPE:
 		practice_open = false
 		details_panel.visible = false
@@ -766,7 +862,9 @@ func _handle_practice_key(key: Key) -> void:
 	elif key == KEY_DOWN and not practice_items.is_empty():
 		practice_index = posmod(practice_index + 1, practice_items.size())
 	elif key == KEY_SPACE and not practice_items.is_empty():
-		message = SkillSystem.practice_tick(practice_items[practice_index]).message
+		practicing_skill_id = practice_items[practice_index]
+		practice_tick_accumulator = 0.0
+		message = "开始练习【%s】。" % DataRegistry.get_skill(practicing_skill_id).get("name", practicing_skill_id)
 	_refresh_practice()
 
 func _refresh_practice() -> void:
@@ -789,7 +887,8 @@ func _refresh_practice() -> void:
 			_detail_label("%d/%d" % [SkillSystem.level(skill_id), int(definition.get("maxLevel", 100))], Rect2(Vector2(area.x - 115.0 * scale, y), Vector2(90.0 * scale, row)), 12, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.55, 0.55, 0.55, 1))
 			if index == practice_index:
 				_detail_selection(Rect2(Vector2(pad, y), Vector2(area.x - pad * 2.0, row)))
-	_detail_label("空格 开始练功　·　ESC 返回", Rect2(Vector2(pad, area.y - 40.0 * scale), Vector2(area.x - pad * 2.0, 28.0 * scale)), 11, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
+	var footer := "练功中 · 空格/ESC 停止" if not practicing_skill_id.is_empty() else "空格 开始练功　·　ESC 返回"
+	_detail_label(footer, Rect2(Vector2(pad, area.y - 40.0 * scale), Vector2(area.x - pad * 2.0, 28.0 * scale)), 11, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
 
 func _select_npc_menu() -> void:
 	var npc: Dictionary = NpcSystem.build_instance(nearby_npc_id)
@@ -801,7 +900,7 @@ func _select_npc_menu() -> void:
 		"talk":
 			var quest_message := QuestSystem.interact_npc(nearby_npc_id)
 			var dialogue := quest_message if not quest_message.is_empty() else NpcSystem.dialogue(nearby_npc_id)
-			_show_dialogue(str(npc.get("display_name", nearby_npc_id)), dialogue, 5.0 if not quest_message.is_empty() else 0.0)
+			_show_dialogue(str(npc.get("display_name", nearby_npc_id)), dialogue)
 		"view":
 			_show_npc_view_panel(npc)
 		"spar":
@@ -1005,26 +1104,16 @@ func _select_skill_menu() -> void:
 	_refresh_status()
 
 func _open_meditation() -> void:
-	var result: Dictionary = SkillSystem.meditate_tick()
-	message = str(result.get("message", "冥想结束"))
-	if not result.get("ok", false):
-		_show_dialogue("冥想", message)
+	if not SkillSystem.can_meditate():
+		_show_dialogue("冥想", "须装备基础架构与本门架构高级功法，方可冥想。")
 		return
 	meditation_open = true
+	meditation_tick_accumulator = 0.0
 	_render_meditation_progress()
 
 func _handle_meditation_key(key: Key) -> void:
 	if key == KEY_ESCAPE:
 		_close_meditation()
-		return
-	if key not in [KEY_SPACE, KEY_ENTER, KEY_KP_ENTER]:
-		return
-	var result: Dictionary = SkillSystem.meditate_tick()
-	message = str(result.get("message", "冥想结束"))
-	_render_meditation_progress()
-	if not result.get("ok", false):
-		_close_meditation()
-		_show_dialogue("冥想", message)
 
 func _render_meditation_progress() -> void:
 	_clear_meditation_widgets()
@@ -1039,11 +1128,15 @@ func _render_meditation_progress() -> void:
 func _layout_meditation_widgets() -> void:
 	if meditation_widgets.is_empty():
 		return
-	var scale := _display_scale()
 	var meter := meditation_widgets[0]
+	_layout_top_progress_meter(meter)
+
+func _layout_top_progress_meter(meter: Control) -> void:
+	var scale := _display_scale()
 	meter.size = Vector2(330.0, 28.0) * scale
 	var view_rect := _game_view_rect()
-	meter.position = Vector2((get_viewport_rect().size.x - meter.size.x) * 0.5, maxf(8.0 * scale, view_rect.position.y - 10.0 * scale))
+	# 学习与冥想共用：相对摄像机可见区域顶部 16px，水平居中。
+	meter.position = Vector2(view_rect.position.x + (view_rect.size.x - meter.size.x) * 0.5, view_rect.position.y + 16.0 * scale)
 
 func _clear_meditation_widgets() -> void:
 	for widget in meditation_widgets:
@@ -1327,7 +1420,7 @@ func _render_inventory_widgets() -> void:
 	var footer := "↑↓ 选分类　·　空格/→ 查看　·　ESC 返回"
 	if not inventory_focus_category and not inventory_items.is_empty():
 		var focused: Dictionary = DataRegistry.get_item(inventory_items[inventory_index])
-		footer = str(focused.get("description", "暂无说明"))
+		footer = inventory_feedback if not inventory_feedback.is_empty() else str(focused.get("description", "暂无说明"))
 	var footer_label := _detail_label(footer, Rect2(Vector2(pad, list_bottom + 8.0 * scale), Vector2(area.x - pad * 2.0, area.y - list_bottom - 14.0 * scale)), 11, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
 	footer_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	footer_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP if not inventory_focus_category else VERTICAL_ALIGNMENT_CENTER
@@ -1666,6 +1759,7 @@ func _show_inventory() -> void:
 	inventory_open = true
 	inventory_category_index = 0
 	inventory_focus_category = true
+	inventory_feedback = ""
 	_layout_details_overlay()
 	details_panel.visible = true
 	_refresh_inventory_panel()
@@ -1679,19 +1773,25 @@ func _handle_inventory_key(key: Key) -> void:
 			details_panel.visible = false
 		else:
 			inventory_focus_category = true
+			inventory_feedback = ""
 		_refresh_inventory_panel()
 		return
 	if key == KEY_LEFT:
 		inventory_focus_category = true
+		inventory_feedback = ""
 	elif inventory_focus_category and key in [KEY_UP, KEY_DOWN]:
+		inventory_feedback = ""
 		var delta := -1 if key == KEY_UP else 1
 		inventory_category_index = posmod(inventory_category_index + delta, inventory_categories.size())
 	elif inventory_focus_category and key in [KEY_RIGHT, KEY_SPACE, KEY_ENTER, KEY_KP_ENTER]:
 		inventory_focus_category = false
 		inventory_index = 0
+		inventory_feedback = ""
 	elif not inventory_focus_category and key == KEY_UP:
+		inventory_feedback = ""
 		inventory_index = posmod(inventory_index - 1, maxi(1, inventory_items.size()))
 	elif not inventory_focus_category and key == KEY_DOWN:
+		inventory_feedback = ""
 		inventory_index = posmod(inventory_index + 1, maxi(1, inventory_items.size()))
 	elif not inventory_focus_category and key in [KEY_RIGHT, KEY_SPACE, KEY_ENTER, KEY_KP_ENTER]:
 		_activate_inventory_item()
@@ -1710,6 +1810,7 @@ func _activate_inventory_item() -> void:
 	else:
 		result = InventorySystem.use_item(item_id)
 	message = str(result.get("message", ""))
+	inventory_feedback = message
 	_refresh_status()
 
 func _refresh_inventory_panel() -> void:
@@ -1847,12 +1948,21 @@ func _show_details(text: String) -> void:
 	npc_portrait.visible = false
 	details_content.add_theme_font_size_override("font_size", maxi(12, int(round(13.0 * _display_scale()))))
 
-func _show_dialogue(speaker: String, text: String, lock_seconds: float = 0.0) -> void:
-	dialogue_speaker = speaker
+func _show_dialogue(speaker: String, text: String, lock_seconds: float = 0.0, after_last: Callable = Callable()) -> void:
+	var clean_speaker := speaker.strip_edges()
+	var clean_text := text.strip_edges()
+	if clean_speaker.is_empty() and clean_text.is_empty():
+		_close_dialogue()
+		return
+	dialogue_speaker = clean_speaker
+	dialogue_after_last = after_last
 	dialogue_locked_until_msec = Time.get_ticks_msec() + int(maxf(0.0, lock_seconds) * 1000.0)
-	dialogue_pages = _paginate_dialogue(text)
+	dialogue_pages = _paginate_dialogue(clean_text)
 	dialogue_page_index = 0
-	_render_dialogue(speaker)
+	dialogue_auto_close_at_msec = 0
+	if dialogue_pages.size() == 1 and not after_last.is_valid():
+		dialogue_auto_close_at_msec = Time.get_ticks_msec() + 5000
+	_render_dialogue(clean_speaker)
 	dialogue_open = true
 	dialogue_panel.visible = true
 
@@ -1872,33 +1982,47 @@ func _paginate_dialogue(text: String) -> Array[String]:
 			line = line.substr(42)
 		visual_lines.append(line)
 
-	# The speaker occupies the first row; each page has room for two dialogue
-	# rows. Explicit lines and lines produced by automatic wrapping therefore
-	# advance through the same repeated-space interaction.
-	var pages: Array[String] = []
-	for line_index in range(0, visual_lines.size(), 2):
-		var page_lines := visual_lines.slice(line_index, mini(line_index + 2, visual_lines.size()))
-		pages.append("\n".join(page_lines))
-	return pages if not pages.is_empty() else [""]
+	# 原对话框固定两行：第一行说话者，第二行正文；每个逻辑/折行文本独占一页。
+	return visual_lines if not visual_lines.is_empty() else [""]
 
 func _render_dialogue(speaker: String) -> void:
 	var page := dialogue_pages[clampi(dialogue_page_index, 0, maxi(0, dialogue_pages.size() - 1))]
-	dialogue_content.text = "%s：\n%s" % [speaker, page]
+	dialogue_content.text = "%s:\n%s" % [speaker, page] if not speaker.is_empty() else page
 
 func _advance_dialogue() -> void:
 	if dialogue_page_index < dialogue_pages.size() - 1:
 		dialogue_page_index += 1
+		dialogue_auto_close_at_msec = 0
 		_render_dialogue(dialogue_speaker)
 	else:
-		_close_dialogue()
+		if dialogue_after_last.is_valid():
+			var callback := dialogue_after_last
+			dialogue_after_last = Callable()
+			var followup := str(callback.call())
+			if followup.strip_edges().is_empty():
+				_close_dialogue()
+			else:
+				dialogue_pages = _paginate_dialogue(followup.strip_edges())
+				dialogue_page_index = 0
+				dialogue_locked_until_msec = 0
+				dialogue_auto_close_at_msec = Time.get_ticks_msec() + 5000 if dialogue_pages.size() == 1 else 0
+				_render_dialogue(dialogue_speaker)
+		else:
+			_close_dialogue()
 
 func _close_dialogue() -> void:
 	dialogue_open = false
 	dialogue_speaker = ""
 	dialogue_locked_until_msec = 0
+	dialogue_auto_close_at_msec = 0
+	dialogue_after_last = Callable()
 	dialogue_pages.clear()
 	dialogue_page_index = 0
 	dialogue_panel.visible = false
+
+func _update_dialogue_auto_close() -> void:
+	if dialogue_open and dialogue_auto_close_at_msec > 0 and Time.get_ticks_msec() >= dialogue_auto_close_at_msec:
+		_close_dialogue()
 
 func _load_initial_map() -> void:
 	if DataRegistry.map_files.is_empty():
@@ -2174,8 +2298,9 @@ func _layout_game_view() -> void:
 		npc_menu_panel.size = inset_rect.size
 	menu_panel.position = Vector2((get_viewport_rect().size.x - DESIGN_SIZE.x * scale) * 0.5, 0.0)
 	menu_panel.size = Vector2(DESIGN_SIZE.x, 42.0) * scale
-	var dialogue_size := Vector2(DESIGN_SIZE.x - 20.0, 56.0) * scale
-	dialogue_panel.position = Vector2((get_viewport_rect().size.x - dialogue_size.x) * 0.5, get_viewport_rect().size.y - dialogue_size.y - 12.0 * scale)
+	var dialogue_size := Vector2(minf(DESIGN_SIZE.x, view_rect.size.x / scale) - 16.0, 44.0) * scale
+	var dialogue_bottom_margin := 28.0 if OS.has_feature("mobile") else 8.0
+	dialogue_panel.position = Vector2(view_rect.position.x + (view_rect.size.x - dialogue_size.x) * 0.5, view_rect.end.y - dialogue_size.y - dialogue_bottom_margin * scale)
 	dialogue_panel.size = dialogue_size
 	dialogue_content.add_theme_font_size_override("font_size", maxi(12, int(round(12.0 * scale))))
 	transition_overlay.position = Vector2.ZERO
@@ -2184,6 +2309,8 @@ func _layout_game_view() -> void:
 		_refresh_menu()
 	if meditation_open:
 		_layout_meditation_widgets()
+	if not learning_progress_widgets.is_empty():
+		_layout_top_progress_meter(learning_progress_widgets[0])
 	_update_camera()
 
 func _layout_details_overlay() -> void:

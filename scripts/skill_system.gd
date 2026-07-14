@@ -167,20 +167,32 @@ func learn_tick(npc_id: String, skill_id: String) -> Dictionary:
 	for key in requires.get("attrs", {}):
 		if int(attributes.get(key, 0)) < int(requires.attrs[key]):
 			return {"ok": false, "message": "你%s资质不足，学不得【%s】。" % [JOIN_ATTR_LABELS.get(str(key), str(key)), definition.get("name", skill_id)], "reason": "requires"}
+	if requires.has("minSkillPower") and _skill_power() < int(requires.get("minSkillPower", 0)):
+		return {"ok": false, "message": "你综合火候未到（需综合等级 %d），先精进再来。" % int(requires.get("minSkillPower", 0)), "reason": "requires"}
+	if requires.has("minAvgSkill") and _average_skill_level() < float(requires.get("minAvgSkill", 0)):
+		return {"ok": false, "message": "你各科尚不均衡（需均值 %d），先补齐短板。" % int(requires.get("minAvgSkill", 0)), "reason": "requires"}
+	var prereq: Dictionary = requires.get("prereq", {})
+	if not prereq.is_empty() and level(str(prereq.get("skillId", ""))) < int(prereq.get("level", 0)):
+		var prereq_id := str(prereq.get("skillId", ""))
+		return {"ok": false, "message": "须先将【%s】练到 %d 级。" % [DataRegistry.get_skill(prereq_id).get("name", prereq_id), int(prereq.get("level", 0))], "reason": "requires"}
 	var progress: Dictionary = ensure_skills().get("learnProgress", {})
 	var next_level := current + 1
 	var rate := clampf(1.0 - (float(attributes.get("wisdom", 25)) - 25.0) * 0.02, 0.65, 1.25)
 	var required := _learn_required(definition, next_level, rate)
 	var current_progress := mini(required, int(progress.get(skill_id, 0)))
 	var vitals: Dictionary = GameState.profile.get("vitals", {})
+	var spent_potential := 0
 	if current_progress < required:
 		if int(vitals.get("potential", 0)) <= 0:
 			return {"ok": false, "message": "潜能不足，学习进度 %d/%d。" % [current_progress, required], "reason": "potential"}
 		vitals.potential = int(vitals.get("potential", 0)) - 1
-		progress[skill_id] = current_progress + 1
+		spent_potential = 1
+		current_progress += 1
+		progress[skill_id] = current_progress
 		ensure_skills().learnProgress = progress
 		GameState.profile.vitals = vitals
-		return {"ok": false, "message": "研习【%s】，进度 %d/%d。" % [definition.get("name", skill_id), current_progress + 1, required], "progress": current_progress + 1, "required": required}
+		if current_progress < required:
+			return {"ok": false, "message": "研习【%s】，进度 %d/%d。" % [definition.get("name", skill_id), current_progress, required], "progress": current_progress, "required": required}
 	var tuition := int(ceil(float(required) * 0.8))
 	if int(vitals.get("money", 0)) < tuition:
 		return {"ok": false, "message": "学习进度已满，Token 不足，学费 %d。" % tuition, "reason": "token"}
@@ -191,7 +203,30 @@ func learn_tick(npc_id: String, skill_id: String) -> Dictionary:
 	GameState.profile.vitals = vitals
 	var before_attrs: Dictionary = attributes.duplicate()
 	_refresh_derived_attributes()
-	return {"ok": true, "message": "研习【%s】至 %d 级（耗潜能 %d、Token %d）%s。" % [definition.get("name", skill_id), next_level, required, tuition, _attribute_growth_suffix(before_attrs)], "level": next_level}
+	return {"ok": true, "message": "研习【%s】至 %d 级（耗潜能 %d、Token %d）%s。" % [definition.get("name", skill_id), next_level, spent_potential, tuition, _attribute_growth_suffix(before_attrs)], "level": next_level}
+
+func _skill_power() -> int:
+	var levels: Dictionary = ensure_skills().get("levels", {})
+	var total := 0
+	for basic_id in ["basicStrength", "basicAgility", "basicConstitution", "basicParry", "literacy"]:
+		total += maxi(0, int(levels.get(basic_id, 0)))
+	for skill_id in levels:
+		if str(DataRegistry.get_skill(str(skill_id)).get("category", "")) == "sect":
+			total += maxi(0, int(levels[skill_id])) * 2
+	return total
+
+func _average_skill_level() -> float:
+	var values: Array[int] = []
+	var levels: Dictionary = ensure_skills().get("levels", {})
+	for basic_id in ["basicStrength", "basicAgility", "basicConstitution", "basicParry", "literacy"]:
+		values.append(maxi(0, int(levels.get(basic_id, 0))))
+	for skill_id in levels:
+		if str(DataRegistry.get_skill(str(skill_id)).get("category", "")) == "sect":
+			values.append(maxi(0, int(levels[skill_id])))
+	var total := 0
+	for value in values:
+		total += value
+	return float(total) / float(maxi(1, values.size()))
 
 func teach_cap(npc_id: String, skill_id: String) -> int:
 	var definition := DataRegistry.get_skill(skill_id)
@@ -232,7 +267,11 @@ func _learn_required(definition: Dictionary, level_to_reach: int, rate: float) -
 	var max_cost := maxi(20, int(ceil(float(definition.get("costBase", 100)) * float(definition.get("costFactor", 1.0)) * 20.0)))
 	var denominator := maxi(1.0, float(int(definition.get("maxLevel", 100)) - 1))
 	var t := clampf(float(level_to_reach - 1) / denominator, 0.0, 1.0)
-	return maxi(2, int(ceil((1.0 + float(max_cost - 1) * pow(t, 2.0)) * rate / 2.0)) * 2)
+	# 原项目严格顺序：基础曲线先 ceil → 乘悟性倍率 → ceil 到偶数。
+	# 不能把倍率提前乘进基础曲线，否则高灵感档在部分等级会少 2 点潜能。
+	var base_required := maxi(1, int(ceil(1.0 + float(max_cost - 1) * pow(t, 2.0))))
+	var normalized_rate := clampf(rate, 0.65, 1.25)
+	return maxi(2, int(ceil(float(base_required) * normalized_rate / 2.0)) * 2)
 
 func _refresh_derived_attributes() -> void:
 	var base: Dictionary = GameState.profile.get("base_attributes", GameState.profile.get("attributes", {}))
@@ -381,17 +420,22 @@ func meditate_tick() -> Dictionary:
 	var inner_power := level("basicConstitution") + equipped_sect_skill_level("arch") * 2
 	var cap := int(floor(float(inner_power) * 25.0 * modifier))
 	var neigong := int(vitals.get("neigong", 0))
-	if neigong >= cap and int(GameState.combat_state.mp) >= maxi(1, neigong):
+	var maximum := maxi(0, neigong)
+	if neigong >= cap and int(GameState.combat_state.mp) >= maximum:
 		return {"ok": false, "message": "冥想已满，无需继续冥想。"}
-	var maximum := maxi(1, neigong)
 	GameState.combat_state.mp = mini(maximum, int(GameState.combat_state.mp) + maxi(1, int(floor(5.0 * modifier))))
 	if int(GameState.combat_state.mp) >= maximum:
-		GameState.combat_state.mp = 0
-		vitals.neigong = neigong + 1
-		GameState.profile.vitals = vitals
-		if vitals.neigong >= cap:
-			return {"ok": true, "message": "冥想圆满，精力最大值提升至 %d，已达内功所限。" % vitals.neigong}
-		return {"ok": true, "message": "冥想圆满，精力最大值提升至 %d。" % vitals.neigong}
+		if neigong < cap:
+			GameState.combat_state.mp = 0
+			vitals.neigong = mini(cap, neigong + 1)
+			GameState.profile.vitals = vitals
+			GameState.advance_time(1.0 / 60.0)
+			if vitals.neigong >= cap:
+				return {"ok": true, "message": "冥想圆满，精力最大值提升至 %d，已达内功所限。" % vitals.neigong}
+			return {"ok": true, "message": "冥想圆满，精力最大值提升至 %d。" % vitals.neigong}
+		return {"ok": false, "message": "冥想已满，无需继续冥想。"}
+	# 原项目的冥想以 60 FPS 标准帧推进；每个有效 tick 同步推进 1/60 秒游戏时钟。
+	GameState.advance_time(1.0 / 60.0)
 	return {"ok": true, "message": "你凝神冥想，当前精力 %d / %d。" % [GameState.combat_state.mp, maximum]}
 
 func meditation_progress() -> Dictionary:
@@ -427,16 +471,20 @@ func practice_tick(skill_id: String) -> Dictionary:
 		return {"ok": false, "message": "已达当前练功上限 %d 级" % cap}
 	var progress: Dictionary = skills.get("practiceProgress", {})
 	var required := _cost(definition, current)
-	var gain := maxi(1, int(floor(float(GameState.profile.get("attributes", {}).get("wisdom", 1)) / 5.0)))
-	var mp_cost := 2
-	var hp_cost := maxi(0, int(ceil(float(progress.get(skill_id, 0) + gain) * 0.8)) - int(ceil(float(progress.get(skill_id, 0)) * 0.8)))
+	var current_progress := mini(required, maxi(0, int(progress.get(skill_id, 0))))
+	var gain_per_tick := maxi(1, int(floor(float(GameState.profile.get("attributes", {}).get("wisdom", 1)) / 5.0)))
+	var gain := mini(gain_per_tick, required - current_progress)
+	var mp_cost := 2 if gain > 0 else 0
+	var hp_cost := maxi(0, int(ceil(float(current_progress + gain) * 0.8)) - int(ceil(float(current_progress) * 0.8)))
 	if int(GameState.combat_state.mp) < mp_cost:
 		return {"ok": false, "message": "精力不足，练不动功。"}
 	if int(GameState.combat_state.hp) - hp_cost < 1:
 		return {"ok": false, "message": "体力不足，练不动功。"}
 	GameState.combat_state.mp -= mp_cost
 	GameState.combat_state.hp -= hp_cost
-	var next_progress := mini(required, int(progress.get(skill_id, 0)) + gain)
+	# 对齐 SaveManager.practicePlayerSkillTick：只有实际练功成功才推进 1 秒。
+	GameState.advance_time(1.0)
+	var next_progress := current_progress + gain
 	if next_progress >= required:
 		skills.levels[skill_id] = current + 1
 		progress[skill_id] = 0
@@ -444,7 +492,20 @@ func practice_tick(skill_id: String) -> Dictionary:
 	else:
 		progress[skill_id] = next_progress
 	skills.practiceProgress = progress
-	return {"ok": true, "message": "%s 练功进度 %d/%d" % [definition.get("name", skill_id), next_progress, required], "level": level(skill_id)}
+	var shown_progress := int(progress.get(skill_id, 0))
+	var shown_required := _cost(definition, level(skill_id))
+	return {"ok": true, "message": "%s 练功进度 %d/%d" % [definition.get("name", skill_id), shown_progress, shown_required], "level": level(skill_id)}
+
+func practice_progress(skill_id: String) -> Dictionary:
+	var definition: Dictionary = DataRegistry.get_skill(skill_id)
+	if definition.is_empty():
+		return {"current": 0, "total": 1, "level": 0}
+	var current_level := level(skill_id)
+	return {
+		"current": int(ensure_skills().get("practiceProgress", {}).get(skill_id, 0)),
+		"total": _cost(definition, current_level),
+		"level": current_level,
+	}
 
 func channel_hp() -> Dictionary:
 	var eff_max := GameState.player_effective_hp_max()
@@ -455,6 +516,7 @@ func channel_hp() -> Dictionary:
 		return {"ok": false, "message": "精力不足，摸不了鱼。"}
 	GameState.combat_state.mp -= amount
 	GameState.combat_state.hp += amount
+	GameState.advance_time(1.0)
 	return {"ok": true, "message": "你偷偷摸了会鱼，消耗 %d 精力，恢复 %d 体力。" % [amount, amount]}
 
 ## 疗伤门槛：本门架构（内力）功法等级合计须超过此值。
@@ -473,6 +535,7 @@ func heal_injury() -> Dictionary:
 		return {"ok": false, "message": "精力不足（每 %d 精力愈合 1 点伤势），无法疗伤。" % HEAL_INJURY_MP_PER_POINT}
 	GameState.combat_state.mp -= amount * HEAL_INJURY_MP_PER_POINT
 	GameState.combat_state.injury -= amount
+	GameState.advance_time(1.0)
 	var eff_max := GameState.player_effective_hp_max()
 	var suffix := "，余伤 %d 点" % GameState.combat_state.injury if GameState.combat_state.injury > 0 else "，伤势尽愈"
 	return {"ok": true, "message": "你运转内息疗伤，消耗 %d 精力，愈合伤势 %d 点，体力上限恢复至 %d%s。" % [amount * HEAL_INJURY_MP_PER_POINT, amount, eff_max, suffix]}
