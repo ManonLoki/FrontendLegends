@@ -37,10 +37,10 @@ corner_radius_bottom_left = 3
 shadow_color = Color(0.05, 0.04, 0.03, 0.2)
 shadow_size = 5
 shadow_offset = Vector2(0, 2)
-content_margin_left = 16.0
-content_margin_top = 10.0
-content_margin_right = 16.0
-content_margin_bottom = 10.0
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
 
 [node name="Game" type="Node2D"]
 script = ExtResource("1")
@@ -86,12 +86,13 @@ theme_override_fonts/font = ExtResource("3")
 theme_override_colors/font_color = Color(0.12, 0.12, 0.12, 1)
 text = "详情"
 
-[node name="Portrait" type="TextureRect" parent="HUD/Details"]
+[node name="Portrait" type="TextureRect" parent="HUD/Details/Content"]
 visible = false
-offset_left = 210.0
-offset_top = 12.0
-offset_right = 270.0
-offset_bottom = 108.0
+texture_filter = 1
+offset_left = 141.0
+offset_top = 16.0
+offset_right = 189.0
+offset_bottom = 64.0
 expand_mode = 1
 stretch_mode = 5
 

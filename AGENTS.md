@@ -22,13 +22,6 @@ Open the repository root in Godot 4.7, or run:
 /Applications/Godot.app/Contents/MacOS/Godot --path . --editor
 ```
 
-Headless verification:
-
-```sh
-/Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script tests/smoke.gd
-/Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script tests/scene_smoke.gd
-```
-
 ## Architecture
 
 - `scripts/game.gd`: main scene coordinator, movement, interaction, HUD state, map transitions, and battle presentation
@@ -50,6 +43,6 @@ Autoload registrations are defined in `project.godot`.
 
 1. Treat the Godot scenes and GDScript runtime as the only implementation source of truth.
 2. Preserve TMX/TSX files and their relative paths; maps load them directly at runtime.
-3. Keep logic compatible with headless tests. Add focused coverage to `tests/smoke.gd` or `tests/scene_smoke.gd` for behavior changes.
+3. Keep runtime behavior compatible with Godot 4.7 headless execution. Tests must never share the production `user://` save path.
 4. Do not commit `.godot/`; it is generated and ignored.
 5. Node scripts under `tools/` are standalone data/version utilities, not part of the game runtime.

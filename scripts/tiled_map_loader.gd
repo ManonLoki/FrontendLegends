@@ -36,6 +36,10 @@ func load_file(path: String) -> bool:
 		object["x"] = float(object.get("x", 0))
 		object["y"] = float(object.get("y", 0))
 		object["properties"] = _properties(body)
+		var text_match := _match(body, "<text\\b([^>]*)>(.*?)</text>", true)
+		if text_match:
+			object["text"] = _decode_xml_text(text_match.get_string(2))
+			object["text_options"] = _attrs(text_match.get_string(1))
 		objects.append(object)
 	return width > 0 and height > 0
 
@@ -73,14 +77,40 @@ func spawn_point() -> Dictionary:
 func object_at_tile(col: int, row: int) -> Dictionary:
 	var tile_rect := Rect2(float(col * tile_width), float(row * tile_height), float(tile_width), float(tile_height))
 	for object in objects:
-		var object_rect := Rect2(float(object.get("x", 0.0)), float(object.get("y", 0.0)), float(object.get("width", tile_width)), float(object.get("height", tile_height)))
-		if object_rect.size.x <= 0.0:
-			object_rect.size.x = float(tile_width)
-		if object_rect.size.y <= 0.0:
-			object_rect.size.y = float(tile_height)
-		if object_rect.intersects(tile_rect) or tile_rect.encloses(object_rect):
+		if _object_occupies_tile(object, tile_rect):
 			return object
 	return {}
+
+func interactable_object_at_tile(col: int, row: int) -> Dictionary:
+	var tile_rect := Rect2(float(col * tile_width), float(row * tile_height), float(tile_width), float(tile_height))
+	for object in objects:
+		var object_properties: Dictionary = object.get("properties", {})
+		if str(object_properties.get("event", "")).is_empty() and str(object_properties.get("text", "")).is_empty() and str(object_properties.get("questGiver", "")).is_empty():
+			continue
+		if _object_occupies_tile(object, tile_rect):
+			return object
+	return {}
+
+func npc_object_at_tile(col: int, row: int) -> Dictionary:
+	var tile_rect := Rect2(float(col * tile_width), float(row * tile_height), float(tile_width), float(tile_height))
+	for object in objects:
+		if str(object.get("properties", {}).get("npcId", "")).is_empty():
+			continue
+		if _object_occupies_tile(object, tile_rect):
+			return object
+	return {}
+
+func _object_occupies_tile(object: Dictionary, tile_rect: Rect2) -> bool:
+	var object_size := Vector2(float(object.get("width", tile_width)), float(object.get("height", tile_height)))
+	if object_size.x <= 0.0:
+		object_size.x = float(tile_width)
+	if object_size.y <= 0.0:
+		object_size.y = float(tile_height)
+	var object_position := Vector2(float(object.get("x", 0.0)), float(object.get("y", 0.0)))
+	if int(object.get("gid", 0)) != 0:
+		object_position.y -= object_size.y
+	var object_rect := Rect2(object_position, object_size)
+	return object_rect.intersects(tile_rect) or tile_rect.encloses(object_rect)
 
 func transaction_for_arrival(from_map: String, to_map: String, cyber := false) -> Dictionary:
 	var candidates: Array[Dictionary] = []
@@ -100,9 +130,15 @@ func tile_region(gid: int) -> Dictionary:
 	for tileset in tilesets:
 		if gid >= int(tileset.first_gid):
 			selected = tileset
-	if selected.is_empty() or not selected.has("texture"):
+	if selected.is_empty():
 		return {}
 	var local_id := gid - int(selected.first_gid)
+	var individual_tiles: Dictionary = selected.get("individual_tiles", {})
+	if individual_tiles.has(local_id):
+		var texture: Texture2D = individual_tiles[local_id]
+		return {"texture": texture, "source": Rect2(Vector2.ZERO, texture.get_size())}
+	if not selected.has("texture"):
+		return {}
 	var columns := maxi(1, int(selected.columns))
 	var tile_w := int(selected.tile_width)
 	var tile_h := int(selected.tile_height)
@@ -123,7 +159,22 @@ func _load_tileset(map_path: String, attrs: Dictionary, body: String) -> void:
 		tsx_xml = tsx_file.get_as_text()
 	var tsx_attrs := _attrs(_first_match(tsx_xml, "<tileset\\b([^>]*)>"))
 	var image_source := _first_match(tsx_xml, "<image\\b[^>]*source=\\\"([^\\\"]+)\\\"")
-	if image_source.is_empty():
+	# Image-collection tilesets have columns=0 and one <image> per <tile>.
+	# A broad image search finds their first child image, so distinguish them
+	# using the tileset metadata before taking the atlas path.
+	if image_source.is_empty() or int(tsx_attrs.get("columns", 0)) == 0:
+		var individual_tiles: Dictionary = {}
+		for tile_match in _all_matches(tsx_xml, "<tile\\b([^>]*)>(.*?)</tile>", true):
+			var tile_attrs := _attrs(tile_match.get_string(1))
+			var tile_image := _first_match(tile_match.get_string(2), "<image\\b[^>]*source=\\\"([^\\\"]+)\\\"")
+			if tile_image.is_empty():
+				continue
+			var tile_path := tsx_path.get_base_dir().path_join(tile_image).simplify_path()
+			var tile_texture := load(tile_path) as Texture2D
+			if tile_texture:
+				individual_tiles[int(tile_attrs.get("id", 0))] = tile_texture
+		if not individual_tiles.is_empty():
+			tilesets.append({"first_gid": first_gid, "individual_tiles": individual_tiles})
 		return
 	var image_path := tsx_path.get_base_dir().path_join(image_source).simplify_path()
 	var texture := load(image_path) as Texture2D
@@ -163,10 +214,16 @@ func _attrs(text: String) -> Dictionary:
 		result[match.get_string(1)] = match.get_string(2)
 	return result
 
-func _first_match(text: String, pattern: String, dotall := false) -> String:
+func _decode_xml_text(text: String) -> String:
+	return text.replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"").replace("&apos;", "'").replace("&amp;", "&")
+
+func _match(text: String, pattern: String, dotall := false) -> RegExMatch:
 	var regex := RegEx.new()
 	regex.compile(("(?s)" if dotall else "") + pattern)
-	var match := regex.search(text)
+	return regex.search(text)
+
+func _first_match(text: String, pattern: String, dotall := false) -> String:
+	var match := _match(text, pattern, dotall)
 	return match.get_string(1) if match else ""
 
 func _all_matches(text: String, pattern: String, dotall := false) -> Array[RegExMatch]:

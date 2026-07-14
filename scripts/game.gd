@@ -20,7 +20,7 @@ var message := "欢迎来到开源镇"
 @onready var battle_content: Label = $HUD/Battle/Content
 @onready var details_panel: PanelContainer = $HUD/Details
 @onready var details_content: Label = $HUD/Details/Content
-@onready var npc_portrait: TextureRect = $HUD/Details/Portrait
+@onready var npc_portrait: TextureRect = $HUD/Details/Content/Portrait
 @onready var dialogue_panel: PanelContainer = $HUD/Dialogue
 @onready var dialogue_content: Label = $HUD/Dialogue/Content
 @onready var npc_menu_panel: PanelContainer = $HUD/NpcMenu
@@ -35,6 +35,8 @@ var skill_open := false
 var skill_index := 0
 var menu_widgets: Array[Control] = []
 var details_widgets: Array[Control] = []
+var profile_panel_open := false
+var npc_view_panel_open := false
 var battle_active := false
 var battle_enemy: Dictionary = {}
 var battle_enemy_hp := 0
@@ -82,7 +84,8 @@ var dialogue_speaker := ""
 var dialogue_locked_until_msec := 0
 var map_transitioning := false
 var has_loaded_map := false
-var delete_save_pending := false
+var delete_confirm_open := false
+var delete_confirm_index := 1
 const NPC_MENU_ITEMS := ["交谈", "查看", "切磋", "战斗", "购买", "典当", "拜师", "学习"]
 var map_index := 0
 var player_texture: Texture2D = preload("res://assets/Texture/player.png")
@@ -189,6 +192,9 @@ func _input(event: InputEvent) -> void:
 		MOBILE_ORIENTATION.request_from_user_gesture()
 		if map_transitioning:
 			return
+		if delete_confirm_open:
+			_handle_delete_confirm_key(event.keycode)
+			return
 		if dialogue_open:
 			if event.keycode == KEY_SPACE:
 				if Time.get_ticks_msec() < dialogue_locked_until_msec:
@@ -255,7 +261,7 @@ func _on_virtual_key_up(keycode: int) -> void:
 		virtual_direction.x = 0.0
 
 func _has_modal_input() -> bool:
-	return dialogue_open or trade_open or inventory_open or learn_open or practice_open or cyber_open or npc_menu_open or battle_active or menu_open or details_panel.visible or dialogue_panel.visible
+	return delete_confirm_open or dialogue_open or trade_open or inventory_open or learn_open or practice_open or cyber_open or npc_menu_open or battle_active or menu_open or details_panel.visible or dialogue_panel.visible
 
 func _dispatch_virtual_key(keycode: int) -> void:
 	var event := InputEventKey.new()
@@ -278,7 +284,7 @@ func _interact() -> void:
 func _interact_prop() -> bool:
 	if not map_context:
 		return false
-	var object: Dictionary = map_context.object_at_tile(player_tile.x + facing.x, player_tile.y + facing.y)
+	var object: Dictionary = map_context.interactable_object_at_tile(player_tile.x + facing.x, player_tile.y + facing.y)
 	var properties: Dictionary = object.get("properties", {})
 	if object.is_empty() or (str(properties.get("event", "")).is_empty() and str(properties.get("text", "")).is_empty() and str(properties.get("questGiver", "")).is_empty()):
 		return false
@@ -294,13 +300,8 @@ func _interact_prop() -> bool:
 		var target := QuestSystem.get_bounty_target()
 		message = "悬赏告示：" + ("目标 %s，地点 %s" % [target.get("target_name", ""), target.get("map_id", "")] if not target.is_empty() else "当前没有悬赏")
 	elif event == "deleteSave":
-		if delete_save_pending:
-			GameState.delete_save()
-			message = "存档已删除"
-			get_tree().change_scene_to_file("res://scenes/splash.tscn")
-		else:
-			delete_save_pending = true
-			message = "确认删除存档请再次按空格"
+		_show_delete_confirm()
+		return true
 	elif not str(properties.get("questGiver", "")).is_empty():
 		message = QuestSystem.interact_npc(str(properties.get("questGiver", "")))
 	else:
@@ -312,10 +313,52 @@ func _interact_prop() -> bool:
 	_refresh_status()
 	return true
 
+func _show_delete_confirm() -> void:
+	delete_confirm_open = true
+	delete_confirm_index = 1
+	npc_menu_open = false
+	npc_menu_panel.visible = true
+	_layout_delete_confirm()
+	_refresh_delete_confirm()
+
+func _layout_delete_confirm() -> void:
+	var scale := _display_scale()
+	var panel_size := Vector2(360.0, 118.0) * scale
+	npc_menu_panel.position = (get_viewport_rect().size - panel_size) * 0.5
+	npc_menu_panel.size = panel_size
+	npc_menu_content.add_theme_font_size_override("font_size", maxi(12, int(round(13.0 * scale))))
+	npc_menu_content.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	npc_menu_content.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+
+func _refresh_delete_confirm() -> void:
+	npc_menu_content.text = "这棵歪脖树正合上吊。真要吊死吗？（存档将被删除）\n\n%s    %s" % [_cursor("吊死", delete_confirm_index == 0), _cursor("再想想", delete_confirm_index == 1)]
+
+func _handle_delete_confirm_key(key: Key) -> void:
+	if key == KEY_ESCAPE:
+		_close_delete_confirm()
+	elif key in [KEY_LEFT, KEY_UP]:
+		delete_confirm_index = 0
+		_refresh_delete_confirm()
+	elif key in [KEY_RIGHT, KEY_DOWN]:
+		delete_confirm_index = 1
+		_refresh_delete_confirm()
+	elif key == KEY_SPACE:
+		if delete_confirm_index == 0:
+			GameState.delete_save()
+			get_tree().change_scene_to_file("res://scenes/splash.tscn")
+		else:
+			_close_delete_confirm()
+
+func _close_delete_confirm() -> void:
+	delete_confirm_open = false
+	npc_menu_panel.visible = false
+	npc_menu_content.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	npc_menu_content.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+
 func _has_front_interactable() -> bool:
 	if not map_context:
 		return false
-	var object: Dictionary = map_context.object_at_tile(player_tile.x + facing.x, player_tile.y + facing.y)
+	var object: Dictionary = map_context.interactable_object_at_tile(player_tile.x + facing.x, player_tile.y + facing.y)
 	if object.is_empty():
 		return false
 	var properties: Dictionary = object.get("properties", {})
@@ -684,7 +727,6 @@ func _select_npc_menu() -> void:
 			var quest_message := QuestSystem.interact_npc(nearby_npc_id)
 			var dialogue := quest_message if not quest_message.is_empty() else NpcSystem.dialogue(nearby_npc_id)
 			_show_dialogue(str(npc.get("display_name", nearby_npc_id)), dialogue, 5.0 if not quest_message.is_empty() else 0.0)
-			_show_details("%s\n\n%s" % [npc.get("display_name", nearby_npc_id), dialogue])
 		"view":
 			_show_npc_view_panel(npc)
 		"spar":
@@ -726,7 +768,7 @@ func _refresh_nearby_npc() -> void:
 	if not map_context:
 		return
 	nearby_npc_id = ""
-	var object: Dictionary = map_context.object_at_tile(player_tile.x + facing.x, player_tile.y + facing.y)
+	var object: Dictionary = map_context.npc_object_at_tile(player_tile.x + facing.x, player_tile.y + facing.y)
 	var candidate := str(object.get("properties", {}).get("npcId", ""))
 	if not candidate.is_empty() and NpcSystem.can_interact(candidate):
 		nearby_npc_id = candidate
@@ -947,7 +989,12 @@ func _apply_hud_theme() -> void:
 	var warm_paper := Color("fcfbf6")
 	for panel in [map_badge_panel, details_panel, npc_menu_panel, menu_panel, battle_panel]:
 		panel.add_theme_stylebox_override("panel", _ui_box(paper, ink, 1))
-	dialogue_panel.add_theme_stylebox_override("panel", _ui_box(warm_paper, ink, 1))
+	var dialogue_box := _ui_box(warm_paper, ink, 1)
+	dialogue_box.content_margin_left = 8.0
+	dialogue_box.content_margin_top = 8.0
+	dialogue_box.content_margin_right = 8.0
+	dialogue_box.content_margin_bottom = 8.0
+	dialogue_panel.add_theme_stylebox_override("panel", dialogue_box)
 	map_badge.add_theme_color_override("font_color", Color("302f2b"))
 	for label in [details_content, npc_menu_content, menu_content, battle_content, dialogue_content]:
 		label.add_theme_color_override("font_color", Color("302f2b"))
@@ -980,9 +1027,11 @@ func _clear_menu_widgets() -> void:
 	menu_widgets.clear()
 
 func _clear_details_widgets() -> void:
+	profile_panel_open = false
+	npc_view_panel_open = false
 	for widget in details_widgets:
 		if is_instance_valid(widget):
-			widget.queue_free()
+			widget.free()
 	details_widgets.clear()
 
 func _detail_label(text: String, rect: Rect2, size: int = 13, alignment: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT, color: Color = Color(0.18, 0.18, 0.18, 1.0)) -> Label:
@@ -1030,19 +1079,25 @@ func _show_profile_panel() -> void:
 	details_content.visible = true
 	details_content.text = ""
 	_clear_details_widgets()
-	var area := details_content.size
-	var left := 26.0 * _display_scale()
-	var right := area.x * 0.58
-	var top := _detail_chrome("角色档案", "CHARACTER PROFILE / 当前状态")
-	var row := 29.0 * _display_scale()
-	var left_lines := [str(GameState.profile.get("name", "")), "年龄：%d" % int(vitals.get("age", 18)), str(GameState.profile.get("sect", "未拜师")), "", "食物：%d / %d" % [vitals.get("food", 0), capacity], "体力：%d / %d（100%%）" % [GameState.combat_state.get("hp", 0), hp_max], "编码：%d/%d" % [attrs.get("strength", 0), base.get("strength", 0)], "架构：%d/%d" % [attrs.get("constitution", 0), base.get("constitution", 0)], "", "Token：%d" % int(vitals.get("money", 0)), "经验：%d" % int(vitals.get("experience", 0))]
+	profile_panel_open = true
+	_layout_profile_panel()
+	var scale := _display_scale()
+	var hp := int(GameState.combat_state.get("hp", 0))
+	var hp_percent := int(round(float(hp) / float(maxi(1, hp_max)) * 100.0))
+	var left_lines := [str(GameState.profile.get("name", "")), "年龄：%d" % int(vitals.get("age", 18)), str(GameState.profile.get("sect", "未拜师")) if not str(GameState.profile.get("sect", "")).is_empty() else "未拜师", "", "食物：%d / %d" % [vitals.get("food", 0), capacity], "体力：%d / %d（%d%%）" % [hp, hp_max, hp_percent], "编码：%d/%d" % [attrs.get("strength", 0), base.get("strength", 0)], "架构：%d/%d" % [attrs.get("constitution", 0), base.get("constitution", 0)], "", "Token：%d" % int(vitals.get("money", 0)), "经验：%d" % int(vitals.get("experience", 0))]
 	var right_lines := [_gender_label(str(GameState.profile.get("gender", ""))), _appearance_title(appearance, str(GameState.profile.get("gender", "male"))), _skill_rating(), "", "饮水：%d / %d" % [vitals.get("water", 0), capacity], "精力：%d / %d" % [GameState.combat_state.get("mp", 0), mp_max], "思维：%d/%d" % [attrs.get("agility", 0), base.get("agility", 0)], "灵感：%d/%d" % [attrs.get("wisdom", 0), base.get("wisdom", 0)], "", "潜能：%d" % int(vitals.get("potential", 0))]
-	for index in left_lines.size():
-		if not str(left_lines[index]).is_empty():
-			_detail_label(str(left_lines[index]), Rect2(Vector2(left, top + row * index), Vector2(area.x * 0.42, row)), 13)
-	for index in right_lines.size():
-		if not str(right_lines[index]).is_empty():
-			_detail_label(str(right_lines[index]), Rect2(Vector2(right, top + row * index), Vector2(area.x - right - left, row)), 13, HORIZONTAL_ALIGNMENT_RIGHT)
+	var left_label := _detail_label("\n".join(left_lines), Rect2(Vector2(30.0, 30.0) * scale, Vector2(132.0, 240.0) * scale), 12)
+	var right_label := _detail_label("\n".join(right_lines), Rect2(Vector2(168.0, 30.0) * scale, Vector2(132.0, 240.0) * scale), 12, HORIZONTAL_ALIGNMENT_RIGHT)
+	left_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	right_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+
+func _layout_profile_panel() -> void:
+	var scale := _display_scale()
+	var panel_size := Vector2(330.0, 300.0) * scale
+	panel_size.x = minf(panel_size.x, get_viewport_rect().size.x - 16.0 * scale)
+	panel_size.y = minf(panel_size.y, get_viewport_rect().size.y - 16.0 * scale)
+	details_panel.position = (get_viewport_rect().size - panel_size) * 0.5
+	details_panel.size = panel_size
 
 func _show_npc_view_panel(npc: Dictionary) -> void:
 	var atlas := AtlasTexture.new()
@@ -1052,23 +1107,50 @@ func _show_npc_view_panel(npc: Dictionary) -> void:
 	details_content.visible = true
 	details_content.text = ""
 	_clear_details_widgets()
+	npc_view_panel_open = true
+	_layout_npc_view_panel()
 	var scale := _display_scale()
-	var area := details_content.size
-	var content_top := _detail_chrome(str(npc.get("display_name", nearby_npc_id)), "NPC PROFILE / 人物信息")
-	var portrait_size := Vector2(60.0, 96.0) * scale
+	var portrait_size := Vector2(48.0, 48.0) * scale
 	npc_portrait.texture = atlas
-	npc_portrait.position = Vector2((area.x - portrait_size.x) * 0.5, content_top)
+	npc_portrait.position = Vector2(141.0, 16.0) * scale
 	npc_portrait.size = portrait_size
+	npc_portrait.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	npc_portrait.visible = true
-	var pad := 24.0 * scale
-	var row := 26.0 * scale
-	var info_top := content_top + portrait_size.y + 14.0 * scale
-	var info_lines := ["性别：%s　年龄：%s" % [npc.get("gender", ""), npc.get("age", "")], "武功等级：%s" % npc.get("level", ""), "装备：%s" % npc.get("equipment", [])]
-	for index in info_lines.size():
-		_detail_label(str(info_lines[index]), Rect2(Vector2(pad, info_top + row * index), Vector2(area.x - pad * 2.0, row)), 13, HORIZONTAL_ALIGNMENT_CENTER)
-	var desc_top := info_top + row * info_lines.size() + 8.0 * scale
-	_detail_label(str(npc.get("description", "")), Rect2(Vector2(pad, desc_top), Vector2(area.x - pad * 2.0, row * 2.0)), 12, HORIZONTAL_ALIGNMENT_CENTER, Color(0.4, 0.4, 0.4, 1))
-	_detail_label("属性：%s" % npc.get("attributes", {}), Rect2(Vector2(pad, desc_top + row * 2.2), Vector2(area.x - pad * 2.0, row)), 11, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
+	var equipment_names: Array[String] = []
+	for item_id in npc.get("equipment", []):
+		var item: Dictionary = DataRegistry.get_item(str(item_id))
+		equipment_names.append(str(item.get("name", item_id)))
+	var equipment_text := "、".join(equipment_names) if not equipment_names.is_empty() else "无"
+	var age_text := str(int(npc.get("age", 0))) if npc.has("age") else "未知"
+	var left_label := _detail_label("%s\n年龄：%s\n装备：%s" % [npc.get("display_name", nearby_npc_id), age_text, equipment_text], Rect2(Vector2(30.0, 86.0) * scale, Vector2(170.0, 58.0) * scale), 12)
+	var right_label := _detail_label("%s\n%s" % [_gender_label(str(npc.get("gender", ""))), _npc_skill_rating(npc)], Rect2(Vector2(205.0, 86.0) * scale, Vector2(95.0, 58.0) * scale), 12, HORIZONTAL_ALIGNMENT_RIGHT)
+	left_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	right_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	var description := _detail_label(str(npc.get("description", "")), Rect2(Vector2(30.0, 154.0) * scale, Vector2(270.0, 42.0) * scale), 12, HORIZONTAL_ALIGNMENT_LEFT)
+	description.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+func _layout_npc_view_panel() -> void:
+	var scale := _display_scale()
+	var panel_size := Vector2(330.0, 220.0) * scale
+	panel_size.x = minf(panel_size.x, get_viewport_rect().size.x - 16.0 * scale)
+	panel_size.y = minf(panel_size.y, get_viewport_rect().size.y - 16.0 * scale)
+	details_panel.position = (get_viewport_rect().size - panel_size) * 0.5
+	details_panel.size = panel_size
+
+func _npc_skill_rating(npc: Dictionary) -> String:
+	var levels: Dictionary = npc.get("skillLevels", {})
+	if levels.is_empty():
+		return "不通武艺"
+	var total := 0
+	for value in levels.values():
+		total += int(value)
+	var average := total / maxi(1, levels.size())
+	if average >= 80: return "出神入化"
+	if average >= 60: return "炉火纯青"
+	if average >= 40: return "登堂入室"
+	if average >= 20: return "略通武艺"
+	return "不通武艺"
 
 func _render_inventory_widgets() -> void:
 	details_content.visible = true
@@ -1416,35 +1498,33 @@ func _show_dialogue(speaker: String, text: String, lock_seconds: float = 0.0) ->
 	dialogue_panel.visible = true
 
 func _paginate_dialogue(text: String) -> Array[String]:
-	var pages: Array[String] = []
-	var current_lines: Array[String] = []
-	for raw_line in text.replace("\r", "").split("\n"):
+	# Tiled XML attributes keep authored `\n` sequences as two literal
+	# characters. Normalize them before measuring lines so they behave exactly
+	# like real newlines from JSON or GDScript strings.
+	var normalized := text.replace("\\r\\n", "\n").replace("\\n", "\n").replace("\\r", "\n").replace("\r", "")
+	var visual_lines: Array[String] = []
+	for raw_line in normalized.split("\n", true):
 		var line := str(raw_line)
 		if line.is_empty():
-			if not current_lines.is_empty():
-				current_lines.append("")
+			visual_lines.append("")
 			continue
 		while line.length() > 42:
-			current_lines.append(line.substr(0, 42))
+			visual_lines.append(line.substr(0, 42))
 			line = line.substr(42)
-			if current_lines.size() >= 2:
-				pages.append("\n".join(current_lines))
-				current_lines.clear()
-		if not line.is_empty():
-			current_lines.append(line)
-		if current_lines.size() >= 2:
-			pages.append("\n".join(current_lines))
-			current_lines.clear()
-	if not current_lines.is_empty():
-		pages.append("\n".join(current_lines))
+		visual_lines.append(line)
+
+	# The speaker occupies the first row; each page has room for two dialogue
+	# rows. Explicit lines and lines produced by automatic wrapping therefore
+	# advance through the same repeated-space interaction.
+	var pages: Array[String] = []
+	for line_index in range(0, visual_lines.size(), 2):
+		var page_lines := visual_lines.slice(line_index, mini(line_index + 2, visual_lines.size()))
+		pages.append("\n".join(page_lines))
 	return pages if not pages.is_empty() else [""]
 
 func _render_dialogue(speaker: String) -> void:
 	var page := dialogue_pages[clampi(dialogue_page_index, 0, maxi(0, dialogue_pages.size() - 1))]
-	var suffix := "  [%d/%d] 空格翻页" % [dialogue_page_index + 1, dialogue_pages.size()]
-	if dialogue_page_index >= dialogue_pages.size() - 1:
-		suffix = "  [末页] 空格关闭"
-	dialogue_content.text = "%s：\n%s\n\n%s" % [speaker, page, suffix]
+	dialogue_content.text = "%s：\n%s" % [speaker, page]
 
 func _advance_dialogue() -> void:
 	if dialogue_page_index < dialogue_pages.size() - 1:
@@ -1719,11 +1799,18 @@ func _layout_game_view() -> void:
 	var overlay_size := Vector2(520.0, 400.0) * scale
 	overlay_size.x = minf(overlay_size.x, get_viewport_rect().size.x - 16.0 * scale)
 	overlay_size.y = minf(overlay_size.y, get_viewport_rect().size.y - 16.0 * scale)
-	details_panel.position = (get_viewport_rect().size - overlay_size) * 0.5
-	details_panel.size = overlay_size
+	if profile_panel_open:
+		_layout_profile_panel()
+	elif npc_view_panel_open:
+		_layout_npc_view_panel()
+	else:
+		details_panel.position = (get_viewport_rect().size - overlay_size) * 0.5
+		details_panel.size = overlay_size
 	battle_panel.position = inset_rect.position
 	battle_panel.size = inset_rect.size
-	if npc_menu_open:
+	if delete_confirm_open:
+		_layout_delete_confirm()
+	elif npc_menu_open:
 		_position_npc_menu()
 	else:
 		npc_menu_panel.position = inset_rect.position
