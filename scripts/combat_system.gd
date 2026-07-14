@@ -23,7 +23,7 @@ func create_session(enemy_id: String) -> Dictionary:
 	var enemy: Dictionary = NpcSystem.build_instance(enemy_id)
 	var player_attributes: Dictionary = GameState.profile.get("attributes", {})
 	var enemy_attributes: Dictionary = enemy.get("attributes", {})
-	var enemy_mp_max := int(enemy.get("mp", 0))
+	var enemy_mp_max := _npc_mp_max(enemy)
 	return {
 		"enemy_id": enemy_id,
 		"enemy": enemy,
@@ -42,6 +42,14 @@ func create_session(enemy_id: String) -> Dictionary:
 		"turn": "player" if _initiative(player_attributes, enemy_attributes) else "enemy",
 		"log": []
 	}
+
+func _npc_mp_max(npc: Dictionary) -> int:
+	var total := maxi(0, int(npc.get("mp", 0)))
+	var levels: Dictionary = npc.get("skillLevels", {})
+	for skill_id in npc.get("equippedSkillIds", []):
+		var definition: Dictionary = DataRegistry.get_skill(str(skill_id))
+		total += int(definition.get("combat", {}).get("mpMaxPerLv", 0)) * int(levels.get(str(skill_id), 0))
+	return total
 
 func player_attack(session: Dictionary) -> Dictionary:
 	var turn_check := start_turn(session, "player")

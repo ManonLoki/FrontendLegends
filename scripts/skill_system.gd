@@ -3,14 +3,26 @@ extends Node
 const THEMES := ["code", "tune", "arch", "parry", "knowledge"]
 
 func create_default_skills() -> Dictionary:
-	return {"levels": {"basicStrength": 1, "basicAgility": 1, "basicConstitution": 1, "basicParry": 1, "literacy": 1}, "equipped": {"code": "basicStrength", "tune": "basicAgility", "arch": "basicConstitution", "parry": "basicParry", "knowledge": "literacy"}, "progress": {}}
+	return {"levels": {"basicStrength": 1, "basicAgility": 1, "basicConstitution": 1, "basicParry": 1, "literacy": 1}, "equipped_basic": {"code": "basicStrength", "tune": "basicAgility", "arch": "basicConstitution", "parry": "basicParry", "knowledge": "literacy"}, "equipped_special": {}, "progress": {}}
 
 func ensure_skills() -> Dictionary:
 	if not GameState.profile.has("skills") or GameState.profile.skills.is_empty():
 		GameState.profile.skills = create_default_skills()
 	var skills: Dictionary = GameState.profile.skills
 	if not skills.has("levels"): skills.levels = {}
-	if not skills.has("equipped"): skills.equipped = {}
+	if not skills.has("equipped_basic"):
+		skills.equipped_basic = {}
+		for theme in THEMES:
+			var basic_id := str(THEME_BASIC_SKILL.get(theme, ""))
+			if int(skills.levels.get(basic_id, 0)) > 0:
+				skills.equipped_basic[theme] = basic_id
+	if not skills.has("equipped_special"):
+		skills.equipped_special = {}
+		for theme in skills.get("equipped", {}):
+			var old_id := str(skills.equipped[theme])
+			if str(DataRegistry.get_skill(old_id).get("category", "")) == "sect":
+				skills.equipped_special[theme] = old_id
+	skills.erase("equipped")
 	if not skills.has("progress"): skills.progress = {}
 	return skills
 
@@ -71,6 +83,9 @@ func learn_options_for_npc(npc_id: String) -> Array[String]:
 		if definition.is_empty():
 			continue
 		if DataRegistry.is_independent_tutor(npc_id) or str(definition.get("sect", "")) == str(npc.get("sect", "")) or str(definition.get("category", "")) == "basic":
+			var basic_id := str(THEME_BASIC_SKILL.get(str(definition.get("theme", "")), ""))
+			if not basic_id.is_empty() and basic_id not in result:
+				result.append(basic_id)
 			if skill_id not in result:
 				result.append(skill_id)
 	return result
@@ -142,10 +157,7 @@ func learn_tick(npc_id: String, skill_id: String) -> Dictionary:
 		return {"ok": false, "message": "此人不传授这门功法", "reason": "requires"}
 	var definition: Dictionary = DataRegistry.get_skill(skill_id)
 	var current := level(skill_id)
-	var cap := int(definition.get("maxLevel", 100))
-	for entry in DataRegistry.get_teach_entries(npc_id):
-		if str(entry.get("skillId", "")) == skill_id:
-			cap = mini(cap, int(entry.get("maxTeachLevel", cap)))
+	var cap := teach_cap(npc_id, skill_id)
 	if current >= cap:
 		return {"ok": false, "message": "【%s】已至此师父可授上限 %d 级。" % [definition.get("name", skill_id), cap], "reason": "maxLevel"}
 	var requires: Dictionary = definition.get("requires", {})
@@ -180,6 +192,31 @@ func learn_tick(npc_id: String, skill_id: String) -> Dictionary:
 	var before_attrs: Dictionary = attributes.duplicate()
 	_refresh_derived_attributes()
 	return {"ok": true, "message": "研习【%s】至 %d 级（耗潜能 %d、Token %d）%s。" % [definition.get("name", skill_id), next_level, required, tuition, _attribute_growth_suffix(before_attrs)], "level": next_level}
+
+func teach_cap(npc_id: String, skill_id: String) -> int:
+	var definition := DataRegistry.get_skill(skill_id)
+	var cap := int(definition.get("maxLevel", 100))
+	var category := str(definition.get("category", ""))
+	var theme := str(definition.get("theme", ""))
+	for entry in DataRegistry.get_teach_entries(npc_id):
+		var taught_id := str(entry.get("skillId", ""))
+		var taught_definition := DataRegistry.get_skill(taught_id)
+		if taught_id == skill_id or (category == "basic" and str(taught_definition.get("theme", "")) == theme):
+			cap = mini(cap, int(entry.get("maxTeachLevel", cap)))
+	return cap
+
+func learning_progress(skill_id: String) -> Dictionary:
+	var definition := DataRegistry.get_skill(skill_id)
+	if definition.is_empty():
+		return {"current": 0, "total": 1}
+	var attributes: Dictionary = GameState.profile.get("attributes", {})
+	var next_level := level(skill_id) + 1
+	var rate := clampf(1.0 - (float(attributes.get("wisdom", 25)) - 25.0) * 0.02, 0.65, 1.25)
+	var required := _learn_required(definition, next_level, rate)
+	return {
+		"current": mini(required, int(ensure_skills().get("learnProgress", {}).get(skill_id, 0))),
+		"total": required,
+	}
 
 ## 学艺/读秘籍升级后，四维是否因基础功法等级提升而跟涨（見 _refresh_derived_attributes）。
 func _attribute_growth_suffix(before: Dictionary) -> String:
@@ -219,27 +256,38 @@ func equip(skill_id: String) -> Dictionary:
 	var theme := str(definition.get("theme", ""))
 	if theme not in THEMES:
 		return {"ok": false, "message": "无法装备"}
-	ensure_skills().equipped[theme] = skill_id
+	var slot := "equipped_basic" if str(definition.get("category", "")) == "basic" else "equipped_special"
+	ensure_skills()[slot][theme] = skill_id
 	return {"ok": true, "message": "已装备【%s】" % definition.get("name", skill_id)}
 
-## 卸下一门已装备的高级/门派功法，该主题槽退回本主题的基础功法。
+## 基础与特殊功法使用独立槽，卸下其中一类不会影响另一类。
 func unequip(skill_id: String) -> Dictionary:
 	var definition := DataRegistry.get_skill(skill_id)
 	if definition.is_empty():
 		return {"ok": false, "message": "未知功法"}
 	var theme := str(definition.get("theme", ""))
-	var basic_id := str(THEME_BASIC_SKILL.get(theme, ""))
-	if skill_id == basic_id:
-		return {"ok": false, "message": "基础功法不可卸下"}
-	if str(ensure_skills().equipped.get(theme, "")) != skill_id:
+	var slot := "equipped_basic" if str(definition.get("category", "")) == "basic" else "equipped_special"
+	if str(ensure_skills()[slot].get(theme, "")) != skill_id:
 		return {"ok": false, "message": "此功法尚未装备"}
-	ensure_skills().equipped[theme] = basic_id
+	ensure_skills()[slot].erase(theme)
 	return {"ok": true, "message": "已卸下【%s】" % definition.get("name", skill_id)}
+
+func equipped_id(theme: String, category: String) -> String:
+	var slot := "equipped_basic" if category == "basic" else "equipped_special"
+	return str(ensure_skills().get(slot, {}).get(theme, ""))
+
+func equipped_skill_ids() -> Array[String]:
+	var result: Array[String] = []
+	for slot in ["equipped_basic", "equipped_special"]:
+		for skill_id in ensure_skills().get(slot, {}).values():
+			if not str(skill_id).is_empty() and str(skill_id) not in result:
+				result.append(str(skill_id))
+	return result
 
 ## 装备招架功法的伤势减免（战后伤害转伤势的折扣，封顶 75%）。
 func injury_reduce() -> float:
 	var total := 0.0
-	for skill_id in ensure_skills().get("equipped", {}).values():
+	for skill_id in equipped_skill_ids():
 		var definition := DataRegistry.get_skill(str(skill_id))
 		var reduce_per_lv := float(definition.get("combat", {}).get("injuryReducePerLv", 0.0))
 		if reduce_per_lv > 0.0:
@@ -257,7 +305,7 @@ func _arch_sect_level_sum() -> int:
 
 func combat_bonus() -> Dictionary:
 	var result := {"attack": 0.0, "defense": 0.0, "hit": 0.0, "dodge": 0.0, "parry": 0.0, "mp_max": 0}
-	for skill_id in ensure_skills().equipped.values():
+	for skill_id in equipped_skill_ids():
 		var definition := DataRegistry.get_skill(skill_id)
 		var combat: Dictionary = definition.get("combat", {})
 		var lv := level(skill_id)
@@ -287,7 +335,7 @@ func set_force_power(value: int) -> Dictionary:
 func unlocked_moves() -> Array:
 	var result: Array = []
 	var skills := ensure_skills()
-	for skill_id in skills.get("equipped", {}).values():
+	for skill_id in equipped_skill_ids():
 		var definition: Dictionary = DataRegistry.get_skill(str(skill_id))
 		if str(definition.get("category", "")) != "sect":
 			continue
@@ -303,7 +351,7 @@ func unlocked_moves() -> Array:
 
 func unlocked_ults() -> Array:
 	var result: Array = []
-	var arch_id := str(ensure_skills().equipped.get("arch", ""))
+	var arch_id := equipped_id("arch", "sect")
 	var definition: Dictionary = DataRegistry.get_skill(arch_id)
 	var ult: Dictionary = definition.get("ult", {})
 	if ult.is_empty():
@@ -346,11 +394,15 @@ func meditate_tick() -> Dictionary:
 		return {"ok": true, "message": "冥想圆满，精力最大值提升至 %d。" % vitals.neigong}
 	return {"ok": true, "message": "你凝神冥想，当前精力 %d / %d。" % [GameState.combat_state.mp, maximum]}
 
-## 某主题当前装备的功法若是本门高级（非基础默认）功法，返回其等级；否则 0。
-## 用于"须装备高级XX功法"类门槛——单槽装备模型下，未显式装备高级功法时槽位仍是基础功法本身，
-## 不能只看等级高低（否则永远只在检查基础功法）。
+func meditation_progress() -> Dictionary:
+	return {
+		"current": maxi(0, int(GameState.combat_state.get("mp", 0))),
+		"total": maxi(1, GameState.player_mp_max()),
+	}
+
+## 返回某主题当前装备的本门特殊功法等级；未装备则为 0。
 func equipped_sect_skill_level(theme: String) -> int:
-	var skill_id := str(ensure_skills().equipped.get(theme, ""))
+	var skill_id := equipped_id(theme, "sect")
 	var definition := DataRegistry.get_skill(skill_id)
 	if str(definition.get("category", "")) != "sect" or str(definition.get("theme", "")) != theme or str(definition.get("sect", "")) != str(GameState.profile.get("sect", "")):
 		return 0
