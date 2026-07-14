@@ -20,6 +20,8 @@ func _run() -> void:
 	game_state.create_profile("alignment-test", {"strength": 25, "agility": 25, "constitution": 25, "wisdom": 25})
 	game_state.profile.vitals.potential = 100000
 	game_state.profile.vitals.money = 100000
+	_assert_true(int(ProjectSettings.get_setting("display/window/size/viewport_width")) == 480 and int(ProjectSettings.get_setting("display/window/size/viewport_height")) == 320, "设计分辨率应为 480×320")
+	_assert_true(str(ProjectSettings.get_setting("display/window/stretch/aspect")) == "keep", "运行窗口放大时应保持宽高比等量缩放")
 
 	# 全地图 NPC 目标注册：读取 TMX property npcId，并保留地图显示名。
 	var placed_targets: Array[Dictionary] = data_registry.list_placed_npc_targets()
@@ -39,6 +41,28 @@ func _run() -> void:
 	_assert_true(not str(generated_ring.get("message", "")).contains("【】"), "九日环文案不应缺失地图或 NPC")
 	var generated_target: Dictionary = quest_system.active.get("generator:ring_cunzhang", {}).get("target", {})
 	_assert_true(not str(generated_target.get("target_id", "")).is_empty() and not str(generated_target.get("map_name", "")).is_empty(), "九日环运行时应保存 NPC 与地图显示名")
+
+	# 小不二动态悬赏：严格使用四段姓名、父地图播报、五项基础技能和安全落点。
+	quest_system.reset_runtime()
+	var bounty_definition: Dictionary = data_registry.quest_generators.bountyring_xiaobuer.duplicate(true)
+	bounty_definition.spawnMaps = ["DarkXue"]
+	data_registry.quest_generators.bountyring_xiaobuer = bounty_definition
+	seed(7)
+	var bounty_offer: Dictionary = quest_system.offer_bounty()
+	_assert_true(bool(bounty_offer.get("ok", false)), "小不二悬赏应能生成动态目标")
+	var bounty: Dictionary = quest_system.get_bounty_target()
+	var bounty_name_pattern := RegEx.new()
+	bounty_name_pattern.compile("^(傻X|脑残|白痴|霸道|凶狠)(老板|客户|领导|同事|朋友)(赵|钱|孙|李|周|吴|郑|王)(一|二|三|四|五|六|七|八|九|十)$")
+	_assert_true(bounty_name_pattern.search(str(bounty.get("target_name", ""))) != null, "悬赏目标姓名应按原项目四段词库生成")
+	_assert_true(str(bounty.get("map_name", "")) == "开源镇", "室内悬赏地点应播报父级大地图名称")
+	var runtime_bounty: Dictionary = root.get_node("NpcSystem").build_instance(str(bounty.get("target_id", "")))
+	_assert_true(runtime_bounty.get("skillLevels", {}).keys().size() == 5 and runtime_bounty.get("equippedSkillIds", []).size() == 5, "悬赏目标应缩放并装备五项基础技能")
+	var darkxue_map := TiledMapLoader.new()
+	_assert_true(darkxue_map.load_file("res://assets/Map/maps/LoreWorld/KaiyuanTown/DarkXue.tmx"), "应能加载 DARK学室内地图")
+	var bounty_tile: Vector2i = darkxue_map.pick_dynamic_npc_tile()
+	_assert_true(bounty_tile.x >= 0 and darkxue_map.is_walkable(bounty_tile.x, bounty_tile.y) and darkxue_map.is_walkable(bounty_tile.x, bounty_tile.y - 1), "室内悬赏 NPC 应落在身前无墙的可行走格")
+	_assert_true(darkxue_map.npc_object_at_tile(bounty_tile.x, bounty_tile.y).is_empty(), "动态悬赏 NPC 不应与固定 NPC 重叠")
+	quest_system.reset_runtime()
 
 	# 学艺逻辑本身不离散快进；时间由 Game 场景的逐帧统一时钟推进。
 	game_state.profile.sect = "NG神教"
@@ -204,7 +228,28 @@ func _run() -> void:
 	var game = load("res://scenes/game.tscn").instantiate()
 	root.add_child(game)
 	await process_frame
+	# UI 统一使用 480×320 逻辑坐标；窗口缩放只交给 Godot stretch，避免二次放大。
+	_assert_true(is_equal_approx(game._display_scale(), 1.0), "游戏 UI 不应再按物理窗口执行第二次缩放")
+	_assert_true(game._game_view_rect() == Rect2(0.0, 0.0, 480.0, 320.0), "地图相机应覆盖完整 480×320 设计画布")
+	game.map_context = darkxue_map
+	var covered_map_size: Vector2 = Vector2(darkxue_map.width * darkxue_map.tile_width, darkxue_map.height * darkxue_map.tile_height) * game._map_zoom()
+	_assert_true(covered_map_size.x >= 480.0 and covered_map_size.y >= 320.0, "小地图应等比 cover 相机，不得产生黑边")
+	game._layout_game_view()
+	var design_rect := Rect2(Vector2.ZERO, Vector2(480.0, 320.0))
+	for panel in [game.map_badge_panel, game.menu_panel, game.dialogue_panel, game.details_panel, game.battle_panel]:
+		_assert_true(design_rect.encloses(Rect2(panel.position, panel.size)), "%s 必须完整位于设计画布内" % panel.name)
+	game.nearby_npc_id = "jiu_ri"
+	game._start_battle()
+	await process_frame
+	for widget in game.battle_widgets:
+		_assert_true(Rect2(Vector2.ZERO, game.battle_panel.size).encloses(Rect2(widget.position, widget.size)), "战斗 UI 元素不得互相挤出面板边界")
+	game.battle_active = false
+	game.battle_panel.visible = false
+	game._clear_battle_widgets()
 	_assert_true(game._prop_display_name({"name": "电脑", "properties": {"questGiver": "darkxue_computer"}}) == "电脑", "Props 对话标题应使用 Tiled 对象名")
+	game.map_context = darkxue_map
+	_assert_true(game._npc_occupies_tile(Vector2i(7, 6)), "室内固定 NPC 所在格应阻挡玩家移动")
+	_assert_true(not game._npc_occupies_tile(Vector2i(8, 6)), "NPC 碰撞只应占脚下格，不应误挡相邻格")
 	var pages: Array[String] = game._paginate_dialogue("第一行\n第二行")
 	_assert_true(pages.size() == 2 and pages[0] == "第一行" and pages[1] == "第二行", "对话正文每个逻辑行应独占一页")
 	game._show_dialogue("测试", "单页")

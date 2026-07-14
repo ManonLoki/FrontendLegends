@@ -3,8 +3,8 @@ extends Node2D
 const VIRTUAL_CONTROLS := preload("res://scripts/virtual_controls.gd")
 const MOBILE_ORIENTATION := preload("res://scripts/mobile_orientation.gd")
 const UI_PROGRESS_METER := preload("res://scripts/ui_progress_meter.gd")
-const CAMERA_SIZE := Vector2(320.0, 320.0)
-const DESIGN_SIZE := Vector2(640.0, 480.0)
+const CAMERA_SIZE := Vector2(480.0, 320.0)
+const DESIGN_SIZE := Vector2(480.0, 320.0)
 
 var player_tile := Vector2i(8, 5)
 var facing := Vector2i.RIGHT
@@ -190,7 +190,7 @@ func _process(delta: float) -> void:
 				_refresh_nearby_npc()
 				queue_redraw()
 			var next_tile := player_tile + step
-			if map_context and not map_context.is_walkable(next_tile.x, next_tile.y):
+			if map_context and (not map_context.is_walkable(next_tile.x, next_tile.y) or _npc_occupies_tile(next_tile)):
 				message = "前方不可通行"
 				_refresh_status()
 				return
@@ -414,7 +414,7 @@ func _show_delete_confirm() -> void:
 func _layout_delete_confirm() -> void:
 	var scale := _display_scale()
 	var panel_size := Vector2(360.0, 118.0) * scale
-	npc_menu_panel.position = (get_viewport_rect().size - panel_size) * 0.5
+	npc_menu_panel.position = (DESIGN_SIZE - panel_size) * 0.5
 	npc_menu_panel.size = panel_size
 	npc_menu_content.add_theme_font_size_override("font_size", maxi(12, int(round(13.0 * scale))))
 	npc_menu_content.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -956,10 +956,17 @@ func _refresh_nearby_npc() -> void:
 		var target_tile := _bounty_tile()
 		if player_tile + facing == target_tile:
 			nearby_npc_id = str(bounty.get("target_id", ""))
-	var active_target: Dictionary = QuestSystem.get_active_target()
-	if not active_target.is_empty() and _current_map_matches(str(active_target.get("map_id", ""))):
-		if player_tile + facing == _active_target_tile():
-			nearby_npc_id = str(active_target.get("target_id", ""))
+
+func _npc_occupies_tile(tile: Vector2i) -> bool:
+	if not map_context:
+		return false
+	for object in map_context.npc_objects():
+		var npc_id := str(object.get("properties", {}).get("npcId", ""))
+		var npc_tile := Vector2i(floori(float(object.get("x", 0.0)) / map_context.tile_width), floori(float(object.get("y", 0.0)) / map_context.tile_height))
+		if tile == npc_tile and not npc_id.is_empty() and not NpcSystem.is_defeated(npc_id):
+			return true
+	var bounty: Dictionary = QuestSystem.get_bounty_target()
+	return not bounty.is_empty() and _current_map_matches(str(bounty.get("map_id", ""))) and tile == _bounty_tile()
 
 func _draw_npcs() -> void:
 	if not map_context:
@@ -984,22 +991,18 @@ func _draw_npcs() -> void:
 			var target_position := _world_to_screen(bounty_tile * Vector2(map_context.tile_width, map_context.tile_height))
 			var target_source := NpcSystem.sprite_region(str(bounty.get("target_id", "")))
 			draw_texture_rect_region(npc_texture, Rect2(target_position + Vector2(1, -target_source.size.y + 16) * _render_scale(), target_source.size * _render_scale()), target_source)
-	var active_target: Dictionary = QuestSystem.get_active_target()
-	if not active_target.is_empty() and _current_map_matches(str(active_target.get("map_id", ""))) and active_target.get("target_id", "") != bounty.get("target_id", ""):
-		var active_tile := Vector2(_active_target_tile())
-		if _is_world_tile_visible(active_tile):
-			var target_position := _world_to_screen(active_tile * Vector2(map_context.tile_width, map_context.tile_height))
-			var target_source := NpcSystem.sprite_region(str(active_target.get("target_id", "")))
-			draw_texture_rect_region(npc_texture, Rect2(target_position + Vector2(1, -target_source.size.y + 16) * _render_scale(), target_source.size * _render_scale()), target_source)
 
 func _current_map_matches(map_id: String) -> bool:
 	return not map_id.is_empty() and map_context and (map_context.map_id.to_lower() == map_id.to_lower() or map_context.map_id.to_lower().contains(map_id.to_lower()))
 
 func _bounty_tile() -> Vector2i:
-	return Vector2i(clampi(map_context.width / 2, 1, map_context.width - 2), clampi(map_context.height / 2, 1, map_context.height - 2))
-
-func _active_target_tile() -> Vector2i:
-	return Vector2i(clampi(map_context.width / 2 + 1, 1, map_context.width - 2), clampi(map_context.height / 2, 1, map_context.height - 2))
+	var bounty: Dictionary = QuestSystem.get_bounty_target()
+	var saved_tile = bounty.get("tile", Vector2i(-1, -1))
+	if saved_tile is Vector2i and saved_tile.x >= 0 and saved_tile.y >= 0:
+		return saved_tile
+	var selected := map_context.pick_dynamic_npc_tile()
+	QuestSystem.set_bounty_target_tile(selected)
+	return selected
 
 func _toggle_menu() -> void:
 	menu_open = not menu_open
@@ -1324,9 +1327,9 @@ func _show_profile_panel() -> void:
 func _layout_profile_panel() -> void:
 	var scale := _display_scale()
 	var panel_size := Vector2(330.0, 300.0) * scale
-	panel_size.x = minf(panel_size.x, get_viewport_rect().size.x - 16.0 * scale)
-	panel_size.y = minf(panel_size.y, get_viewport_rect().size.y - 16.0 * scale)
-	details_panel.position = (get_viewport_rect().size - panel_size) * 0.5
+	panel_size.x = minf(panel_size.x, DESIGN_SIZE.x - 16.0 * scale)
+	panel_size.y = minf(panel_size.y, DESIGN_SIZE.y - 16.0 * scale)
+	details_panel.position = (DESIGN_SIZE - panel_size) * 0.5
 	details_panel.size = panel_size
 
 func _show_npc_view_panel(npc: Dictionary) -> void:
@@ -1363,9 +1366,9 @@ func _show_npc_view_panel(npc: Dictionary) -> void:
 func _layout_npc_view_panel() -> void:
 	var scale := _display_scale()
 	var panel_size := Vector2(330.0, 220.0) * scale
-	panel_size.x = minf(panel_size.x, get_viewport_rect().size.x - 16.0 * scale)
-	panel_size.y = minf(panel_size.y, get_viewport_rect().size.y - 16.0 * scale)
-	details_panel.position = (get_viewport_rect().size - panel_size) * 0.5
+	panel_size.x = minf(panel_size.x, DESIGN_SIZE.x - 16.0 * scale)
+	panel_size.y = minf(panel_size.y, DESIGN_SIZE.y - 16.0 * scale)
+	details_panel.position = (DESIGN_SIZE - panel_size) * 0.5
 	details_panel.size = panel_size
 
 func _npc_skill_rating(npc: Dictionary) -> String:
@@ -1602,31 +1605,31 @@ func _refresh_battle() -> void:
 	var area := battle_panel.size
 	var scale := _display_scale()
 	battle_panel.add_theme_stylebox_override("panel", _ui_box(Color("a8cc6c"), Color("41493a"), 1))
-	_battle_color_rect(Rect2(Vector2(0.0, area.y * 0.55), Vector2(area.x, area.y * 0.45)), Color("84b451"))
+	_battle_color_rect(Rect2(Vector2(0.0, 176.0), Vector2(area.x, area.y - 176.0)), Color("84b451"))
 
-	var left_x := area.x * 0.31
-	var right_x := area.x * 0.69
-	_battle_label(str(GameState.profile.get("name", "玩家")), Rect2(Vector2(left_x - 90.0 * scale, 62.0 * scale), Vector2(180.0 * scale, 28.0 * scale)), 15, HORIZONTAL_ALIGNMENT_CENTER)
-	_battle_label(str(battle_enemy.get("display_name", nearby_npc_id)), Rect2(Vector2(right_x - 90.0 * scale, 62.0 * scale), Vector2(180.0 * scale, 28.0 * scale)), 15, HORIZONTAL_ALIGNMENT_CENTER)
-	_battle_label("VS", Rect2(Vector2(area.x * 0.5 - 35.0 * scale, 108.0 * scale), Vector2(70.0 * scale, 42.0 * scale)), 25, HORIZONTAL_ALIGNMENT_CENTER)
-	_battle_portrait(player_texture, player_sprite_regions.get("down_1", Rect2(1, 15, 13, 17)), Vector2(left_x, 126.0 * scale), Vector2(54.0, 68.0) * scale)
-	_battle_portrait(npc_texture, NpcSystem.sprite_region(nearby_npc_id), Vector2(right_x, 126.0 * scale), Vector2(54.0, 68.0) * scale)
+	var left_x := area.x * 0.27
+	var right_x := area.x * 0.73
+	_battle_label(str(GameState.profile.get("name", "玩家")), Rect2(Vector2(left_x - 90.0, 12.0), Vector2(180.0, 24.0)), 14, HORIZONTAL_ALIGNMENT_CENTER)
+	_battle_label(str(battle_enemy.get("display_name", nearby_npc_id)), Rect2(Vector2(right_x - 90.0, 12.0), Vector2(180.0, 24.0)), 14, HORIZONTAL_ALIGNMENT_CENTER)
+	_battle_label("VS", Rect2(Vector2(area.x * 0.5 - 26.0, 62.0), Vector2(52.0, 32.0)), 22, HORIZONTAL_ALIGNMENT_CENTER)
+	_battle_portrait(player_texture, player_sprite_regions.get("down_1", Rect2(1, 15, 13, 17)), Vector2(left_x, 72.0), Vector2(44.0, 56.0))
+	_battle_portrait(npc_texture, NpcSystem.sprite_region(nearby_npc_id), Vector2(right_x, 72.0), Vector2(44.0, 56.0))
 
 	var player_hp_max := int(battle_session.get("player_max_hp", _npc_hp(GameState.profile, true)))
 	var enemy_hp_max := int(battle_session.get("enemy_max_hp", battle_enemy_hp))
 	var player_mp_max := maxi(1, GameState.player_mp_max())
 	var enemy_mp_max := maxi(1, int(battle_session.get("enemy_mp_max", 0)))
-	_battle_stat("体力", GameState.combat_state.hp, player_hp_max, Vector2(area.x * 0.20, 215.0 * scale), Color("df352d"))
-	_battle_stat("精力", GameState.combat_state.mp, player_mp_max, Vector2(area.x * 0.20, 244.0 * scale), Color("3478d4"))
-	_battle_stat("体力", battle_enemy_hp, enemy_hp_max, Vector2(area.x * 0.59, 215.0 * scale), Color("df352d"))
-	_battle_stat("精力", int(battle_session.get("enemy_mp", 0)), enemy_mp_max, Vector2(area.x * 0.59, 244.0 * scale), Color("3478d4"))
+	_battle_stat("体力", GameState.combat_state.hp, player_hp_max, Vector2(16.0, 116.0), Color("df352d"), 150.0)
+	_battle_stat("精力", GameState.combat_state.mp, player_mp_max, Vector2(16.0, 142.0), Color("3478d4"), 150.0)
+	_battle_stat("体力", battle_enemy_hp, enemy_hp_max, Vector2(area.x - 212.0, 116.0), Color("df352d"), 150.0)
+	_battle_stat("精力", int(battle_session.get("enemy_mp", 0)), enemy_mp_max, Vector2(area.x - 212.0, 142.0), Color("3478d4"), 150.0)
 
 	if battle_submenu.is_empty():
 		_render_battle_action_bar(area, scale)
 	else:
 		_render_battle_submenu(area, scale)
 	var report := _battle_report_text()
-	var report_label := _battle_label(report, Rect2(Vector2(area.x * 0.06, area.y - 62.0 * scale), Vector2(area.x * 0.88, 52.0 * scale)), 11, HORIZONTAL_ALIGNMENT_CENTER, Color("35402e"))
+	var report_label := _battle_label(report, Rect2(Vector2(16.0, area.y - 58.0), Vector2(area.x - 32.0, 48.0)), 11, HORIZONTAL_ALIGNMENT_CENTER, Color("35402e"))
 	report_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	report_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
@@ -1685,21 +1688,21 @@ func _battle_portrait(texture: Texture2D, region: Rect2, center: Vector2, portra
 	battle_content.add_child(portrait)
 	battle_widgets.append(portrait)
 
-func _battle_stat(title: String, value: int, maximum: int, position: Vector2, color: Color) -> void:
+func _battle_stat(title: String, value: int, maximum: int, position: Vector2, color: Color, meter_width: float = 190.0) -> void:
 	var scale := _display_scale()
-	_battle_label(title, Rect2(position, Vector2(45.0, 24.0) * scale), 12)
+	_battle_label(title, Rect2(position, Vector2(42.0, 22.0) * scale), 11)
 	var meter := UI_PROGRESS_METER.new()
-	meter.position = position + Vector2(45.0 * scale, 2.0 * scale)
-	meter.size = Vector2(190.0, 20.0) * scale
-	meter.set_font_size(maxi(10, int(round(11.0 * scale))))
+	meter.position = position + Vector2(42.0 * scale, 2.0 * scale)
+	meter.size = Vector2(meter_width, 18.0) * scale
+	meter.set_font_size(maxi(9, int(round(10.0 * scale))))
 	meter.set_colors(color, Color("f3f2ed"), Color("4b5145"))
 	meter.set_progress(value, maximum)
 	battle_content.add_child(meter)
 	battle_widgets.append(meter)
 
 func _render_battle_action_bar(area: Vector2, scale: float) -> void:
-	var bar_size := Vector2(360.0, 48.0) * scale
-	var bar_position := Vector2((area.x - bar_size.x) * 0.5, area.y - 118.0 * scale)
+	var bar_size := Vector2(minf(400.0, area.x - 32.0), 42.0) * scale
+	var bar_position := Vector2((area.x - bar_size.x) * 0.5, 181.0 * scale)
 	var background := Panel.new()
 	background.position = bar_position
 	background.size = bar_size
@@ -1710,7 +1713,7 @@ func _render_battle_action_bar(area: Vector2, scale: float) -> void:
 	var action_width := bar_size.x / float(BATTLE_ACTIONS.size())
 	for index in BATTLE_ACTIONS.size():
 		var rect := Rect2(bar_position + Vector2(action_width * index, 0.0), Vector2(action_width, bar_size.y))
-		_battle_label(BATTLE_ACTIONS[index], rect, 13, HORIZONTAL_ALIGNMENT_CENTER)
+		_battle_label(BATTLE_ACTIONS[index], rect, 12, HORIZONTAL_ALIGNMENT_CENTER)
 		if index == battle_action_index:
 			var selection := Panel.new()
 			selection.position = rect.position + Vector2(4.0, 5.0) * scale
@@ -2214,19 +2217,19 @@ func _refresh_status() -> void:
 	pass
 
 func _game_view_rect() -> Rect2:
-	var screen_size := CAMERA_SIZE * _display_scale()
-	return Rect2((get_viewport_rect().size - screen_size) * 0.5, screen_size)
+	return Rect2((DESIGN_SIZE - CAMERA_SIZE) * 0.5, CAMERA_SIZE)
 
 func _display_scale() -> float:
-	var viewport_size := get_viewport_rect().size
-	return minf(viewport_size.x / DESIGN_SIZE.x, viewport_size.y / DESIGN_SIZE.y)
+	# ProjectSettings 负责把固定 480×320 画布等比拉伸到窗口；UI 始终使用设计坐标。
+	return 1.0
 
 func _map_zoom() -> float:
 	if not map_context:
 		return 1.0
 	var map_size := Vector2(map_context.width * map_context.tile_width, map_context.height * map_context.tile_height)
-	var fit_scale := minf(CAMERA_SIZE.x / map_size.x, CAMERA_SIZE.y / map_size.y)
-	return maxf(1.0, fit_scale)
+	# 等比 cover：至少覆盖完整相机，超出的地图内容交给 480×320 视口裁切。
+	var cover_scale := maxf(CAMERA_SIZE.x / map_size.x, CAMERA_SIZE.y / map_size.y)
+	return maxf(1.0, cover_scale)
 
 func _camera_world_size() -> Vector2:
 	return CAMERA_SIZE / _map_zoom()
@@ -2296,7 +2299,7 @@ func _layout_game_view() -> void:
 	else:
 		npc_menu_panel.position = inset_rect.position
 		npc_menu_panel.size = inset_rect.size
-	menu_panel.position = Vector2((get_viewport_rect().size.x - DESIGN_SIZE.x * scale) * 0.5, 0.0)
+	menu_panel.position = Vector2.ZERO
 	menu_panel.size = Vector2(DESIGN_SIZE.x, 42.0) * scale
 	var dialogue_size := Vector2(minf(DESIGN_SIZE.x, view_rect.size.x / scale) - 16.0, 44.0) * scale
 	var dialogue_bottom_margin := 28.0 if OS.has_feature("mobile") else 8.0
@@ -2304,7 +2307,7 @@ func _layout_game_view() -> void:
 	dialogue_panel.size = dialogue_size
 	dialogue_content.add_theme_font_size_override("font_size", maxi(12, int(round(12.0 * scale))))
 	transition_overlay.position = Vector2.ZERO
-	transition_overlay.size = get_viewport_rect().size
+	transition_overlay.size = DESIGN_SIZE
 	if menu_open:
 		_refresh_menu()
 	if meditation_open:
@@ -2315,17 +2318,17 @@ func _layout_game_view() -> void:
 
 func _layout_details_overlay() -> void:
 	var scale := _display_scale()
-	var overlay_size := Vector2(520.0, 400.0) * scale
-	overlay_size.x = minf(overlay_size.x, get_viewport_rect().size.x - 16.0 * scale)
-	overlay_size.y = minf(overlay_size.y, get_viewport_rect().size.y - 16.0 * scale)
-	details_panel.position = (get_viewport_rect().size - overlay_size) * 0.5
+	var overlay_size := Vector2(464.0, 304.0) * scale
+	overlay_size.x = minf(overlay_size.x, DESIGN_SIZE.x - 16.0 * scale)
+	overlay_size.y = minf(overlay_size.y, DESIGN_SIZE.y - 16.0 * scale)
+	details_panel.position = (DESIGN_SIZE - overlay_size) * 0.5
 	details_panel.size = overlay_size
 
 func _layout_battle_panel() -> void:
 	var scale := _display_scale()
 	var inset := Vector2(8.0, 8.0) * scale
 	battle_panel.position = inset
-	battle_panel.size = get_viewport_rect().size - inset * 2.0
+	battle_panel.size = DESIGN_SIZE - inset * 2.0
 
 func _cursor(label: String, selected: bool) -> String:
 	return "【%s】" % label if selected else "  " + label

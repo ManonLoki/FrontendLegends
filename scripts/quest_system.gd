@@ -8,6 +8,11 @@ var ring_progress: Dictionary = {}
 var bounty_money_base: Dictionary = {}
 var bounty_stat_base: Dictionary = {}
 var bounty_sequence := 0
+const BASIC_SKILL_KEYS: Array[String] = ["basicStrength", "basicAgility", "basicConstitution", "basicParry", "literacy"]
+const BOUNTY_NAME_MODIFIERS: Array[String] = ["傻X", "脑残", "白痴", "霸道", "凶狠"]
+const BOUNTY_NAME_ROLES: Array[String] = ["老板", "客户", "领导", "同事", "朋友"]
+const BOUNTY_NAME_SURNAMES: Array[String] = ["赵", "钱", "孙", "李", "周", "吴", "郑", "王"]
+const BOUNTY_NAME_GIVEN: Array[String] = ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十"]
 
 func _line(definition: Dictionary, key: String, fallback: String, values: Dictionary = {}) -> String:
 	var result := str(definition.get("lines", {}).get(key, fallback))
@@ -197,7 +202,7 @@ func reset_runtime() -> void:
 	for runtime_id in active:
 		var runtime: Dictionary = active[runtime_id]
 		var target = runtime.get("target", {})
-		if target is Dictionary and str(target.get("target_id", "")).begins_with("bounty_target_"):
+		if target is Dictionary and str(target.get("target_id", "")).begins_with("__bounty_target_"):
 			NpcSystem.unregister_runtime(str(target.get("target_id", "")))
 	active.clear()
 	bounty_target = {}
@@ -385,7 +390,7 @@ func abandon_active() -> Dictionary:
 			ring_progress[generator_id] = 0
 		elif kind in ["bounty", "errand"]:
 			cooldown_until[generator_id] = GameState.game_time_sec + float(definition.get("cooldownSec", 30))
-		if str(target_data.get("target_id", "")).begins_with("bounty_target_"):
+		if str(target_data.get("target_id", "")).begins_with("__bounty_target_"):
 			NpcSystem.unregister_runtime(str(target_data.get("target_id", "")))
 			bounty_target = {}
 	active.erase(runtime_id)
@@ -398,9 +403,11 @@ func offer_bounty(generator_id: String = "bountyring_xiaobuer") -> Dictionary:
 	if definition.is_empty() or active.has(runtime_id) or _on_cooldown(generator_id):
 		return {"ok": false, "message": "悬赏暂不可接取"}
 	bounty_sequence += 1
-	var target_id := "bounty_target_%d" % bounty_sequence
+	var target_id := "__bounty_target_%d" % bounty_sequence
 	var spawn_maps: Array = definition.get("spawnMaps", [])
-	var target_map := str(spawn_maps[randi() % spawn_maps.size()]) if not spawn_maps.is_empty() else "KaiyuanTown"
+	if spawn_maps.is_empty():
+		return {"ok": false, "message": "（悬赏池是空的，先在 quests.json 配置）"}
+	var target_map := str(spawn_maps[randi() % spawn_maps.size()])
 	var player_attributes: Dictionary = GameState.profile.get("attributes", {})
 	var player_skills: Dictionary = GameState.profile.get("skills", {}).get("levels", {})
 	var kill_index := int(ring_progress.get(generator_id, 0))
@@ -409,20 +416,32 @@ func offer_bounty(generator_id: String = "bountyring_xiaobuer") -> Dictionary:
 	for key in player_attributes:
 		scaled_attributes[key] = maxi(1, int(round(float(player_attributes[key]) * target_scale)))
 	var scaled_skills: Dictionary = {}
-	for skill_id in player_skills:
-		scaled_skills[skill_id] = maxi(1, int(round(float(player_skills[skill_id]) * target_scale)))
-	var target_name := "悬赏目标%d" % bounty_sequence
-	NpcSystem.register_runtime(target_id, {"displayName": target_name, "sprite": definition.get("targetSprite", "npc-30"), "roles": ["civilian"], "description": "小不二发布的动态悬赏目标。", "defaultLine": "你找我有事？", "attributes": scaled_attributes, "skillLevels": scaled_skills, "equippedSkillIds": []})
-	bounty_target = {"target_id": target_id, "target_name": target_name, "map_id": target_map, "map_name": DataRegistry.map_display_name(target_map), "generator_id": generator_id}
+	for skill_id in BASIC_SKILL_KEYS:
+		scaled_skills[skill_id] = maxi(1, int(round(float(player_skills.get(skill_id, 1)) * target_scale)))
+	var target_name: String = str(BOUNTY_NAME_MODIFIERS.pick_random()) + str(BOUNTY_NAME_ROLES.pick_random()) + str(BOUNTY_NAME_SURNAMES.pick_random()) + str(BOUNTY_NAME_GIVEN.pick_random())
+	var target_sprite := str(definition.get("targetSprite", "npc-30")).strip_edges()
+	if target_sprite.is_empty():
+		target_sprite = "npc-30"
+	NpcSystem.register_runtime(target_id, {"displayName": target_name, "sprite": target_sprite, "roles": ["civilian"], "description": "小不二悬赏缉拿的对象，据说与你有些渊源。", "defaultLine": "你……找我有事？", "attributes": scaled_attributes, "skillLevels": scaled_skills, "equippedSkillIds": BASIC_SKILL_KEYS.duplicate()})
+	bounty_target = {"target_id": target_id, "target_name": target_name, "target_sprite": target_sprite, "map_id": target_map, "map_name": DataRegistry.region_display_name(target_map), "generator_id": generator_id}
 	if not bounty_money_base.has(generator_id):
 		bounty_money_base[generator_id] = float(definition.get("rewardBase", 0))
 	if not bounty_stat_base.has(generator_id):
 		bounty_stat_base[generator_id] = float(definition.get("rewardBase", 0))
-	active[runtime_id] = {"generator_id": generator_id, "state": "active", "progress": 0, "round": kill_index + 1, "target": bounty_target}
+	active[runtime_id] = {"generator_id": generator_id, "kind": "bountyRing", "giverNpcId": definition.get("giverNpcId", ""), "state": "active", "progress": 0, "round": kill_index + 1, "target": bounty_target}
 	return {"ok": true, "message": _line(definition, "offer", "悬赏目标：{target}（{map}）", {"target": bounty_target.target_name, "map": bounty_target.map_name}), "target": bounty_target}
 
 func get_bounty_target() -> Dictionary:
 	return bounty_target
+
+func set_bounty_target_tile(tile: Vector2i) -> void:
+	if bounty_target.is_empty():
+		return
+	bounty_target["tile"] = tile
+	for runtime_id in active:
+		var runtime: Dictionary = active[runtime_id]
+		if str(runtime.get("generator_id", "")) == str(bounty_target.get("generator_id", "")):
+			runtime["target"] = bounty_target
 
 func bounty_board_text(generator_id: String = "bountyring_xiaobuer") -> String:
 	if bounty_target.is_empty():

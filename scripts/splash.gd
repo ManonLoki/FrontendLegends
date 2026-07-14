@@ -1,7 +1,7 @@
 extends Control
 
 const FONT := preload("res://assets/Font/fusion-pixel-12px-proportional-zh_hans.ttf")
-const DESIGN_SIZE := Vector2(640.0, 400.0)
+const DESIGN_SIZE := Vector2(480.0, 320.0)
 const BLINK_TIME := 0.5
 const VIRTUAL_CONTROLS := preload("res://scripts/virtual_controls.gd")
 const MOBILE_ORIENTATION := preload("res://scripts/mobile_orientation.gd")
@@ -66,10 +66,10 @@ func _build_stage() -> void:
 	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	stage.add_child(background)
 
-	_add_label("前端群侠传", Rect2(0, 45, 640, 70), 48, Color.WHITE)
-	_add_label("v0.7.4", Rect2(0, 130, 640, 35), 16, Color.WHITE)
+	_add_label("前端群侠传", Rect2(0, 38, 480, 62), 42, Color.WHITE)
+	_add_label("v0.7.4", Rect2(0, 112, 480, 30), 16, Color.WHITE)
 	var continue_text := "按确认键继续" if mobile_runtime else "按空格继续"
-	prompt = _add_label(continue_text, Rect2(0, 235, 640, 45), 18, Color.WHITE)
+	prompt = _add_label(continue_text, Rect2(0, 220, 480, 40), 18, Color.WHITE)
 
 func _add_label(text: String, rect: Rect2, font_size: int, color: Color) -> Label:
 	var label := Label.new()
@@ -88,7 +88,5 @@ func _add_label(text: String, rect: Rect2, font_size: int, color: Color) -> Labe
 func _layout_stage() -> void:
 	if not is_instance_valid(stage):
 		return
-	var viewport_size := get_viewport_rect().size
-	var scale := minf(viewport_size.x / DESIGN_SIZE.x, viewport_size.y / DESIGN_SIZE.y)
-	stage.scale = Vector2.ONE * scale
-	stage.position = (viewport_size - DESIGN_SIZE * scale) * 0.5
+	stage.scale = Vector2.ONE
+	stage.position = Vector2.ZERO

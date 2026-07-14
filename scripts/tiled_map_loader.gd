@@ -100,6 +100,55 @@ func npc_object_at_tile(col: int, row: int) -> Dictionary:
 			return object
 	return {}
 
+func pick_dynamic_npc_tile() -> Vector2i:
+	var indoor := str(properties.get("cameraAutoFit", "false")).to_lower() == "true" or properties.has("parentMap")
+	var candidates: Array[Vector2i] = []
+	for row in height:
+		for col in width:
+			if not is_walkable(col, row) or _transaction_at_tile(col, row):
+				continue
+			if indoor:
+				if is_walkable(col, row - 1) and _valid_dynamic_npc_tile(col, row):
+					candidates.append(Vector2i(col, row))
+				continue
+			var horizontal := is_walkable(col - 1, row) or is_walkable(col + 1, row)
+			var vertical := is_walkable(col, row - 1) or is_walkable(col, row + 1)
+			if horizontal and not vertical:
+				if row > 0 and not is_walkable(col, row - 1) and _valid_dynamic_npc_tile(col, row - 1):
+					candidates.append(Vector2i(col, row - 1))
+			elif vertical and not horizontal:
+				for side_col in [col - 1, col + 1]:
+					if side_col >= 0 and side_col < width and not is_walkable(side_col, row) and _valid_dynamic_npc_tile(side_col, row):
+						candidates.append(Vector2i(side_col, row))
+						break
+	if not candidates.is_empty():
+		return candidates[randi() % candidates.size()]
+	var fallback: Array[Vector2i] = []
+	for row in height:
+		for col in width:
+			if is_walkable(col, row) and _valid_dynamic_npc_tile(col, row):
+				fallback.append(Vector2i(col, row))
+	return fallback[randi() % fallback.size()] if not fallback.is_empty() else Vector2i(-1, -1)
+
+func _valid_dynamic_npc_tile(col: int, row: int) -> bool:
+	if col < 0 or row < 0 or col >= width or row >= height or _transaction_at_tile(col, row):
+		return false
+	var tile_rect := Rect2(float(col * tile_width), float(row * tile_height), float(tile_width), float(tile_height))
+	for object in objects:
+		var object_properties: Dictionary = object.get("properties", {})
+		var is_npc := str(object.get("type", "")) == "NPC" or object_properties.has("npcId")
+		var is_prop := str(object.get("type", "")) == "Props" or object_properties.has("event") or object_properties.has("questGiver") or object_properties.has("text")
+		if (is_npc or is_prop) and _object_occupies_tile(object, tile_rect):
+			return false
+	return true
+
+func _transaction_at_tile(col: int, row: int) -> bool:
+	var tile_rect := Rect2(float(col * tile_width), float(row * tile_height), float(tile_width), float(tile_height))
+	for object in transaction_objects():
+		if _object_occupies_tile(object, tile_rect):
+			return true
+	return false
+
 func _object_occupies_tile(object: Dictionary, tile_rect: Rect2) -> bool:
 	var object_size := Vector2(float(object.get("width", tile_width)), float(object.get("height", tile_height)))
 	if object_size.x <= 0.0:

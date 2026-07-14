@@ -1,7 +1,9 @@
 extends Control
 
 const FONT := preload("res://assets/Font/fusion-pixel-12px-proportional-zh_hans.ttf")
-const DESIGN_SIZE := Vector2(640.0, 400.0)
+const DESIGN_SIZE := Vector2(480.0, 320.0)
+const CONTENT_SIZE := Vector2(640.0, 400.0)
+const CONTENT_SCALE := 0.75
 const INTRO_SPEED := 58.0
 const ROW_H := 35.0
 const ROWS := ["name", "gender", "strength", "agility", "constitution", "wisdom", "confirm"]
@@ -113,19 +115,21 @@ func _build_stage() -> void:
 func _build_intro() -> void:
 	intro_root = Control.new()
 	intro_root.name = "OpeningText"
-	intro_root.size = DESIGN_SIZE
+	intro_root.size = CONTENT_SIZE
+	intro_root.scale = Vector2.ONE * CONTENT_SCALE
+	intro_root.position = Vector2(0.0, 10.0)
 	intro_root.clip_contents = true
 	intro_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	stage.add_child(intro_root)
 	var background := ColorRect.new()
 	background.color = Color("#080a0e")
-	background.size = DESIGN_SIZE
+	background.size = CONTENT_SIZE
 	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	intro_root.add_child(background)
 
 	intro_content = Control.new()
 	intro_content.name = "ScrollingContent"
-	intro_content.size = DESIGN_SIZE
+	intro_content.size = CONTENT_SIZE
 	intro_root.add_child(intro_content)
 
 	var lines := [
@@ -168,10 +172,12 @@ func _build_intro() -> void:
 		intro_content.add_child(label)
 		intro_total_height += height + float(line[3])
 
-	intro_content.position = Vector2(0, DESIGN_SIZE.y + 34.0)
+	intro_content.position = Vector2(0, CONTENT_SIZE.y + 34.0)
 	form = Control.new()
 	form.name = "CreationForm"
-	form.size = DESIGN_SIZE
+	form.size = CONTENT_SIZE
+	form.scale = Vector2.ONE * CONTENT_SCALE
+	form.position = Vector2(0.0, 10.0)
 	form.visible = false
 	stage.add_child(form)
 	_build_form()
@@ -326,7 +332,5 @@ func _field_style(fill: Color, border: Color, width: int) -> StyleBoxFlat:
 func _layout_stage() -> void:
 	if not is_instance_valid(stage):
 		return
-	var viewport_size := get_viewport_rect().size
-	var scale := minf(viewport_size.x / DESIGN_SIZE.x, viewport_size.y / DESIGN_SIZE.y)
-	stage.scale = Vector2.ONE * scale
-	stage.position = (viewport_size - DESIGN_SIZE * scale) * 0.5
+	stage.scale = Vector2.ONE
+	stage.position = Vector2.ZERO

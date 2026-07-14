@@ -8,6 +8,7 @@ var quest_generators: Dictionary = {}
 var skills: Dictionary = {}
 var map_files: Array[String] = []
 var map_display_names: Dictionary = {}
+var map_parent_ids: Dictionary = {}
 var placed_npc_targets: Array[Dictionary] = []
 var _placed_npc_keys: Dictionary = {}
 
@@ -86,6 +87,11 @@ func _scan_maps(path: String) -> void:
 			var map_id := name.get_basename()
 			var map_name := matched.get_string(1) if matched else map_id
 			map_display_names[map_id] = map_name
+			var parent_matcher := RegEx.new()
+			parent_matcher.compile("<property\\s+name=\"parentMap\"\\s+value=\"([^\"]*)\"")
+			var parent_matched := parent_matcher.search(xml)
+			if parent_matched:
+				map_parent_ids[map_id] = parent_matched.get_string(1)
 			_collect_placed_npcs(xml, map_id, map_name)
 	dir.list_dir_end()
 
@@ -128,3 +134,7 @@ func list_placed_npc_targets(exclude_ids: Array = []) -> Array[Dictionary]:
 func map_display_name(map_id: String) -> String:
 	var value := str(map_display_names.get(map_id, map_id))
 	return value.replace("{playerName}", str(GameState.profile.get("name", "玩家")))
+
+func region_display_name(map_id: String) -> String:
+	var parent_id := str(map_parent_ids.get(map_id, ""))
+	return map_display_name(parent_id if not parent_id.is_empty() else map_id)
