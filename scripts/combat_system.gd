@@ -5,21 +5,36 @@ const CRIT_PER_CONSTITUTION := 0.0035
 const FLEE_BASE := 0.40
 const FLEE_PER_AGILITY := 0.03
 
+## 门派绝招命中修正（百分点，见参考项目 UltEffects.ts）：连击每击 -5%、异常 +10%、降上限 +5%、巨伤 -15%。
+const ULT_HIT_BONUS := {"multi": -0.05, "abnormal": 0.10, "reduceMax": 0.05, "hugeDamage": -0.15}
+
+## 攻击招式附带异常状态表：10 个招式槽位中 6 个携带状态（见参考项目 SectMoves.ts）。
+const ATTACK_MOVE_STATUS_TABLE := {20: "paralysis", 40: "weakness", 50: "poison", 70: "paralysis", 80: "weakness", 90: "poison"}
+
+const ENEMY_ULT_USE_RATE := 0.35
+const ENEMY_ITEM_USE_RATE := 0.55
+const ENEMY_REST_USE_RATE := 0.30
+const ENEMY_ITEM_HP_RATIO := 0.30
+const ENEMY_REST_HP_RATIO := 0.50
+const ENEMY_REST_MIN_MP := 8
+const ENEMY_CONSUMABLE_HEAL_RATIO := 0.25
+
 func create_session(enemy_id: String) -> Dictionary:
 	var enemy: Dictionary = NpcSystem.build_instance(enemy_id)
 	var player_attributes: Dictionary = GameState.profile.get("attributes", {})
 	var enemy_attributes: Dictionary = enemy.get("attributes", {})
+	var enemy_mp_max := int(enemy.get("mp", 0))
 	return {
 		"enemy_id": enemy_id,
 		"enemy": enemy,
 		"player_hp": int(GameState.combat_state.get("hp", 1)),
-		"player_max_hp": _hp_max(player_attributes),
+		"player_max_hp": _hp_max(player_attributes, GameState.player_mp_max()),
 		"initial_player_hp": int(GameState.combat_state.get("hp", 1)),
 		"player_mp": int(GameState.combat_state.get("mp", 0)),
-		"enemy_hp": _hp_max(enemy_attributes),
-		"enemy_max_hp": _hp_max(enemy_attributes),
-		"enemy_mp": int(enemy.get("mp", 0)),
-		"enemy_mp_max": int(enemy.get("mp", 0)),
+		"enemy_hp": _hp_max(enemy_attributes, enemy_mp_max),
+		"enemy_max_hp": _hp_max(enemy_attributes, enemy_mp_max),
+		"enemy_mp": enemy_mp_max,
+		"enemy_mp_max": enemy_mp_max,
 		"player_status": {},
 		"enemy_status": {},
 		"player_reached_zero": false,
@@ -35,37 +50,43 @@ func player_attack(session: Dictionary) -> Dictionary:
 	var enemy_attributes: Dictionary = session.enemy.get("attributes", {})
 	var bonuses: Dictionary = SkillSystem.combat_bonus()
 	var attack_moves: Array = SkillSystem.unlocked_moves().filter(func(move): return move.get("kind", "") == "attack")
-	var attack_move: Dictionary = attack_moves[randi() % attack_moves.size()] if not attack_moves.is_empty() and randf() < minf(0.55, 0.25 + attack_moves.size() * 0.04) else {}
+	var attack_move: Dictionary = {}
+	if not attack_moves.is_empty() and randf() < minf(0.55, 0.25 + attack_moves.size() * 0.04):
+		attack_move = _weighted_pick(attack_moves)
 	var move_hit_bonus := 0.12 if not attack_move.is_empty() else 0.0
 	var enemy_equipment := _npc_equipment_bonus(session.enemy)
-	var result: Dictionary = GameState.resolve_attack(_player_attack_power(), GameState.profile.get("attributes", {}), enemy_attributes, float(enemy_attributes.get("constitution", 0)) * 2.0 + float(enemy_equipment.get("defense", 0)), (float(bonuses.get("hit", 0.0)) + float(InventorySystem.equipment_bonus().get("hit", 0))) * 0.01 + move_hit_bonus, float(enemy_equipment.get("dodge", 0)) * 0.01, 0.0, float(InventorySystem.equipment_bonus().get("crit", 0)) * 0.01)
-	if result.hit:
-		var enemy_parry := _npc_move(session.enemy, "parry")
-		if not enemy_parry.is_empty():
-			result.damage = int(floor(float(result.damage) * (1.0 - minf(0.35, 0.15 + maxi(0, int(enemy_parry.get("level", 0)) - int(enemy_parry.get("unlock", 0))) * 0.01))))
-		if int(session.get("enemy_status", {}).get("weakness", 0)) > 0:
-			result.damage = int(ceil(float(result.damage) * 1.30))
-		var force := mini(SkillSystem.force_power(), int(GameState.combat_state.mp))
-		if force > 0:
-			GameState.combat_state.mp -= force
-			result.damage += int(round(float(force) * randf_range(0.75, 1.25)))
-		if not attack_move.is_empty():
-			var extra := int(floor(8.0 + maxi(0, int(attack_move.get("level", 0)) - int(attack_move.get("unlock", 0))) * 0.6))
-			result.damage += extra
-			if int(attack_move.get("unlock", 0)) in [20, 70] and randf() < 0.10 + float(int(attack_move.get("unlock", 0)) - 10) / 90.0 * 0.20:
-				add_status(session, "enemy", "paralysis", randi_range(1, 3))
-			elif int(attack_move.get("unlock", 0)) in [40, 80] and randf() < 0.10 + float(int(attack_move.get("unlock", 0)) - 10) / 90.0 * 0.20:
-				add_status(session, "enemy", "weakness", randi_range(1, 3))
-			elif int(attack_move.get("unlock", 0)) in [50, 90] and randf() < 0.10 + float(int(attack_move.get("unlock", 0)) - 10) / 90.0 * 0.20:
-				add_status(session, "enemy", "poison", randi_range(1, 3))
-		var wound := int(InventorySystem.equipment_bonus().get("woundInflict", 0))
-		if wound > 0 and int(session.enemy_hp) > 0:
-			session.enemy_max_hp = maxi(1, int(session.enemy_max_hp) - wound)
-			session.enemy_hp = mini(int(session.enemy_hp), int(session.enemy_max_hp))
-		session.enemy_hp = maxi(0, int(session.enemy_hp) - int(result.damage))
-		session.log.append("你造成 %d 点%s伤害" % [result.damage, "暴击" if result.crit else ""])
-	else:
+	var defense := GameState.defense_base(float(enemy_attributes.get("constitution", 0))) + float(enemy_equipment.get("defense", 0))
+	var result: Dictionary = GameState.resolve_attack(_player_attack_power(), GameState.profile.get("attributes", {}), enemy_attributes, defense, (float(bonuses.get("hit", 0.0)) + float(InventorySystem.equipment_bonus().get("hit", 0))) * 0.01 + move_hit_bonus, float(enemy_equipment.get("dodge", 0)) * 0.01, 0.0, float(InventorySystem.equipment_bonus().get("crit", 0)) * 0.01)
+	if not result.hit:
 		session.log.append("你的攻击未命中")
+		return result
+	var enemy_dodge_move := _npc_move(session.enemy, "dodge")
+	if not enemy_dodge_move.is_empty():
+		session.log.append("你出招，%s 危急间使出【%s】，身形一晃避开了。" % [session.enemy.get("displayName", "敌人"), enemy_dodge_move.get("name", "身法")])
+		return {"hit": false, "parried": false, "crit": false, "damage": 0, "dodged": true}
+	var enemy_parry := _npc_move(session.enemy, "parry")
+	if not enemy_parry.is_empty():
+		result.damage = int(floor(float(result.damage) * (1.0 - minf(0.35, 0.15 + maxi(0, int(enemy_parry.get("level", 0)) - int(enemy_parry.get("unlock", 0))) * 0.01))))
+	if int(session.get("enemy_status", {}).get("weakness", 0)) > 0:
+		result.damage = int(ceil(float(result.damage) * 1.30))
+	var force := mini(SkillSystem.force_power(), int(GameState.combat_state.mp))
+	if force > 0:
+		GameState.combat_state.mp -= force
+		result.damage += int(round(float(force) * randf_range(0.75, 1.25)))
+	if not attack_move.is_empty():
+		var status := _roll_attack_move_status(attack_move)
+		var extra := int(floor(8.0 + maxi(0, int(attack_move.get("level", 0)) - int(attack_move.get("unlock", 0))) * 0.6))
+		if not status.is_empty():
+			extra = int(floor(float(extra) * 0.5))
+		result.damage += extra
+		if not status.is_empty():
+			add_status(session, "enemy", str(status.kind), randi_range(1, 3))
+	var wound := int(InventorySystem.equipment_bonus().get("woundInflict", 0))
+	if wound > 0 and int(session.enemy_hp) > 0:
+		session.enemy_max_hp = maxi(1, int(session.enemy_max_hp) - wound)
+		session.enemy_hp = mini(int(session.enemy_hp), int(session.enemy_max_hp))
+	session.enemy_hp = maxi(0, int(session.enemy_hp) - int(result.damage))
+	session.log.append("你造成 %d 点%s伤害" % [result.damage, "暴击" if result.crit else ""])
 	return result
 
 func enemy_attack(session: Dictionary) -> Dictionary:
@@ -74,25 +95,68 @@ func enemy_attack(session: Dictionary) -> Dictionary:
 		return {"hit": false, "parried": false, "crit": false, "damage": 0, "skipped": true, "message": turn_check.message}
 	var enemy_attributes: Dictionary = session.enemy.get("attributes", {})
 	var player_attributes: Dictionary = GameState.profile.get("attributes", {})
-	var enemy_dodge := _npc_move(session.enemy, "dodge")
-	if not enemy_dodge.is_empty():
-		session.log.append("%s 身形一晃避开了攻击" % session.enemy.get("displayName", "敌人"))
-		return {"hit": false, "parried": false, "crit": false, "damage": 0, "dodged": true, "message": "敌方闪避"}
-	var equipment := InventorySystem.equipment_bonus()
 	var enemy_equipment := _npc_equipment_bonus(session.enemy)
-	var result: Dictionary = GameState.resolve_attack(_enemy_attack_power(session.enemy), enemy_attributes, player_attributes, _player_defense(), (float(enemy_equipment.get("hit", 0))) * 0.01, (float(SkillSystem.combat_bonus().get("dodge", 0.0)) + float(equipment.get("dodge", 0))) * 0.01, float(equipment.get("parry", 0)) * 0.01, float(enemy_equipment.get("crit", 0)) * 0.01)
-	if result.hit:
-		var player_parry := SkillSystem.unlocked_moves().filter(func(move): return move.get("kind", "") == "parry")
-		if not player_parry.is_empty() and randf() < minf(0.55, 0.25 + player_parry.size() * 0.04):
-			var parry_move: Dictionary = player_parry[randi() % player_parry.size()]
-			result.damage = int(floor(float(result.damage) * (1.0 - minf(0.35, 0.15 + maxi(0, int(parry_move.get("level", 0)) - int(parry_move.get("unlock", 0))) * 0.01))))
-		if int(session.get("player_status", {}).get("weakness", 0)) > 0:
-			result.damage = int(ceil(float(result.damage) * 1.30))
-		GameState.combat_state.hp = maxi(0, int(GameState.combat_state.hp) - int(result.damage))
-		session.player_hp = GameState.combat_state.hp
-		_track_player_state(session)
-		session.log.append("%s 造成 %d 点伤害" % [session.enemy.get("displayName", "敌人"), result.damage])
+	var equipment := InventorySystem.equipment_bonus()
+	var attack_move := _npc_move(session.enemy, "attack")
+	var move_hit_bonus := 0.12 if not attack_move.is_empty() else 0.0
+	var result: Dictionary = GameState.resolve_attack(_enemy_attack_power(session.enemy), enemy_attributes, player_attributes, _player_defense(), float(enemy_equipment.get("hit", 0)) * 0.01 + move_hit_bonus, (float(SkillSystem.combat_bonus().get("dodge", 0.0)) + float(equipment.get("dodge", 0))) * 0.01, float(equipment.get("parry", 0)) * 0.01, float(enemy_equipment.get("crit", 0)) * 0.01)
+	if not result.hit:
+		session.log.append("%s 出招未能命中" % session.enemy.get("displayName", "敌人"))
+		return result
+	var player_dodge_moves: Array = SkillSystem.unlocked_moves().filter(func(move): return move.get("kind", "") == "dodge")
+	if not player_dodge_moves.is_empty() and randf() < minf(0.55, 0.25 + player_dodge_moves.size() * 0.04):
+		var dodge_move: Dictionary = _weighted_pick(player_dodge_moves)
+		session.log.append("%s 出招，你危急间使出【%s】，身形一晃避开了。" % [session.enemy.get("displayName", "敌人"), dodge_move.get("name", "身法")])
+		return {"hit": false, "parried": false, "crit": false, "damage": 0, "dodged": true, "message": "你成功闪避"}
+	var player_parry := SkillSystem.unlocked_moves().filter(func(move): return move.get("kind", "") == "parry")
+	if not player_parry.is_empty() and randf() < minf(0.55, 0.25 + player_parry.size() * 0.04):
+		var parry_move: Dictionary = _weighted_pick(player_parry)
+		result.damage = int(floor(float(result.damage) * (1.0 - minf(0.35, 0.15 + maxi(0, int(parry_move.get("level", 0)) - int(parry_move.get("unlock", 0))) * 0.01))))
+	if int(session.get("player_status", {}).get("weakness", 0)) > 0:
+		result.damage = int(ceil(float(result.damage) * 1.30))
+	if not attack_move.is_empty():
+		var status := _roll_attack_move_status(attack_move)
+		var extra := int(floor(8.0 + maxi(0, int(attack_move.get("level", 0)) - int(attack_move.get("unlock", 0))) * 0.6))
+		if not status.is_empty():
+			extra = int(floor(float(extra) * 0.5))
+		result.damage += extra
+		if not status.is_empty():
+			add_status(session, "player", str(status.kind), randi_range(1, 3))
+	var wound := int(enemy_equipment.get("woundInflict", 0))
+	if wound > 0 and int(GameState.combat_state.hp) > 0:
+		var reduced_max := maxi(1, int(session.get("player_max_hp", _player_hp_max())) - wound)
+		session.player_max_hp = reduced_max
+		GameState.combat_state.hp = mini(int(GameState.combat_state.hp), reduced_max)
+	GameState.combat_state.hp = maxi(0, int(GameState.combat_state.hp) - int(result.damage))
+	session.player_hp = GameState.combat_state.hp
+	_track_player_state(session)
+	session.log.append("%s 造成 %d 点伤害" % [session.enemy.get("displayName", "敌人"), result.damage])
 	return result
+
+## 招式权重 = level − unlockLevel + 1（越熟的招权重越高，至少 1）；轮盘加权随机 1 个。
+func _weight_of(move: Dictionary) -> int:
+	return maxi(1, int(move.get("level", 0)) - int(move.get("unlock", 0)) + 1)
+
+func _weighted_pick(moves: Array) -> Dictionary:
+	var total := 0
+	for move in moves:
+		total += _weight_of(move)
+	var roll := randi() % maxi(1, total)
+	for move in moves:
+		roll -= _weight_of(move)
+		if roll < 0:
+			return move
+	return moves[moves.size() - 1]
+
+## 该招式在 100 级量表下的附带状态触发率（10%~30%）；仅登记在表中的招式槽位有效。
+func _roll_attack_move_status(move: Dictionary) -> Dictionary:
+	var unlock := int(move.get("unlock", 0))
+	if not ATTACK_MOVE_STATUS_TABLE.has(unlock):
+		return {}
+	var chance := 0.10 + float(maxi(0, unlock - 10)) / 90.0 * 0.20
+	if randf() >= chance:
+		return {}
+	return {"kind": ATTACK_MOVE_STATUS_TABLE[unlock]}
 
 func _npc_move(npc: Dictionary, kind: String) -> Dictionary:
 	var moves: Array = []
@@ -108,24 +172,45 @@ func _npc_move(npc: Dictionary, kind: String) -> Dictionary:
 				moves.append({"name": move.get("name", "招式"), "level": current, "unlock": int(move.get("unlockLevel", 0))})
 	if moves.is_empty() or randf() >= minf(0.55, 0.25 + moves.size() * 0.04):
 		return {}
-	return moves[randi() % moves.size()]
+	return _weighted_pick(moves)
 
 func enemy_action(session: Dictionary) -> Dictionary:
 	var hp := int(session.get("enemy_hp", 0))
 	var hp_max := maxi(1, int(session.get("enemy_max_hp", hp)))
 	var enemy_mp := int(session.get("enemy_mp", 0))
-	var enemy_ults := _npc_ults(session.enemy)
-	if not enemy_ults.is_empty() and enemy_mp >= int(enemy_ults[-1].get("mp_cost", 999)) and randf() < 0.35:
-		return _enemy_use_ult(session, enemy_ults[-1])
-	# NPCs use a conservative AI: recover when badly wounded and holding
-	# enough inner power, otherwise perform the normal attack. This preserves
-	# the old BattleController's non-player turn as a real decision point.
-	if hp < int(floor(float(hp_max) * 0.30)) and enemy_mp >= 8 and hp < hp_max:
+	var hp_ratio := float(hp) / float(hp_max)
+	var ai: Dictionary = session.enemy.get("ai", {})
+	var rest_hp_ratio := float(ai.get("restHpRatio", ENEMY_REST_HP_RATIO))
+	var rest_use_rate := float(ai.get("restUseRate", ENEMY_REST_USE_RATE))
+	var item_hp_ratio := float(ai.get("itemHpRatio", ENEMY_ITEM_HP_RATIO))
+	var item_use_rate := float(ai.get("itemUseRate", ENEMY_ITEM_USE_RATE))
+
+	# NPC AI 决策按优先级：1) 濒死且精力够 → 概率摸鱼；2) 体力低且有虚拟药水 → 概率用药；
+	# 3) 有可用绝招 → 35% 施展（优先高档）；4) 否则普攻。
+	if hp_ratio < rest_hp_ratio and enemy_mp >= ENEMY_REST_MIN_MP and randf() < rest_use_rate:
 		var heal := mini(enemy_mp, hp_max - hp)
-		session.enemy_hp = hp + heal
-		session.enemy_mp = enemy_mp - heal
-		session.log.append("%s 摸鱼恢复 %d 体力" % [session.enemy.get("displayName", "敌人"), heal])
-		return {"ok": true, "rest": true, "damage": 0, "message": "敌方摸鱼恢复 %d 体力" % heal}
+		if heal > 0:
+			session.enemy_hp = hp + heal
+			session.enemy_mp = enemy_mp - heal
+			session.log.append("%s 摸鱼恢复 %d 体力" % [session.enemy.get("displayName", "敌人"), heal])
+			return {"ok": true, "rest": true, "damage": 0, "message": "敌方摸鱼恢复 %d 体力" % heal}
+
+	var charges := int(ai.get("consumableCharges", 0))
+	if hp_ratio < item_hp_ratio and charges > 0 and randf() < item_use_rate:
+		var heal_amount := int(ai.get("consumableHeal", maxi(1, int(floor(float(hp_max) * ENEMY_CONSUMABLE_HEAL_RATIO)))))
+		session.enemy_hp = mini(hp_max, hp + heal_amount)
+		var updated_ai: Dictionary = ai.duplicate(true)
+		updated_ai.consumableCharges = charges - 1
+		session.enemy.ai = updated_ai
+		session.log.append("%s 服下一颗丹药，体力 +%d" % [session.enemy.get("displayName", "敌人"), heal_amount])
+		return {"ok": true, "item": true, "damage": 0, "message": "敌方服药回复 %d 体力" % heal_amount}
+
+	var enemy_ults := _npc_ults(session.enemy)
+	var affordable: Array = enemy_ults.filter(func(u): return enemy_mp >= int(u.get("mp_cost", 0)))
+	if not affordable.is_empty() and randf() < ENEMY_ULT_USE_RATE:
+		affordable.sort_custom(func(a, b): return int(a.get("tier", 1)) > int(b.get("tier", 1)))
+		return _enemy_use_ult(session, affordable[0])
+
 	return enemy_attack(session)
 
 func _npc_ults(npc: Dictionary) -> Array:
@@ -160,25 +245,26 @@ func _enemy_use_ult(session: Dictionary, ult: Dictionary) -> Dictionary:
 	var base_power := _enemy_attack_power(session.enemy)
 	var kind := str(ult.get("kind", "hugeDamage"))
 	var tier := int(ult.get("tier", 1))
+	var hit_bonus := float(ULT_HIT_BONUS.get(kind, 0.0))
 	var total_damage := 0
 	var landed := 0
 	var defense := _player_defense()
 	if kind == "multi":
 		var hits := 3 if tier == 1 else 5
 		for _index in hits:
-			var hit := GameState.resolve_attack(base_power * (0.55 if tier == 1 else 0.50), enemy_attributes, player_attributes, defense)
+			var hit := GameState.resolve_attack(base_power * (0.55 if tier == 1 else 0.50), enemy_attributes, player_attributes, defense, hit_bonus)
 			if hit.hit:
 				landed += 1
 				total_damage += int(hit.damage)
 	elif kind == "abnormal":
-		var abnormal := GameState.resolve_attack(base_power * (0.60 if tier == 1 else 0.70), enemy_attributes, player_attributes, defense)
+		var abnormal := GameState.resolve_attack(base_power * (0.60 if tier == 1 else 0.70), enemy_attributes, player_attributes, defense, hit_bonus)
 		if abnormal.hit:
 			landed = 1
 			total_damage = int(abnormal.damage)
 			if randf() < (0.80 if tier == 1 else 0.95):
 				add_status(session, "player", "paralysis", 1 if tier == 1 else randi_range(1, 2))
 	elif kind == "reduceMax":
-		var reduced := GameState.resolve_attack(base_power * (0.55 if tier == 1 else 0.65), enemy_attributes, player_attributes, defense)
+		var reduced := GameState.resolve_attack(base_power * (0.55 if tier == 1 else 0.65), enemy_attributes, player_attributes, defense, hit_bonus)
 		if reduced.hit:
 			landed = 1
 			total_damage = int(reduced.damage)
@@ -186,7 +272,7 @@ func _enemy_use_ult(session: Dictionary, ult: Dictionary) -> Dictionary:
 			session.player_max_hp = maxi(1, int(floor(float(session.get("player_max_hp", _player_hp_max())) * (1.0 - ratio))))
 			session.player_hp = mini(int(session.player_hp), int(session.player_max_hp))
 	else:
-		var huge := GameState.resolve_attack(base_power * (2.5 if tier == 1 else 4.0), enemy_attributes, player_attributes, defense)
+		var huge := GameState.resolve_attack(base_power * (2.5 if tier == 1 else 4.0), enemy_attributes, player_attributes, defense, hit_bonus)
 		if huge.hit:
 			landed = 1
 			total_damage = int(huge.damage)
@@ -218,14 +304,20 @@ func start_turn(session: Dictionary, side: String) -> Dictionary:
 	var statuses: Dictionary = session.get(status_key, {})
 	var message := ""
 	if int(statuses.get("poison", 0)) > 0:
+		# 中毒按当前体力上限的比例扣减上限本身（不直接伤及体力/伤势），与参考项目一致。
 		if side == "player":
-			var poison_damage := maxi(1, int(floor(float(GameState.combat_state.hp) * 0.10)))
-			GameState.combat_state.injury += poison_damage
-			GameState.combat_state.hp = mini(int(GameState.combat_state.hp), maxi(1, int(GameState.combat_state.hp) - poison_damage))
+			var player_max := maxi(1, int(session.get("player_max_hp", _player_hp_max())))
+			var drain := maxi(1, int(floor(float(player_max) * 0.10)))
+			session.player_max_hp = maxi(1, player_max - drain)
+			GameState.combat_state.hp = mini(int(GameState.combat_state.hp), int(session.player_max_hp))
 			session.player_hp = GameState.combat_state.hp
+			message = "中毒发作，体力上限 -%d" % drain
 		else:
-			session.enemy_hp = maxi(1, int(session.enemy_hp) - maxi(1, int(floor(float(session.enemy_hp) * 0.10))))
-		message = "中毒发作"
+			var enemy_max := maxi(1, int(session.get("enemy_max_hp", session.get("enemy_hp", 1))))
+			var enemy_drain := maxi(1, int(floor(float(enemy_max) * 0.10)))
+			session.enemy_max_hp = maxi(1, enemy_max - enemy_drain)
+			session.enemy_hp = mini(int(session.enemy_hp), int(session.enemy_max_hp))
+			message = "中毒发作，体力上限 -%d" % enemy_drain
 	var skipped := int(statuses.get("paralysis", 0)) > 0
 	for status in statuses.keys():
 		statuses[status] = int(statuses[status]) - 1
@@ -233,7 +325,7 @@ func start_turn(session: Dictionary, side: String) -> Dictionary:
 			statuses.erase(status)
 	session[status_key] = statuses
 	if skipped:
-		return {"can_act": false, "message": message + "，麻痹无法行动"}
+		return {"can_act": false, "message": (message + "，" if not message.is_empty() else "") + "麻痹无法行动"}
 	return {"can_act": true, "message": message}
 
 func add_status(session: Dictionary, side: String, status: String, turns: int) -> void:
@@ -260,25 +352,28 @@ func use_ult(session: Dictionary, ult_index: int = 0) -> Dictionary:
 		return {"ok": false, "message": "精力不足"}
 	GameState.combat_state.mp = int(GameState.combat_state.mp) - cost
 	var enemy_attributes: Dictionary = session.enemy.get("attributes", {})
+	var enemy_equipment := _npc_equipment_bonus(session.enemy)
+	var defense := GameState.defense_base(float(enemy_attributes.get("constitution", 0))) + float(enemy_equipment.get("defense", 0))
 	var base_power := _player_attack_power()
 	var kind := str(ult.get("kind", "hugeDamage"))
+	var hit_bonus := float(ULT_HIT_BONUS.get(kind, 0.0))
 	var total_damage := 0
 	var landed := 0
 	if kind == "multi":
 		var hits := 3 if int(ult.tier) == 1 else 5
 		for _index in hits:
-			var hit: Dictionary = GameState.resolve_attack(base_power * (0.55 if int(ult.tier) == 1 else 0.50), GameState.profile.get("attributes", {}), enemy_attributes, float(enemy_attributes.get("constitution", 0)) * 2.0)
+			var hit: Dictionary = GameState.resolve_attack(base_power * (0.55 if int(ult.tier) == 1 else 0.50), GameState.profile.get("attributes", {}), enemy_attributes, defense, hit_bonus)
 			if hit.hit:
 				landed += 1
 				total_damage += int(hit.damage)
 	elif kind == "abnormal":
-		var abnormal: Dictionary = GameState.resolve_attack(base_power * (0.60 if int(ult.tier) == 1 else 0.70), GameState.profile.get("attributes", {}), enemy_attributes, float(enemy_attributes.get("constitution", 0)) * 2.0)
+		var abnormal: Dictionary = GameState.resolve_attack(base_power * (0.60 if int(ult.tier) == 1 else 0.70), GameState.profile.get("attributes", {}), enemy_attributes, defense, hit_bonus)
 		if abnormal.hit:
 			landed = 1
 			total_damage = int(abnormal.damage)
 			if randf() < (0.80 if int(ult.tier) == 1 else 0.95): session.enemy_status.paralysis = 1 if int(ult.tier) == 1 else randi_range(1, 2)
 	elif kind == "reduceMax":
-		var reduced: Dictionary = GameState.resolve_attack(base_power * (0.55 if int(ult.tier) == 1 else 0.65), GameState.profile.get("attributes", {}), enemy_attributes, float(enemy_attributes.get("constitution", 0)) * 2.0)
+		var reduced: Dictionary = GameState.resolve_attack(base_power * (0.55 if int(ult.tier) == 1 else 0.65), GameState.profile.get("attributes", {}), enemy_attributes, defense, hit_bonus)
 		if reduced.hit:
 			landed = 1
 			total_damage = int(reduced.damage)
@@ -286,7 +381,7 @@ func use_ult(session: Dictionary, ult_index: int = 0) -> Dictionary:
 			session.enemy_max_hp = maxi(1, int(floor(float(session.enemy_max_hp) * (1.0 - ratio))))
 			session.enemy_hp = mini(session.enemy_hp, session.enemy_max_hp)
 	else:
-		var huge: Dictionary = GameState.resolve_attack(base_power * (2.5 if int(ult.tier) == 1 else 4.0), GameState.profile.get("attributes", {}), enemy_attributes, float(enemy_attributes.get("constitution", 0)) * 2.0)
+		var huge: Dictionary = GameState.resolve_attack(base_power * (2.5 if int(ult.tier) == 1 else 4.0), GameState.profile.get("attributes", {}), enemy_attributes, defense, hit_bonus)
 		if huge.hit:
 			landed = 1
 			total_damage = int(huge.damage)
@@ -316,24 +411,23 @@ func _initiative(player: Dictionary, enemy: Dictionary) -> bool:
 		return int(player.get("agility", 0)) > int(enemy.get("agility", 0))
 	return randf() >= 0.5
 
-func _hp_max(attributes: Dictionary) -> int:
-	return maxi(1, int(floor(140.0 * (1.0 + float(attributes.get("constitution", 0)) * 0.025))))
+func _hp_max(attributes: Dictionary, mp_max: int) -> int:
+	return GameState.hp_max_with_mp_boost(float(attributes.get("constitution", 0)), mp_max)
 
 func _player_hp_max() -> int:
-	var attributes: Dictionary = GameState.profile.get("attributes", {})
-	return maxi(1, int(floor(140.0 * (1.0 + float(attributes.get("constitution", 0)) * 0.025))) - int(GameState.combat_state.get("injury", 0)))
+	return GameState.player_effective_hp_max()
 
 func _player_attack_power() -> float:
 	var attributes: Dictionary = GameState.profile.get("attributes", {})
 	var bonus: Dictionary = SkillSystem.combat_bonus()
-	return maxf(1.0, float(attributes.get("strength", 0)) + float(bonus.get("attack", 0.0)) + float(InventorySystem.equipment_bonus().get("attack", 0)))
+	return maxf(1.0, GameState.attack_base(float(attributes.get("strength", 0))) + float(bonus.get("attack", 0.0)) + float(InventorySystem.equipment_bonus().get("attack", 0)))
 
 func _player_defense() -> float:
 	var attributes: Dictionary = GameState.profile.get("attributes", {})
-	return float(attributes.get("constitution", 0)) * 2.0 + float(SkillSystem.combat_bonus().get("defense", 0.0)) + float(InventorySystem.equipment_bonus().get("defense", 0))
+	return GameState.defense_base(float(attributes.get("constitution", 0))) + float(SkillSystem.combat_bonus().get("defense", 0.0)) + float(InventorySystem.equipment_bonus().get("defense", 0))
 
 func _enemy_attack_power(enemy: Dictionary) -> float:
-	return maxf(1.0, float(enemy.get("attributes", {}).get("strength", 1)) + float(_npc_equipment_bonus(enemy).get("attack", 0)))
+	return maxf(1.0, GameState.attack_base(float(enemy.get("attributes", {}).get("strength", 1))) + float(_npc_equipment_bonus(enemy).get("attack", 0)))
 
 func _npc_equipment_bonus(npc: Dictionary) -> Dictionary:
 	var total := {"attack": 0, "defense": 0, "hit": 0, "dodge": 0, "crit": 0, "woundInflict": 0, "parry": 0}

@@ -77,6 +77,13 @@ var inventory_focus_category := true
 var practice_open := false
 var practice_index := 0
 var practice_items: Array[String] = []
+var skill_book_open := false
+var skill_book_categories: Array[String] = ["编码", "思维", "架构", "招架", "灵感"]
+var skill_book_category_index := 0
+var skill_book_focus_category := true
+var skill_book_items: Array[String] = []
+var skill_book_index := 0
+var SKILL_BOOK_THEMES: Array[String] = ["code", "tune", "arch", "parry", "knowledge"]
 var dialogue_open := false
 var dialogue_pages: Array[String] = []
 var dialogue_page_index := 0
@@ -215,6 +222,9 @@ func _input(event: InputEvent) -> void:
 		if practice_open:
 			_handle_practice_key(event.keycode)
 			return
+		if skill_book_open:
+			_handle_skill_book_key(event.keycode)
+			return
 		if cyber_open:
 			_handle_cyber_key(event.keycode)
 			return
@@ -261,7 +271,7 @@ func _on_virtual_key_up(keycode: int) -> void:
 		virtual_direction.x = 0.0
 
 func _has_modal_input() -> bool:
-	return delete_confirm_open or dialogue_open or trade_open or inventory_open or learn_open or practice_open or cyber_open or npc_menu_open or battle_active or menu_open or details_panel.visible or dialogue_panel.visible
+	return delete_confirm_open or dialogue_open or trade_open or inventory_open or learn_open or practice_open or skill_book_open or cyber_open or npc_menu_open or battle_active or menu_open or details_panel.visible or dialogue_panel.visible
 
 func _dispatch_virtual_key(keycode: int) -> void:
 	var event := InputEventKey.new()
@@ -297,8 +307,7 @@ func _interact_prop() -> bool:
 		GameState.profile.vitals = vitals
 		message = str(properties.get("text", "你喝了些水。")) + "（饮水 +%d）" % gain
 	elif event == "bountyBoard":
-		var target := QuestSystem.get_bounty_target()
-		message = "悬赏告示：" + ("目标 %s，地点 %s" % [target.get("target_name", ""), target.get("map_id", "")] if not target.is_empty() else "当前没有悬赏")
+		message = QuestSystem.bounty_board_text()
 	elif event == "deleteSave":
 		_show_delete_confirm()
 		return true
@@ -399,8 +408,7 @@ func _refresh_npc_menu() -> void:
 			npc_menu_actions.append("sell")
 			npc_menu_labels.append("典当")
 		var teach_options := SkillSystem.learn_options_for_npc(nearby_npc_id)
-		var join_gate: Dictionary = npc.get("joinSect", {})
-		if not join_gate.is_empty() and str(GameState.profile.get("sect", "")) != str(npc.get("sect", "")):
+		if SkillSystem.can_join(nearby_npc_id):
 			npc_menu_actions.append("join")
 			npc_menu_labels.append("拜师")
 		if not teach_options.is_empty():
@@ -550,18 +558,22 @@ func _handle_trade_key(key: Key) -> void:
 
 func _refresh_trade_list() -> void:
 	npc_menu_content.visible = true
-	var lines := ["购买" if trade_mode == "buy" else "典当", "左栏分类 · 右栏物品 · ↑↓选择 · 空格确认", ""]
+	var money := int(GameState.profile.get("vitals", {}).get("money", 0))
+	var lines := ["— %s —" % ("购买" if trade_mode == "buy" else "典当"), "持有 %d Token" % money, "左栏分类 · 右栏物品 · ↑↓选择 · 空格确认", ""]
 	for category_index in trade_categories.size():
 		lines.append(_cursor(trade_categories[category_index], category_index == trade_category_index))
 	lines.append("")
 	if trade_items.is_empty():
-		lines.append("（没有可用物品）")
+		lines.append("货已售罄" if trade_mode == "buy" else "已无可卖之物")
 	else:
 		for index in trade_items.size():
 			var item_id := str(trade_items[index])
 			var definition: Dictionary = DataRegistry.get_item(item_id)
 			var price := int(definition.get("price", 0)) if trade_mode == "buy" else int(floor(float(definition.get("price", 0)) * 0.25))
 			lines.append(_cursor("%s (%d Token)" % [definition.get("name", item_id), price], not trade_focus_category and index == trade_index))
+	if not trade_focus_category and not trade_items.is_empty():
+		lines.append("")
+		lines.append(str(DataRegistry.get_item(str(trade_items[trade_index])).get("description", "暂无说明")))
 	npc_menu_content.text = "\n".join(lines)
 
 func _item_category(item_id: String) -> String:
@@ -572,11 +584,17 @@ func _item_category(item_id: String) -> String:
 	var slot := str(definition.get("slot", ""))
 	return {"weapon": "武器", "armor": "防具", "shoe": "鞋子", "accessory": "饰品"}.get(slot, "其他")
 
+const TRADE_CATEGORY_ORDER := ["食物", "药物", "武器", "防具", "鞋子", "饰品", "其他"]
+
 func _rebuild_trade_categories() -> void:
-	trade_categories.clear()
+	var present: Array[String] = []
 	for item_id in trade_all_items:
 		var category := _item_category(str(item_id))
-		if category not in trade_categories:
+		if category not in present:
+			present.append(category)
+	trade_categories.clear()
+	for category in TRADE_CATEGORY_ORDER:
+		if category in present:
 			trade_categories.append(category)
 	if trade_categories.is_empty():
 		trade_categories.append("其他")
@@ -590,6 +608,8 @@ func _refresh_trade_items() -> void:
 	for item_id in trade_all_items:
 		if _item_category(str(item_id)) == selected:
 			trade_items.append(item_id)
+	if trade_mode == "buy":
+		trade_items.sort_custom(func(a, b): return int(DataRegistry.get_item(str(a)).get("price", 0)) < int(DataRegistry.get_item(str(b)).get("price", 0)))
 	trade_index = clampi(trade_index, 0, maxi(0, trade_items.size() - 1))
 	_refresh_trade_list()
 
@@ -919,7 +939,7 @@ func _select_skill_menu() -> void:
 			_close_menu()
 		3:
 			_close_menu()
-			_show_skill_book()
+			_open_skill_book()
 			return
 	_refresh_status()
 
@@ -1071,8 +1091,8 @@ func _show_profile_panel() -> void:
 	var vitals: Dictionary = GameState.profile.get("vitals", {})
 	var attrs: Dictionary = GameState.profile.get("attributes", {})
 	var base: Dictionary = GameState.profile.get("base_attributes", attrs)
-	var hp_max := _npc_hp(GameState.profile) - int(GameState.combat_state.get("injury", 0))
-	var mp_max: int = int(SkillSystem.combat_bonus().get("mp_max", 0))
+	var hp_max := _npc_hp(GameState.profile, true) - int(GameState.combat_state.get("injury", 0))
+	var mp_max: int = GameState.player_mp_max()
 	var capacity := 200 + int(attrs.get("strength", 25)) * 10
 	var appearance := int(vitals.get("appearance", 0))
 	details_panel.visible = true
@@ -1175,11 +1195,18 @@ func _render_inventory_widgets() -> void:
 			var item_id := inventory_items[index]
 			var definition: Dictionary = DataRegistry.get_item(item_id)
 			var y := content_top + 8.0 * scale + row * index
-			_detail_label(str(definition.get("name", item_id)), Rect2(Vector2(split + pad, y), Vector2(area.x - split - 110.0 * scale, row)), 13)
+			var mark := ""
+			if str(definition.get("kind", "")) == "equip":
+				mark = "■  " if not InventorySystem.equipped_slot(item_id).is_empty() else "□  "
+			_detail_label(mark + str(definition.get("name", item_id)), Rect2(Vector2(split + pad, y), Vector2(area.x - split - 110.0 * scale, row)), 13)
 			_detail_label("× %d" % InventorySystem.count(item_id), Rect2(Vector2(area.x - 95.0 * scale, y), Vector2(70.0 * scale, row)), 12, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.55, 0.55, 0.55, 1))
 			if not inventory_focus_category and index == inventory_index:
 				_detail_selection(Rect2(Vector2(split + pad * 0.5, y), Vector2(area.x - split - pad * 1.5, row)))
-	_detail_label("↑↓ 选分类　·　空格/→ 查看　·　ESC 返回", Rect2(Vector2(pad, area.y - 37.0 * scale), Vector2(area.x - pad * 2.0, 28.0 * scale)), 11, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
+	var footer := "↑↓ 选分类　·　空格/→ 查看　·　ESC 返回"
+	if not inventory_focus_category and not inventory_items.is_empty():
+		var focused: Dictionary = DataRegistry.get_item(inventory_items[inventory_index])
+		footer = str(focused.get("description", "暂无说明"))
+	_detail_label(footer, Rect2(Vector2(pad, area.y - 37.0 * scale), Vector2(area.x - pad * 2.0, 28.0 * scale)), 11, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
 
 func _menu_label(text: String, rect: Rect2, selected: bool) -> Label:
 	var label := Label.new()
@@ -1345,7 +1372,7 @@ func _refresh_battle() -> void:
 				label = str(battle_submenu_items[index].get("name", "绝招"))
 			lines.append(_cursor(label, index == battle_submenu_index))
 		lines[0] = "战斗：%s" % battle_enemy.get("display_name", nearby_npc_id)
-		lines[1] = "我方体力：%d / %d" % [GameState.combat_state.hp, _npc_hp(GameState.profile)]
+		lines[1] = "我方体力：%d / %d" % [GameState.combat_state.hp, battle_session.get("player_max_hp", _npc_hp(GameState.profile, true))]
 		lines[2] = "敌方体力：%d / %d" % [battle_enemy_hp, battle_session.get("enemy_max_hp", battle_enemy_hp)]
 		lines[3] = "状态：%s" % battle_session.get("player_status", {})
 	battle_content.text = "\n".join(lines)
@@ -1358,9 +1385,11 @@ func _end_battle(result_message: String) -> void:
 	message = result_message
 	_refresh_status()
 
-func _npc_hp(npc: Dictionary) -> int:
+func _npc_hp(npc: Dictionary, is_player := false) -> int:
+	if is_player:
+		return GameState.player_hp_max()
 	var attributes: Dictionary = npc.get("attributes", {})
-	return maxi(1, int(floor(140.0 * (1.0 + float(attributes.get("constitution", 0)) * 0.025))))
+	return GameState.hp_max_with_mp_boost(float(attributes.get("constitution", 0)), int(npc.get("mp", 0)))
 
 func _show_inventory() -> void:
 	inventory_open = true
@@ -1420,21 +1449,63 @@ func _profile_text() -> String:
 	var appearance := int(vitals.get("appearance", 0))
 	var attrs: Dictionary = GameState.profile.get("attributes", {})
 	var base: Dictionary = GameState.profile.get("base_attributes", attrs)
-	var hp_max := _npc_hp(GameState.profile) - int(GameState.combat_state.get("injury", 0))
-	var mp_max: int = int(SkillSystem.combat_bonus().get("mp_max", 0))
+	var hp_max := _npc_hp(GameState.profile, true) - int(GameState.combat_state.get("injury", 0))
+	var mp_max: int = GameState.player_mp_max()
 	var capacity := 200 + int(attrs.get("strength", 25)) * 10
 	return "%s　　　　　　　　　%s\n年龄：%d　　　　　　　　%s\n%s　　　　　　　　　%s\n\n食物：%d / %d　　　　　　饮水：%d / %d\n体力：%d / %d　　　　　　精力：%d / %d\n编码：%d / %d　　　　　　思维：%d / %d\n架构：%d / %d　　　　　　灵感：%d / %d\n\nToken：%d　　　　　　　 潜能：%d\n经验：%d" % [GameState.profile.get("name", ""), _gender_label(str(GameState.profile.get("gender", ""))), vitals.get("age", 18), _appearance_title(appearance, str(GameState.profile.get("gender", "male"))), GameState.profile.get("sect", "未拜师"), _skill_rating(), vitals.get("food", 0), capacity, vitals.get("water", 0), capacity, GameState.combat_state.get("hp", 0), hp_max, GameState.combat_state.get("mp", 0), mp_max, attrs.get("strength", 0), base.get("strength", 0), attrs.get("agility", 0), base.get("agility", 0), attrs.get("constitution", 0), base.get("constitution", 0), attrs.get("wisdom", 0), base.get("wisdom", 0), vitals.get("money", 0), vitals.get("potential", 0), vitals.get("experience", 0)]
 
-func _skills_text() -> String:
-	var skills: Dictionary = SkillSystem.ensure_skills()
-	var lines := ["功法", ""]
-	for skill_id in skills.get("levels", {}):
-		var definition: Dictionary = DataRegistry.get_skill(str(skill_id))
-		lines.append("%s：%d级" % [definition.get("name", skill_id), int(skills.levels[skill_id])])
-	return "\n".join(lines)
-
-func _show_skill_book() -> void:
+func _open_skill_book() -> void:
+	skill_book_open = true
+	skill_book_category_index = 0
+	skill_book_focus_category = true
 	details_panel.visible = true
+	_refresh_skill_book_panel()
+
+func _handle_skill_book_key(key: Key) -> void:
+	if key == KEY_ESCAPE:
+		if skill_book_focus_category:
+			skill_book_open = false
+			details_panel.visible = false
+		else:
+			skill_book_focus_category = true
+		_refresh_skill_book_panel()
+		return
+	if key == KEY_LEFT:
+		skill_book_focus_category = true
+	elif skill_book_focus_category and key in [KEY_UP, KEY_DOWN]:
+		var delta := -1 if key == KEY_UP else 1
+		skill_book_category_index = posmod(skill_book_category_index + delta, skill_book_categories.size())
+	elif skill_book_focus_category and key in [KEY_RIGHT, KEY_SPACE]:
+		skill_book_focus_category = false
+		skill_book_index = 0
+	elif not skill_book_focus_category and key == KEY_UP:
+		skill_book_index = posmod(skill_book_index - 1, maxi(1, skill_book_items.size()))
+	elif not skill_book_focus_category and key == KEY_DOWN:
+		skill_book_index = posmod(skill_book_index + 1, maxi(1, skill_book_items.size()))
+	elif not skill_book_focus_category and key == KEY_SPACE and not skill_book_items.is_empty():
+		var skill_id := skill_book_items[skill_book_index]
+		var theme := SKILL_BOOK_THEMES[skill_book_category_index]
+		var equipped_id := str(SkillSystem.ensure_skills().get("equipped", {}).get(theme, ""))
+		var result: Dictionary = SkillSystem.unequip(skill_id) if skill_id == equipped_id else SkillSystem.equip(skill_id)
+		message = str(result.get("message", ""))
+	_refresh_skill_book_panel()
+
+func _refresh_skill_book_panel() -> void:
+	var theme := SKILL_BOOK_THEMES[skill_book_category_index]
+	var sect := str(GameState.profile.get("sect", ""))
+	var levels: Dictionary = SkillSystem.ensure_skills().get("levels", {})
+	skill_book_items = []
+	var basic_id := str(SkillSystem.THEME_BASIC_SKILL.get(theme, ""))
+	if int(levels.get(basic_id, 0)) > 0:
+		skill_book_items.append(basic_id)
+	for skill_id in levels:
+		var definition: Dictionary = DataRegistry.get_skill(str(skill_id))
+		if str(definition.get("category", "")) == "sect" and str(definition.get("theme", "")) == theme and str(definition.get("sect", "")) == sect and int(levels[skill_id]) > 0:
+			skill_book_items.append(str(skill_id))
+	skill_book_index = clampi(skill_book_index, 0, maxi(0, skill_book_items.size() - 1))
+	_render_skill_book_widgets()
+
+func _render_skill_book_widgets() -> void:
 	details_content.visible = true
 	details_content.text = ""
 	_clear_details_widgets()
@@ -1443,22 +1514,28 @@ func _show_skill_book() -> void:
 	var pad := 20.0 * scale
 	var split := area.x * 0.34
 	var row := 30.0 * scale
-	var categories := ["编码", "思维", "架构", "招架", "灵感"]
 	var content_top := _detail_chrome("功法", "SKILLS / 装备与修习")
 	_detail_rule(Vector2(split, content_top), Vector2(split + 1.0, area.y - 46.0 * scale), Color("c5bfb2"))
-	for index in categories.size():
+	for index in skill_book_categories.size():
 		var y := content_top + 8.0 * scale + row * index
-		_detail_label(categories[index], Rect2(Vector2(pad * 1.4, y), Vector2(split - pad * 1.6, row)), 13)
-		if index == 0:
+		_detail_label(skill_book_categories[index], Rect2(Vector2(pad * 1.4, y), Vector2(split - pad * 1.6, row)), 13)
+		if skill_book_focus_category and index == skill_book_category_index:
 			_detail_selection(Rect2(Vector2(pad, y), Vector2(split - pad * 1.1, row)))
-	var skills: Dictionary = SkillSystem.ensure_skills()
-	var y := content_top + 8.0 * scale
-	for skill_id in skills.get("levels", {}):
-		var definition: Dictionary = DataRegistry.get_skill(str(skill_id))
-		_detail_label("■  " + str(definition.get("name", skill_id)), Rect2(Vector2(split + pad, y), Vector2(area.x - split - 100.0 * scale, row)), 13)
-		_detail_label("%d级" % int(skills.levels[skill_id]), Rect2(Vector2(area.x - 90.0 * scale, y), Vector2(65.0 * scale, row)), 12, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.55, 0.55, 0.55, 1))
-		y += row
-	_detail_label("↑↓ 选分类　·　空格/→ 查看　·　ESC 返回", Rect2(Vector2(pad, area.y - 37.0 * scale), Vector2(area.x - pad * 2.0, 28.0 * scale)), 11, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
+	var theme := SKILL_BOOK_THEMES[skill_book_category_index]
+	var equipped_id := str(SkillSystem.ensure_skills().get("equipped", {}).get(theme, ""))
+	if skill_book_items.is_empty():
+		_detail_label("（该分类尚未学会功法）", Rect2(Vector2(split + pad, content_top + 16.0 * scale), Vector2(area.x - split - pad * 2.0, row)), 12, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
+	else:
+		for index in skill_book_items.size():
+			var skill_id := skill_book_items[index]
+			var definition: Dictionary = DataRegistry.get_skill(skill_id)
+			var y := content_top + 8.0 * scale + row * index
+			var mark := "■  " if skill_id == equipped_id else "□  "
+			_detail_label(mark + str(definition.get("name", skill_id)), Rect2(Vector2(split + pad, y), Vector2(area.x - split - 100.0 * scale, row)), 13)
+			_detail_label("%d级" % int(SkillSystem.level(skill_id)), Rect2(Vector2(area.x - 90.0 * scale, y), Vector2(65.0 * scale, row)), 12, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.55, 0.55, 0.55, 1))
+			if not skill_book_focus_category and index == skill_book_index:
+				_detail_selection(Rect2(Vector2(split + pad * 0.5, y), Vector2(area.x - split - pad * 1.5, row)))
+	_detail_label("↑↓ 选分类　·　空格/→ 查看　·　空格 装备/卸下　·　ESC 返回", Rect2(Vector2(pad, area.y - 37.0 * scale), Vector2(area.x - pad * 2.0, 28.0 * scale)), 11, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
 
 func _gender_label(gender: String) -> String:
 	return "女" if gender.to_lower() == "female" else "男" if gender.to_lower() == "male" else "未知"
@@ -1619,13 +1696,11 @@ func _try_map_transition() -> void:
 			return
 
 func _try_cyber_teleport() -> void:
-	var skills: Dictionary = SkillSystem.ensure_skills()
-	var tune_id := str(skills.get("equipped", {}).get("tune", ""))
-	if SkillSystem.level("basicAgility") < 30 or SkillSystem.level(tune_id) < 30:
+	if SkillSystem.level("basicAgility") < 30 or SkillSystem.equipped_sect_skill_level("tune") < 30:
 		message = "须装备基础思维与高级身法且均达到 30 级，方可赛博传送"
 		_refresh_status()
 		return
-	var mp_max: int = int(SkillSystem.combat_bonus().get("mp_max", 0))
+	var mp_max: int = GameState.player_mp_max()
 	var cost := maxi(1, int(ceil(float(mp_max) / 3.0)))
 	if int(GameState.combat_state.mp) < cost:
 		message = "精力不足，赛博传送需要 %d 精力" % cost
@@ -1652,8 +1727,7 @@ func _try_cyber_teleport() -> void:
 	_refresh_cyber_menu(cost)
 
 func _handle_cyber_key(key: Key) -> void:
-	var skills := SkillSystem.combat_bonus()
-	var cost := maxi(1, int(ceil(float(int(skills.get("mp_max", 0))) / 3.0)))
+	var cost := maxi(1, int(ceil(float(GameState.player_mp_max()) / 3.0)))
 	if key == KEY_ESCAPE:
 		cyber_open = false
 		details_panel.visible = false

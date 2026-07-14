@@ -13,6 +13,9 @@ func _line(definition: Dictionary, key: String, fallback: String, values: Dictio
 		result = result.replace("{" + str(name) + "}", str(values[name]))
 	return result
 
+func _format_reward(reward: Dictionary) -> String:
+	return "%d 经验、%d Token、%d 潜能" % [int(reward.get("experience", 0)), int(reward.get("money", 0)), int(reward.get("potential", 0))]
+
 func _on_cooldown(generator_id: String) -> bool:
 	return GameState.game_time_sec < float(cooldown_until.get(generator_id, 0.0))
 
@@ -92,13 +95,16 @@ func interact_npc(npc_id: String) -> String:
 
 	var runtime := _active_for_npc(npc_id)
 	if not runtime.is_empty():
-		var runtime_id := str(runtime.get("generator_id", ""))
-		if runtime_id.begins_with("generator:"):
-			var generator_id := runtime_id.trim_prefix("generator:")
+		var generator_id := str(runtime.get("generator_id", ""))
+		if not generator_id.is_empty():
+			var definition: Dictionary = DataRegistry.quest_generators.get(generator_id, {})
 			if runtime.get("target", {}) is Dictionary and str(runtime.target.get("target_id", "")) == npc_id:
 				var advanced := advance_generator(generator_id, 1)
-				return "目标已完成，获得奖励：%s" % str(advanced.get("reward", {}))
-			return _line(DataRegistry.quest_generators.get(generator_id, {}), "inProgress", "任务进行中。")
+				if not bool(advanced.get("ok", false)):
+					return str(advanced.get("message", "任务已完成"))
+				return _generator_advance_message(definition, advanced, "targetTalk", "「知道了知道了」{reward}")
+			var target_data: Dictionary = runtime.get("target", {})
+			return _line(definition, "inProgress", "任务进行中。", {"target": target_data.get("target_name", ""), "map": target_data.get("map_id", "")})
 	return ""
 
 func offer(quest_id: String) -> Dictionary:
@@ -225,6 +231,7 @@ func advance_generator(generator_id: String, amount: int = 1) -> Dictionary:
 		return {"ok": false, "message": "没有进行中的环任务"}
 	var definition: Dictionary = DataRegistry.quest_generators.get(generator_id, {})
 	var runtime: Dictionary = active[runtime_id]
+	var target_data: Dictionary = runtime.get("target", {}) if runtime.get("target", {}) is Dictionary else {}
 	runtime.progress = int(ring_progress.get(generator_id, runtime.get("progress", 0))) + maxi(0, amount)
 	var ring_size := maxi(1, int(definition.get("ringSize", 1)))
 	if int(runtime.progress) < ring_size:
@@ -233,7 +240,7 @@ func advance_generator(generator_id: String, amount: int = 1) -> Dictionary:
 		_grant_reward(step_reward)
 		cooldown_until[generator_id] = GameState.game_time_sec + float(definition.get("cooldownSec", 30))
 		active.erase(runtime_id)
-		return {"ok": true, "complete": false, "progress": runtime.progress, "required": ring_size, "reward": step_reward}
+		return {"ok": true, "complete": false, "progress": runtime.progress, "required": ring_size, "reward": step_reward, "target": target_data}
 	var round_index := int(runtime.get("round", 1))
 	var reward: Dictionary = _scaled_reward(definition, runtime.get("reward", _base_reward(definition)), round_index)
 	var vitals: Dictionary = GameState.profile.get("vitals", {})
@@ -246,32 +253,50 @@ func advance_generator(generator_id: String, amount: int = 1) -> Dictionary:
 	ring_progress[generator_id] = 0
 	active.erase(runtime_id)
 	cooldown_until[generator_id] = GameState.game_time_sec + float(definition.get("cooldownSec", 30))
-	return {"ok": true, "complete": true, "progress": 0, "required": ring_size, "reward": reward}
+	return {"ok": true, "complete": true, "progress": 0, "required": ring_size, "reward": reward, "target": target_data}
+
+## 环任务推进后的展示文案：talk_key 按触发场景传入实际使用的 lines key（谈话用 targetTalk，击杀用 done），
+## 环满时追加 ringDone 彩蛋文案。
+func _generator_advance_message(definition: Dictionary, advanced: Dictionary, talk_key: String, fallback: String) -> String:
+	var target_data: Dictionary = advanced.get("target", {})
+	var message := _line(definition, talk_key, fallback, {"target": target_data.get("target_name", ""), "map": target_data.get("map_id", ""), "reward": _format_reward(advanced.get("reward", {}))})
+	if bool(advanced.get("complete", false)):
+		var ring_done_line := str(definition.get("lines", {}).get("ringDone", ""))
+		if not ring_done_line.is_empty():
+			message += "\n" + ring_done_line
+	return message
 
 func abandon(quest_id: String) -> void:
 	active.erase(quest_id)
 
 func abandon_active() -> Dictionary:
 	if active.is_empty():
-		return {"ok": false, "message": "没有进行中的任务"}
+		return {"ok": false, "message": "你没有在办的差事。"}
 	var runtime_id := str(active.keys()[0])
 	var runtime: Dictionary = active[runtime_id]
 	var generator_id := str(runtime.get("generator_id", ""))
+	var name := ""
+	var ring_reset := false
 	if runtime_id == "novice_darkxue_project":
+		name = str(runtime.get("target", "项目"))
 		cooldown_until[runtime_id] = GameState.game_time_sec + float(DataRegistry.get_quest(runtime_id).get("cooldownSec", 30))
 	elif runtime_id.begins_with("generator:"):
 		var definition: Dictionary = DataRegistry.quest_generators.get(generator_id, {})
 		var kind := str(definition.get("type", ""))
+		var target_data: Dictionary = runtime.get("target", {}) if runtime.get("target", {}) is Dictionary else {}
+		name = str(target_data.get("target_name", definition.get("title", generator_id)))
+		if kind in ["ring", "bountyRing", "killRing"]:
+			ring_reset = true
 		if kind == "ring":
 			ring_progress[generator_id] = 0
 		elif kind in ["bounty", "errand", "bountyRing", "killRing"]:
 			cooldown_until[generator_id] = GameState.game_time_sec + float(definition.get("cooldownSec", 30))
-		var target = runtime.get("target", {})
-		if target is Dictionary and str(target.get("target_id", "")).begins_with("bounty_target_"):
-			NpcSystem.unregister_runtime(str(target.get("target_id", "")))
+		if str(target_data.get("target_id", "")).begins_with("bounty_target_"):
+			NpcSystem.unregister_runtime(str(target_data.get("target_id", "")))
 			bounty_target = {}
 	active.erase(runtime_id)
-	return {"ok": true, "message": "已放弃任务"}
+	var suffix := "，这一环的计数从头再来。" if ring_reset else "。"
+	return {"ok": true, "message": "你放弃了差事（%s）%s" % [name, suffix]}
 
 func offer_bounty(generator_id: String = "bountyring_xiaobuer") -> Dictionary:
 	var definition: Dictionary = DataRegistry.quest_generators.get(generator_id, {})
@@ -292,6 +317,12 @@ func offer_bounty(generator_id: String = "bountyring_xiaobuer") -> Dictionary:
 
 func get_bounty_target() -> Dictionary:
 	return bounty_target
+
+func bounty_board_text(generator_id: String = "bountyring_xiaobuer") -> String:
+	if bounty_target.is_empty():
+		return "暗网悬赏榜暂时空着，去找小不二接一单吧。"
+	var definition: Dictionary = DataRegistry.quest_generators.get(generator_id, {})
+	return _line(definition, "inProgress", "「{target}」已在「{map}」，请速速将其捉拿归案！", {"target": bounty_target.get("target_name", ""), "map": bounty_target.get("map_id", "")})
 
 func get_active_target() -> Dictionary:
 	for runtime_id in active:
@@ -315,7 +346,10 @@ func on_enemy_defeated(enemy_id: String) -> String:
 		if str(target.get("target_id", "")) != enemy_id:
 			continue
 		var generator_id := str(runtime.get("generator_id", ""))
+		var definition: Dictionary = DataRegistry.quest_generators.get(generator_id, {})
 		var result: Dictionary = advance_generator(generator_id, 1)
 		clear_bounty_target()
-		return "悬赏目标已击败，%s" % result.get("message", "任务进度推进")
+		if not bool(result.get("ok", false)):
+			return str(result.get("message", "任务进度推进"))
+		return _generator_advance_message(definition, result, "done", "已击败{target}，获得{reward}")
 	return ""

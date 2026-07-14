@@ -62,7 +62,8 @@ func resolve_flee(session: Dictionary, lethal: bool = true) -> String:
 
 func _apply_lethal_wounds(session: Dictionary) -> void:
 	var damage_taken := maxi(0, int(session.get("initial_player_hp", GameState.combat_state.hp)) - int(GameState.combat_state.hp))
-	GameState.combat_state.injury = maxi(0, int(GameState.combat_state.injury) + int(ceil(damage_taken * 0.2)))
+	var reduce := SkillSystem.injury_reduce()
+	GameState.combat_state.injury = maxi(0, int(GameState.combat_state.injury) + int(ceil(damage_taken * 0.2 * (1.0 - reduce))))
 	var appearance_drops := 0
 	if bool(session.get("player_reached_zero", false)) and randf() < 0.30:
 		appearance_drops += 1
@@ -76,12 +77,18 @@ func _apply_lethal_wounds(session: Dictionary) -> void:
 	GameState.combat_state.hp = mini(_effective_hp_max(), int(GameState.combat_state.hp))
 
 func _effective_hp_max() -> int:
-	var attributes: Dictionary = GameState.profile.get("attributes", {})
-	var maximum := int(floor(140.0 * (1.0 + float(attributes.get("constitution", 0)) * 0.025)))
-	return maxi(1, maximum - int(GameState.combat_state.get("injury", 0)))
+	return GameState.player_effective_hp_max()
 
+## 综合技能等级 = max(加权总和, 单科峰值)，与参考项目 SkillRating.computeRatingScore 一致：
+## 基础技能按 1 倍、门派技能按 2 倍计入总和；峰值取未加权的单科最高等级。
 func _rating(enemy: Dictionary) -> int:
 	var levels: Dictionary = enemy.get("skillLevels", {})
-	var total := 0
-	for value in levels.values(): total += int(value)
-	return maxi(1, int(floor(float(total) / maxi(1, levels.size()))))
+	var power := 0
+	var peak := 0
+	for skill_id in levels:
+		var lv := int(levels[skill_id])
+		var definition: Dictionary = DataRegistry.get_skill(str(skill_id))
+		var weight := 2 if str(definition.get("category", "")) == "sect" else 1
+		power += lv * weight
+		peak = maxi(peak, lv)
+	return maxi(1, maxi(power, peak))

@@ -181,5 +181,4 @@ func list_entries(kind: String = "") -> Array:
 	return result
 
 func _hp_max() -> int:
-	var attributes: Dictionary = GameState.profile.get("attributes", {})
-	return maxi(1, int(floor(140.0 * (1.0 + float(attributes.get("constitution", 0)) * 0.025))) - int(GameState.combat_state.get("injury", 0)))
+	return GameState.player_effective_hp_max()

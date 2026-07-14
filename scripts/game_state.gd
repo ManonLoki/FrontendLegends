@@ -101,12 +101,49 @@ func delete_save() -> void:
 	if FileAccess.file_exists(SAVE_PATH):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE_PATH))
 
-func _true_hp_max() -> int:
+## 四维以 25 为中性点的统一软修正（对齐参考项目 AttributeFormulas.ts）。
+const ATTRIBUTE_NEUTRAL := 25.0
+
+func centered_scale(value: float, per_point: float, lo: float, hi: float) -> float:
+	return clampf(1.0 + (maxf(0.0, floor(value)) - ATTRIBUTE_NEUTRAL) * per_point, lo, hi)
+
+## 编码 → 基础攻击：编码本值 × 专精修正。
+func attack_base(strength: float) -> float:
+	var s := maxf(0.0, floor(strength))
+	return maxf(1.0, floor(s * centered_scale(s, 0.006, 0.85, 1.15)))
+
+## 架构 → 防御：原架构×2 保持中性点，再按架构做软修正。
+func defense_base(constitution: float) -> float:
+	var c := maxf(0.0, floor(constitution))
+	return maxf(0.0, floor(c * 2.0 * centered_scale(c, 0.004, 0.90, 1.12)))
+
+## 架构 → 冥想速度/内力上限修正。
+func meditation_modifier(constitution: float) -> float:
+	return centered_scale(constitution, 0.02, 0.60, 1.60)
+
+func base_hp_max(constitution: float) -> int:
+	return maxi(1, int(floor(140.0 * (1.0 + maxf(0.0, constitution) * 0.025))))
+
+## 体力上限 = 基础体力 + 精力反哺（每点精力上限 +0.2 点体力上限）。
+func hp_max_with_mp_boost(constitution: float, mp_max: int) -> int:
+	return base_hp_max(constitution) + int(floor(maxf(0.0, float(mp_max)) * 0.2))
+
+## 玩家精力上限即精力修为（neigong）本身。
+func player_mp_max() -> int:
+	return maxi(0, int(profile.get("vitals", {}).get("neigong", 0)))
+
+func player_hp_max() -> int:
 	var attributes: Dictionary = profile.get("attributes", {})
-	return maxi(1, int(floor(140.0 * (1.0 + float(attributes.get("constitution", 0)) * 0.025))))
+	return hp_max_with_mp_boost(float(attributes.get("constitution", 0)), player_mp_max())
+
+func player_effective_hp_max() -> int:
+	return maxi(1, player_hp_max() - int(combat_state.get("injury", 0)))
+
+func _true_hp_max() -> int:
+	return player_hp_max()
 
 func _effective_hp_max() -> int:
-	return maxi(1, _true_hp_max() - int(combat_state.get("injury", 0)))
+	return player_effective_hp_max()
 
 func combat_hit_rate(attacker: Dictionary, defender: Dictionary) -> float:
 	return clampf(0.72 + (float(attacker.get("agility", 0)) - float(defender.get("agility", 0))) * 0.02, 0.28, 0.95)
