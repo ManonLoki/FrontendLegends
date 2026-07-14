@@ -1,0 +1,11 @@
+{
+  "name": "frontend-legends-tools",
+
+  "scripts": {
+    "data:excel": "node tools/data-excel/json-to-excel.mjs",
+    "data:json": "node tools/data-excel/excel-to-json.mjs"
+  },
+  "devDependencies": {
+    "xlsx": "^0.18.5"
+  }
+}

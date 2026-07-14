@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="40" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="34">
+ <properties>
+  <property name="Sort" type="int" value="6"/>
+  <property name="mapName" value="Ng神教"/>
+  <property name="region" value="NG神教"/>
+  <property name="type" propertytype="MapType" value="outDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/1_Terrains_16x16.tsx"/>
+ <tileset firstgid="737" source="../../../tilesets/装饰物.tsx"/>
+ <tileset firstgid="755" source="../../../tilesets/Game_Maker_Studio_Autotiles_16x16.tsx"/>
+ <tileset firstgid="2003" source="../../../tilesets/3_Props_and_Buildings_16x16.tsx"/>
+ <tileset firstgid="6483" source="../../../tilesets/4_Crops_16x16.tsx"/>
+ <tileset firstgid="7243" source="../../../tilesets/5_Fruit_Trees.tsx"/>
+ <tileset firstgid="8418" source="../../../tilesets/11_Camping_16x16.tsx"/>
+ <tileset firstgid="14210" source="../../../tilesets/21_Beach_16x16.tsx"/>
+ <layer id="1" name="Background" width="40" height="30">
+  <data encoding="base64" compression="zlib">
+   eJztzqERwCAUBTAEIzACoqIC1etx3X8ufrd4IiI+T2/tCvWWWUao28/Pz88vkp+fn59fJj8/Pz+/TP/vKyvULgfYs3yV
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="40" height="30">
+  <data encoding="base64" compression="zlib">
+   eJztz7kNACAQA0FEUfRfGhUQgPmCGcnx7ZUCwEir7+/f3mzfTfoy+jL6Mvoy+jL6Mif6dv6w0vfrgLEOWmcVcQ==
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="40" height="30">
+  <data encoding="base64" compression="zlib">
+   eJzt10tPE1EYxvEXlKYLUNxAGqWosGsjmjFKAipeQgwxCDug5d6tqDsVEEE/hArKzc9gVECunwFF8MIlrnCrIhf9ExYzNDOnDOl4Nn2SX+bk5EzfJ+3ZVGQnkUyRKOrRgEY0oRktaEUsU7Slndkd6MRDdOERutGDx3iSoN/rtB1epJfZfXiBl+jHAAYxhGG8UvSz9tpLx3KfSLHCdd/u8yPMHsUY3mMcE5jEFKYx49DPrk+ijmeZX6hQGtdvntkL+Iwv+IpvWMQSlrGisd86szewiS383e6SJZKGdBzAwSx9/Y4y+xjyEEQ+juMETqIAhYp+dpLZr4TZpbiAi7iEMlzGFVzFNdQGROoC5jPR92d3fj/9IsyOoh4NaEQTmtGCVsRwixltAfOZqJ/d+f30+9+5wfwyhQrN/aypCfP7ow4RRMP25w4ZIoeRjSOGuz23Z625R5/7eIB2dDj0O8X7RTiNM4a7PbdnrXlKn2d4jl70OfSr5P2bqEK14W7P7Vlr3tDnLd5hBKMO/dp4/zbu4K7hbs/tWWs+0mcOnzCPBYd+1nhxF53ymz5r+IN1bOyhnxd3MZnx4i7GZzYk8iGkXjvFi7sYn590+BVSr3Umh3uWG1avdeYcHc6H1WtVVvNEfqDLz38RdKPHb+7rTkZQxId+Og1gEEN+c193gnTIxzidJjCJKb+5n+x8T0/+Z6aSSir68g8v4c1H
+  </data>
+ </layer>
+ <objectgroup id="4" name="Interactive">
+  <object id="4" name="大漠穷秋" type="NPC" x="439.243" y="377.541">
+   <properties>
+    <property name="npcId" value="da_mo_qiong_qiu"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="22" type="Transaction" x="623.577" y="384" width="13.4383" height="13.7437">
+   <properties>
+    <property name="from" value="Angular"/>
+    <property name="to" value="Xijiao"/>
+   </properties>
+  </object>
+  <object id="23" type="Transaction" x="608" y="384" width="14.3546" height="13.4383">
+   <properties>
+    <property name="from" value="Xijiao"/>
+    <property name="to" value="Angular"/>
+   </properties>
+  </object>
+  <object id="25" name="告示牌" type="Props" x="560.565" y="369.311" width="43.096" height="16">
+   <properties>
+    <property name="text" value="欢迎来到NG神教"/>
+    <property name="type" value="Props"/>
+   </properties>
+  </object>
+  <object id="26" name="Qc." type="NPC" x="249.14" y="379.911">
+   <properties>
+    <property name="npcId" value="qc"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="27" name="远行客" type="NPC" x="473.006" y="138.582">
+   <properties>
+    <property name="npcId" value="yuan_xing_ke"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="28" name="GC主义接班人" type="NPC" x="40.584" y="372.583">
+   <properties>
+    <property name="npcId" value="gc_jie_ban_ren"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="29" type="Transaction" x="160" y="368" width="16" height="16">
+   <properties>
+    <property name="from" value="Angular"/>
+    <property name="to" value="AngularZhiFaTang"/>
+   </properties>
+  </object>
+  <object id="30" type="Transaction" x="160" y="384" width="16" height="16">
+   <properties>
+    <property name="from" value="AngularZhiFaTang"/>
+    <property name="to" value="Angular"/>
+   </properties>
+  </object>
+  <object id="31" type="Transaction" x="144" y="128" width="16" height="16">
+   <properties>
+    <property name="from" value="Angular"/>
+    <property name="to" value="AngularZongTan"/>
+   </properties>
+  </object>
+  <object id="32" type="Transaction" x="144" y="144" width="16" height="16">
+   <properties>
+    <property name="from" value="AngularZongTan"/>
+    <property name="to" value="Angular"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <layer id="5" name="Patch" width="40" height="30">
+  <data encoding="base64" compression="zlib">
+   eJzt1ccJAkEYhuG524kF7GEOFmAjuh7MqQPDwZyqMKcqzKkcX1BQEMGA4yr/Bw8zhx/mY9hllPq/+DxK+WF7PjP/bjKck0XuwfOenXdKbEupgHW7uqxvNzslR4+8dbu6HdLv3v15HdJP7u+93Ls/p/wfktdj+k15Nr/6pkgei3x/EolEIvl0glqpEMKIIIoY4kggqc3OpJDWl34F9kWUUEYFVdRQR0ObnWmiddWvzb6DLnroY4AhRhhrszMTTK/6zdjPscASK6yxwRY7bXZmj8O53xHGea7N
+  </data>
+ </layer>
+</map>

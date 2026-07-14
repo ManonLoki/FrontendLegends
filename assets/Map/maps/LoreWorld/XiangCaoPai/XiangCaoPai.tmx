@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="42" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="29">
+ <properties>
+  <property name="Sort" type="int" value="9"/>
+  <property name="mapName" value="香草派"/>
+  <property name="region" value="香草派"/>
+  <property name="type" propertytype="MapType" value="outDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/Game_Maker_Studio_Autotiles_16x16.tsx"/>
+ <tileset firstgid="1249" source="../../../tilesets/3_Props_and_Buildings_16x16.tsx"/>
+ <tileset firstgid="5729" source="../../../tilesets/6_Trees_16x16.tsx"/>
+ <tileset firstgid="15429" source="../../../tilesets/1_Terrains_16x16.tsx"/>
+ <layer id="1" name="Background" width="42" height="40">
+  <data encoding="base64" compression="zlib">
+   eJztzqERwCAQAMEfRAqjBEREBBiGyaT/AvIeE5cTJ9bvLBEn3EotVbjLp08wnz7JfPok8+mTzKdPMp8+yXz6JPPpk4z2HMfOp8+/f1+eT+pwd3oB1U3PjQ==
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="42" height="40">
+  <data encoding="base64" compression="zlib">
+   eJzt1csJwCAQANEtzHpSl6UKId4URMYPZB7sTdjxtBGSpD96UuRd8+17Z9VfyHer2Mmyk2Uny07W7s56s26dVu9pIw12jrOTZSfLTpadrF7D6ds9c98l6QYF4np9kQ==
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="42" height="40">
+  <data encoding="base64" compression="zlib">
+   eJzt1NlOFEEUxvEy0VeYZkkUFAFxfQCfQRCVTVwvfA4dNzYZNtfHUK9kkU1cH0O9kkU2cY3/iSHU9FSfqpoI3ZPMSX6ZOdXdp74pOihVPNW829xnP3WmNdd79dmmPmrN9qwpv8tvc73HtIdt3/B16YykDKbzdMnpc57he6Tf5XqtkN8izfZ5P6VnbO+n699Y2rdYKpNSagCDGErFnSa6psg2jRnMxpAzk9r6lM5rhbVVrGF9h3NeO7n13XZeBwOlalGH+mDnMobLdl6tZGtDOzpizGk7r27WetCLPu16TQXPohZ1qMchNFT47e86x3Zeo6yNYRwT2vUW5rSiDe3owHl0euZ0nRN1Xps1z9oCFrGkXe9iTjd60Is+3EO/Z07XOVHnla1T9I1oQnVZbv+COaMYwzgm8BKTnjmlOfp+2fPSe72u099AOsjvvzBnHgtYxBK+YtkzpzRH2l+vp/TP8DzI7/dWKrUPVajGfhxATaVfTmmOtL9eH+k/4XOQ3zcx5zSacQZncQ4tnjmlOdL+rpVmzk3cwm3cwV10eeb8X3NKVSrfGuF/7n08wEM8wmM8KYs7WW7Nkec13uAt3uE9PiQs5wZ5vuMHfuIXfuNPwnI2lCt1GEdwFMdwHCfK406WW53kuYCLuITLuIKrCcvZT54MBjCIIQxjJGE5J8kzhWnMYBavMJewnMvkWcEq1rCOb9hIWM5SFWeld/0T/i71uvD6Zh/eQ9o3W1V78plmRH1K+0T1tpyme7cjpy13EnKaMhaSM/yuFJpTnxc1X3o/Xd9f15zFUH8B/JH/aQ==
+  </data>
+ </layer>
+ <objectgroup id="4" name="Interactive" visible="0">
+  <object id="19" type="Transaction" x="0" y="512" width="16" height="16">
+   <properties>
+    <property name="from" value="XiangCaoPai"/>
+    <property name="to" value="Beijiao"/>
+   </properties>
+  </object>
+  <object id="20" type="Transaction" x="16" y="512" width="16" height="16">
+   <properties>
+    <property name="from" value="Beijiao"/>
+    <property name="to" value="XiangCaoPai"/>
+   </properties>
+  </object>
+  <object id="21" name="道格拉斯·克罗克福德" type="NPC" x="278.552" y="505.521">
+   <properties>
+    <property name="npcId" value="douglas_crockford"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="22" name="陈白水" type="NPC" x="75.3123" y="506.553">
+   <properties>
+    <property name="npcId" value="chen_baishui"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="23" name="约翰·雷西格" type="NPC" x="327.041" y="310.534">
+   <properties>
+    <property name="npcId" value="john_resig"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="24" name="布兰登·艾奇" type="NPC" x="328.073" y="134.118">
+   <properties>
+    <property name="npcId" value="brendan_eich"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="25" name="司徒正美" type="NPC" x="136.181" y="133.086">
+   <properties>
+    <property name="npcId" value="situ_zhengmei"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="26" name="远藤 雅伸" type="NPC" x="489.014" y="133.086">
+   <properties>
+    <property name="npcId" value="endo_masanobu"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="27" name="齐藤 祐也" type="NPC" x="552.978" y="508.616">
+   <properties>
+    <property name="npcId" value="saito_yuya"/>
+   </properties>
+   <point/>
+  </object>
+ </objectgroup>
+</map>

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="40" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="28">
+ <properties>
+  <property name="Sort" type="int" value="13"/>
+  <property name="mapName" value="空の国"/>
+  <property name="region" value="空の国"/>
+  <property name="type" propertytype="MapType" value="outDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/1_Terrains_16x16.tsx"/>
+ <tileset firstgid="737" source="../../../tilesets/Game_Maker_Studio_Autotiles_16x16.tsx"/>
+ <tileset firstgid="1985" source="../../../tilesets/14_Swimming_Pool_16x16.tsx"/>
+ <tileset firstgid="2977" source="../../../tilesets/Godot_Autotiles_16x16.tsx"/>
+ <tileset firstgid="4225" source="../../../tilesets/17_Garden_16x16.tsx"/>
+ <tileset firstgid="10497" source="../../../tilesets/24_Additional_Houses_16x16.tsx"/>
+ <tileset firstgid="20353" source="../../../tilesets/23_MIlitary_Base_16x16.tsx"/>
+ <tileset firstgid="29473" source="../../../tilesets/21_Beach_16x16.tsx"/>
+ <tileset firstgid="33473" source="../../../tilesets/20_Subway_and_Train_Station_16x16.tsx"/>
+ <tileset firstgid="39393" source="../../../tilesets/19_Graveyard_16x16.tsx"/>
+ <tileset firstgid="40673" source="../../../tilesets/18_Fire_Station_16x16.tsx"/>
+ <tileset firstgid="41663" source="../../../tilesets/11_Camping_16x16.tsx"/>
+ <layer id="1" name="Background" width="40" height="30">
+  <data encoding="base64" compression="zlib">
+   eJwLYWFgcBukOAyInYDYaJBir1H3jbpv1H2j7ht136DEo+4bdd+o+2jnvko+BoZqLLiGb3C4rxXojklY8JQR5L4oIPYjE+NzH7lmIuMIIL7CysBwjEQMS3dNONzXjJQOSTUbGV8D4kNAvIlEjCvcsIUjqWYj41Nkum8u0N55ROAFA+Q+euFR91GGtwxy920adR/F+BYQn6MS3kUD9wEAOobdyA==
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="40" height="30">
+  <data encoding="base64" compression="zlib">
+   eJzt1TEKACAMQ1En738GTyruItK0tIX/wEUkpA46Ri1rZjd4o5+GfpqO/c5epWWZwTp7RAb9tAz6aRn00zJ+z2S9g5F37KFDP49/CAAA3G2N2kRB
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="40" height="30">
+  <data encoding="base64" compression="zlib">
+   eJzt1ElPE2EYwPEncYG27AcBcUtUElDADWgR0CsuKChlSRAuqLgjLdYD6oVFryziQeXSVjz7FQDhpBxk/RDqQRY58DdAMpaZyUwXqUmf5JdO5h1m/hnaV+T/nP1WkQM4iEPW7a7ZOmU0leMczpvsO+0VOYNCFHkj09dI0w00odlk3zWarqMGzjD2VSnu1UnTMzzHC5N97dzHBTc6NPr6feuC7XtL0zu8x7DJvj7u048BDGr0ffKtMzNtEfquxCYyM+MSmcUc5rHgUr9uu/a6JXqWsYLfWNXoC2WvMzIWj4jVs/V8hlskE3uRhX1u9b8PZa8zMjm05W70XeTz0saxnR4HSnAWpRp9envdtziRacxgNi74xs13eBf3VN5lBecuqJz/M3p73S+aFrGE5RD6lO9QbVpZu6OzrjV74kXSkYHMePVrmkzus+GcIpqKYYdDoy9wEm0iSUhGClKRZotMn5OmWtSh3mBfHi35KMAJnMQpg31feMZXTCme1cHxE3jw1GCD3lympRJXcBVVqA7oK7Twv0Ex7HCgBN95/g/8VHQMcvwaQ3gThr77tDzAQzxCGx4H9NXQ4kQt6lCPBqQgFWmW0DuiYSz8Nq2wIQGJQf5Wd/hFdmIXdvuNrymnhbWbuIXbaEUOPbk4huPIC7LvMPc6gqPI9htfU04Xa93oQS9e4pXO9f96vLT44McHjOBjFPWN0jKGcXzGBCajqC82sYnN37MGS3iYmw==
+  </data>
+ </layer>
+ <objectgroup id="4" name="Interactive">
+  <object id="16" type="Transaction" x="576" y="0" width="16" height="16">
+   <properties>
+    <property name="from" value="KongZhiGuo"/>
+    <property name="to" value="Xijiao"/>
+   </properties>
+  </object>
+  <object id="17" type="Transaction" x="576" y="16" width="16" height="16">
+   <properties>
+    <property name="from" value="Xijiao"/>
+    <property name="to" value="KongZhiGuo"/>
+   </properties>
+  </object>
+  <object id="19" name="寻" type="NPC" x="37.7326" y="107.195">
+   <properties>
+    <property name="npcId" value="xun"/>
+    <property name="type" value="NPC"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="20" name="天空" type="NPC" x="70.3199" y="108.052">
+   <properties>
+    <property name="npcId" value="tian_kong"/>
+    <property name="type" value="NPC"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="21" name="空空" x="131.207" y="280.422">
+   <properties>
+    <property name="npcId" value="kong_kong"/>
+    <property name="type" value="NPC"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="22" name="等等" x="186.09" y="282.137">
+   <properties>
+    <property name="npcId" value="deng_deng"/>
+    <property name="type" value="NPC"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="23" name="倾慕" type="NPC" x="489.666" y="234.971">
+   <properties>
+    <property name="npcId" value="qing_mu"/>
+    <property name="type" value="NPC"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="24" name="QQ" x="518.823" y="234.971">
+   <properties>
+    <property name="npcId" value="qq"/>
+    <property name="type" value="NPC"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="25" name="Ray" type="NPC" x="295.001" y="234.971">
+   <properties>
+    <property name="npcId" value="ray"/>
+    <property name="type" value="NPC"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="26" name="海豹" type="NPC" x="440.786" y="106.337">
+   <properties>
+    <property name="npcId" value="hai_bao"/>
+    <property name="type" value="NPC"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="27" name="流氓" type="NPC" x="261.556" y="234.114">
+   <properties>
+    <property name="npcId" value="liu_mang"/>
+    <property name="type" value="NPC"/>
+   </properties>
+   <point/>
+  </object>
+ </objectgroup>
+</map>

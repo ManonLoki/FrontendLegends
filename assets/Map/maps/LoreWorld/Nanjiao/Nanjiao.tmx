@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="25" height="15" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="24">
+ <properties>
+  <property name="Sort" type="int" value="4"/>
+  <property name="mapName" value="南郊"/>
+  <property name="region" value="开源镇"/>
+  <property name="type" propertytype="MapType" value="outDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/Game_Maker_Studio_Autotiles_16x16.tsx"/>
+ <tileset firstgid="1249" source="../../../tilesets/1_Terrains_16x16.tsx"/>
+ <tileset firstgid="1985" source="../../../tilesets/装饰物.tsx"/>
+ <tileset firstgid="2003" source="../../../tilesets/Godot_Autotiles_16x16.tsx"/>
+ <tileset firstgid="3251" source="../../../tilesets/14_Swimming_Pool_16x16.tsx"/>
+ <layer id="1" name="Background" width="25" height="15">
+  <data encoding="base64" compression="zlib">
+   eJwrYWRgSCMCNwGxLicq1uMkrK8MiJOAOAyI8wjgJhw4iADOgtoBor8wMTA8w4PNgW52QcOk2vEIaM4lPJjWdlxjok5Y4bPjFQ47gqlsRxIW/cSklWwK7SCUVr4BcREV7CCkD9mOX0D+Oxz4BxXsCGEknF9h8YscBxUk2EEobeCLg8s0soNQfqWGHfjiDj0eQXZUEZHGkXEBEBeTgCuBGACPVc4p
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="25" height="15">
+  <data encoding="base64" compression="zlib">
+   eJxjYCAOpDMSJ/aJmUgDKQCjdjAwJGMJe1rYAdJPDiYFDPawHrVjZNpBi7RObTfiAwCa8SUC
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="25" height="15">
+  <data encoding="base64" compression="zlib">
+   eJztkssNwjAQBfcYsB1TBhAI9MEn9MG3TCCNBGiCkfAlPq3lG8pII3nX0nuXFdFztyIPfGJr+3/eiUzc7228iEWHpU8ogI7cF77xE3WsyF+HjorcBS6xTuwoyBjhGI3r/zXMh7DbkLvFHe4TO6ZkzHCOVdRxZb6F3ZHcE57xktjxT+TcjJacm9GSczNahpsZ0PAFOMoUNQ==
+  </data>
+ </layer>
+ <objectgroup id="4" name="Interactive">
+  <object id="14" type="Transaction" x="320" y="1.03168" width="16" height="14.9683">
+   <properties>
+    <property name="from" value="Nanjiao"/>
+    <property name="to" value="KaiyuanTown"/>
+   </properties>
+  </object>
+  <object id="15" type="Transaction" x="320" y="16" width="16" height="16">
+   <properties>
+    <property name="from" value="KaiyuanTown"/>
+    <property name="to" value="Nanjiao"/>
+   </properties>
+  </object>
+  <object id="16" type="Transaction" x="384" y="80" width="16" height="16">
+   <properties>
+    <property name="from" value="Nanjiao"/>
+    <property name="to" value="ShengHuoMiaoMiao"/>
+   </properties>
+  </object>
+  <object id="17" type="Transaction" x="368" y="80" width="16" height="16">
+   <properties>
+    <property name="from" value="ShengHuoMiaoMiao"/>
+    <property name="to" value="Nanjiao"/>
+   </properties>
+  </object>
+  <object id="20" type="Transaction" x="32" y="208" width="16" height="16">
+   <properties>
+    <property name="from" value="LiangZiXianZong"/>
+    <property name="to" value="Nanjiao"/>
+   </properties>
+  </object>
+  <object id="21" type="Transaction" x="32" y="224" width="16" height="16">
+   <properties>
+    <property name="from" value="Nanjiao"/>
+    <property name="to" value="LiangZiXianZong"/>
+   </properties>
+  </object>
+  <object id="22" type="Props" gid="2000" x="336" y="80" width="16" height="16">
+   <properties>
+    <property name="text" value="去往笙火喵喵教"/>
+    <property name="type" propertytype="Type" value="props"/>
+   </properties>
+  </object>
+  <object id="23" type="Props" gid="1990" x="32" y="208" width="16" height="16">
+   <properties>
+    <property name="text" value="↓量子仙宗"/>
+    <property name="type" propertytype="Type" value="props"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

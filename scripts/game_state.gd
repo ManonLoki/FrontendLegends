@@ -1,0 +1,127 @@
+extends Node
+
+const SAVE_PATH := "user://frontend_legends_save_v1.json"
+const SAVE_VERSION := 1
+
+var profile: Dictionary = {}
+var game_time_sec := 0.0
+var combat_state := {"hp": 1, "mp": 0, "injury": 0}
+var inventory: Dictionary = {}
+var equipment := {"weapon": "", "armor": "", "shoe": "", "accessory": ""}
+var item_cooldowns: Dictionary = {}
+
+func _ready() -> void:
+	load_game()
+
+func has_profile() -> bool:
+	return not str(profile.get("name", "")).strip_edges().is_empty()
+
+func create_profile(player_name: String, custom_attributes: Dictionary = {}, gender := "male") -> void:
+	var clean_name := player_name.strip_edges()
+	var attributes: Dictionary = custom_attributes if not custom_attributes.is_empty() else {"strength": 25, "agility": 25, "constitution": 25, "wisdom": 25}
+	var capacity := 200 + int(attributes.get("strength", 25)) * 10
+	var appearance := clampi(int(attributes.get("constitution", 25)) * 2 - 10, 0, 100)
+	var peak := 0
+	for value in attributes.values(): peak = maxi(peak, int(value))
+	if int(attributes.get("strength", 0)) >= 40 and int(attributes.get("strength", 0)) >= peak:
+		appearance = maxi(0, appearance - 10)
+	profile = {
+		"name": clean_name,
+		"gender": gender,
+		"base_attributes": attributes.duplicate(true),
+		"attributes": attributes.duplicate(true),
+		"vitals": {"food": capacity, "water": capacity, "money": 50, "potential": 0, "experience": 0, "age": 18, "appearance": appearance, "neigong": 0},
+		"sect": "",
+		"master": "",
+		"skills": SkillSystem.create_default_skills(),
+		"money": 0
+	}
+	combat_state = {"hp": _true_hp_max(), "mp": 0, "injury": 0}
+	game_time_sec = 0.0
+	inventory = {}
+	equipment = {"weapon": "", "armor": "", "shoe": "", "accessory1": "", "accessory2": ""}
+	item_cooldowns = {}
+	save_game()
+
+func advance_time(seconds: float) -> void:
+	var previous := game_time_sec
+	game_time_sec = maxf(0.0, game_time_sec + maxf(0.0, seconds))
+	var previous_survival_tick := int(floor(previous / 15.0))
+	var current_survival_tick := int(floor(game_time_sec / 15.0))
+	var ticks := current_survival_tick - previous_survival_tick
+	var vitals: Dictionary = profile.get("vitals", {})
+	var pairs := mini(ticks, mini(int(vitals.get("food", 0)), int(vitals.get("water", 0))))
+	if pairs > 0:
+		vitals.food = int(vitals.get("food", 0)) - pairs
+		vitals.water = int(vitals.get("water", 0)) - pairs
+		combat_state.injury = maxi(0, int(combat_state.get("injury", 0)) - pairs * 2)
+		combat_state.hp = mini(_effective_hp_max(), int(combat_state.get("hp", 0)) + pairs * 3)
+	var previous_age_tick := int(floor(previous / 28800.0))
+	var current_age_tick := int(floor(game_time_sec / 28800.0))
+	vitals.age = int(vitals.get("age", 18)) + current_age_tick - previous_age_tick
+	profile.vitals = vitals
+
+func save_game() -> void:
+	if not has_profile():
+		return
+	var data := {"version": SAVE_VERSION, "profile": profile, "game_time_sec": game_time_sec, "combat_state": combat_state, "inventory": inventory, "equipment": equipment, "item_cooldowns": item_cooldowns}
+	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(data))
+
+func load_game() -> bool:
+	if not FileAccess.file_exists(SAVE_PATH):
+		return false
+	var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
+	var parsed = JSON.parse_string(file.get_as_text()) if file else null
+	if typeof(parsed) != TYPE_DICTIONARY or int(parsed.get("version", 0)) != SAVE_VERSION:
+		return false
+	profile = parsed.get("profile", {})
+	game_time_sec = float(parsed.get("game_time_sec", 0.0))
+	combat_state = parsed.get("combat_state", {"hp": 1, "mp": 0, "injury": 0})
+	inventory = parsed.get("inventory", {})
+	equipment = parsed.get("equipment", {"weapon": "", "armor": "", "shoe": "", "accessory1": "", "accessory2": ""})
+	if equipment.has("accessory"):
+		equipment.accessory1 = equipment.get("accessory", "")
+		equipment.erase("accessory")
+	item_cooldowns = parsed.get("item_cooldowns", {})
+	if profile.has("skills"):
+		SkillSystem.ensure_skills()
+		SkillSystem.refresh_derived_attributes()
+	return has_profile()
+
+func delete_save() -> void:
+	QuestSystem.reset_runtime()
+	profile = {}
+	combat_state = {"hp": 1, "mp": 0, "injury": 0}
+	game_time_sec = 0.0
+	inventory = {}
+	equipment = {"weapon": "", "armor": "", "shoe": "", "accessory1": "", "accessory2": ""}
+	item_cooldowns = {}
+	if FileAccess.file_exists(SAVE_PATH):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE_PATH))
+
+func _true_hp_max() -> int:
+	var attributes: Dictionary = profile.get("attributes", {})
+	return maxi(1, int(floor(140.0 * (1.0 + float(attributes.get("constitution", 0)) * 0.025))))
+
+func _effective_hp_max() -> int:
+	return maxi(1, _true_hp_max() - int(combat_state.get("injury", 0)))
+
+func combat_hit_rate(attacker: Dictionary, defender: Dictionary) -> float:
+	return clampf(0.72 + (float(attacker.get("agility", 0)) - float(defender.get("agility", 0))) * 0.02, 0.28, 0.95)
+
+func mitigation(defense: float) -> float:
+	var value := maxf(0.0, defense)
+	return value / (value + 80.0)
+
+func resolve_attack(attack_power: float, attacker: Dictionary, defender: Dictionary, defense: float, hit_bonus := 0.0, dodge_bonus := 0.0, parry_bonus := 0.0, crit_bonus := 0.0) -> Dictionary:
+	var hit_rate := clampf(combat_hit_rate(attacker, defender) + float(hit_bonus) - float(dodge_bonus), 0.28, 0.95)
+	if randf() >= hit_rate:
+		return {"hit": false, "parried": false, "crit": false, "damage": 0}
+	var parry := clampf(float(defender.get("strength", 0)) * 0.01 - 0.05 + float(parry_bonus), 0.0, 0.65)
+	var is_parried := randf() < parry
+	var is_crit := randf() < clampf(0.03 + float(attacker.get("constitution", 0)) * 0.0035 + float(crit_bonus), 0.02, 0.25)
+	var variance := 0.9 + randf() * 0.2
+	var damage := maxi(1, int(floor(attack_power * (1.0 - mitigation(defense)) * (0.5 if is_parried else 1.0) * (1.5 if is_crit else 1.0) * variance)))
+	return {"hit": true, "parried": is_parried, "crit": is_crit, "damage": damage}

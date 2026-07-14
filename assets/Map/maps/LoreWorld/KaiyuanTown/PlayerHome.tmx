@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="15" height="15" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="9">
+ <properties>
+  <property name="mapName" value="{playerName}的家"/>
+  <property name="parentMap" value="KaiyuanTown"/>
+  <property name="region" value="开源镇"/>
+  <property name="type" propertytype="MapType" value="inDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/Godot_Autotiles_16x16.tsx"/>
+ <tileset firstgid="1249" source="../../../tilesets/Game_Maker_Studio_Autotiles_16x16.tsx"/>
+ <tileset firstgid="2497" source="../../../tilesets/3_Props_and_Buildings_16x16.tsx"/>
+ <tileset firstgid="6977" source="../../../tilesets/5_Floor_Modular_Buildings_16x16.tsx"/>
+ <tileset firstgid="15265" source="../../../tilesets/5_Fruit_Trees.tsx"/>
+ <tileset firstgid="16440" source="../../../tilesets/6_Garage_Sales_16x16.tsx"/>
+ <tileset firstgid="17656" source="../../../tilesets/7_Pickup_Items_16x16.tsx"/>
+ <tileset firstgid="17796" source="../../../tilesets/7_Villas_16x16.tsx"/>
+ <tileset firstgid="19620" source="../../../tilesets/8_Worksite_16x16.tsx"/>
+ <layer id="1" name="Background" width="15" height="15">
+  <data encoding="base64" compression="zlib">
+   eJzLZGZgyCYD5wBxKRA3kYFbRvWO6qWR3l4g7sOC66Bq6nHITwBiXKAUyXxSQS8R5gMAHxNnPw==
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="15" height="15">
+  <data encoding="base64" compression="zlib">
+   eJxL4WBgCCMDpwFxEBA7kYGjSNCLDOiplxI3I9tNb3tHut4sII7Dgr2gatxwyGdwMOAEQUjmkwqyiDAfAOS5PNE=
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="15" height="15">
+  <data encoding="base64" compression="zlib">
+   eJxjYKA92MbNwLAdiHdwk673GlDPdSC+QYbeb0A934H4Bxl6QYDHj4GB1488vTpAfbpk6h0FIwsAAHJjCZ0=
+  </data>
+ </layer>
+ <objectgroup id="5" name="Interactive">
+  <object id="1" type="Transaction" x="96" y="224" width="48" height="16">
+   <properties>
+    <property name="from" value="PlayerHome"/>
+    <property name="to" value="KaiyuanTown"/>
+   </properties>
+  </object>
+  <object id="2" type="Transaction" x="96" y="208" width="48">
+   <properties>
+    <property name="from" value="KaiyuanTown"/>
+    <property name="to" value="PlayerHome"/>
+   </properties>
+  </object>
+  <object id="6" name="新手提示" type="Props" x="160" y="16" width="48" height="48">
+   <properties>
+    <property name="text" value="先去隔壁做导师任务\n然后外出拜师喜欢的门派\n技能能练功不要直接学\n最后尽情的探索吧"/>
+    <property name="type" propertytype="Type" value="props"/>
+   </properties>
+  </object>
+  <object id="7" x="167.739" y="9.63802" width="80" height="22.3906">
+   <text pixelsize="9" wrap="1">游戏说明</text>
+  </object>
+  <object id="8" name="SpawnPoint" type="SpawnPoint" x="117.262" y="115.476">
+   <properties>
+    <property name="type" propertytype="Type" value="spawnPoint"/>
+   </properties>
+   <point/>
+  </object>
+ </objectgroup>
+</map>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map class="MapMeta" version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="20" height="15" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="11">
+ <properties>
+  <property name="mapName" value="DARK学"/>
+  <property name="parentMap" value="KaiyuanTown"/>
+  <property name="region" value="开源镇"/>
+  <property name="type" propertytype="MapType" value="inDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/Godot_Autotiles_16x16.tsx"/>
+ <tileset firstgid="1249" source="../../../tilesets/3_Props_and_Buildings_16x16.tsx"/>
+ <tileset firstgid="5729" source="../../../tilesets/Game_Maker_Studio_Autotiles_16x16.tsx"/>
+ <layer id="1" name="Background" width="20" height="15">
+  <data encoding="base64" compression="zlib">
+   eJxjYKA+OMnMwHCaQnyGGWHeVSD7EYX4yah5o+YNEvPeAtnv8OB7QHyfgJoPSOYRAlfR7KcUUNu8tyT4BwBUsbU4
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="20" height="15">
+  <data encoding="base64" compression="zlib">
+   eJxjYKA+OMnMwHCaQnyGGWHeVSD7EYX4yah5KFhJCiKHLo5NbDj4dzCZ9xbIfocH3wPi+wTUfEAyjxC4imY/pYDa5r0lwT8AxJuyxQ==
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="20" height="15">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFowABhDkG2gWjYBTgBgBLiAAc
+  </data>
+ </layer>
+ <objectgroup id="4" name="Interactive">
+  <object id="4" name="导师" type="NPC" x="119.674" y="103.683">
+   <properties>
+    <property name="npcId" value="dao_shi"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="7" name="电脑" type="Props" x="192" y="96" width="16" height="16">
+   <properties>
+    <property name="questGiver" value="darkxue_computer"/>
+    <property name="text" value="你在电脑前辛辛苦苦码完了导师的任务"/>
+    <property name="type" value="Props"/>
+   </properties>
+  </object>
+  <object id="9" type="Transaction" x="144" y="208" width="32" height="16">
+   <properties>
+    <property name="from" value="KaiyuanTown"/>
+    <property name="to" value="DarkXue"/>
+   </properties>
+  </object>
+  <object id="10" type="Transaction" x="144" y="224" width="32" height="16">
+   <properties>
+    <property name="from" value="DarkXue"/>
+    <property name="to" value="KaiyuanTown"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

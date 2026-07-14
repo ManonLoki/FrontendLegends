@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="20" height="15" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="13">
+ <properties>
+  <property name="mapName" value="暗网"/>
+  <property name="parentMap" value="KaiyuanTown"/>
+  <property name="region" value="开源镇"/>
+  <property name="type" propertytype="MapType" value="inDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/土地.tsx"/>
+ <tileset firstgid="85" source="../../../tilesets/岩石.tsx"/>
+ <tileset firstgid="90" source="../../../tilesets/草地.tsx"/>
+ <tileset firstgid="258" source="../../../tilesets/水面.tsx"/>
+ <tileset firstgid="570" source="../../../tilesets/装饰物.tsx"/>
+ <tileset firstgid="588" source="../../../tilesets/建筑.tsx"/>
+ <tileset firstgid="594" source="../../../tilesets/树木.tsx"/>
+ <tileset firstgid="605" source="../../../tilesets/1_Terrains_16x16.tsx"/>
+ <tileset firstgid="1341" source="../../../tilesets/Game_Maker_Studio_Autotiles_16x16.tsx"/>
+ <layer id="1" name="Background" width="20" height="15">
+  <data encoding="base64" compression="zlib">
+   eJzbwMnAsIhKeBMQzwPiPirhZaPmjZo3ah5e87YB8So8eBoQTyKgBoa3ADEhMA9qL7XANiLthQEAXqGhrw==
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="20" height="15">
+  <data encoding="base64" compression="zlib">
+   eJzbwMnAsIhKeBMQzwPiPirhZcPAPGQwWMxD1kvIPGTx4RAfw828bUC8Cg+eBsSTCKiB4S1o6QEbmAe1l1pgG5H2wgAAZk+bMg==
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="20" height="15">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFIxnYMw20C0bBKCAeAACzXgBC
+  </data>
+ </layer>
+ <objectgroup id="4" name="Interactive">
+  <object id="5" name="小不二" type="NPC" x="86.7945" y="101.171">
+   <properties>
+    <property name="npcId" value="xiao_bu_er"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="11" name="奸商" type="NPC" x="216" y="103.48">
+   <properties>
+    <property name="npcId" value="jian_shang"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="8" name="悬赏告示" type="Props" x="128" y="96" width="48" height="16">
+   <properties>
+    <property name="event" value="bountyBoard"/>
+    <property name="text" value="悬赏信息"/>
+   </properties>
+  </object>
+  <object id="9" type="Transaction" x="128" y="208" width="32" height="16">
+   <properties>
+    <property name="from" value="KaiyuanTown"/>
+    <property name="to" value="AnWang"/>
+   </properties>
+  </object>
+  <object id="10" type="Transaction" x="128" y="224" width="32" height="16">
+   <properties>
+    <property name="from" value="AnWang"/>
+    <property name="to" value="KaiyuanTown"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

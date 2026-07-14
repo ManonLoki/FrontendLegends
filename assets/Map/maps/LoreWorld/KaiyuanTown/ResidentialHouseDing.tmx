@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="15" height="15" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="5">
+ <properties>
+  <property name="mapName" value="丁师傅的家"/>
+  <property name="parentMap" value="KaiyuanTown"/>
+  <property name="region" value="开源镇"/>
+  <property name="type" propertytype="MapType" value="inDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/Godot_Autotiles_16x16.tsx"/>
+ <layer id="1" name="Background" width="15" height="15">
+  <data encoding="base64" compression="zlib">
+   eJw7yczAcJoMfAaIrwLxIzLwk1G9o3pppPctEL/Dgu9B1dzHIf8BiHGBq0jmkwreEmE+APMhsp8=
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="15" height="15">
+  <data encoding="base64" compression="zlib">
+   eJw7yczAcJoMfAaIrwLxIzLwk1G9o3pppPctEL/Dgu9B1dzHIf8BiHGBq0jmkwreEmE+APMhsp8=
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="15" height="15">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2AUDCQAAAOEAAE=
+  </data>
+ </layer>
+ <objectgroup id="5" name="Interactive">
+  <object id="1" type="Transaction" x="96" y="224" width="48" height="16">
+   <properties>
+    <property name="from" value="ResidentialHouseDing"/>
+    <property name="to" value="KaiyuanTown"/>
+   </properties>
+  </object>
+  <object id="2" type="Transaction" x="96" y="208" width="48" height="16">
+   <properties>
+    <property name="from" value="KaiyuanTown"/>
+    <property name="to" value="ResidentialHouseDing"/>
+   </properties>
+  </object>
+  <object id="3" name="丁师傅" type="NPC" x="54.5375" y="100.894">
+   <properties>
+    <property name="npcId" value="ding_shi_fu"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="4" name="刘日天" type="NPC" x="199.062" y="100.349">
+   <properties>
+    <property name="npcId" value="liu_ri_tian"/>
+   </properties>
+   <point/>
+  </object>
+ </objectgroup>
+</map>

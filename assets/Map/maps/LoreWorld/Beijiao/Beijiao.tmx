@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="23">
+ <properties>
+  <property name="Sort" type="int" value="5"/>
+  <property name="mapName" value="北郊"/>
+  <property name="region" value="开源镇"/>
+  <property name="type" propertytype="MapType" value="outDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/Game_Maker_Studio_Autotiles_16x16.tsx"/>
+ <tileset firstgid="1249" source="../../../tilesets/1_Terrains_16x16.tsx"/>
+ <tileset firstgid="1985" source="../../../tilesets/装饰物.tsx"/>
+ <tileset firstgid="2003" source="../../../tilesets/6_Trees_16x16.tsx"/>
+ <tileset firstgid="11703" source="../../../tilesets/11_Camping_16x16.tsx"/>
+ <layer id="1" name="Background" width="30" height="20">
+  <data encoding="base64" compression="zlib">
+   eJwzYWJgUKMzNgNiJSAWojPWGrV31N5Re0ftHbV31N5Re0eUvVZArEdnbAHEAJO4N4U=
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="30" height="20">
+  <data encoding="base64" compression="zlib">
+   eJxjYKAPmEQne0btHbWXXHNIxdSydyDAqL2j9o7aO2rvqL20tRcAyCESQQ==
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="30" height="20">
+  <data encoding="base64" compression="zlib">
+   eJy9k1dKREEQRWsB1eY/s5uYB2qr86nuwOwizHk1hjGsx6zbMODxQ6Y+BjvBu3DgcqGrGi4lUp/mVWQBFrWdjXqRMRiHCR/Oc3TAvkM4MntnmDkLc9D04TxHN+y7hTuzd42Z67ABmz6c5+iVfW/wbvYeM/METuHMh/Mc9TmRfhhw7ayOfjupjn47qaRfex8x3qqkX3sfMd7qoyHyCV/w3QjnVvY+YrzVYCUyBMMwUoVzK3sfMd5qkplTMA2+CudW9j5ivNUSM5dhBVarcP6rXf6+B/ua7v+U0+8V71twrek+1ON//T7x/hleNN2X9NtNVz3Q69J9Sb9b/HsbdjTdl+ic9xdwqem+RPe8f4BHTfclUnpy0OXS/Q9cwrfr
+  </data>
+ </layer>
+ <objectgroup id="4" name="Interactive">
+  <object id="15" type="Transaction" x="416" y="0" width="15.8181" height="14.3467">
+   <properties>
+    <property name="from" value="BeiJiao"/>
+    <property name="to" value="XiangCaoPai"/>
+   </properties>
+  </object>
+  <object id="16" type="Transaction" x="416" y="16" width="15.8181" height="14.7145">
+   <properties>
+    <property name="from" value="XiangCaoPai"/>
+    <property name="to" value="BeiJiao"/>
+   </properties>
+  </object>
+  <object id="19" type="Transaction" x="224" y="304" width="16" height="16">
+   <properties>
+    <property name="from" value="Beijiao"/>
+    <property name="to" value="KaiyuanTown"/>
+   </properties>
+  </object>
+  <object id="20" type="Transaction" x="224" y="288" width="16" height="16">
+   <properties>
+    <property name="from" value="KaiyuanTown"/>
+    <property name="to" value="Beijiao"/>
+   </properties>
+  </object>
+  <object id="22" type="Props" gid="1990" x="400" y="96" width="16" height="16">
+   <properties>
+    <property name="text" value="↑香草派"/>
+    <property name="type" propertytype="Type" value="props"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="40" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="13">
+ <properties>
+  <property name="Sort" type="int" value="11"/>
+  <property name="mapName" value="西湖灵隐"/>
+  <property name="parentMap" value="ShengHuoMiaoMiao"/>
+  <property name="region" value="西湖灵隐"/>
+  <property name="type" propertytype="MapType" value="inDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/土地.tsx"/>
+ <tileset firstgid="85" source="../../../tilesets/岩石.tsx"/>
+ <tileset firstgid="90" source="../../../tilesets/草地.tsx"/>
+ <tileset firstgid="258" source="../../../tilesets/水面.tsx"/>
+ <tileset firstgid="570" source="../../../tilesets/装饰物.tsx"/>
+ <tileset firstgid="588" source="../../../tilesets/建筑.tsx"/>
+ <tileset firstgid="594" source="../../../tilesets/树木.tsx"/>
+ <tileset firstgid="605" source="../../../tilesets/Godot_Autotiles_16x16.tsx"/>
+ <tileset firstgid="1853" source="../../../tilesets/5_Fruit_Trees.tsx"/>
+ <tileset firstgid="3028" source="../../../tilesets/5_Floor_Modular_Buildings_16x16.tsx"/>
+ <tileset firstgid="11316" source="../../../tilesets/4_Generic_Buildings_16x16.tsx"/>
+ <tileset firstgid="17716" source="../../../tilesets/4_Crops_16x16.tsx"/>
+ <tileset firstgid="18476" source="../../../tilesets/3_Props_and_Buildings_16x16.tsx"/>
+ <tileset firstgid="22956" source="../../../tilesets/3_City_Props_16x16.tsx"/>
+ <tileset firstgid="30124" source="../../../tilesets/2_City_Terrains_16x16.tsx"/>
+ <tileset firstgid="36201" source="../../../tilesets/1_Terrains_and_Fences_16x16.tsx"/>
+ <tileset firstgid="38569" source="../../../tilesets/1_Terrains_16x16.tsx"/>
+ <tileset firstgid="39305" source="../../../tilesets/7_Villas_16x16.tsx"/>
+ <tileset firstgid="41129" source="../../../tilesets/8_Worksite_16x16.tsx"/>
+ <tileset firstgid="41769" source="../../../tilesets/9_Shopping_Center_and_Markets_16x16.tsx"/>
+ <tileset firstgid="43945" source="../../../tilesets/10_Vehicles_16x16.tsx"/>
+ <tileset firstgid="49321" source="../../../tilesets/11_Camping_16x16.tsx"/>
+ <tileset firstgid="55113" source="../../../tilesets/17_Garden_16x16.tsx"/>
+ <tileset firstgid="61385" source="../../../tilesets/18_Fire_Station_16x16.tsx"/>
+ <tileset firstgid="62375" source="../../../tilesets/19_Graveyard_16x16.tsx"/>
+ <tileset firstgid="63655" source="../../../tilesets/20_Subway_and_Train_Station_16x16.tsx"/>
+ <tileset firstgid="69575" source="../../../tilesets/21_Beach_16x16.tsx"/>
+ <tileset firstgid="73575" source="../../../tilesets/22_Post_Office_16x16.tsx"/>
+ <tileset firstgid="74535" source="../../../tilesets/23_MIlitary_Base_16x16.tsx"/>
+ <tileset firstgid="83655" source="../../../tilesets/24_Additional_Houses_16x16.tsx"/>
+ <layer id="1" name="Background" width="40" height="30">
+  <data encoding="base64" compression="zlib">
+   eJztlsFOwzAMhquoTwxCnEY1bgMJuIJ4FY6InqhAcFlhqwCBNvEQ2OoseZmTxWlakNjhP1SbnC+2fzsHeZbtg/ZAh4G6NVl2N4BK0ATOOwcdgc4ChGz3oNkAakAjBRvqYSA24hsr2E4T8dWgJWjq+PbxIcNJwtrW1rn4/Q26AS1WXPgtxZb4Cke9Y3PXMA5iwXjPZj3+IjB/Pl88CjG2qTKtD2N8p+HD+81ZDF436h+ph/C3lwC+rvmzvcvrRv1Tms1z8H92LVPnjzxj89n3l/o8tL5d8kee4THwXD7nXfmT7tJH//k8XK1iEzM/h+ZJbP4muXve2XqD/38qPfwE+gjgw9ivAh/ut+NAxsJRB988bljtpXrwt4arvoWCkc9aKY+V2fQHzs05YyRe312pL8YsN5p3gmbX2Yzkdd8+wtxd5C2fb+dq+lmqr8tDUj1dfDG5K4X712Z9x3QR59PkjXIncdi99xt85Lk+39DkDS1fn2z8jUHzPNQf1G/SDE2ZL/tc4tuWR+y3L9C7affHMrFc+y/Uv0WEh1Io1r87vh3ff+G7BF39UV2DfgAf1FDd
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="40" height="30">
+  <data encoding="base64" compression="zlib">
+   eJzt1t0KABAQhFFP6rk8rtwtJZshgzm1919tfkIQ4RLT6YJa6RkNE7aelvowjH3sZ6PXoT4f9WHUh1Ef5oY+5vfDYmyy1DfH889HZkXfLq/27d4p8z31gwxe8mPx
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="40" height="30">
+  <data encoding="base64" compression="zlib">
+   eJzt1bdSAlEUgOH7AoYZRcD4EEow1+ZKUUGtzaXxBQTUN4AaAVNnL4WiYygV9QGMM+bsX+qOK1xcWArOzNfB8jO7564QP8cYE8IEc0xk5NjosqM6gb7bTSHucI8HPG6mvs9BVzd6EugriAhRCAOKYIxo0+Dhf3pV/usEXZOYSqCvkp4qWGCFTaO+IG2hNNyLZCdK2863PrWd0HJX7n08o3jEE5596p89p+3iW5/aTsjsSrwx+HlGYYQJZn/i31XbCZldiTcWeqywwY5qFHPdEpTGub7aTsjsSrzppKcLDnSjBzVctxZ1GXrW9tLlhEuiL53vj2l+YwazEr+l5U6kYmR34pJz4ArXuEnDmSq7Ezm8M3KRh3yN3h8yc8Q5eowYTnCKsz/O1lSPcj9eaHnFG97xgU8d+5T7Ucw5VYJSlKEcFRJnv3JWeEZXsYb1JJ5X5X7U0FKLOtSjAY3/6NujaR8HOEyiT7kfvbQ44UIf+jHwj77sZEevmdsQwg0PvJjf0Lvo5wToWUIQIYTRFBaiGS1oRRva0RFOf98WPduIYge7GKRjCMMYwSjGMK5D32/3d44ONzzwYh4LWNSh77f7G6BjCUGEEMYyVjLk/mYntfMFmIcG4Q==
+  </data>
+ </layer>
+ <objectgroup id="4" name="Interactive">
+  <object id="10" name="进香客" type="NPC" x="105.413" y="373.737">
+   <properties>
+    <property name="npcId" value="jin_xiang_ke"/>
+    <property name="type" value="NPC"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="11" type="Transaction" x="0" y="432" width="16" height="16">
+   <properties>
+    <property name="from" value="XiHuLingYin"/>
+    <property name="to" value="ShengHuoMiaoMiao"/>
+   </properties>
+  </object>
+  <object id="12" type="Transaction" x="16" y="432" width="16" height="16">
+   <properties>
+    <property name="from" value="ShengHuoMiaoMiao"/>
+    <property name="to" value="XiHuLingYin"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="80" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="81">
+ <properties>
+  <property name="mapName" value="开源镇"/>
+  <property name="region" value="开源镇"/>
+  <property name="type" propertytype="MapType" value="outDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/1_Terrains_16x16.tsx"/>
+ <tileset firstgid="737" source="../../../tilesets/2_Fences_16x16.tsx"/>
+ <tileset firstgid="1281" source="../../../tilesets/3_Props_and_Buildings_16x16.tsx"/>
+ <tileset firstgid="5761" source="../../../tilesets/4_Crops_16x16.tsx"/>
+ <tileset firstgid="6521" source="../../../tilesets/5_Fruit_Trees.tsx"/>
+ <tileset firstgid="7696" source="../../../tilesets/6_Trees_16x16.tsx"/>
+ <tileset firstgid="17396" source="../../../tilesets/7_Pickup_Items_16x16.tsx"/>
+ <tileset firstgid="17536" source="../../../tilesets/Game_Maker_Studio_Autotiles_16x16.tsx"/>
+ <tileset firstgid="18784" source="../../../tilesets/Godot_Autotiles_16x16.tsx"/>
+ <tileset firstgid="20032" source="../../../tilesets/建筑.tsx"/>
+ <tileset firstgid="20038" source="../../../tilesets/装饰物.tsx"/>
+ <tileset firstgid="20056" source="../../../tilesets/9_Shopping_Center_and_Markets_16x16.tsx"/>
+ <tileset firstgid="22232" source="../../../tilesets/15_Police_Station_16x16.tsx"/>
+ <tileset firstgid="24440" source="../../../tilesets/4_Generic_Buildings_16x16.tsx"/>
+ <tileset firstgid="30840" source="../../../tilesets/3_City_Props_16x16.tsx"/>
+ <tileset firstgid="38008" source="../../../tilesets/13_School_16x16.tsx"/>
+ <tileset firstgid="41720" source="../../../tilesets/17_Garden_16x16.tsx"/>
+ <tileset firstgid="47992" source="../../../tilesets/10_Vehicles_16x16.tsx"/>
+ <tileset firstgid="53368" source="../../../tilesets/21_Beach_16x16.tsx"/>
+ <tileset firstgid="57368" source="../../../tilesets/22_Post_Office_16x16.tsx"/>
+ <tileset firstgid="58328" source="../../../tilesets/1_Terrains_and_Fences_16x16.tsx"/>
+ <tileset firstgid="60696" source="../../../tilesets/2_City_Terrains_16x16.tsx"/>
+ <layer id="1" name="Background" width="80" height="40">
+  <data encoding="base64" compression="zlib">
+   eJztmTEOwjAMRXs/LopgArGCBKygXomwVVUSaGL/2Mkf3tKl9ovdOOl+N00HUsQxcAncSRFPJX+3wNVAfl79nQMnA/l59SeJ5Vr24M9yLXvwZxn6oz/68wv90V8KxNyD9Iee4xBzj4a/mKfvswcgHzQa/tbrnnKnVY/IOv/lTyKWWB9p1iPyvJLz10uOmrWR82chR00k8ut5fpEmVq/09z+xeqW/OuiP/raw/obV7sEj+YvNY7V78Ej+NOaxkfxpsPRn+T9XilzM6Psr1HlDMq9UzKj7nlT/aq4dYp1yXiXzSvlDvR/BMmbptdu6f3i8U9CMmftvG38e+9iSP099rLnWI/Qvv3928X7+aE2L80dPsH/r/b0Cb1LEHPgAsS4N3A==
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="80" height="40">
+  <data encoding="base64" compression="zlib">
+   eJztmFEKgCAUBKNDdf+jRcT+BEWx6RtrB/oLHQYrbZqYLHO1wdikn0f6eaSfB6VfT49tri9fPfoRx3Lovf6IYzmkn0f6eaSfR/p5pJ9H+nlk/+ztf0ddf2+Tfh7Efsfn4q/9qt8xPSCuv8q5nnJ0u+uafjukb/qVIxWymyA7kt0E2ZHsJsiOZDdBdiS7CbIj2U2QHcluguxIdhNnjq3P4G/eV0n1/71Rz+aC7Eh2E2RHspsgO5LdBNmR7CbIjtVud/9jU2nl9pc9AtltBNLPo1W/FRqQPbE=
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="80" height="40">
+  <data encoding="base64" compression="zlib">
+   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
+  </data>
+ </layer>
+ <objectgroup id="4" name="Interactive">
+  <object id="35" type="Transaction" x="608" y="0" width="16.072" height="17.3891">
+   <properties>
+    <property name="from" value="KaiyuanTown"/>
+    <property name="to" value="Beijiao"/>
+   </properties>
+  </object>
+  <object id="36" type="Transaction" x="608.072" y="17.3891" width="16" height="16">
+   <properties>
+    <property name="from" value="Beijiao"/>
+    <property name="to" value="KaiyuanTown"/>
+   </properties>
+  </object>
+  <object id="37" type="Transaction" x="0" y="592" width="16.9892" height="16.9892">
+   <properties>
+    <property name="from" value="KaiyuanTown"/>
+    <property name="to" value="Xijiao"/>
+   </properties>
+  </object>
+  <object id="38" type="Transaction" x="16.9892" y="592.276" width="16.9892" height="16.7131">
+   <properties>
+    <property name="from" value="Xijiao"/>
+    <property name="to" value="KaiyuanTown"/>
+   </properties>
+  </object>
+  <object id="39" type="Transaction" x="928" y="608" width="15.9024" height="15.5144">
+   <properties>
+    <property name="from" value="Nanjiao"/>
+    <property name="to" value="KaiyuanTown"/>
+   </properties>
+  </object>
+  <object id="40" type="Transaction" x="928" y="624" width="16" height="16">
+   <properties>
+    <property name="from" value="KaiyuanTown"/>
+    <property name="to" value="Nanjiao"/>
+   </properties>
+  </object>
+  <object id="41" type="Transaction" x="1248" y="320" width="16" height="16">
+   <properties>
+    <property name="from" value="Dongjiao"/>
+    <property name="to" value="KaiyuanTown"/>
+   </properties>
+  </object>
+  <object id="42" type="Transaction" x="1264" y="320" width="16" height="16">
+   <properties>
+    <property name="from" value="KaiyuanTown"/>
+    <property name="to" value="Dongjiao"/>
+   </properties>
+  </object>
+  <object id="43" name="删除" type="Props" x="88.903" y="577.978" width="32" height="16">
+   <properties>
+    <property name="event" value="deleteSave"/>
+    <property name="text" value="删除存档"/>
+   </properties>
+  </object>
+  <object id="46" name="水井" type="Props" x="240" y="576" width="32" height="16">
+   <properties>
+    <property name="event" value="drink"/>
+    <property name="text" value="你舀起了水塘里的水喝了一口，感觉舒服多了"/>
+   </properties>
+  </object>
+  <object id="47" type="Transaction" x="400" y="464" width="16" height="16">
+   <properties>
+    <property name="from" value="KaiyuanTown"/>
+    <property name="to" value="DarkXue"/>
+   </properties>
+  </object>
+  <object id="48" type="Transaction" x="400" y="480" width="16" height="16">
+   <properties>
+    <property name="from" value="DarkXue"/>
+    <property name="to" value="KaiyuanTown"/>
+   </properties>
+  </object>
+  <object id="52" type="Transaction" x="768" y="464" width="22.1026" height="15.1505">
+   <properties>
+    <property name="from" value="KaiyuanTown"/>
+    <property name="to" value="AnWang"/>
+   </properties>
+  </object>
+  <object id="54" type="Transaction" x="768" y="480" width="22.1026" height="16">
+   <properties>
+    <property name="from" value="AnWang"/>
+    <property name="to" value="KaiyuanTown"/>
+   </properties>
+  </object>
+  <object id="56" type="Transaction" x="160" y="576" width="16" height="16">
+   <properties>
+    <property name="from" value="KaiyuanTown"/>
+    <property name="to" value="PlayerHome"/>
+   </properties>
+  </object>
+  <object id="57" type="Transaction" x="160" y="592" width="16" height="16">
+   <properties>
+    <property name="from" value="PlayerHome"/>
+    <property name="to" value="KaiyuanTown"/>
+   </properties>
+  </object>
+  <object id="59" type="Transaction" x="1152" y="64" width="16" height="16">
+   <properties>
+    <property name="from" value="KaiyuanTown"/>
+    <property name="to" value="ResidentialHouseDing"/>
+   </properties>
+  </object>
+  <object id="60" type="Transaction" x="1152" y="80" width="16" height="16">
+   <properties>
+    <property name="from" value="ResidentialHouseDing"/>
+    <property name="to" value="KaiyuanTown"/>
+   </properties>
+  </object>
+  <object id="61" type="Transaction" x="240" y="272" width="32.1667" height="16">
+   <properties>
+    <property name="from" value="KaiyuanTown"/>
+    <property name="to" value="ShoppingMall"/>
+   </properties>
+  </object>
+  <object id="62" type="Transaction" x="144" y="288" width="33.3889" height="16">
+   <properties>
+    <property name="from" value="ShoppingMall"/>
+    <property name="to" value="KaiyuanTown"/>
+   </properties>
+  </object>
+  <object id="64" type="Transaction" x="992" y="304" width="16" height="16">
+   <properties>
+    <property name="from" value="KaiyuanTown"/>
+    <property name="to" value="Pharmacy"/>
+   </properties>
+  </object>
+  <object id="65" type="Transaction" x="992" y="320" width="16" height="16">
+   <properties>
+    <property name="from" value="Pharmacy"/>
+    <property name="to" value="KaiyuanTown"/>
+   </properties>
+  </object>
+  <object id="66" name="奶茶妹妹" type="NPC" x="377.937" y="220.78">
+   <properties>
+    <property name="npcId" value="nai_cha_mei_mei"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="67" name="小学生" type="NPC" x="635.638" y="219.757">
+   <properties>
+    <property name="npcId" value="xiao_xue_sheng"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="70" name="路牌" type="Props" x="1166.98" y="307.067" width="32" height="16">
+   <properties>
+    <property name="text" value="前方东郊，去往迷雾森林，鱿鱼山庄"/>
+    <property name="type" value="Props"/>
+   </properties>
+  </object>
+  <object id="71" name="路牌" type="Props" x="49.0224" y="578.045" width="32" height="16">
+   <properties>
+    <property name="text" value="前方西郊，去往空の国，NG神教"/>
+    <property name="type" value="Props"/>
+   </properties>
+  </object>
+  <object id="72" name="路牌" type="Props" x="622.978" y="66.0448" width="48" height="16">
+   <properties>
+    <property name="text" value="↑北郊，去往香草派"/>
+    <property name="type" value="Props"/>
+   </properties>
+  </object>
+  <object id="73" name="路牌" type="Props" x="880" y="467.067" width="48" height="16">
+   <properties>
+    <property name="text" value="↓南郊，去往量子仙宗，笙火喵喵教"/>
+    <property name="type" value="Props"/>
+   </properties>
+  </object>
+  <object id="75" name="活阎王" type="NPC" x="599.256" y="68.88">
+   <properties>
+    <property name="npcId" value="huo_yan_wang"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="77" name="坑" type="Props" x="1104" y="96" width="48" height="32">
+   <properties>
+    <property name="text" value="你猜猜这是谁挖的……又有谁掉了进去？"/>
+    <property name="type" propertytype="Type" value="props"/>
+   </properties>
+  </object>
+  <object id="78" name="九日" type="NPC" x="919.991" y="215.203">
+   <properties>
+    <property name="npcId" value="jiu_ri"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="79" x="1032.94" y="299.311" width="80" height="22.3906">
+   <text pixelsize="14" wrap="1">药店</text>
+  </object>
+  <object id="80" name="流动摊贩" type="NPC" x="469.603" y="217.508">
+   <properties>
+    <property name="npcId" value="liu_dong_tan_fan"/>
+   </properties>
+   <point/>
+  </object>
+ </objectgroup>
+</map>

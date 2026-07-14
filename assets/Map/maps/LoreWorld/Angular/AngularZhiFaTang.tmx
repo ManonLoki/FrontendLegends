@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="20" height="10" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="5">
+ <properties>
+  <property name="mapName" value="执法堂"/>
+  <property name="parentMap" value="Angular"/>
+  <property name="region" value="NG神教"/>
+  <property name="type" propertytype="MapType" value="inDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/装饰物.tsx"/>
+ <tileset firstgid="19" source="../../../tilesets/Game_Maker_Studio_Autotiles_16x16.tsx"/>
+ <tileset firstgid="1267" source="../../../tilesets/3_Props_and_Buildings_16x16.tsx"/>
+ <layer id="1" name="Background" width="20" height="10">
+  <data encoding="base64" compression="zlib">
+   eJw7xszAsINK+AQQbwHiJVTCe0bNG3TmnQHiAwTwGqj6FQTUnQJiYsAWJPupAc6QYD8APhBxeQ==
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="20" height="10">
+  <data encoding="base64" compression="zlib">
+   eJw7xszAsINK+AQQbwHiJRRgZLBnEJqHjEeieWeA+AABvAaqfgUBdafQ4gcX2IJkPzXAGRLsBwDiJG2P
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="20" height="10">
+  <data encoding="base64" compression="zlib">
+   eJxjYKAMeLAzMHgCsRc7hQZBQQbQnEwgzqKSeR1AczqBuItK5o2CkQUAzpAD8Q==
+  </data>
+ </layer>
+ <objectgroup id="4" name="Interactive">
+  <object id="1" name="布莱克" type="NPC" x="54.623" y="54.1439">
+   <properties>
+    <property name="npcId" value="bu_lai_ke"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="2" name="西西弗斯" type="NPC" x="166.744" y="53.1856">
+   <properties>
+    <property name="npcId" value="xi_xi_fu_si"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="3" type="Transaction" x="144" y="128" width="48" height="16">
+   <properties>
+    <property name="from" value="Angular"/>
+    <property name="to" value="AngularZhiFaTang"/>
+   </properties>
+  </object>
+  <object id="4" type="Transaction" x="144" y="144" width="48" height="16">
+   <properties>
+    <property name="from" value="AngularZhiFaTang"/>
+    <property name="to" value="Angular"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

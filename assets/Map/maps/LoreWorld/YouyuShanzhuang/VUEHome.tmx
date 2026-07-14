@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="5">
+ <properties>
+  <property name="mapName" value="VUE之家"/>
+  <property name="parentMap" value="YouyuShanzhuang"/>
+  <property name="region" value="鱿鱼山庄"/>
+  <property name="type" propertytype="MapType" value="inDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/Godot_Autotiles_16x16.tsx"/>
+ <layer id="1" name="Background" width="20" height="20">
+  <data encoding="base64" compression="zlib">
+   eJzbycLAsJtKeA8QHwXiS1TCV0bNGzVv1LxR84aQeXeB+B4efA5J/XkCah8AMSFwFM1+SsFdEu0HAElGMhM=
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="20" height="20">
+  <data encoding="base64" compression="zlib">
+   eJzbycLAsJtKeA8QHwXiS1TCV0bNGzVv1LxR84aQeXeB+B4efA5J/XkCah8AMSFwFM1+SsFdEu0HAElGMhM=
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="20" height="20">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2AUjIJRMApIBwAGQAAB
+  </data>
+ </layer>
+ <objectgroup id="4" name="Interactive">
+  <object id="1" name="Posva" type="NPC" x="88.7513" y="168.559">
+   <properties>
+    <property name="npcId" value="posva"/>
+    <property name="type" value="NPC"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="3" type="Transaction" x="144" y="288" width="32" height="16">
+   <properties>
+    <property name="from" value="YouyuShanzhuang"/>
+    <property name="to" value="VUEHome"/>
+   </properties>
+  </object>
+  <object id="4" type="Transaction" x="144" y="304" width="32" height="16">
+   <properties>
+    <property name="from" value="VUEHome"/>
+    <property name="to" value="YouyuShanzhuang"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

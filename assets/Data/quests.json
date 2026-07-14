@@ -1,0 +1,168 @@
+{
+    "version": 1,
+    "_note": "任务 mock 数据；novice=新手(日常杂活或DARK学项目)，errand=布告栏(寻物/送信，回发布者交差)，bounty=捕快(悬赏)，ring=九日环任务(带话/送物到目标NPC处即时结算，每 ringSize 件一环，放弃清零，每单交付后 cooldownSec 冷却；奖励逐环×(1+ringGrowth)、交付时整包随机±fluctuation)，bountyRing/killRing=环形悬赏/杀人任务。所有任务均无时限（规范见 docs/Task/任务系统.md）。giverNpcId / completionGiverId 都是任务端点 id，可指向 NPC 或 Props。奖励默认按 rewardBase 拆 经验:潜能:金钱=2:2:1.6，也可显式 reward 覆盖。",
+    "_linesNote": "novice.lines 支持 accepted/inProgress/tooExp/lowHp/done/cooldown（新手任务只耗体力，无 lowMp）；generators.lines 可选：offer 接取/inProgress 催办/done 完成/slotBusy 手头有事/cooldown 冷却/requireFail 门槛。占位符 {target}=目标名 {map}=出没地图 {reward}=奖励串 {hpCost}=项目体力消耗。缺省走内置兜底句。",
+    "quests": {
+        "novice_darkxue_project": {
+            "type": "novice",
+            "giverNpcId": "dao_shi",
+            "completionGiverId": "darkxue_computer",
+            "title": "DARK学项目练手",
+            "requires": {
+                "minAge": 14,
+                "expMax": 5000
+            },
+            "cooldownSec": 30,
+            "rewardBase": 25,
+            "reward": {
+                "experience": 50,
+                "potential": 50,
+                "money": 40
+            },
+            "variants": [
+                {
+                    "id": "library_system",
+                    "title": "图书管理系统",
+                    "hpCost": 25
+                },
+                {
+                    "id": "crm_system",
+                    "title": "CRM系统",
+                    "hpCost": 50
+                },
+                {
+                    "id": "erp_system",
+                    "title": "ERP系统",
+                    "hpCost": 100
+                }
+            ],
+            "lines": {
+                "offer": "来得正好，我这里有个练手项目。",
+                "accepted": "我这有个【{target}】的活，你去干了吧。",
+                "inProgress": "安排给你的【{target}】咋还没做完呢，去隔壁电脑干活去。",
+                "tooExp": "你这身手，写这种新手项目屈才啦，去接点更大的活吧。",
+                "lowHp": "熬了大夜赶项目，你脸色发白，先歇口气，别硬撑。",
+                "done": "你在电脑前辛辛苦苦码完了【{target}】。{reward}",
+                "cooldown": "最近市场不景气，没活安排给你干。"
+            }
+        }
+    },
+    "generators": {
+        "ring_cunzhang": {
+            "type": "ring",
+            "giverNpcId": "jiu_ri",
+            "title": "九日环任务",
+            "requires": {
+                "minAge": 14
+            },
+            "cooldownSec": 30,
+            "ringSize": 10,
+            "ringGrowth": 0.15,
+            "fluctuation": 0.25,
+            "items": [
+                "fagun",
+                "bingliang_quanshui",
+                "chuang_ke_tie"
+            ],
+            "itemChance": 0.5,
+            "reward": {
+                "experience": 75,
+                "potential": 50,
+                "money": 40
+            },
+            "itemExtraMoney": 20,
+            "lines": {
+                "offer": "让【{map}】的【{target}】来一下。",
+                "offerItem": "你去买个【{item}】给【{map}】的【{target}】，公司不给报。",
+                "inProgress": "我让【{target}】来一下，他人呢？",
+                "inProgressItem": "让你给【{map}】的【{target}】的【{item}】呢？",
+                "requireFail": "你年岁尚浅，跑腿的活先缓缓。",
+                "slotBusy": "你手头那件事还没了，先去办完。",
+                "cooldown": "刚办完一件，让我琢磨琢磨下一件差事，稍候。",
+                "targetTalk": "「知道了知道了，又特么来一下」{reward}",
+                "targetItem": "「知道了知道了，又特么来一下」{reward}",
+                "needItem": "「东西呢？【{item}】不在你身上，可交不了差。」",
+                "itemEquipped": "「你把【{item}】穿戴在身上算怎么回事？先卸下来再给我。」",
+                "ringDone": "这一环 {ringSize} 件差事都跑完了，往后九日的赏格更丰厚！"
+            }
+        },
+        "bountyring_xiaobuer": {
+            "type": "bountyRing",
+            "giverNpcId": "xiao_bu_er",
+            "title": "小不二悬赏",
+            "requires": {
+                "minAge": 16
+            },
+            "cooldownSec": 120,
+            "ringSize": 10,
+            "baseDiscount": 0.25,
+            "roundGrowth": 0.03,
+            "spawnMaps": [
+                "KaiyuanTown",
+                "Dongjiao",
+                "Xijiao",
+                "Nanjiao",
+                "Beijiao",
+                "DarkXue",
+                "AnWang",
+                "ShoppingMall",
+                "Pharmacy",
+                "PlayerHome",
+                "ResidentialHouseDing",
+                "MiWuSenLin",
+                "Angular",
+                "AngularZhiFaTang",
+                "AngularZongTan",
+                "KongZhiGuo",
+                "XiangCaoPai",
+                "YouyuShanzhuang",
+                "VUEHome",
+                "YYXResidentialHouse",
+                "LiangZiXianZong",
+                "LiangZiShiYanShi",
+                "ShengHuoMiaoMiao",
+                "ShengHuoMansion",
+                "XiHuLingYin"
+            ],
+            "targetSprite": "npc-30",
+            "rewardBase": 30,
+            "rewardGrowthMin": 0.05,
+            "rewardGrowthMax": 0.1,
+            "statGrowthMin": 0.1,
+            "statGrowthMax": 0.2,
+            "fluctuationMin": -0.1,
+            "fluctuationMax": 0.25,
+            "lines": {
+                "offer": "有人举报「{target}」出现在「{map}」，请速速将其捉拿归案！",
+                "inProgress": "「{target}」已在「{map}」，请速速将其捉拿归案！",
+                "done": "你成功干掉了「{target}」，镇子恢复了往日的平静。获得{reward}",
+                "requireFail": "你这点分量，还接不了暗网的单子，攒够年岁再来。",
+                "slotBusy": "你手头还有别的事没了，先去办完。",
+                "cooldown": "镇子目前很安静，暂时没有任何任务。",
+                "ringDone": "十恶已除，这一环功德圆满！暗网赏格重新起算，下一环从头再来。"
+            }
+        },
+        "killring_huoyanwang": {
+            "type": "killRing",
+            "giverNpcId": "huo_yan_wang",
+            "title": "活阎王生死簿",
+            "requires": {
+                "minAge": 16
+            },
+            "cooldownSec": 120,
+            "ringSize": 10,
+            "rewardPotentialScale": 1,
+            "rewardPotentialMin": 50,
+            "rewardPotentialMax": 1000,
+            "lines": {
+                "offer": "老夫心血来潮掐指一算「{target}」阳寿已尽，必将猝死，小友替我收了他吧。",
+                "inProgress": "「{target}」在「{map}」活得好好的，你不弄死他我就弄死你。",
+                "done": "你杀了「{target}」，手中的人命又多了一条，不知道会影响什么。获得{reward}",
+                "requireFail": "你命数太浅，暂且翻不得这本簿子。",
+                "slotBusy": "你手头那页生死簿还没划掉。",
+                "cooldown": "老夫掐算的手都抽筋了，缓缓，缓缓。",
+                "ringDone": "十命已了，这一环生死簿批完了。"
+            }
+        }
+    }
+}

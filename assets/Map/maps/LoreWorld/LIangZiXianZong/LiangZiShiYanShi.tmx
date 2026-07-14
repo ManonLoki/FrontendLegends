@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="15" height="15" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="5">
+ <properties>
+  <property name="mapName" value="量子实验室"/>
+  <property name="parentMap" value="LiangZiXianZong"/>
+  <property name="region" value="量子仙宗"/>
+  <property name="type" propertytype="MapType" value="inDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/Game_Maker_Studio_Autotiles_16x16.tsx"/>
+ <layer id="1" name="Background" width="15" height="15">
+  <data encoding="base64" compression="zlib">
+   eJxbwsjAMI0MvAyIJwFxExl4FhCvAuJ5ROIuqL42IF4BxEtIcGczVG8Lnd2MjEl180CF82BxMy38i5yGcPkXF5iEZD6pYBUR5gMAFnJzfQ==
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="15" height="15">
+  <data encoding="base64" compression="zlib">
+   eJxbwsjAMI0MvAyIJwFxExl4FhCvAuJ5ZOAVQLyETDdPo8DNTRS4eR4F7p1GgXubKHDvvAEMZ3L1tuGJoy4kNbjSFS4Ac88sPGpwgVVEmA8AJtZzNA==
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="15" height="15">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2AUDCQAAAOEAAE=
+  </data>
+ </layer>
+ <objectgroup id="4" name="Interactive">
+  <object id="1" name="扎克伯格" type="NPC" x="40" y="132">
+   <properties>
+    <property name="npcId" value="zha_ke_bo_ge"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="2" name="Jordan Walke" type="NPC" x="185.333" y="84">
+   <properties>
+    <property name="npcId" value="jordan_walke"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="3" type="Transaction" x="112" y="208" width="16" height="16">
+   <properties>
+    <property name="from" value="LiangZiXianZong"/>
+    <property name="to" value="LiangZiShiYanShi"/>
+   </properties>
+  </object>
+  <object id="4" type="Transaction" x="96" y="224" width="48" height="16">
+   <properties>
+    <property name="from" value="LiangZiShiYanShi"/>
+    <property name="to" value="LiangZiXianZong"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

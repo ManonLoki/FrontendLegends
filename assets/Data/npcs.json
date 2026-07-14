@@ -1,0 +1,2627 @@
+{
+    "version": 1,
+    "npcs": {
+        "douglas_crockford": {
+            "displayName": "道格拉斯·克罗克福德",
+            "gender": "male",
+            "age": 71,
+            "sprite": "npc-16",
+            "roles": [
+                "master"
+            ],
+            "sect": "香草派",
+            "description": "你可能不知道他，但是你一定用过JSON",
+            "defaultLine": "JavaScript 是世界上最被误解的编程语言",
+            "money": 16666,
+            "attributes": {
+                "strength": 25,
+                "agility": 25,
+                "constitution": 25,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 40,
+                "basicAgility": 40,
+                "basicConstitution": 40,
+                "basicParry": 40,
+                "vanilla_code_dom": 40,
+                "vanilla_tune_event_loop": 40,
+                "vanilla_arch_closure": 40,
+                "vanilla_parry_prevent": 40
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent"
+            ],
+            "joinSect": {
+                "strength": 0,
+                "agility": 0,
+                "constitution": 0,
+                "wisdom": 0
+            },
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "john_resig": {
+            "displayName": "约翰·雷西格",
+            "gender": "male",
+            "age": 42,
+            "sprite": "npc-17",
+            "roles": [
+                "master"
+            ],
+            "sect": "香草派",
+            "description": "JQuery之父，诸神黄昏的拯救者",
+            "defaultLine": "写得更少，做得更多",
+            "money": 28888,
+            "attributes": {
+                "strength": 30,
+                "agility": 30,
+                "constitution": 30,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 70,
+                "basicAgility": 70,
+                "basicConstitution": 70,
+                "basicParry": 70,
+                "vanilla_code_dom": 70,
+                "vanilla_tune_event_loop": 70,
+                "vanilla_arch_closure": 70,
+                "vanilla_parry_prevent": 70
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent"
+            ],
+            "joinSect": {
+                "strength": 0,
+                "agility": 0,
+                "constitution": 0,
+                "wisdom": 0
+            },
+            "joinSkillRequirements": {
+                "basicConstitution": 30,
+                "vanilla_arch_closure": 30
+            },
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "brendan_eich": {
+            "displayName": "布兰登·艾奇",
+            "gender": "male",
+            "age": 64,
+            "sprite": "npc-18",
+            "roles": [
+                "master"
+            ],
+            "sect": "香草派",
+            "description": "JavaScript之父，一个用了10天就创造了历史的男人",
+            "defaultLine": "永远押注 JavaScript",
+            "money": 66666,
+            "attributes": {
+                "strength": 40,
+                "agility": 40,
+                "constitution": 40,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 90,
+                "basicAgility": 90,
+                "basicConstitution": 90,
+                "basicParry": 90,
+                "vanilla_code_dom": 90,
+                "vanilla_tune_event_loop": 90,
+                "vanilla_arch_closure": 90,
+                "vanilla_parry_prevent": 90
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent"
+            ],
+            "joinSect": {
+                "strength": 0,
+                "agility": 0,
+                "constitution": 0,
+                "wisdom": 0
+            },
+            "joinSkillRequirements": {
+                "basicConstitution": 70,
+                "vanilla_arch_closure": 70
+            },
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "saito_yuya": {
+            "displayName": "齐藤 祐也",
+            "gender": "male",
+            "age": 45,
+            "sprite": "npc-19",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "香草派",
+            "description": "香草时代的布道者",
+            "defaultLine": "在依赖库之前，先去理解浏览器的底层机制。",
+            "money": 3888,
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 20,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 30,
+                "basicAgility": 30,
+                "basicConstitution": 30,
+                "basicParry": 30,
+                "vanilla_code_dom": 30,
+                "vanilla_tune_event_loop": 30,
+                "vanilla_arch_closure": 30,
+                "vanilla_parry_prevent": 30
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent"
+            ],
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "endo_masanobu": {
+            "displayName": "远藤 雅伸",
+            "gender": "male",
+            "age": 55,
+            "sprite": "npc-20",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "香草派",
+            "description": "JS游戏引擎的祖师爷",
+            "defaultLine": "让无趣的世界变得有趣",
+            "money": 16666,
+            "attributes": {
+                "strength": 30,
+                "agility": 30,
+                "constitution": 30,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 50,
+                "basicAgility": 50,
+                "basicConstitution": 50,
+                "basicParry": 50,
+                "vanilla_code_dom": 50,
+                "vanilla_tune_event_loop": 50,
+                "vanilla_arch_closure": 50,
+                "vanilla_parry_prevent": 50
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent"
+            ],
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "situ_zhengmei": {
+            "displayName": "司徒正美",
+            "gender": "male",
+            "age": 36,
+            "sprite": "npc-21",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "香草派",
+            "description": "一个不朽的灵魂，Avalon的作者",
+            "defaultLine": "把复杂的框架拆开，里面全是好玩的技术",
+            "money": 16666,
+            "attributes": {
+                "strength": 15,
+                "agility": 15,
+                "constitution": 40,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 40,
+                "basicAgility": 40,
+                "basicConstitution": 60,
+                "basicParry": 60,
+                "vanilla_code_dom": 40,
+                "vanilla_tune_event_loop": 40,
+                "vanilla_arch_closure": 60,
+                "vanilla_parry_prevent": 60
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent"
+            ],
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "chen_baishui": {
+            "displayName": "陈白水",
+            "gender": "male",
+            "age": 26,
+            "sprite": "npc-22",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "香草派",
+            "description": "一个迪拜园区的负责人，总喜欢盯着别人腰子看",
+            "defaultLine": "招人，坐标迪拜，年包60起",
+            "money": 6666,
+            "attributes": {
+                "strength": 30,
+                "agility": 30,
+                "constitution": 30,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 50,
+                "basicAgility": 50,
+                "basicConstitution": 50,
+                "basicParry": 50,
+                "vanilla_code_dom": 50,
+                "vanilla_tune_event_loop": 50,
+                "vanilla_arch_closure": 50,
+                "vanilla_parry_prevent": 50
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent"
+            ],
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "jing_shen_xiao_mei": {
+            "displayName": "精神小妹",
+            "gender": "female",
+            "age": 18,
+            "sprite": "npc-39",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "香草派",
+            "description": "浑身布满符文的精神小妹",
+            "defaultLine": "这里是东郊，东郊到家了解一下吗？",
+            "money": 1888,
+            "attributes": {
+                "strength": 5,
+                "agility": 5,
+                "constitution": 5,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 10,
+                "basicAgility": 10,
+                "basicConstitution": 10,
+                "basicParry": 10,
+                "vanilla_code_dom": 10,
+                "vanilla_tune_event_loop": 10,
+                "vanilla_arch_closure": 10,
+                "vanilla_parry_prevent": 10
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent"
+            ]
+        },
+        "dao_shi": {
+            "displayName": "导师",
+            "gender": "male",
+            "age": 56,
+            "sprite": "npc-3",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "鱿鱼山庄",
+            "description": "看起来德高望重，实际只会压榨学生。",
+            "defaultLine": "任务做完了吗？没做完就去电脑前码去。",
+            "attributes": {
+                "strength": 15,
+                "agility": 15,
+                "constitution": 15,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 35,
+                "basicAgility": 35,
+                "basicConstitution": 20,
+                "basicParry": 50,
+                "vue_code_template": 35,
+                "vue_tune_router": 35,
+                "vue_arch_reactive": 20,
+                "vue_parry_keepalive": 50,
+                "literacy": 40
+            },
+            "equippedSkillIds": [
+                "vue_code_template",
+                "vue_tune_router",
+                "vue_arch_reactive",
+                "vue_parry_keepalive",
+                "literacy"
+            ],
+            "money": 3000,
+            "equipment": [
+                "laohua_jing"
+            ]
+        },
+        "xiao_bu_er": {
+            "displayName": "小不二",
+            "gender": "female",
+            "age": 26,
+            "sprite": "npc-49",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "NG神教",
+            "description": "留学归来的隐形巨佬，在网络安全领域深耕，但是总有人说她是个邪修。",
+            "defaultLine": "有仇报仇，有怨报怨，这一单接不接？",
+            "attributes": {
+                "strength": 40,
+                "agility": 40,
+                "constitution": 50,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 90,
+                "basicAgility": 90,
+                "basicConstitution": 90,
+                "basicParry": 90,
+                "ng_code_decorator": 90,
+                "ng_tune_rx_step": 90,
+                "ng_arch_zone": 90,
+                "ng_parry_interceptor": 90,
+                "literacy": 90
+            },
+            "equippedSkillIds": [
+                "ng_code_decorator",
+                "ng_tune_rx_step",
+                "ng_arch_zone",
+                "ng_parry_interceptor",
+                "literacy"
+            ],
+            "money": 60000
+        },
+        "jiu_ri": {
+            "displayName": "九日",
+            "gender": "male",
+            "age": 44,
+            "sprite": "npc-18",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "香草派",
+            "description": "听说是个很喜欢让人来一下的家伙。",
+            "defaultLine": "你，过来一下。",
+            "attributes": {
+                "strength": 25,
+                "agility": 25,
+                "constitution": 25,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 50,
+                "basicAgility": 50,
+                "basicConstitution": 50,
+                "basicParry": 50,
+                "vanilla_code_dom": 50,
+                "vanilla_tune_event_loop": 50,
+                "vanilla_arch_closure": 50,
+                "vanilla_parry_prevent": 50,
+                "literacy": 50
+            },
+            "equippedSkillIds": [
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent",
+                "literacy"
+            ],
+            "money": 20000,
+            "equipment": [
+                "laohua_jing"
+            ]
+        },
+        "huo_yan_wang": {
+            "displayName": "活阎王",
+            "gender": "male",
+            "age": 0,
+            "sprite": "npc-23",
+            "roles": [
+                "civilian"
+            ],
+            "description": "他要去了地府，阎王都得失业。",
+            "defaultLine": "我掐指一算，你今日不宜久留。",
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 20,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 60,
+                "basicAgility": 60,
+                "basicConstitution": 50,
+                "basicParry": 50,
+                "literacy": 30
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "literacy"
+            ],
+            "money": 8888
+        },
+        "nai_cha_mei_mei": {
+            "displayName": "奶茶妹妹",
+            "gender": "female",
+            "age": 20,
+            "sprite": "npc-36",
+            "roles": [
+                "vendor"
+            ],
+            "description": "奶茶店的小姐姐，总问你喜欢几分甜。",
+            "defaultLine": "客官，你想喝点什么？",
+            "attributes": {
+                "strength": 10,
+                "agility": 10,
+                "constitution": 0,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 0,
+                "basicAgility": 0,
+                "basicConstitution": 0,
+                "basicParry": 0,
+                "literacy": 5
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "literacy"
+            ],
+            "money": 100
+        },
+        "zhuang_ji_yuan": {
+            "displayName": "装机媛",
+            "gender": "female",
+            "age": 32,
+            "sprite": "npc-37",
+            "roles": [
+                "vendor"
+            ],
+            "description": "风韵犹存的少妇，时不时直播表演装机。",
+            "defaultLine": "我内存是金子做的，我硬盘也是金子做的。",
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 40,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 20,
+                "basicAgility": 25,
+                "basicConstitution": 50,
+                "basicParry": 20,
+                "literacy": 20
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "literacy"
+            ],
+            "money": 4888
+        },
+        "yao_fan_zi": {
+            "displayName": "药贩子",
+            "gender": "male",
+            "age": 40,
+            "sprite": "npc-16",
+            "roles": [
+                "vendor"
+            ],
+            "description": "长相十分猥琐，总给你推荐点奇怪的东西。",
+            "defaultLine": "干地黄、山茱萸、山药、泽泻、茯苓、丹皮、肉桂、炮附子……哎你别走啊。",
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 40,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 20,
+                "basicAgility": 25,
+                "basicConstitution": 20,
+                "basicParry": 20,
+                "literacy": 20
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "literacy"
+            ],
+            "money": 18888
+        },
+        "lou_wan_qing": {
+            "displayName": "楼婉卿",
+            "gender": "female",
+            "age": 35,
+            "sprite": "npc-38",
+            "roles": [
+                "vendor"
+            ],
+            "description": "每天给自己挂的满满的，也不知道会不会得颈椎病，跟黄鹤关系不太一般。",
+            "defaultLine": "自己看看喜欢哪个。",
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 40,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 30,
+                "basicAgility": 30,
+                "basicConstitution": 30,
+                "basicParry": 30,
+                "literacy": 30
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "literacy"
+            ],
+            "money": 2666
+        },
+        "huang_he": {
+            "displayName": "黄鹤",
+            "gender": "male",
+            "age": 50,
+            "sprite": "npc-21",
+            "roles": [
+                "vendor"
+            ],
+            "description": "听说是带小姨子跑到这来的。",
+            "defaultLine": "话不能乱说！你这是污蔑！",
+            "attributes": {
+                "strength": 25,
+                "agility": 25,
+                "constitution": 25,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 40,
+                "basicAgility": 40,
+                "basicConstitution": 40,
+                "basicParry": 40,
+                "literacy": 40
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "literacy"
+            ],
+            "money": 16666
+        },
+        "liu_dong_tan_fan": {
+            "displayName": "流动摊贩",
+            "gender": "male",
+            "age": 24,
+            "sprite": "npc-4",
+            "roles": [
+                "vendor"
+            ],
+            "description": "一个售卖食物的小贩，正在紧张的环视周围的环境。",
+            "defaultLine": "城管来了？去下个路口等我。",
+            "attributes": {
+                "strength": 10,
+                "agility": 10,
+                "constitution": 10,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 10,
+                "basicAgility": 10,
+                "basicConstitution": 10,
+                "basicParry": 10,
+                "literacy": 10
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "literacy"
+            ],
+            "money": 500
+        },
+        "fu_zhuang_dian_lao_ban_niang": {
+            "displayName": "服装店老板娘",
+            "gender": "female",
+            "age": 32,
+            "sprite": "npc-50",
+            "roles": [
+                "vendor"
+            ],
+            "description": "一个风韵犹存的少妇。",
+            "defaultLine": "呦~ 来试试衣服啊。",
+            "attributes": {
+                "strength": 10,
+                "agility": 10,
+                "constitution": 10,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 10,
+                "basicAgility": 10,
+                "basicConstitution": 10,
+                "basicParry": 10,
+                "literacy": 10
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "literacy"
+            ],
+            "money": 1500
+        },
+        "jian_shang": {
+            "displayName": "奸商",
+            "gender": "male",
+            "age": 60,
+            "sprite": "npc-15",
+            "roles": [
+                "pawn"
+            ],
+            "description": "看起来面向憨厚，但是不一般的黑，有名的葛朗台。",
+            "defaultLine": "无奸不商，时间就是金钱我的朋友。",
+            "attributes": {
+                "strength": 10,
+                "agility": 10,
+                "constitution": 10,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 10,
+                "basicAgility": 10,
+                "basicConstitution": 10,
+                "basicParry": 10,
+                "literacy": 10
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "literacy"
+            ],
+            "money": 6
+        },
+        "ding_shi_fu": {
+            "displayName": "丁师傅",
+            "gender": "male",
+            "age": 28,
+            "sprite": "npc-8",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "NG神教",
+            "description": "一个像机器猫一样万能的男人，也是个人形ETC。",
+            "defaultLine": "有个男人唯心式自我主义双标。",
+            "attributes": {
+                "strength": 35,
+                "agility": 35,
+                "constitution": 50,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 50,
+                "basicAgility": 35,
+                "basicConstitution": 60,
+                "basicParry": 60,
+                "ng_code_decorator": 50,
+                "ng_tune_rx_step": 35,
+                "ng_arch_zone": 60,
+                "ng_parry_interceptor": 60,
+                "literacy": 50
+            },
+            "equippedSkillIds": [
+                "ng_code_decorator",
+                "ng_tune_rx_step",
+                "ng_arch_zone",
+                "ng_parry_interceptor",
+                "literacy"
+            ],
+            "money": 6666,
+            "equipment": [
+                "ar_yanjing",
+                "chongdianbao"
+            ]
+        },
+        "liu_ri_tian": {
+            "displayName": "刘日天",
+            "gender": "male",
+            "age": 33,
+            "sprite": "npc-7",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "鱿鱼山庄",
+            "description": "我就是那个被丁师傅说的男人。",
+            "defaultLine": "**就是个傻*。",
+            "attributes": {
+                "strength": 30,
+                "agility": 30,
+                "constitution": 50,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 60,
+                "basicAgility": 40,
+                "basicConstitution": 50,
+                "basicParry": 60,
+                "vue_code_template": 60,
+                "vue_tune_router": 40,
+                "vue_arch_reactive": 50,
+                "vue_parry_keepalive": 60,
+                "literacy": 50
+            },
+            "equippedSkillIds": [
+                "vue_code_template",
+                "vue_tune_router",
+                "vue_arch_reactive",
+                "vue_parry_keepalive",
+                "literacy"
+            ],
+            "money": 8888,
+            "equipment": [
+                "ar_yanjing",
+                "chongdianbao"
+            ]
+        },
+        "xiao_xue_sheng": {
+            "displayName": "小学生",
+            "gender": "male",
+            "age": 11,
+            "sprite": "npc-5",
+            "roles": [
+                "civilian"
+            ],
+            "description": "谁看到都想踢一脚的小孩子，正在镇子门口拿IPAD玩我的世界。",
+            "defaultLine": "来跟我玩起床战争。",
+            "attributes": {
+                "strength": 5,
+                "agility": 5,
+                "constitution": 5,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 0,
+                "basicAgility": 0,
+                "basicConstitution": 0,
+                "basicParry": 0,
+                "literacy": 1
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "literacy"
+            ],
+            "money": 1888
+        },
+        "manon_loki": {
+            "displayName": "ManonLoki",
+            "gender": "male",
+            "age": 38,
+            "sprite": "npc-6",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "NG神教",
+            "description": "神秘人的分身，在这里是个神棍",
+            "defaultLine": "我看你骨骼清奇，随我入教吧",
+            "money": 1000,
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 20,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 60,
+                "basicAgility": 60,
+                "basicConstitution": 60,
+                "basicParry": 60,
+                "literacy": 0,
+                "ng_code_decorator": 60,
+                "ng_tune_rx_step": 60,
+                "ng_arch_zone": 60,
+                "ng_parry_interceptor": 60
+            },
+            "equippedSkillIds": [
+                "ng_code_decorator",
+                "ng_tune_rx_step",
+                "ng_arch_zone",
+                "ng_parry_interceptor",
+                "literacy"
+            ],
+            "equipment": [
+                "dahui_polo_shan",
+                "hhkb"
+            ]
+        },
+        "lucian": {
+            "displayName": "Lucian",
+            "gender": "male",
+            "age": 38,
+            "sprite": "npc-6",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "NG神教",
+            "description": "他很神秘，从不暴露自己的身份，但是有人似乎察觉到了他的分身和创世神的身份",
+            "defaultLine": "你！想！死！吗？",
+            "money": 100000,
+            "attributes": {
+                "strength": 40,
+                "agility": 40,
+                "constitution": 40,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 100,
+                "basicAgility": 100,
+                "basicConstitution": 100,
+                "basicParry": 100,
+                "ng_code_decorator": 100,
+                "ng_tune_rx_step": 100,
+                "ng_arch_zone": 100,
+                "ng_parry_interceptor": 100
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "ng_code_decorator",
+                "ng_tune_rx_step",
+                "ng_arch_zone",
+                "ng_parry_interceptor"
+            ]
+        },
+        "jin_xiang_ke": {
+            "displayName": "进香客",
+            "gender": "male",
+            "age": 37,
+            "sprite": "npc-13",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "NG神教",
+            "description": "一个为情所困的香客，来这里似乎是为了斩断一段孽缘",
+            "defaultLine": "这漫山的神佛，斩不掉我的心魔",
+            "money": 5000,
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 20,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 50,
+                "basicAgility": 50,
+                "basicConstitution": 50,
+                "basicParry": 50,
+                "ng_code_decorator": 50,
+                "ng_tune_rx_step": 50,
+                "ng_arch_zone": 50,
+                "ng_parry_interceptor": 50
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "ng_code_decorator",
+                "ng_tune_rx_step",
+                "ng_arch_zone",
+                "ng_parry_interceptor"
+            ]
+        },
+        "da_mo_qiong_qiu": {
+            "displayName": "大漠穷秋",
+            "gender": "male",
+            "age": 41,
+            "sprite": "npc-7",
+            "roles": [
+                "master"
+            ],
+            "sect": "NG神教",
+            "description": "虽然只会嘴遁，但是带你入门没有问题",
+            "defaultLine": "你说是Angular好还是Vue好",
+            "money": 1500,
+            "attributes": {
+                "strength": 20,
+                "agility": 30,
+                "constitution": 25,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 25,
+                "basicAgility": 25,
+                "basicConstitution": 20,
+                "basicParry": 40,
+                "literacy": 0,
+                "ng_code_decorator": 25,
+                "ng_tune_rx_step": 25,
+                "ng_arch_zone": 20,
+                "ng_parry_interceptor": 40
+            },
+            "equippedSkillIds": [
+                "ng_code_decorator",
+                "ng_tune_rx_step",
+                "ng_arch_zone",
+                "ng_parry_interceptor",
+                "literacy"
+            ],
+            "joinSect": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 20,
+                "wisdom": 20
+            }
+        },
+        "qing_ge_le": {
+            "displayName": "青格勒",
+            "gender": "male",
+            "age": 31,
+            "sprite": "npc-8",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "NG神教",
+            "description": "他战斗力极强，经常越阶战斗，是个独行侠",
+            "defaultLine": "玩过懒人挂机修仙吗？",
+            "money": 6666,
+            "attributes": {
+                "strength": 25,
+                "agility": 25,
+                "constitution": 25,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 45,
+                "basicAgility": 45,
+                "basicConstitution": 60,
+                "basicParry": 45,
+                "literacy": 0,
+                "ng_code_decorator": 45,
+                "ng_tune_rx_step": 45,
+                "ng_arch_zone": 60,
+                "ng_parry_interceptor": 45
+            },
+            "equippedSkillIds": [
+                "ng_code_decorator",
+                "ng_tune_rx_step",
+                "ng_arch_zone",
+                "ng_parry_interceptor",
+                "literacy"
+            ],
+            "equipment": [
+                "dahui_polo_shan"
+            ]
+        },
+        "xue_lang": {
+            "displayName": "雪狼",
+            "gender": "male",
+            "age": 46,
+            "sprite": "npc-9",
+            "roles": [
+                "master"
+            ],
+            "sect": "NG神教",
+            "description": "掌教师尊，平时以扫地僧的面目示人",
+            "defaultLine": "雪狼看了你一眼，并不太想说话",
+            "money": 30000,
+            "attributes": {
+                "strength": 35,
+                "agility": 35,
+                "constitution": 40,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 80,
+                "basicAgility": 80,
+                "basicConstitution": 100,
+                "basicParry": 80,
+                "literacy": 0,
+                "ng_code_decorator": 80,
+                "ng_tune_rx_step": 80,
+                "ng_arch_zone": 100,
+                "ng_parry_interceptor": 80
+            },
+            "equippedSkillIds": [
+                "ng_code_decorator",
+                "ng_tune_rx_step",
+                "ng_arch_zone",
+                "ng_parry_interceptor",
+                "literacy"
+            ],
+            "joinSect": {
+                "strength": 0,
+                "agility": 0,
+                "constitution": 0,
+                "wisdom": 0
+            },
+            "joinSkillRequirements": {
+                "basicConstitution": 70,
+                "ng_arch_zone": 70
+            },
+            "equipment": [
+                "dahui_polo_shan"
+            ]
+        },
+        "bu_lai_ke": {
+            "displayName": "布莱克",
+            "gender": "male",
+            "age": 36,
+            "sprite": "npc-10",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "NG神教",
+            "description": "一个吃软饭喝白酒的猛男",
+            "defaultLine": "来！喝！",
+            "money": 5000,
+            "attributes": {
+                "strength": 30,
+                "agility": 20,
+                "constitution": 30,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 40,
+                "basicAgility": 40,
+                "basicConstitution": 50,
+                "basicParry": 40,
+                "literacy": 0,
+                "ng_code_decorator": 40,
+                "ng_tune_rx_step": 40,
+                "ng_arch_zone": 50,
+                "ng_parry_interceptor": 40
+            },
+            "equippedSkillIds": [
+                "ng_code_decorator",
+                "ng_tune_rx_step",
+                "ng_arch_zone",
+                "ng_parry_interceptor",
+                "literacy"
+            ],
+            "equipment": [
+                "dahui_polo_shan"
+            ]
+        },
+        "xi_xi_fu_si": {
+            "displayName": "西西弗斯",
+            "gender": "male",
+            "age": 32,
+            "sprite": "npc-11",
+            "roles": [
+                "master"
+            ],
+            "sect": "NG神教",
+            "description": "一直在孤独的前行，推动着世界的发展",
+            "defaultLine": "西西弗斯看了看天，说今天天气真不错",
+            "money": 12000,
+            "attributes": {
+                "strength": 25,
+                "agility": 25,
+                "constitution": 35,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 50,
+                "basicAgility": 45,
+                "basicConstitution": 60,
+                "basicParry": 50,
+                "literacy": 0,
+                "ng_code_decorator": 50,
+                "ng_tune_rx_step": 45,
+                "ng_arch_zone": 60,
+                "ng_parry_interceptor": 50
+            },
+            "equippedSkillIds": [
+                "ng_code_decorator",
+                "ng_tune_rx_step",
+                "ng_arch_zone",
+                "ng_parry_interceptor",
+                "literacy"
+            ],
+            "joinSect": {
+                "strength": 0,
+                "agility": 0,
+                "constitution": 0,
+                "wisdom": 0
+            },
+            "joinSkillRequirements": {
+                "basicConstitution": 30,
+                "ng_arch_zone": 30
+            },
+            "equipment": [
+                "dahui_polo_shan"
+            ]
+        },
+        "qc": {
+            "displayName": "Qc.",
+            "gender": "male",
+            "age": 28,
+            "sprite": "npc-33",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "NG神教",
+            "description": "一个经验包，为人和善，很多新人都喜欢他",
+            "defaultLine": "打我呀！来打我呀！",
+            "money": 1888,
+            "attributes": {
+                "strength": 10,
+                "agility": 10,
+                "constitution": 10,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 10,
+                "basicAgility": 10,
+                "basicConstitution": 10,
+                "basicParry": 10,
+                "literacy": 0,
+                "ng_code_decorator": 10,
+                "ng_tune_rx_step": 10,
+                "ng_arch_zone": 10,
+                "ng_parry_interceptor": 10
+            },
+            "equippedSkillIds": [
+                "ng_code_decorator",
+                "ng_tune_rx_step",
+                "ng_arch_zone",
+                "ng_parry_interceptor",
+                "literacy"
+            ],
+            "equipment": [
+                "dahui_polo_shan"
+            ]
+        },
+        "yuan_xing_ke": {
+            "displayName": "远行客",
+            "gender": "male",
+            "age": 32,
+            "sprite": "npc-34",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "NG神教",
+            "description": "据说是个从很远地方过来朝圣的家伙",
+            "defaultLine": "嘿嘿嘿，嘿嘿嘿",
+            "money": 3000,
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 20,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 30,
+                "basicAgility": 30,
+                "basicConstitution": 30,
+                "basicParry": 30,
+                "literacy": 0,
+                "ng_code_decorator": 30,
+                "ng_tune_rx_step": 30,
+                "ng_arch_zone": 30,
+                "ng_parry_interceptor": 30
+            },
+            "equippedSkillIds": [
+                "ng_code_decorator",
+                "ng_tune_rx_step",
+                "ng_arch_zone",
+                "ng_parry_interceptor",
+                "literacy"
+            ],
+            "equipment": [
+                "dahui_polo_shan"
+            ]
+        },
+        "gc_jie_ban_ren": {
+            "displayName": "GC主义接班人",
+            "gender": "male",
+            "age": 30,
+            "sprite": "npc-35",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "NG神教",
+            "description": "江湖人称轮子哥",
+            "defaultLine": "我做了个新框架阁下是否愿意试试？",
+            "money": 500,
+            "attributes": {
+                "strength": 25,
+                "agility": 25,
+                "constitution": 25,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 30,
+                "basicAgility": 40,
+                "basicConstitution": 50,
+                "basicParry": 20,
+                "literacy": 0,
+                "ng_code_decorator": 30,
+                "ng_tune_rx_step": 40,
+                "ng_arch_zone": 50,
+                "ng_parry_interceptor": 20
+            },
+            "equippedSkillIds": [
+                "ng_code_decorator",
+                "ng_tune_rx_step",
+                "ng_arch_zone",
+                "ng_parry_interceptor",
+                "literacy"
+            ],
+            "equipment": [
+                "dahui_polo_shan"
+            ]
+        },
+        "tui_se": {
+            "displayName": "褪色",
+            "gender": "female",
+            "age": 28,
+            "sprite": "npc-53",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "NG神教",
+            "description": "教派吉祥物，她好像还有很多不为人知的地方",
+            "defaultLine": "我是买台式还是买苹果呢？",
+            "money": 100,
+            "attributes": {
+                "strength": 15,
+                "agility": 15,
+                "constitution": 40,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 10,
+                "basicAgility": 20,
+                "basicConstitution": 40,
+                "basicParry": 20,
+                "literacy": 0,
+                "ng_code_decorator": 10,
+                "ng_tune_rx_step": 20,
+                "ng_arch_zone": 40,
+                "ng_parry_interceptor": 20
+            },
+            "equippedSkillIds": [
+                "ng_code_decorator",
+                "ng_tune_rx_step",
+                "ng_arch_zone",
+                "ng_parry_interceptor",
+                "literacy"
+            ],
+            "equipment": [
+                "dahui_polo_shan"
+            ]
+        },
+        "wei_te_er": {
+            "displayName": "维特",
+            "gender": "male",
+            "age": 18,
+            "sprite": "npc-6",
+            "roles": [
+                "master"
+            ],
+            "sect": "鱿鱼山庄",
+            "joinSect": {
+                "strength": 0,
+                "agility": 30,
+                "constitution": 0,
+                "wisdom": 0
+            },
+            "description": "别看年轻，但是融会贯通各家所长。",
+            "defaultLine": "你信不信老夫怼的你Vue，Vue的叫。",
+            "attributes": {
+                "strength": 20,
+                "agility": 30,
+                "constitution": 25,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 25,
+                "basicAgility": 25,
+                "basicConstitution": 20,
+                "basicParry": 40,
+                "vue_code_template": 25,
+                "vue_tune_router": 25,
+                "vue_arch_reactive": 20,
+                "vue_parry_keepalive": 40,
+                "literacy": 25
+            },
+            "equippedSkillIds": [
+                "vue_code_template",
+                "vue_tune_router",
+                "vue_arch_reactive",
+                "vue_parry_keepalive",
+                "literacy"
+            ],
+            "money": 1200,
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "youyu_xu": {
+            "displayName": "鱿鱼须",
+            "gender": "male",
+            "age": 39,
+            "sprite": "npc-14",
+            "roles": [
+                "master"
+            ],
+            "sect": "鱿鱼山庄",
+            "joinSect": {
+                "strength": 0,
+                "agility": 0,
+                "constitution": 0,
+                "wisdom": 0
+            },
+            "joinSkillRequirements": {
+                "basicConstitution": 50,
+                "vue_arch_reactive": 50
+            },
+            "description": "传说中的那个男人，多处致敬，一生致力于整合。",
+            "defaultLine": "你别问我对不对，我就问你快不快。",
+            "attributes": {
+                "strength": 30,
+                "agility": 30,
+                "constitution": 30,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 75,
+                "basicAgility": 75,
+                "basicConstitution": 60,
+                "basicParry": 80,
+                "vue_code_template": 75,
+                "vue_tune_router": 75,
+                "vue_arch_reactive": 60,
+                "vue_parry_keepalive": 80,
+                "literacy": 80
+            },
+            "equippedSkillIds": [
+                "vue_code_template",
+                "vue_tune_router",
+                "vue_arch_reactive",
+                "vue_parry_keepalive",
+                "literacy"
+            ],
+            "money": 38888,
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "posva": {
+            "displayName": "Posva",
+            "gender": "male",
+            "age": 34,
+            "sprite": "npc-19",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "鱿鱼山庄",
+            "description": "传说中的菠萝养殖户。",
+            "defaultLine": "嘿，来口菠萝尝尝？",
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 20,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 50,
+                "basicAgility": 60,
+                "basicConstitution": 60,
+                "basicParry": 40,
+                "vue_code_template": 50,
+                "vue_tune_router": 60,
+                "vue_arch_reactive": 60,
+                "vue_parry_keepalive": 40,
+                "literacy": 60
+            },
+            "equippedSkillIds": [
+                "vue_code_template",
+                "vue_tune_router",
+                "vue_arch_reactive",
+                "vue_parry_keepalive",
+                "literacy"
+            ],
+            "money": 6000,
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "xiao_bang_xiong": {
+            "displayName": "肖邦兄",
+            "gender": "male",
+            "age": 34,
+            "sprite": "npc-20",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "鱿鱼山庄",
+            "description": "听说跟Nuxt有不小的渊源的双胞胎之一。",
+            "defaultLine": "Nuxt了解一下？",
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 20,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 40,
+                "basicAgility": 40,
+                "basicConstitution": 35,
+                "basicParry": 30,
+                "vue_code_template": 40,
+                "vue_tune_router": 40,
+                "vue_arch_reactive": 35,
+                "vue_parry_keepalive": 30,
+                "literacy": 40
+            },
+            "equippedSkillIds": [
+                "vue_code_template",
+                "vue_tune_router",
+                "vue_arch_reactive",
+                "vue_parry_keepalive",
+                "literacy"
+            ],
+            "money": 4888,
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "xiao_bang_di": {
+            "displayName": "肖邦弟",
+            "gender": "male",
+            "age": 33,
+            "sprite": "npc-24",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "鱿鱼山庄",
+            "description": "听说跟Nuxt有不小的渊源的双胞胎之一。",
+            "defaultLine": "Nuxt了解一下？",
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 20,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 40,
+                "basicAgility": 40,
+                "basicConstitution": 35,
+                "basicParry": 30,
+                "vue_code_template": 40,
+                "vue_tune_router": 40,
+                "vue_arch_reactive": 35,
+                "vue_parry_keepalive": 30,
+                "literacy": 40
+            },
+            "equippedSkillIds": [
+                "vue_code_template",
+                "vue_tune_router",
+                "vue_arch_reactive",
+                "vue_parry_keepalive",
+                "literacy"
+            ],
+            "money": 4888,
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "iamkun": {
+            "displayName": "iamkun",
+            "gender": "male",
+            "age": 36,
+            "sprite": "npc-27",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "鱿鱼山庄",
+            "description": "三大框架护法之一。",
+            "defaultLine": "你饿了么？",
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 20,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 40,
+                "basicAgility": 40,
+                "basicConstitution": 40,
+                "basicParry": 40,
+                "vue_code_template": 40,
+                "vue_tune_router": 40,
+                "vue_arch_reactive": 40,
+                "vue_parry_keepalive": 40,
+                "literacy": 40
+            },
+            "equippedSkillIds": [
+                "vue_code_template",
+                "vue_tune_router",
+                "vue_arch_reactive",
+                "vue_parry_keepalive",
+                "literacy"
+            ],
+            "money": 6666,
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "tang_ruo_xi": {
+            "displayName": "糖若曦",
+            "gender": "female",
+            "age": 29,
+            "sprite": "npc-52",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "鱿鱼山庄",
+            "description": "三大框架护法之一。",
+            "defaultLine": "你听过Van吗？",
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 20,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 40,
+                "basicAgility": 40,
+                "basicConstitution": 40,
+                "basicParry": 40,
+                "vue_code_template": 40,
+                "vue_tune_router": 40,
+                "vue_arch_reactive": 40,
+                "vue_parry_keepalive": 40,
+                "literacy": 40
+            },
+            "equippedSkillIds": [
+                "vue_code_template",
+                "vue_tune_router",
+                "vue_arch_reactive",
+                "vue_parry_keepalive",
+                "literacy"
+            ],
+            "money": 6666,
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "ji_xiao_xi": {
+            "displayName": "姬小溪",
+            "gender": "female",
+            "age": 30,
+            "sprite": "npc-54",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "鱿鱼山庄",
+            "description": "三大框架护法之一。",
+            "defaultLine": "跟我一起来看蚂蚁。",
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 20,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 40,
+                "basicAgility": 40,
+                "basicConstitution": 40,
+                "basicParry": 40,
+                "vue_code_template": 40,
+                "vue_tune_router": 40,
+                "vue_arch_reactive": 40,
+                "vue_parry_keepalive": 40,
+                "literacy": 40
+            },
+            "equippedSkillIds": [
+                "vue_code_template",
+                "vue_tune_router",
+                "vue_arch_reactive",
+                "vue_parry_keepalive",
+                "literacy"
+            ],
+            "money": 6666,
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "xun": {
+            "displayName": "寻",
+            "gender": "female",
+            "age": 18,
+            "sprite": "npc-39",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "香草派",
+            "description": "看到她，你是不是想到了千与千寻？",
+            "defaultLine": "她看了你一眼，并不想说话",
+            "money": 888,
+            "attributes": {
+                "strength": 5,
+                "agility": 5,
+                "constitution": 5,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 10,
+                "basicAgility": 10,
+                "basicConstitution": 10,
+                "basicParry": 10,
+                "vanilla_code_dom": 10,
+                "vanilla_tune_event_loop": 10,
+                "vanilla_arch_closure": 10,
+                "vanilla_parry_prevent": 10
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent"
+            ]
+        },
+        "tian_kong": {
+            "displayName": "天空",
+            "gender": "female",
+            "age": 18,
+            "sprite": "npc-40",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "香草派",
+            "description": "一个眼睛里充满星星的女子",
+            "defaultLine": "她看了你一眼，并不想说话",
+            "money": 1888,
+            "attributes": {
+                "strength": 10,
+                "agility": 10,
+                "constitution": 10,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 10,
+                "basicAgility": 10,
+                "basicConstitution": 10,
+                "basicParry": 10,
+                "vanilla_code_dom": 10,
+                "vanilla_tune_event_loop": 10,
+                "vanilla_arch_closure": 10,
+                "vanilla_parry_prevent": 10
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent"
+            ]
+        },
+        "kong_kong": {
+            "displayName": "空空",
+            "gender": "female",
+            "age": 38,
+            "sprite": "npc-41",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "香草派",
+            "description": "一个行事干练的女子，没人知道她内心的柔软",
+            "defaultLine": "离我远点！你辞职去杭州吧",
+            "money": 6666,
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 20,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 40,
+                "basicAgility": 40,
+                "basicConstitution": 40,
+                "basicParry": 40,
+                "vanilla_code_dom": 40,
+                "vanilla_tune_event_loop": 40,
+                "vanilla_arch_closure": 40,
+                "vanilla_parry_prevent": 40
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent"
+            ]
+        },
+        "deng_deng": {
+            "displayName": "等等",
+            "gender": "female",
+            "age": 18,
+            "sprite": "npc-42",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "香草派",
+            "description": "据说是空空的头号舔狗",
+            "defaultLine": "空空是我的！",
+            "money": 6666,
+            "attributes": {
+                "strength": 10,
+                "agility": 10,
+                "constitution": 10,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 20,
+                "basicAgility": 20,
+                "basicConstitution": 20,
+                "basicParry": 20,
+                "vanilla_code_dom": 20,
+                "vanilla_tune_event_loop": 20,
+                "vanilla_arch_closure": 20,
+                "vanilla_parry_prevent": 20
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent"
+            ]
+        },
+        "ray": {
+            "displayName": "Ray",
+            "gender": "male",
+            "age": 30,
+            "sprite": "npc-17",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "香草派",
+            "description": "这个国家的祥瑞",
+            "defaultLine": "古咕故！你还相信光（Ray）吗？古咕故！",
+            "money": 1666,
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 20,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 40,
+                "basicAgility": 40,
+                "basicConstitution": 40,
+                "basicParry": 40,
+                "vanilla_code_dom": 40,
+                "vanilla_tune_event_loop": 40,
+                "vanilla_arch_closure": 40,
+                "vanilla_parry_prevent": 40
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent"
+            ]
+        },
+        "qq": {
+            "displayName": "QQ",
+            "gender": "female",
+            "age": 18,
+            "sprite": "npc-43",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "香草派",
+            "description": "家里有一只很有意思的猫",
+            "defaultLine": "Niko!Niko!",
+            "money": 1888,
+            "attributes": {
+                "strength": 10,
+                "agility": 10,
+                "constitution": 10,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 15,
+                "basicAgility": 15,
+                "basicConstitution": 15,
+                "basicParry": 15,
+                "vanilla_code_dom": 15,
+                "vanilla_tune_event_loop": 15,
+                "vanilla_arch_closure": 15,
+                "vanilla_parry_prevent": 15
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent"
+            ]
+        },
+        "qing_mu": {
+            "displayName": "倾慕",
+            "gender": "female",
+            "age": 18,
+            "sprite": "npc-55",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "香草派",
+            "description": "QQ的CP",
+            "defaultLine": "晚睡会变笨！",
+            "money": 1888,
+            "attributes": {
+                "strength": 10,
+                "agility": 10,
+                "constitution": 10,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 15,
+                "basicAgility": 15,
+                "basicConstitution": 15,
+                "basicParry": 15,
+                "vanilla_code_dom": 15,
+                "vanilla_tune_event_loop": 15,
+                "vanilla_arch_closure": 15,
+                "vanilla_parry_prevent": 15
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent"
+            ]
+        },
+        "hai_bao": {
+            "displayName": "海豹",
+            "gender": "female",
+            "age": 18,
+            "sprite": "npc-44",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "香草派",
+            "description": "成熟稳重温柔体贴知心大姐姐",
+            "defaultLine": "我要早睡",
+            "money": 1666,
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 20,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 20,
+                "basicAgility": 20,
+                "basicConstitution": 20,
+                "basicParry": 20,
+                "vanilla_code_dom": 20,
+                "vanilla_tune_event_loop": 20,
+                "vanilla_arch_closure": 20,
+                "vanilla_parry_prevent": 20
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent"
+            ]
+        },
+        "a_zhu": {
+            "displayName": "阿朱",
+            "gender": "female",
+            "age": 21,
+            "sprite": "npc-45",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "香草派",
+            "description": "一个疯疯癫癫的小姑娘",
+            "defaultLine": "别耽误我看剧！",
+            "money": 6666,
+            "attributes": {
+                "strength": 10,
+                "agility": 10,
+                "constitution": 10,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 30,
+                "basicAgility": 30,
+                "basicConstitution": 30,
+                "basicParry": 30,
+                "vanilla_code_dom": 30,
+                "vanilla_tune_event_loop": 30,
+                "vanilla_arch_closure": 30,
+                "vanilla_parry_prevent": 30
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent"
+            ]
+        },
+        "shu_yan": {
+            "displayName": "书颜",
+            "gender": "female",
+            "age": 21,
+            "sprite": "npc-46",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "香草派",
+            "description": "格子衫，黑眼镜，永远一副知性的样子",
+            "defaultLine": "书中自有黄金屋，书中自有颜如玉！",
+            "money": 6666,
+            "attributes": {
+                "strength": 10,
+                "agility": 20,
+                "constitution": 20,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 40,
+                "basicAgility": 40,
+                "basicConstitution": 40,
+                "basicParry": 40,
+                "vanilla_code_dom": 40,
+                "vanilla_tune_event_loop": 40,
+                "vanilla_arch_closure": 40,
+                "vanilla_parry_prevent": 40,
+                "literacy": 100
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent"
+            ]
+        },
+        "nan_sheng": {
+            "displayName": "南笙",
+            "gender": "female",
+            "age": 26,
+            "sprite": "npc-47",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "香草派",
+            "description": "一生为大女主剧本而奋斗，实际上是个需要呵护的小姑娘",
+            "defaultLine": "你买了奶茶？拿来吧你！",
+            "money": 8888,
+            "attributes": {
+                "strength": 15,
+                "agility": 15,
+                "constitution": 15,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 66,
+                "basicAgility": 66,
+                "basicConstitution": 66,
+                "basicParry": 66,
+                "vanilla_code_dom": 66,
+                "vanilla_tune_event_loop": 66,
+                "vanilla_arch_closure": 66,
+                "vanilla_parry_prevent": 66
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent"
+            ]
+        },
+        "ye_mao": {
+            "displayName": "野猫",
+            "gender": "female",
+            "age": 26,
+            "sprite": "npc-48",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "香草派",
+            "description": "据说和狗团子差点走到一起，但是造化弄人",
+            "defaultLine": "喵喵？",
+            "money": 3888,
+            "attributes": {
+                "strength": 10,
+                "agility": 10,
+                "constitution": 10,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 20,
+                "basicAgility": 20,
+                "basicConstitution": 20,
+                "basicParry": 20,
+                "vanilla_code_dom": 20,
+                "vanilla_tune_event_loop": 20,
+                "vanilla_arch_closure": 20,
+                "vanilla_parry_prevent": 20
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent"
+            ]
+        },
+        "gou_tuan": {
+            "displayName": "狗团",
+            "gender": "male",
+            "age": 32,
+            "sprite": "npc-12",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "香草派",
+            "description": "一个富有的家伙，但是感情道路好像不怎么顺利",
+            "defaultLine": "汪汪？舔舔……汪汪！",
+            "money": 13140,
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 20,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 40,
+                "basicAgility": 40,
+                "basicConstitution": 40,
+                "basicParry": 40,
+                "vanilla_code_dom": 40,
+                "vanilla_tune_event_loop": 40,
+                "vanilla_arch_closure": 40,
+                "vanilla_parry_prevent": 40
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent"
+            ]
+        },
+        "pete_hunt": {
+            "displayName": "Pete Hunt",
+            "gender": "male",
+            "age": 44,
+            "sprite": "npc-25",
+            "roles": [
+                "master"
+            ],
+            "sect": "量子仙宗",
+            "description": "量子仙宗布道者。",
+            "defaultLine": "do you want study react?",
+            "money": 6666,
+            "attributes": {
+                "strength": 30,
+                "agility": 30,
+                "constitution": 35,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 50,
+                "basicAgility": 50,
+                "basicConstitution": 50,
+                "basicParry": 50,
+                "react_code_jsx": 50,
+                "react_tune_virtual": 50,
+                "react_arch_state": 50,
+                "react_parry_boundary": 50
+            },
+            "equippedSkillIds": [
+                "react_code_jsx",
+                "react_tune_virtual",
+                "react_arch_state",
+                "react_parry_boundary"
+            ],
+            "joinSect": {
+                "strength": 25,
+                "agility": 0,
+                "constitution": 0,
+                "wisdom": 0
+            },
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "tanner_linsley": {
+            "displayName": "Tanner Linsley",
+            "gender": "male",
+            "age": 36,
+            "sprite": "npc-28",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "量子仙宗",
+            "description": "你没听说过他，但是你用过他的全家桶。",
+            "defaultLine": "你听过Tanstack吗？",
+            "money": 6888,
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 20,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 40,
+                "basicAgility": 40,
+                "basicConstitution": 60,
+                "basicParry": 60,
+                "react_code_jsx": 40,
+                "react_tune_virtual": 40,
+                "react_arch_state": 60,
+                "react_parry_boundary": 60
+            },
+            "equippedSkillIds": [
+                "react_code_jsx",
+                "react_tune_virtual",
+                "react_arch_state",
+                "react_parry_boundary"
+            ],
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "kato_taishi": {
+            "displayName": "加藤大志",
+            "gender": "male",
+            "age": 50,
+            "sprite": "npc-29",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "量子仙宗",
+            "description": "一个东洋人，不知为何来到了此处。",
+            "defaultLine": "你是用Jotai？还是像当个Hentai?",
+            "money": 4888,
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 20,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 40,
+                "basicAgility": 40,
+                "basicConstitution": 40,
+                "basicParry": 40,
+                "react_code_jsx": 40,
+                "react_tune_virtual": 40,
+                "react_arch_state": 40,
+                "react_parry_boundary": 40
+            },
+            "equippedSkillIds": [
+                "react_code_jsx",
+                "react_tune_virtual",
+                "react_arch_state",
+                "react_parry_boundary"
+            ],
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "vitaly_rtishchev": {
+            "displayName": "Vitaly Rtishchev",
+            "gender": "male",
+            "age": 30,
+            "sprite": "npc-30",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "量子仙宗",
+            "description": "非常低调纯粹的大牛。",
+            "defaultLine": "用过我的Mantine UI吗？",
+            "money": 16888,
+            "attributes": {
+                "strength": 25,
+                "agility": 25,
+                "constitution": 25,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 60,
+                "basicAgility": 60,
+                "basicConstitution": 60,
+                "basicParry": 60,
+                "react_code_jsx": 60,
+                "react_tune_virtual": 60,
+                "react_arch_state": 60,
+                "react_parry_boundary": 60
+            },
+            "equippedSkillIds": [
+                "react_code_jsx",
+                "react_tune_virtual",
+                "react_arch_state",
+                "react_parry_boundary"
+            ],
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "matt_debergalis": {
+            "displayName": "Matt DeBergalis",
+            "gender": "male",
+            "age": 47,
+            "sprite": "npc-31",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "量子仙宗",
+            "description": "Apollo GraphQL。",
+            "defaultLine": "他看了你一眼，不想说话",
+            "money": 8888,
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 20,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 40,
+                "basicAgility": 40,
+                "basicConstitution": 40,
+                "basicParry": 40,
+                "react_code_jsx": 40,
+                "react_tune_virtual": 40,
+                "react_arch_state": 40,
+                "react_parry_boundary": 40
+            },
+            "equippedSkillIds": [
+                "react_code_jsx",
+                "react_tune_virtual",
+                "react_arch_state",
+                "react_parry_boundary"
+            ],
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "geoff_schmidt": {
+            "displayName": "Geoff Schmidt",
+            "gender": "male",
+            "age": 44,
+            "sprite": "npc-32",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "量子仙宗",
+            "description": "Apollo GraphQL。",
+            "defaultLine": "他看了你一眼，不想说话",
+            "money": 8888,
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 20,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 40,
+                "basicAgility": 40,
+                "basicConstitution": 40,
+                "basicParry": 40,
+                "react_code_jsx": 40,
+                "react_tune_virtual": 40,
+                "react_arch_state": 40,
+                "react_parry_boundary": 40
+            },
+            "equippedSkillIds": [
+                "react_code_jsx",
+                "react_tune_virtual",
+                "react_arch_state",
+                "react_parry_boundary"
+            ],
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "zha_ke_bo_ge": {
+            "displayName": "扎克伯格",
+            "gender": "male",
+            "age": 42,
+            "sprite": "npc-33",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "量子仙宗",
+            "description": "元宇宙创世神。",
+            "defaultLine": "来我的元宇宙里玩啊",
+            "money": 66666,
+            "attributes": {
+                "strength": 30,
+                "agility": 30,
+                "constitution": 30,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 70,
+                "basicAgility": 70,
+                "basicConstitution": 70,
+                "basicParry": 70,
+                "react_code_jsx": 70,
+                "react_tune_virtual": 70,
+                "react_arch_state": 70,
+                "react_parry_boundary": 70
+            },
+            "equippedSkillIds": [
+                "react_code_jsx",
+                "react_tune_virtual",
+                "react_arch_state",
+                "react_parry_boundary"
+            ],
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "jordan_walke": {
+            "displayName": "Jordan Walke",
+            "gender": "male",
+            "age": 42,
+            "sprite": "npc-34",
+            "roles": [
+                "master"
+            ],
+            "sect": "量子仙宗",
+            "description": "开宗立派的祖师爷。",
+            "defaultLine": "Do you prefer FP or OOP?",
+            "money": 38888,
+            "attributes": {
+                "strength": 30,
+                "agility": 30,
+                "constitution": 30,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 75,
+                "basicAgility": 75,
+                "basicConstitution": 75,
+                "basicParry": 75,
+                "react_code_jsx": 75,
+                "react_tune_virtual": 75,
+                "react_arch_state": 75,
+                "react_parry_boundary": 75
+            },
+            "equippedSkillIds": [
+                "react_code_jsx",
+                "react_tune_virtual",
+                "react_arch_state",
+                "react_parry_boundary"
+            ],
+            "joinSect": {
+                "strength": 0,
+                "agility": 0,
+                "constitution": 0,
+                "wisdom": 0
+            },
+            "joinSkillRequirements": {
+                "basicConstitution": 50,
+                "react_arch_state": 50
+            },
+            "equipment": [
+                "gezi_shan"
+            ]
+        },
+        "liu_mang": {
+            "displayName": "流氓",
+            "gender": "male",
+            "age": 38,
+            "sprite": "npc-2",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "NG神教",
+            "description": "听说他也是那个人的分身,这里是Ray的好基友",
+            "defaultLine": "我信！我信！",
+            "money": 6666,
+            "attributes": {
+                "strength": 20,
+                "agility": 20,
+                "constitution": 20,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 60,
+                "basicAgility": 60,
+                "basicConstitution": 60,
+                "basicParry": 60,
+                "ng_code_decorator": 60,
+                "ng_tune_rx_step": 60,
+                "ng_arch_zone": 60,
+                "ng_parry_interceptor": 60
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "ng_code_decorator",
+                "ng_tune_rx_step",
+                "ng_arch_zone",
+                "ng_parry_interceptor"
+            ]
+        },
+        "ge_bi_lao_wang": {
+            "displayName": "隔壁老王",
+            "gender": "male",
+            "age": 37,
+            "sprite": "npc-26",
+            "roles": [
+                "civilian"
+            ],
+            "sect": "香草派",
+            "description": "总感觉有点人机",
+            "defaultLine": "哈？",
+            "money": 888,
+            "attributes": {
+                "strength": 10,
+                "agility": 10,
+                "constitution": 10,
+                "wisdom": 0
+            },
+            "skillLevels": {
+                "basicStrength": 20,
+                "basicAgility": 20,
+                "basicConstitution": 20,
+                "basicParry": 20,
+                "vanilla_code_dom": 20,
+                "vanilla_tune_event_loop": 20,
+                "vanilla_arch_closure": 20,
+                "vanilla_parry_prevent": 20
+            },
+            "equippedSkillIds": [
+                "basicStrength",
+                "basicAgility",
+                "basicConstitution",
+                "basicParry",
+                "vanilla_code_dom",
+                "vanilla_tune_event_loop",
+                "vanilla_arch_closure",
+                "vanilla_parry_prevent"
+            ]
+        }
+    }
+}

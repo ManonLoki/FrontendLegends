@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="8">
+ <properties>
+  <property name="mapName" value="NG总坛"/>
+  <property name="parentMap" value="Angular"/>
+  <property name="region" value="NG神教"/>
+  <property name="type" propertytype="MapType" value="inDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/Game_Maker_Studio_Autotiles_16x16.tsx"/>
+ <tileset firstgid="1249" source="../../../tilesets/3_Props_and_Buildings_16x16.tsx"/>
+ <tileset firstgid="5729" source="../../../tilesets/4_Crops_16x16.tsx"/>
+ <layer id="1" name="Background" width="30" height="20">
+  <data encoding="base64" compression="zlib">
+   eJzbwszAsIzOeBsQLwLiSXTGq0btHbV31N5Re0ftHbV3hNu7C4jXkYFnQc2YRobeHUBMLoCF0yoKzCAH7KLQ7QA8+kZ4
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="30" height="20">
+  <data encoding="base64" compression="zlib">
+   eJzbwszAsIzOeBsQLwJiZDCJmfZ4FZn2YgOkqIfZS6p7R5q9lLqTXvbiSlej9o7aO2rvqL1Dwd5dQLyODDwLasY0MvTuYMZetxADYOG0igIzyAG7KHQ7AFUDMO8=
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="30" height="20">
+  <data encoding="base64" compression="zlib">
+   eJztz8kJgDAQheEBCaSFnG1Cwa0A7cCtELdC3Er13eaYGIJe5oePOT6G6L8ixVzKNFEOBZRQab/dWDGXWux00MMAo2U3MUSp4evbhJ0ZFlhhs+zW2GoMX9927BxwwgX3R/++LdS/kiRJkhS6B4m8D4E=
+  </data>
+ </layer>
+ <objectgroup id="4" name="Interactive">
+  <object id="1" name="Lucian" type="NPC" x="22.917" y="204.616">
+   <properties>
+    <property name="npcId" value="manon_loki"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="2" x="137.502" y="-20.4616">
+   <point/>
+  </object>
+  <object id="3" name="雪狼" type="NPC" x="231.625" y="136.684">
+   <properties>
+    <property name="npcId" value="xue_lang"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="4" name="褪色" type="NPC" x="423.146" y="130.136">
+   <properties>
+    <property name="npcId" value="tui_se"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="5" name="青格勒" type="NPC" x="341.3" y="215.256">
+   <properties>
+    <property name="npcId" value="qing_ge_le"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="6" type="Transaction" x="224" y="288" width="48" height="16">
+   <properties>
+    <property name="from" value="Angular"/>
+    <property name="to" value="AngularZongTan"/>
+   </properties>
+  </object>
+  <object id="7" type="Transaction" x="224" y="304" width="48" height="16">
+   <properties>
+    <property name="from" value="AngularZongTan"/>
+    <property name="to" value="Angular"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

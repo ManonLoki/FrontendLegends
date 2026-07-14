@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="25" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="31">
+ <properties>
+  <property name="Sort" type="int" value="3"/>
+  <property name="mapName" value="西郊"/>
+  <property name="region" value="开源镇"/>
+  <property name="type" propertytype="MapType" value="outDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/Game_Maker_Studio_Autotiles_16x16.tsx"/>
+ <tileset firstgid="1249" source="../../../tilesets/1_Terrains_16x16.tsx"/>
+ <tileset firstgid="1985" source="../../../tilesets/5_Fruit_Trees.tsx"/>
+ <tileset firstgid="3160" source="../../../tilesets/装饰物.tsx"/>
+ <tileset firstgid="3178" source="../../../tilesets/21_Beach_16x16.tsx"/>
+ <tileset firstgid="7178" source="../../../tilesets/19_Graveyard_16x16.tsx"/>
+ <tileset firstgid="8458" source="../../../tilesets/11_Camping_16x16.tsx"/>
+ <layer id="1" name="Background" width="25" height="20">
+  <data encoding="base64" compression="zlib">
+   eJxjYWJg+MZIO8wGNP8TkH5EQ/yLcdSOkWbHEzrY8YgOdjwbJvExaseoHaN24LeDC1gX/mOkHeYAmg8ANb6+4g==
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="25" height="20">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2D4gCYW6mJcdtDDH6N2jNoxagd98jS13TtQdgAANHgasw==
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="25" height="20">
+  <data encoding="base64" compression="zlib">
+   eJy91EdLA1EYheHPAkqsiCVGh8w6mmZDXVi2FtCdurBsLWAsW8vW9hMs2P6EbWsvYNvau+6trwuZkGQkiYwHHi5kuOfLzIUr4h+XIuJW/Ne/xJQiEod4JKCOvnrFfw0mZVaRclSg0qr9bqM3B7mwo5s+j+K/BpNmelvQijavGVX0VqMGtXjg2SOerPpdehlgzyCGMOy1v53eDnSi6/ubqXwzJKqhz5ikdwrTmPnlP+bSbYcjjBl6eWbei1VbjUiSKpKsaqsRcdLrUrX1JzsxIrvYwz4OsI4NbGIL2/CYRHrQiz70m4Kffc3+G9ziDvc4wzkucIkrjNA5ijGMYyLADN3ziBWJQCSiEI1XOt/wjg98YpbOOcxjAYsBZuidRyadFmQhGwpSkYZ0ZMCMJTqXsYJVrAWYoXceeezPRwEKUQQ7HHDCBTcO6TzCMU5wGsJ5hBOzjfeHxWbcjGK6S1Bq4IwGuhvRZNPucSPie48bEd973Ij43uP/kS/SvloB
+  </data>
+ </layer>
+ <objectgroup id="4" name="Interactive">
+  <object id="19" type="Transaction" x="0" y="272" width="16" height="16">
+   <properties>
+    <property name="from" value="Xijiao"/>
+    <property name="to" value="Angular"/>
+   </properties>
+  </object>
+  <object id="20" type="Transaction" x="16" y="272" width="16" height="16">
+   <properties>
+    <property name="from" value="Angular"/>
+    <property name="to" value="Xijiao"/>
+   </properties>
+  </object>
+  <object id="21" type="Transaction" x="384" y="112" width="16" height="16">
+   <properties>
+    <property name="from" value="Xijiao"/>
+    <property name="to" value="KaiyuanTown"/>
+   </properties>
+  </object>
+  <object id="22" type="Transaction" x="368" y="112" width="16" height="16">
+   <properties>
+    <property name="from" value="KaiyuanTown"/>
+    <property name="to" value="Xijiao"/>
+   </properties>
+  </object>
+  <object id="24" type="Transaction" x="304" y="304" width="16" height="16">
+   <properties>
+    <property name="from" value="Xijiao"/>
+    <property name="to" value="KongZhiGuo"/>
+   </properties>
+  </object>
+  <object id="25" type="Transaction" x="304" y="288" width="16" height="16">
+   <properties>
+    <property name="from" value="KongZhiGuo"/>
+    <property name="to" value="Xijiao"/>
+   </properties>
+  </object>
+  <object id="28" type="Props" gid="3165" x="304" y="272" width="14.875" height="16">
+   <properties>
+    <property name="text" value="↓空の国"/>
+    <property name="type" propertytype="Type" value="props"/>
+   </properties>
+  </object>
+  <object id="29" type="Props" gid="3176" x="64" y="272" width="16.4583" height="16">
+   <properties>
+    <property name="text" value="去往NG神教"/>
+    <property name="type" propertytype="Type" value="props"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

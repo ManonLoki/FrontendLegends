@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="30" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="7">
+ <properties>
+  <property name="mapName" value="鱿鱼养殖场"/>
+  <property name="parentMap" value="YouyuShanzhuang"/>
+  <property name="region" value="鱿鱼山庄"/>
+  <property name="type" propertytype="MapType" value="inDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/Godot_Autotiles_16x16.tsx"/>
+ <layer id="1" name="Background" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJzt0DELABAQQGGDPy9WKyUr+YluvNUlpd7VG913Cd65+LgkZak9ruPi4uLi4uLi4uLifuEOaR5W1I5qeL8ky+g/6sYdlhkXbt8nQCOG
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJzt0DELABAQQGGDPy9WKyUr+YluvNUlpd7VG913Cd65+LgkZak9ruPi4uLi4uLi4uLifuEOaR5W1I5qeL8ky+g/6sYdlhkXbt8nQCOG
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJztwQEBAAAAgiD/r25IQAEAAPBoDhAAAQ==
+  </data>
+ </layer>
+ <objectgroup id="4" name="Interactive">
+  <object id="1" type="Transaction" x="224" y="448" width="32">
+   <properties>
+    <property name="from" value="YouyuShanzhuang"/>
+    <property name="to" value="YYXResidentialHouse"/>
+   </properties>
+  </object>
+  <object id="2" type="Transaction" x="224" y="464" width="32" height="16">
+   <properties>
+    <property name="from" value="YYXResidentialHouse"/>
+    <property name="to" value="YouyuShanzhuang"/>
+   </properties>
+  </object>
+  <object id="3" name="鱿鱼须" type="NPC" x="248.763" y="43.0835">
+   <properties>
+    <property name="npcId" value="youyu_xu"/>
+    <property name="type" value="NPC"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="4" name="iamkun" type="NPC" x="202.003" y="153.224">
+   <properties>
+    <property name="npcId" value="iamkun"/>
+    <property name="type" value="NPC"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="5" name="糖若曦" type="NPC" x="250" y="153.224">
+   <properties>
+    <property name="npcId" value="tang_ruo_xi"/>
+    <property name="type" value="NPC"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="6" name="姬小溪" type="NPC" x="297.203" y="153.481">
+   <properties>
+    <property name="npcId" value="ji_xiao_xi"/>
+    <property name="type" value="NPC"/>
+   </properties>
+   <point/>
+  </object>
+ </objectgroup>
+</map>

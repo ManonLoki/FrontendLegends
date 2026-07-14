@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="30" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="28">
+ <properties>
+  <property name="Sort" type="int" value="8"/>
+  <property name="mapName" value="量子仙宗"/>
+  <property name="region" value="量子仙宗"/>
+  <property name="type" propertytype="MapType" value="outDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/Game_Maker_Studio_Autotiles_16x16.tsx"/>
+ <tileset firstgid="1249" source="../../../tilesets/3_Props_and_Buildings_16x16.tsx"/>
+ <tileset firstgid="5729" source="../../../tilesets/6_Trees_16x16.tsx"/>
+ <layer id="1" name="Background" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJztzaENACAQBMEP/VdBCS8QCBQhH6riqrggVoye3SKG2ZGUbjZ5eXl5eXl5eXl5eXk/fK8ss5IH5LRK4w==
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJxjYKAfSGKmo2Wj9o5Ye0F8emF87qCnf0ftHbV31N5Re0ftpY+9+Mwajv4dtXfU3qFoLzX0DFR7ciAAAITyKQk=
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJztlUtOAkEURR9gQZwxgjHgVGULqPtQeic69wduQ2ELCjrzswXEXfiJJyEknbLrJ9XNQG9y0qnu5p2qdBVPZL25rYrcwQSm1eK8M1yvMIe3Ar2lmkgZKrBRK87bwtWGDmxBH5LUNa/0qL0H+3AAx3CSuv61JCl8n783RD7gE74a9vozxb6GufpZN6t+1niZ7abIDuxCt2n3ljhDZahoZ0lfp2n96fEhriPoQ+LwtvC1oRPBe4lrAEO4cnhNMdW3eSe4pnAPDyt4fVk1vrVjzsFWX3f5vB/itc3Fx2uq4/KuY7167aK+b8gcYrt0b9bYdn7z8rr+r0Li6gt5eV19IaQfhWTZF/Te6do3sfZVSO+MGVvvPOXbn8E5XKjs3/82pt5Z3xS5xnUDIxirxb1YMfXOLo5HXE/wDC9qce8/9nwDvdtrAA==
+  </data>
+ </layer>
+ <objectgroup id="4" name="Interactive">
+  <object id="16" type="Transaction" x="432" y="0" width="16" height="16">
+   <properties>
+    <property name="from" value="LiangZiXianZong"/>
+    <property name="to" value="Nanjiao"/>
+   </properties>
+  </object>
+  <object id="17" type="Transaction" x="432" y="16" width="15.8228" height="15.6904">
+   <properties>
+    <property name="from" value="Nanjiao"/>
+    <property name="to" value="LiangZiXianZong"/>
+   </properties>
+  </object>
+  <object id="18" type="Transaction" x="224" y="432" width="16" height="16">
+   <properties>
+    <property name="from" value="LiangZiXianZong"/>
+    <property name="to" value="LiangZiShiYanShi"/>
+   </properties>
+  </object>
+  <object id="19" type="Transaction" x="224" y="448" width="16" height="16">
+   <properties>
+    <property name="from" value="LiangZiShiYanShi"/>
+    <property name="to" value="LiangZiXianZong"/>
+   </properties>
+  </object>
+  <object id="20" name="Pete Hunt" type="NPC" x="406.605" y="85.9993">
+   <properties>
+    <property name="npcId" value="pete_hunt"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="21" name="Tanner Linsley" type="NPC" x="169.247" y="83.9353">
+   <properties>
+    <property name="npcId" value="tanner_linsley"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="22" name="加藤大志" type="NPC" x="421.741" y="437.564">
+   <properties>
+    <property name="npcId" value="kato_taishi"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="23" name="Vitaly Rtishchev" type="NPC" x="39.2157" y="436.877">
+   <properties>
+    <property name="npcId" value="vitaly_rtishchev"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="24" name="Matt DeBergalis" type="NPC" x="328.861" y="86.6873">
+   <properties>
+    <property name="npcId" value="matt_debergalis"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="25" name="Geoff Schmidt" type="NPC" x="344.685" y="88.0633">
+   <properties>
+    <property name="npcId" value="geoff_schmidt"/>
+   </properties>
+   <point/>
+  </object>
+ </objectgroup>
+</map>

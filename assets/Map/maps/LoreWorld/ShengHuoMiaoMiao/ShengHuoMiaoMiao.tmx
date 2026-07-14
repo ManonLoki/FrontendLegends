@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="40" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="33">
+ <properties>
+  <property name="Sort" type="int" value="10"/>
+  <property name="mapName" value="笙火喵喵教"/>
+  <property name="region" value="笙火喵喵教"/>
+  <property name="type" propertytype="MapType" value="outDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/装饰物.tsx"/>
+ <tileset firstgid="19" source="../../../tilesets/1_Terrains_16x16.tsx"/>
+ <tileset firstgid="755" source="../../../tilesets/3_Props_and_Buildings_16x16.tsx"/>
+ <tileset firstgid="5235" source="../../../tilesets/2_Fences_16x16.tsx"/>
+ <tileset firstgid="5779" source="../../../tilesets/6_Garage_Sales_16x16.tsx"/>
+ <tileset firstgid="6995" source="../../../tilesets/6_Trees_16x16.tsx"/>
+ <tileset firstgid="16695" source="../../../tilesets/7_Pickup_Items_16x16.tsx"/>
+ <tileset firstgid="16835" source="../../../tilesets/7_Villas_16x16.tsx"/>
+ <tileset firstgid="18659" source="../../../tilesets/14_Swimming_Pool_16x16.tsx"/>
+ <tileset firstgid="19651" source="../../../tilesets/15_Police_Station_16x16.tsx"/>
+ <tileset firstgid="21859" source="../../../tilesets/16_Office_16x16.tsx"/>
+ <tileset firstgid="24899" source="../../../tilesets/17_Garden_16x16.tsx"/>
+ <tileset firstgid="31171" source="../../../tilesets/Godot_Autotiles_16x16.tsx"/>
+ <tileset firstgid="32419" source="../../../tilesets/24_Additional_Houses_16x16.tsx"/>
+ <tileset firstgid="42275" source="../../../tilesets/11_Camping_16x16.tsx"/>
+ <tileset firstgid="48067" source="../../../tilesets/10_Vehicles_16x16.tsx"/>
+ <tileset firstgid="53443" source="../../../tilesets/Game_Maker_Studio_Autotiles_16x16.tsx"/>
+ <layer id="1" name="Background" width="40" height="40">
+  <data encoding="base64" compression="zlib">
+   eJzt2LEKg0AQhOHF1z7fRGIl2FqIbcTXCLFSbBXENlnBIgh7ooJOYIq//2AOT305kTdotdZpUSjyMIq10d3TtPhSNeRGBX300UcfffQZvqcaMmDffP8mwD70femzG7Qe2NdqjeFF8Pm8iD60fX3nEdHHfc9tiuhbP2PQfCj7+u4KBJ+1I4rv6L7z+2lpVAH4jpyNq317z8bVPsR+vz/4/48++v7P93Hb94fcVKB9ASfNicI=
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="40" height="40">
+  <data encoding="base64" compression="zlib">
+   eJztl7sNwkAQRLdWOzN0gE0BiA74FEBMhk0BQEjGpwBMEYxkkyBdcqe9XYkZ6SUnzd7TBtZZhGEYhmF0s7/GkdMvRyc2sX65dq29C/rZzqefbV97Pv1s+9rz6Wfb155PP91+6huJfv/nF/vPo/FOT91fVYhMAkyL9HtS/Rajw6wUqUED5uVwtnTkt4LTGmzA1pHfbnQ4wKkFHTg68vvu7wanO3iApyO/ExzOAS4O/F5w6AO8f/wsv1M58wG5SfUx
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="40" height="40">
+  <data encoding="base64" compression="zlib">
+   eJzt1GdSFF0UBmCq+MjBvAIDGfMKRAkC5hUYMGdXYM55AQTBNGZXIFEB8wpIKiiY/vtQH7+gsWZo/Den6qmamr51+r2n+3ZCQvSVEUlIyCSL7MjU18SyLpYq0KeQIoon6RnNmljWxVJr9amkiupI8AyiWRO0bjpqjz572cf+SPAMolkTtO5fPO9oZhDtnMI+7/H7a6ydOIN7/rtPhAc8DFjzrDa69yLWGr+/0XxN3OYOd2uD8z3iMU94Wvt/vmjei1hr/P5a3aeNdjp4ySs66aKb17wJmNdks0rxO5U00mPMOH5//e47wCc+84VBhvjKN4YZCZjXZLPK8TuXPPKnMMPEuoSE/0gimRRSSSOdDDLJIpsZzKybOK95dcH9S10ro5yKKeSbr+8CFrKIHHLJI58CCimimMUsqZs4r5WT5KtxbSe72D2FfKv0LWE1ayiljHIqRudEJVVUs471bGAjm9jMlknyha2t+m5jOzuoYSe72D06J/ayj/0c4CCHOMwRjnJsLF+Y8xBUx/U9wUlOcZoznOUc57nARS5xmStc5RrXucHNsXxhz8P4qte3gVs00sRt7nCXe9wnwgMe8ojHPOEpz3g+li/oPISZ6Qt9m2mhlTba6eAlr+iki25e84a3vOM9H/g4li/oPISZaY++vfTRzwCf+MwXBhniK98YZoTv/OAnv/j9l/MR5huTWO/7RxLJpJBKGulkkEkW2cxgJrOYzRzmMq9+8nuE+cbM13cBC1lEDrnkkU8BhRRRzGKWsJRlLGcFK/+SL0yt0reE1ayhlDLKqWAtlVRRzTrWs4GNbGIzW/5Rvq36bmM7O6hhJ7vYzR72so/9HOAghzjMEY5yjBddzhottNLWFT7fcX1PcJJTnOYMZznHeS5wkUtc5gpXucZ1bnCTHnl66aOfgWnIV69vA7dopInb3OEu97hPhAc85BGPecJTnvGcxG5njSSSSekOn++Fvs200Eob7XTwkld00kU3r3nDW97xng98pL7DXrlFI00d4fP16NtLH/0M8InPfGGQIb7yjWFG+M4PfvKL36PvnzzNtNBK2zTkS2zwTEgimRRSSSOdDDLJIpsZzGQWs5nDXObRI08vffQzMA355uu7gIUsIodc8singEKKKGYxS1jKMpazgpUN4bME1Sp9S1jNGkopo5wK1lJJFdWsYz0b2MgmNrPlH+WLV7ziFa94xSte01N/AITalAQ=
+  </data>
+ </layer>
+ <objectgroup id="4" name="Interactive" class="Transaction">
+  <properties>
+   <property name="from" value="ShengHuoMiaoMiao"/>
+   <property name="to" value="ShengHuoMansion"/>
+  </properties>
+  <object id="9" name="野猫" type="NPC" x="346.082" y="491.221">
+   <properties>
+    <property name="npcId" value="ye_mao"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="21" type="Transaction" x="0" y="496" width="16" height="16">
+   <properties>
+    <property name="from" value="ShengHuoMiaoMiao"/>
+    <property name="to" value="Nanjiao"/>
+   </properties>
+  </object>
+  <object id="22" type="Transaction" x="16" y="496" width="16" height="16">
+   <properties>
+    <property name="from" value="Nanjiao"/>
+    <property name="to" value="ShengHuoMiaoMiao"/>
+   </properties>
+  </object>
+  <object id="23" name="告示牌" type="Props" gid="6" x="288" y="496" width="16" height="16">
+   <properties>
+    <property name="text" value="笙火昭昭，笙火耀耀，请我奶茶，喵喵喵喵"/>
+   </properties>
+  </object>
+  <object id="26" type="Transaction" x="304" y="448" width="32" height="16">
+   <properties>
+    <property name="from" value="ShengHuoMansion"/>
+    <property name="to" value="ShengHuoMiaoMiao"/>
+   </properties>
+  </object>
+  <object id="27" type="Transaction" x="304" y="432" width="32" height="16">
+   <properties>
+    <property name="from" value="ShenghuoMiaoMiao"/>
+    <property name="to" value="ShengHuoMansion"/>
+   </properties>
+  </object>
+  <object id="28" name="狗团" type="NPC" x="359.643" y="599.696">
+   <properties>
+    <property name="npcId" value="gou_tuan"/>
+    <property name="type" value="NPC"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="30" name="路牌" type="Props" gid="16" x="576" y="608" width="16" height="16">
+   <properties>
+    <property name="text" value="前往西湖灵隐"/>
+    <property name="type" propertytype="Type" value="props"/>
+   </properties>
+  </object>
+  <object id="31" type="Transaction" x="624" y="608" width="16" height="16">
+   <properties>
+    <property name="from" value="ShengHuoMiaoMiao"/>
+    <property name="to" value="XiHuLingYin"/>
+   </properties>
+  </object>
+  <object id="32" type="Transaction" x="608" y="608" width="16" height="16">
+   <properties>
+    <property name="from" value="XiHuLingYin"/>
+    <property name="to" value="ShengHuoMiaoMiao"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

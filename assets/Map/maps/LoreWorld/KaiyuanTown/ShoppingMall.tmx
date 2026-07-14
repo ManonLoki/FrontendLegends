@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="30" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="16">
+ <properties>
+  <property name="Sort" type="int" value="0"/>
+  <property name="mapName" value="商场"/>
+  <property name="parentMap" value="KaiyuanTown"/>
+  <property name="region" value="开源镇"/>
+  <property name="type" propertytype="MapType" value="inDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/Game_Maker_Studio_Autotiles_16x16.tsx"/>
+ <layer id="1" name="Background" width="30" height="30" visible="0">
+  <data encoding="base64" compression="zlib">
+   eJxjYWJg+MZIX8wGtPMTkH5EZ/yLcdTeUXtH7R21d9TeUXtH7R21d9TeUXtH7R0K9nIB+wz/GEnDr5DMeEaiXhDmANpJDviE5nZ6AeQwItftAJPk9EM=
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJxjYWJg+MZIX8wGtPMTkH5EZ/yLcdTeUXtH7R21d9TeUXtH7R21d9TeUXtH7R0K9nIB+wz/GEnDr5DMeEaiXhDmANpJDviE5nZ6AeQwItftAJPk9EM=
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJztwQEBAAAAgiD/r25IQAEAAPBoDhAAAQ==
+  </data>
+ </layer>
+ <objectgroup id="5" name="Interactive">
+  <object id="8" type="Transaction" x="208" y="448" width="64" height="16">
+   <properties>
+    <property name="from" value="KaiyuanTown"/>
+    <property name="to" value="ShoppingMall"/>
+   </properties>
+  </object>
+  <object id="9" type="Transaction" x="208" y="464" width="64" height="16">
+   <properties>
+    <property name="from" value="ShoppingMall"/>
+    <property name="to" value="KaiyuanTown"/>
+   </properties>
+  </object>
+  <object id="10" name="装机媛" type="NPC" x="101.51" y="258.546">
+   <properties>
+    <property name="npcId" value="zhuang_ji_yuan"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="11" name="黄鹤" type="NPC" x="263.752" y="229.047">
+   <properties>
+    <property name="npcId" value="huang_he"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="12" name="楼婉卿" type="NPC" x="281.104" y="230.783">
+   <properties>
+    <property name="npcId" value="lou_wan_qing"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="15" name="服装店老板娘" type="NPC" x="422.523" y="244.664">
+   <properties>
+    <property name="npcId" value="fu_zhuang_dian_lao_ban_niang"/>
+   </properties>
+   <point/>
+  </object>
+ </objectgroup>
+</map>

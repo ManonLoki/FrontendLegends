@@ -1,0 +1,963 @@
+{
+    "version": 3,
+    "_note": "技能目录。基础功法为所有门派/NPC/玩家共用；门派高级功法每门派按 code/tune/arch/parry 各 1 个。灵感 knowledge 只有基础读书写字：无高级功法，且门派师父不授——由独立导师（有 teachStock 但无 joinSect 收徒门槛，如书颜 shu_yan）教授，无需拜师。teachStock 支持 { skillId, maxTeachLevel }：入门师父教到 60，进阶师父教到 80，掌门教满 100。",
+    "skills": {
+        "basicStrength": {
+            "name": "基础编码",
+            "category": "basic",
+            "theme": "code",
+            "maxLevel": 100,
+            "costBase": 100,
+            "costFactor": 1,
+            "combat": {
+                "atkPerLv": 0.15,
+                "mpCost": 2
+            },
+            "description": "全员共用基础功法：编码。可装备在编码位。"
+        },
+        "basicAgility": {
+            "name": "基础思维",
+            "category": "basic",
+            "theme": "tune",
+            "maxLevel": 100,
+            "costBase": 100,
+            "costFactor": 1,
+            "combat": {
+                "hitPerLv": 0.08,
+                "dodgePerLv": 0.08,
+                "mpCost": 2
+            },
+            "description": "全员共用基础功法：思维。可装备在思维位。"
+        },
+        "basicConstitution": {
+            "name": "基础架构",
+            "category": "basic",
+            "theme": "arch",
+            "maxLevel": 100,
+            "costBase": 100,
+            "costFactor": 1,
+            "combat": {
+                "defPerLv": 0.12,
+                "mpMaxPerLv": 1
+            },
+            "description": "全员共用基础功法：架构。可装备在架构位，也是冥想入门根基。"
+        },
+        "basicParry": {
+            "name": "基础招架",
+            "category": "basic",
+            "theme": "parry",
+            "maxLevel": 100,
+            "costBase": 100,
+            "costFactor": 1,
+            "combat": {
+                "parryPerLv": 0.15,
+                "injuryReducePerLv": 0.2
+            },
+            "description": "全员共用基础功法：招架。可装备在招架位，提升格挡对方攻击的概率，并减免战后伤势。"
+        },
+        "literacy": {
+            "name": "读书写字",
+            "category": "basic",
+            "theme": "knowledge",
+            "maxLevel": 100,
+            "costBase": 100,
+            "costFactor": 1,
+            "combat": {
+                "hitPerLv": 0.05,
+                "mpCost": 2
+            },
+            "description": "全员共用基础功法：灵感。可装备在灵感位，影响潜能折扣。灵感一脉无高级功法，门派师父亦不传授，据说只有奇人异士肯教。"
+        },
+        "ng_code_decorator": {
+            "name": "模版语法",
+            "category": "sect",
+            "sect": "NG神教",
+            "tier": "advanced",
+            "theme": "code",
+            "maxLevel": 100,
+            "costBase": 100,
+            "costFactor": 1.5,
+            "requires": {
+                "sect": "NG神教"
+            },
+            "combat": {
+                "atkPerLv": 0.8,
+                "hitPerLv": 0.2,
+                "mpCost": 8
+            },
+            "moves": [
+                {
+                    "unlockLevel": 10,
+                    "name": "双向缠绕"
+                },
+                {
+                    "unlockLevel": 20,
+                    "name": "指令标记"
+                },
+                {
+                    "unlockLevel": 30,
+                    "name": "管道过滤"
+                },
+                {
+                    "unlockLevel": 40,
+                    "name": "装饰立印"
+                },
+                {
+                    "unlockLevel": 50,
+                    "name": "模板断章"
+                },
+                {
+                    "unlockLevel": 60,
+                    "name": "服务注入·斩"
+                },
+                {
+                    "unlockLevel": 70,
+                    "name": "指令连打"
+                },
+                {
+                    "unlockLevel": 80,
+                    "name": "NgModule·阵"
+                },
+                {
+                    "unlockLevel": 90,
+                    "name": "装饰器·贯甲"
+                },
+                {
+                    "unlockLevel": 100,
+                    "name": "模板语法·奥义"
+                }
+            ],
+            "description": "NG神教编码高级功法，以模版立规成招，一笔一式皆有法度。"
+        },
+        "ng_tune_rx_step": {
+            "name": "组件生成",
+            "category": "sect",
+            "sect": "NG神教",
+            "tier": "advanced",
+            "theme": "tune",
+            "maxLevel": 100,
+            "costBase": 100,
+            "costFactor": 1.5,
+            "requires": {
+                "sect": "NG神教"
+            },
+            "combat": {
+                "hitPerLv": 0.25,
+                "dodgePerLv": 0.45,
+                "mpCost": 8
+            },
+            "moves": [
+                {
+                    "unlockLevel": 10,
+                    "name": "组件挂载"
+                },
+                {
+                    "unlockLevel": 20,
+                    "name": "依赖追踪"
+                },
+                {
+                    "unlockLevel": 30,
+                    "name": "变更探测"
+                },
+                {
+                    "unlockLevel": 40,
+                    "name": "输出属性"
+                },
+                {
+                    "unlockLevel": 50,
+                    "name": "双向绑定"
+                },
+                {
+                    "unlockLevel": 60,
+                    "name": "生命周期"
+                },
+                {
+                    "unlockLevel": 70,
+                    "name": "视图封装"
+                },
+                {
+                    "unlockLevel": 80,
+                    "name": "纯管道"
+                },
+                {
+                    "unlockLevel": 90,
+                    "name": "祖先追踪"
+                },
+                {
+                    "unlockLevel": 100,
+                    "name": "组件生成·圆"
+                }
+            ],
+            "description": "NG神教思维高级功法，随需生成组件，随机应变、避实击虚。"
+        },
+        "ng_arch_zone": {
+            "name": "依赖注入",
+            "category": "sect",
+            "sect": "NG神教",
+            "tier": "advanced",
+            "theme": "arch",
+            "maxLevel": 100,
+            "costBase": 100,
+            "costFactor": 1.5,
+            "requires": {
+                "sect": "NG神教"
+            },
+            "combat": {
+                "defPerLv": 0.5,
+                "mpMaxPerLv": 3
+            },
+            "ult": {
+                "key": "ng",
+                "kind": "multi",
+                "names": [
+                    "依赖注入·定海",
+                    "AOT·万法归一"
+                ]
+            },
+            "description": "NG神教架构高级功法，以依赖注入调度周身，护身养气、适合冥想。"
+        },
+        "ng_parry_interceptor": {
+            "name": "路由守卫",
+            "category": "sect",
+            "sect": "NG神教",
+            "tier": "advanced",
+            "theme": "parry",
+            "maxLevel": 100,
+            "costBase": 100,
+            "costFactor": 1.5,
+            "requires": {
+                "sect": "NG神教"
+            },
+            "combat": {
+                "parryPerLv": 0.35,
+                "defPerLv": 0.2,
+                "injuryReducePerLv": 0.4
+            },
+            "moves": [
+                { "unlockLevel": 10, "name": "路由守卫" },
+                { "unlockLevel": 20, "name": "请求拦截" },
+                { "unlockLevel": 30, "name": "权限校验" },
+                { "unlockLevel": 40, "name": "管道净化" },
+                { "unlockLevel": 50, "name": "依赖注入·盾" },
+                { "unlockLevel": 60, "name": "生命周期锁" },
+                { "unlockLevel": 70, "name": "变更冻结" },
+                { "unlockLevel": 80, "name": "模块隔离" },
+                { "unlockLevel": 90, "name": "服务熔断" },
+                { "unlockLevel": 100, "name": "路由守卫·终阵" }
+            ],
+            "description": "NG神教招架高级功法，如路由守卫层层设防，来招未至先截其势。"
+        },
+        "vanilla_code_dom": {
+            "name": "DOM 直拳",
+            "category": "sect",
+            "sect": "香草派",
+            "tier": "advanced",
+            "theme": "code",
+            "maxLevel": 100,
+            "costBase": 100,
+            "costFactor": 1.5,
+            "requires": {
+                "sect": "香草派"
+            },
+            "combat": {
+                "atkPerLv": 0.9,
+                "mpCost": 7
+            },
+            "moves": [
+                {
+                    "unlockLevel": 10,
+                    "name": "直拳·getElementById"
+                },
+                {
+                    "unlockLevel": 20,
+                    "name": "横劈·querySelector"
+                },
+                {
+                    "unlockLevel": 30,
+                    "name": "闪打·appendChild"
+                },
+                {
+                    "unlockLevel": 40,
+                    "name": "缠手·addEventListener"
+                },
+                {
+                    "unlockLevel": 50,
+                    "name": "破甲·removeAttribute"
+                },
+                {
+                    "unlockLevel": 60,
+                    "name": "断筋·classList.toggle"
+                },
+                {
+                    "unlockLevel": 70,
+                    "name": "七星·dataset"
+                },
+                {
+                    "unlockLevel": 80,
+                    "name": "崩打·dispatchEvent"
+                },
+                {
+                    "unlockLevel": 90,
+                    "name": "老拳·createElement"
+                },
+                {
+                    "unlockLevel": 100,
+                    "name": "DOM 直拳·归真"
+                }
+            ],
+            "description": "香草派编码高级功法，不借外物，直取节点。"
+        },
+        "vanilla_tune_event_loop": {
+            "name": "事件循环步",
+            "category": "sect",
+            "sect": "香草派",
+            "tier": "advanced",
+            "theme": "tune",
+            "maxLevel": 100,
+            "costBase": 100,
+            "costFactor": 1.5,
+            "requires": {
+                "sect": "香草派"
+            },
+            "combat": {
+                "hitPerLv": 0.4,
+                "dodgePerLv": 0.3,
+                "mpCost": 8
+            },
+            "moves": [
+                {
+                    "unlockLevel": 10,
+                    "name": "微步·Promise"
+                },
+                {
+                    "unlockLevel": 20,
+                    "name": "宏步·setTimeout"
+                },
+                {
+                    "unlockLevel": 30,
+                    "name": "任务队列·转"
+                },
+                {
+                    "unlockLevel": 40,
+                    "name": "堆栈清空"
+                },
+                {
+                    "unlockLevel": 50,
+                    "name": "帧刷新·挪"
+                },
+                {
+                    "unlockLevel": 60,
+                    "name": "防抖·收"
+                },
+                {
+                    "unlockLevel": 70,
+                    "name": "节流·放"
+                },
+                {
+                    "unlockLevel": 80,
+                    "name": "微任务·连"
+                },
+                {
+                    "unlockLevel": 90,
+                    "name": "事件循环·周天"
+                },
+                {
+                    "unlockLevel": 100,
+                    "name": "事件循环步·量子"
+                }
+            ],
+            "description": "香草派思维高级功法，微任务与宏任务之间换位。"
+        },
+        "vanilla_arch_closure": {
+            "name": "闭包内功",
+            "category": "sect",
+            "sect": "香草派",
+            "tier": "advanced",
+            "theme": "arch",
+            "maxLevel": 100,
+            "costBase": 100,
+            "costFactor": 1.5,
+            "requires": {
+                "sect": "香草派"
+            },
+            "combat": {
+                "defPerLv": 0.45,
+                "mpMaxPerLv": 3
+            },
+            "ult": {
+                "key": "vanilla",
+                "kind": "abnormal",
+                "names": [
+                    "闭包·封天",
+                    "原生·归真一击"
+                ]
+            },
+            "description": "香草派架构高级功法，封存内劲，适合冥想养气。"
+        },
+        "vanilla_parry_prevent": {
+            "name": "阻默封手",
+            "category": "sect",
+            "sect": "香草派",
+            "tier": "advanced",
+            "theme": "parry",
+            "maxLevel": 100,
+            "costBase": 100,
+            "costFactor": 1.5,
+            "requires": {
+                "sect": "香草派"
+            },
+            "combat": {
+                "parryPerLv": 0.4,
+                "defPerLv": 0.15,
+                "injuryReducePerLv": 0.35
+            },
+            "moves": [
+                { "unlockLevel": 10, "name": "阻默封手" },
+                { "unlockLevel": 20, "name": "事件拦截" },
+                { "unlockLevel": 30, "name": "冒泡止息" },
+                { "unlockLevel": 40, "name": "默认阻断" },
+                { "unlockLevel": 50, "name": "节流封守" },
+                { "unlockLevel": 60, "name": "防抖固壁" },
+                { "unlockLevel": 70, "name": "捕获反制" },
+                { "unlockLevel": 80, "name": "委托封锁" },
+                { "unlockLevel": 90, "name": "静默劫持" },
+                { "unlockLevel": 100, "name": "阻默封手·终章" }
+            ],
+            "description": "香草派招架高级功法，一手封停来势，招式再急也进不了身。"
+        },
+        "react_code_jsx": {
+            "name": "阶式真言",
+            "category": "sect",
+            "sect": "量子仙宗",
+            "tier": "advanced",
+            "theme": "code",
+            "maxLevel": 100,
+            "costBase": 100,
+            "costFactor": 1.5,
+            "requires": {
+                "sect": "量子仙宗"
+            },
+            "combat": {
+                "atkPerLv": 0.75,
+                "hitPerLv": 0.25,
+                "mpCost": 8
+            },
+            "moves": [
+                {
+                    "unlockLevel": 10,
+                    "name": "JSX·一线"
+                },
+                {
+                    "unlockLevel": 20,
+                    "name": "props·透传"
+                },
+                {
+                    "unlockLevel": 30,
+                    "name": "children·分流"
+                },
+                {
+                    "unlockLevel": 40,
+                    "name": "key·定魂"
+                },
+                {
+                    "unlockLevel": 50,
+                    "name": "fragment·散手"
+                },
+                {
+                    "unlockLevel": 60,
+                    "name": "hook·连环掌"
+                },
+                {
+                    "unlockLevel": 70,
+                    "name": "context·暗劲"
+                },
+                {
+                    "unlockLevel": 80,
+                    "name": "portal·越界"
+                },
+                {
+                    "unlockLevel": 90,
+                    "name": "reconciler·破阵"
+                },
+                {
+                    "unlockLevel": 100,
+                    "name": "阶式真言·万化"
+                }
+            ],
+            "description": "量子仙宗编码高级功法，以 JSX 拆影成阶。"
+        },
+        "react_tune_virtual": {
+            "name": "虚影掌",
+            "category": "sect",
+            "sect": "量子仙宗",
+            "tier": "advanced",
+            "theme": "tune",
+            "maxLevel": 100,
+            "costBase": 100,
+            "costFactor": 1.5,
+            "requires": {
+                "sect": "量子仙宗"
+            },
+            "combat": {
+                "dodgePerLv": 0.55,
+                "hitPerLv": 0.15,
+                "mpCost": 8
+            },
+            "moves": [
+                {
+                    "unlockLevel": 10,
+                    "name": "虚影·初现"
+                },
+                {
+                    "unlockLevel": 20,
+                    "name": "协调·闪"
+                },
+                {
+                    "unlockLevel": 30,
+                    "name": "diff·错位"
+                },
+                {
+                    "unlockLevel": 40,
+                    "name": "fiber·抽身"
+                },
+                {
+                    "unlockLevel": 50,
+                    "name": "副作用·卸"
+                },
+                {
+                    "unlockLevel": 60,
+                    "name": "memo·避"
+                },
+                {
+                    "unlockLevel": 70,
+                    "name": "suspense·悬"
+                },
+                {
+                    "unlockLevel": 80,
+                    "name": "lazy·分身"
+                },
+                {
+                    "unlockLevel": 90,
+                    "name": "concurrent·幻"
+                },
+                {
+                    "unlockLevel": 100,
+                    "name": "虚影掌·无相"
+                }
+            ],
+            "description": "量子仙宗思维高级功法，虚实切换，先手轻灵。"
+        },
+        "react_arch_state": {
+            "name": "状态归一",
+            "category": "sect",
+            "sect": "量子仙宗",
+            "tier": "advanced",
+            "theme": "arch",
+            "maxLevel": 100,
+            "costBase": 100,
+            "costFactor": 1.5,
+            "requires": {
+                "sect": "量子仙宗"
+            },
+            "combat": {
+                "defPerLv": 0.35,
+                "mpMaxPerLv": 3
+            },
+            "ult": {
+                "key": "react",
+                "kind": "reduceMax",
+                "names": [
+                    "钩式·千手",
+                    "并发·量子千幻"
+                ]
+            },
+            "description": "量子仙宗架构高级功法，归一状态，适合冥想养气。"
+        },
+        "react_parry_boundary": {
+            "name": "边界护法",
+            "category": "sect",
+            "sect": "量子仙宗",
+            "tier": "advanced",
+            "theme": "parry",
+            "maxLevel": 100,
+            "costBase": 100,
+            "costFactor": 1.5,
+            "requires": {
+                "sect": "量子仙宗"
+            },
+            "combat": {
+                "parryPerLv": 0.3,
+                "defPerLv": 0.25,
+                "injuryReducePerLv": 0.45
+            },
+            "moves": [
+                { "unlockLevel": 10, "name": "边界护法" },
+                { "unlockLevel": 20, "name": "引用固守" },
+                { "unlockLevel": 30, "name": "记忆屏障" },
+                { "unlockLevel": 40, "name": "悬念封界" },
+                { "unlockLevel": 50, "name": "纯粹隔离" },
+                { "unlockLevel": 60, "name": "副作用清" },
+                { "unlockLevel": 70, "name": "上下文壁" },
+                { "unlockLevel": 80, "name": "严格模式" },
+                { "unlockLevel": 90, "name": "并发调度盾" },
+                { "unlockLevel": 100, "name": "边界护法·圆满" }
+            ],
+            "description": "量子仙宗招架高级功法，身周立起错界，伤势止于界外。"
+        },
+        "vue_code_template": {
+            "name": "模板拆招",
+            "category": "sect",
+            "sect": "鱿鱼山庄",
+            "tier": "advanced",
+            "theme": "code",
+            "maxLevel": 100,
+            "costBase": 100,
+            "costFactor": 1.5,
+            "requires": {
+                "sect": "鱿鱼山庄"
+            },
+            "combat": {
+                "atkPerLv": 0.65,
+                "hitPerLv": 0.35,
+                "mpCost": 8
+            },
+            "moves": [
+                {
+                    "unlockLevel": 10,
+                    "name": "插值·一亮"
+                },
+                {
+                    "unlockLevel": 20,
+                    "name": "v-if·隐现"
+                },
+                {
+                    "unlockLevel": 30,
+                    "name": "v-for·乱环"
+                },
+                {
+                    "unlockLevel": 40,
+                    "name": "v-bind·缠绕"
+                },
+                {
+                    "unlockLevel": 50,
+                    "name": "computed·回环"
+                },
+                {
+                    "unlockLevel": 60,
+                    "name": "watcher·窥敌"
+                },
+                {
+                    "unlockLevel": 70,
+                    "name": "template·拆招"
+                },
+                {
+                    "unlockLevel": 80,
+                    "name": "scoped·封域"
+                },
+                {
+                    "unlockLevel": 90,
+                    "name": "slot·贯入"
+                },
+                {
+                    "unlockLevel": 100,
+                    "name": "模板拆招·圆转"
+                }
+            ],
+            "description": "鱿鱼山庄编码高级功法，以模板拆招成件。"
+        },
+        "vue_tune_router": {
+            "name": "路由步",
+            "category": "sect",
+            "sect": "鱿鱼山庄",
+            "tier": "advanced",
+            "theme": "tune",
+            "maxLevel": 100,
+            "costBase": 100,
+            "costFactor": 1.5,
+            "requires": {
+                "sect": "鱿鱼山庄"
+            },
+            "combat": {
+                "hitPerLv": 0.25,
+                "dodgePerLv": 0.5,
+                "mpCost": 8
+            },
+            "moves": [
+                {
+                    "unlockLevel": 10,
+                    "name": "路由·起步"
+                },
+                {
+                    "unlockLevel": 20,
+                    "name": "路径·换"
+                },
+                {
+                    "unlockLevel": 30,
+                    "name": "守卫·拦"
+                },
+                {
+                    "unlockLevel": 40,
+                    "name": "懒加载·隐"
+                },
+                {
+                    "unlockLevel": 50,
+                    "name": "命名视图·分"
+                },
+                {
+                    "unlockLevel": 60,
+                    "name": "滚动行为·滑"
+                },
+                {
+                    "unlockLevel": 70,
+                    "name": "路由元·定"
+                },
+                {
+                    "unlockLevel": 80,
+                    "name": "嵌套路由·叠"
+                },
+                {
+                    "unlockLevel": 90,
+                    "name": "编程导航·转"
+                },
+                {
+                    "unlockLevel": 100,
+                    "name": "路由步·通玄"
+                }
+            ],
+            "description": "鱿鱼山庄思维高级功法，路由一转，身位全开。"
+        },
+        "vue_arch_reactive": {
+            "name": "响应内功",
+            "category": "sect",
+            "sect": "鱿鱼山庄",
+            "tier": "advanced",
+            "theme": "arch",
+            "maxLevel": 100,
+            "costBase": 100,
+            "costFactor": 1.5,
+            "requires": {
+                "sect": "鱿鱼山庄"
+            },
+            "combat": {
+                "defPerLv": 0.4,
+                "mpMaxPerLv": 3
+            },
+            "ult": {
+                "key": "vue",
+                "kind": "hugeDamage",
+                "names": [
+                    "响应·千丝",
+                    "Vite·瞬息万变"
+                ]
+            },
+            "description": "鱿鱼山庄架构高级功法，响应周身气机，适合冥想养气。"
+        },
+        "vue_parry_keepalive": {
+            "name": "常驻金身",
+            "category": "sect",
+            "sect": "鱿鱼山庄",
+            "tier": "advanced",
+            "theme": "parry",
+            "maxLevel": 100,
+            "costBase": 100,
+            "costFactor": 1.5,
+            "requires": {
+                "sect": "鱿鱼山庄"
+            },
+            "combat": {
+                "parryPerLv": 0.35,
+                "defPerLv": 0.2,
+                "injuryReducePerLv": 0.4
+            },
+            "moves": [
+                { "unlockLevel": 10, "name": "常驻金身" },
+                { "unlockLevel": 20, "name": "侦听固守" },
+                { "unlockLevel": 30, "name": "计算屏息" },
+                { "unlockLevel": 40, "name": "指令封印" },
+                { "unlockLevel": 50, "name": "插槽护体" },
+                { "unlockLevel": 60, "name": "混入拒斥" },
+                { "unlockLevel": 70, "name": "作用域锁" },
+                { "unlockLevel": 80, "name": "响应熔断" },
+                { "unlockLevel": 90, "name": "组合守则" },
+                { "unlockLevel": 100, "name": "常驻金身·大成" }
+            ],
+            "description": "鱿鱼山庄招架高级功法，气机常驻不散，架开重手不伤根本。"
+        }
+    },
+    "teachStock": {
+        "da_mo_qiong_qiu": [
+            {
+                "skillId": "ng_code_decorator",
+                "maxTeachLevel": 40
+            },
+            {
+                "skillId": "ng_tune_rx_step",
+                "maxTeachLevel": 40
+            },
+            {
+                "skillId": "ng_arch_zone",
+                "maxTeachLevel": 40
+            },
+            {
+                "skillId": "ng_parry_interceptor",
+                "maxTeachLevel": 40
+            }
+        ],
+        "xi_xi_fu_si": [
+            {
+                "skillId": "ng_code_decorator",
+                "maxTeachLevel": 80
+            },
+            {
+                "skillId": "ng_tune_rx_step",
+                "maxTeachLevel": 80
+            },
+            {
+                "skillId": "ng_arch_zone",
+                "maxTeachLevel": 80
+            },
+            {
+                "skillId": "ng_parry_interceptor",
+                "maxTeachLevel": 80
+            }
+        ],
+        "xue_lang": [
+            {
+                "skillId": "ng_code_decorator",
+                "maxTeachLevel": 100
+            },
+            {
+                "skillId": "ng_tune_rx_step",
+                "maxTeachLevel": 100
+            },
+            {
+                "skillId": "ng_arch_zone",
+                "maxTeachLevel": 100
+            },
+            {
+                "skillId": "ng_parry_interceptor",
+                "maxTeachLevel": 100
+            }
+        ],
+        "shu_yan": [
+            {
+                "skillId": "literacy",
+                "maxTeachLevel": 100
+            }
+        ],
+        "wei_te_er": [
+            {
+                "skillId": "vue_code_template",
+                "maxTeachLevel": 60
+            },
+            {
+                "skillId": "vue_tune_router",
+                "maxTeachLevel": 60
+            },
+            {
+                "skillId": "vue_arch_reactive",
+                "maxTeachLevel": 60
+            },
+            {
+                "skillId": "vue_parry_keepalive",
+                "maxTeachLevel": 60
+            }
+        ],
+        "youyu_xu": [
+            "vue_code_template",
+            "vue_tune_router",
+            "vue_arch_reactive",
+            "vue_parry_keepalive"
+        ],
+        "pete_hunt": [
+            {
+                "skillId": "react_code_jsx",
+                "maxTeachLevel": 60
+            },
+            {
+                "skillId": "react_tune_virtual",
+                "maxTeachLevel": 60
+            },
+            {
+                "skillId": "react_arch_state",
+                "maxTeachLevel": 60
+            },
+            {
+                "skillId": "react_parry_boundary",
+                "maxTeachLevel": 60
+            }
+        ],
+        "jordan_walke": [
+            {
+                "skillId": "react_code_jsx",
+                "maxTeachLevel": 100
+            },
+            {
+                "skillId": "react_tune_virtual",
+                "maxTeachLevel": 100
+            },
+            {
+                "skillId": "react_arch_state",
+                "maxTeachLevel": 100
+            },
+            {
+                "skillId": "react_parry_boundary",
+                "maxTeachLevel": 100
+            }
+        ],
+        "douglas_crockford": [
+            {
+                "skillId": "vanilla_code_dom",
+                "maxTeachLevel": 30
+            },
+            {
+                "skillId": "vanilla_tune_event_loop",
+                "maxTeachLevel": 30
+            },
+            {
+                "skillId": "vanilla_arch_closure",
+                "maxTeachLevel": 30
+            },
+            {
+                "skillId": "vanilla_parry_prevent",
+                "maxTeachLevel": 30
+            }
+        ],
+        "john_resig": [
+            {
+                "skillId": "vanilla_code_dom",
+                "maxTeachLevel": 70
+            },
+            {
+                "skillId": "vanilla_tune_event_loop",
+                "maxTeachLevel": 70
+            },
+            {
+                "skillId": "vanilla_arch_closure",
+                "maxTeachLevel": 70
+            },
+            {
+                "skillId": "vanilla_parry_prevent",
+                "maxTeachLevel": 70
+            }
+        ],
+        "brendan_eich": [
+            {
+                "skillId": "vanilla_code_dom",
+                "maxTeachLevel": 100
+            },
+            {
+                "skillId": "vanilla_tune_event_loop",
+                "maxTeachLevel": 100
+            },
+            {
+                "skillId": "vanilla_arch_closure",
+                "maxTeachLevel": 100
+            },
+            {
+                "skillId": "vanilla_parry_prevent",
+                "maxTeachLevel": 100
+            }
+        ]
+    }
+}

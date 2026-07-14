@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="21" height="15" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="8">
+ <properties>
+  <property name="mapName" value="笙堡"/>
+  <property name="parentMap" value="ShengHuoMiaoMiao"/>
+  <property name="region" value="笙火喵喵教"/>
+  <property name="type" propertytype="MapType" value="inDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/土地.tsx"/>
+ <tileset firstgid="85" source="../../../tilesets/岩石.tsx"/>
+ <tileset firstgid="90" source="../../../tilesets/草地.tsx"/>
+ <tileset firstgid="258" source="../../../tilesets/水面.tsx"/>
+ <tileset firstgid="570" source="../../../tilesets/装饰物.tsx"/>
+ <tileset firstgid="588" source="../../../tilesets/建筑.tsx"/>
+ <tileset firstgid="594" source="../../../tilesets/树木.tsx"/>
+ <tileset firstgid="605" source="../../../tilesets/Godot_Autotiles_16x16.tsx"/>
+ <tileset firstgid="1853" source="../../../tilesets/3_Props_and_Buildings_16x16.tsx"/>
+ <layer id="1" name="Background" width="21" height="15" visible="0">
+  <data encoding="base64" compression="zlib">
+   eJzbysbAsJ2KeAcQHwTic1TEF0bNHDVz1EyqmHkTiG8RwKeg6k8TofYOEBMDDiK5gVrgJoluAABc9uWc
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="21" height="15">
+  <data encoding="base64" compression="zlib">
+   eJzbysbAsJ2KeAcQHwTic1TEF0bNHDVz1EyqmHkTiG8RwKeg6k8TofYOEBMDDiK5gVrgJoluAABc9uWc
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="21" height="15">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgaYC0XA8M6IF7PhSl3nZ2B4QY7bhqXOWeB+BwQnwfiBA5Udd+B+n6w46aRAbI5o2AUjILBCQAC2xix
+  </data>
+ </layer>
+ <objectgroup id="4" name="Interactive">
+  <object id="3" name="阿朱" type="NPC" x="151.213" y="121.285">
+   <properties>
+    <property name="npcId" value="a_zhu"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="4" name="书颜" type="NPC" x="184.751" y="122.317">
+   <properties>
+    <property name="npcId" value="shu_yan"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="5" name="南笙" type="NPC" x="167.747" y="74.3438">
+   <properties>
+    <property name="npcId" value="nan_sheng"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="6" type="Transaction" x="144" y="208" width="48" height="16">
+   <properties>
+    <property name="from" value="ShengHuoMiaoMiao"/>
+    <property name="to" value="ShengHuoMansion"/>
+   </properties>
+  </object>
+  <object id="7" type="Transaction" x="144" y="224" width="48" height="16">
+   <properties>
+    <property name="from" value="ShengHuoMansion"/>
+    <property name="to" value="ShengHuoMiaoMiao"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

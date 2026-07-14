@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="10">
+ <properties>
+  <property name="Sort" type="int" value="14"/>
+  <property name="mapName" value="迷雾森林"/>
+  <property name="region" value="迷雾森林"/>
+  <property name="type" propertytype="MapType" value="outDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/Game_Maker_Studio_Autotiles_16x16.tsx"/>
+ <tileset firstgid="1249" source="../../../tilesets/17_Garden_16x16.tsx"/>
+ <layer id="1" name="Background" width="30" height="20">
+  <data encoding="base64" compression="zlib">
+   eJy7xMTAcGkUj+JRPIpH8SgexaN4FFMNAwCJI/Dw
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="30" height="20">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo4B+wIiZOpgce6nh9lF7R+0dLPYORD4i1m0DAUbtHbV3sNkLAL3iC2Q=
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="30" height="20">
+  <data encoding="base64" compression="zlib">
+   eJztk+sNAVEQhS9Ldm8ZWA1ogQbowKsAOvAqgA68CvEqxKsPnx+Sjctcl5VNxEm+zJnM5Ew2F6WSU91XqgFNaEHbN3dKnj3n0Y6U3cP3YQBDGN3dveVJt5/tSNlT/AzmsIClb+ZJ3yTtSNkr/Bo2sIVdjHel7D3+AEc4wfnB+74rKTsVKJUGDzKQDeK7K2Xn8HkoQAjFGO9+mn19M9vv+ZX/mquSuvsNeZo316/3cWUVqGFkZusluWSVqZXIzNZX8TVtetesJrUVmdn6Dr6rTe+aNaAOIzNbP8ZPtOnfyfrrN3UBMB8/iw==
+  </data>
+ </layer>
+ <objectgroup id="4" name="Interactive">
+  <object id="4" name="Lucian" type="NPC" x="247.905" y="186.887">
+   <properties>
+    <property name="npcId" value="lucian"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="8" type="Transaction" x="240" y="288" width="16" height="16">
+   <properties>
+    <property name="from" value="Dongjiao"/>
+    <property name="to" value="MiWuSenLin"/>
+   </properties>
+  </object>
+  <object id="9" type="Transaction" x="240" y="304" width="16" height="16">
+   <properties>
+    <property name="from" value="MiWuSenLin"/>
+    <property name="to" value="Dongjiao"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

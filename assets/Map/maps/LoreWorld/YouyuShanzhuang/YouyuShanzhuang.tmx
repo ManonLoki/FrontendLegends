@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="30" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="31">
+ <properties>
+  <property name="Sort" type="int" value="7"/>
+  <property name="mapName" value="鱿鱼山庄"/>
+  <property name="region" value="鱿鱼山庄"/>
+  <property name="type" propertytype="MapType" value="outDoor"/>
+ </properties>
+ <tileset firstgid="1" source="../../../tilesets/Game_Maker_Studio_Autotiles_16x16.tsx"/>
+ <tileset firstgid="1249" source="../../../tilesets/1_Terrains_16x16.tsx"/>
+ <tileset firstgid="1985" source="../../../tilesets/Godot_Autotiles_16x16.tsx"/>
+ <tileset firstgid="3233" source="../../../tilesets/建筑.tsx"/>
+ <tileset firstgid="3239" source="../../../tilesets/3_Props_and_Buildings_16x16.tsx"/>
+ <tileset firstgid="7719" source="../../../tilesets/6_Trees_16x16.tsx"/>
+ <tileset firstgid="17419" source="../../../tilesets/4_Crops_16x16.tsx"/>
+ <layer id="1" name="Background" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJxbycnAsJrOeA0QbwXiQ0CswgqhD2HhE5JDxiCxmVwMDLNx4DlAfIRK9iLLgfBSoNmbcOAtw8Be9HAeCv5FNgOfPbSwF5c56OGJSxwmtxdo9j4c+AAOe+mBR+0dtXfU3lF7R+0dtXfU3lF7R+2lvr1ngfgcnfEFIAYAVI+nng==
+  </data>
+ </layer>
+ <layer id="2" name="Road" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJxjYBge4BDzqL2j9o5Me0FqaYnpAYZCOA9ne805IBhdLT0xLf1HazBq76i9o/aO2juS7UWvP6hpL73rooGKl4EGAEItUYs=
+  </data>
+ </layer>
+ <layer id="3" name="Prop" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJzt1DdPAmEcx/FHE8vCrKgBLJNix7rDYlkosxUL6mJ3tySWQQUBy6DvQdAXoMa+Wd6EZRGM7etgAEU8MGdicv/kkzx54H6/e+6SE0IZZZRR5vsZVQkxhnFMqP6ud4UuNzzwhvU2sG5EE5pluB8fmX7sYDcs38G6D/0YQIpRiFSkId0Yf8/n6y/IvMQVrsN6Z1nPYR4LUPPfLGQjJ4Hez9c/kBlAEI8yvV+DRogqVKMGtahDvUaevo+xk9+FbvSgFw70ydzrJt8DL1axhnVsyNx7SP4RjnGCU5zhXEJvhkmITKhNkWsp80T+M17w+t6lFSIJydqfry2iQ49iU+RaypSQX4oylKMClTBI6P3NeVvIb0Ub2tGBTthlPu8i+UtYhhMu3PC8b3GH+xjv+TfnjTa5dOchHwUxzp3IeffI28dBlFwzexZYYZPwvOOZAHlBPEbJnWRvCtOY+aHXzHfUAitsEr6phTqeDfS6r7/56PJjB7vf9G7yHd/CIF1DGMaIKrQv12yT7cMSXctwwqUK7Svzv+YNxi5qHw==
+  </data>
+ </layer>
+ <objectgroup id="4" name="Interactive">
+  <object id="18" type="Transaction" x="0" y="432" width="16" height="16">
+   <properties>
+    <property name="from" value="YouyuShanzhuang"/>
+    <property name="to" value="Dongjiao"/>
+   </properties>
+  </object>
+  <object id="19" type="Transaction" x="16" y="432" width="16" height="16">
+   <properties>
+    <property name="from" value="Dongjiao"/>
+    <property name="to" value="YouyuShanzhuang"/>
+   </properties>
+  </object>
+  <object id="21" name="维特" type="NPC" x="215.625" y="420.833">
+   <properties>
+    <property name="npcId" value="wei_te_er"/>
+    <property name="type" value="NPC"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="22" name="肖邦弟" type="NPC" x="248.149" y="200.813">
+   <properties>
+    <property name="npcId" value="xiao_bang_di"/>
+    <property name="type" value="NPC"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="23" name="肖邦兄" type="NPC" x="231.6" y="200.465">
+   <properties>
+    <property name="npcId" value="xiao_bang_xiong"/>
+    <property name="type" value="NPC"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="24" type="Transaction" x="112" y="416" width="16" height="16">
+   <properties>
+    <property name="from" value="YouyuShanzhuang"/>
+    <property name="to" value="VUEHome"/>
+   </properties>
+  </object>
+  <object id="25" type="Transaction" x="112" y="432" width="16" height="16">
+   <properties>
+    <property name="from" value="VUEHome"/>
+    <property name="to" value="YouyuShanzhuang"/>
+   </properties>
+  </object>
+  <object id="27" type="Transaction" x="416" y="192" width="32" height="16">
+   <properties>
+    <property name="from" value="YouyuShanzhuang"/>
+    <property name="to" value="YYXResidentialHouse"/>
+   </properties>
+  </object>
+  <object id="28" type="Transaction" x="416" y="208" width="32" height="16">
+   <properties>
+    <property name="from" value="YYXResidentialHouse"/>
+    <property name="to" value="YouyuShanzhuang"/>
+   </properties>
+  </object>
+  <object id="29" name="狗窝" type="Props" x="16" y="192" width="64" height="16">
+   <properties>
+    <property name="text" value="不知为何，你总能听到时不时传来几声狗叫"/>
+    <property name="type" propertytype="Type" value="props"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

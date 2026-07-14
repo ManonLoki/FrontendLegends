@@ -1,0 +1,46 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="FrontendLegends"
+run/main_scene="res://scenes/splash.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+config/icon="res://icon.svg"
+
+[autoload]
+
+GameState="*res://scripts/game_state.gd"
+DataRegistry="*res://scripts/data_registry.gd"
+InventorySystem="*res://scripts/inventory_system.gd"
+QuestSystem="*res://scripts/quest_system.gd"
+NpcSystem="*res://scripts/npc_system.gd"
+SkillSystem="*res://scripts/skill_system.gd"
+CombatSystem="*res://scripts/combat_system.gd"
+BattleResolve="*res://scripts/battle_resolve.gd"
+
+[display]
+
+window/size/viewport_width=640
+window/size/viewport_height=480
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=4
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+rendering_device/driver.windows="d3d12"
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(0, 0, 0, 1)
