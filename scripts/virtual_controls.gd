@@ -9,6 +9,8 @@ const GAP := 6.0
 
 var controls_root: Control
 
+## Also checks DisplayServer touch support so a touchscreen laptop/desktop still gets
+## the on-screen D-pad even when none of the mobile OS/browser feature tags apply.
 static func is_mobile_runtime() -> bool:
 	return OS.has_feature("mobile") \
 		or OS.has_feature("web_android") \
@@ -16,11 +18,15 @@ static func is_mobile_runtime() -> bool:
 		or DisplayServer.is_touchscreen_available()
 
 func _ready() -> void:
+	# Non-mobile runtimes never need the overlay; free the whole layer immediately
+	# instead of just hiding it, so desktop players don't pay for idle button nodes.
 	if not is_mobile_runtime():
 		queue_free()
 		return
 	controls_root = Control.new()
 	controls_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# PASS (not IGNORE) lets touches fall through empty space to the game view below
+	# while still letting the buttons themselves catch input.
 	controls_root.mouse_filter = Control.MOUSE_FILTER_PASS
 	add_child(controls_root)
 	_build_buttons()
@@ -35,6 +41,10 @@ func _build_buttons() -> void:
 	_add_button("确认键", KEY_SPACE, "confirm")
 	_add_button("取消键", KEY_ESCAPE, "cancel")
 
+## Buttons emit key_down/key_up (consumed by game.gd's _on_virtual_key_down/_up, which
+## either drive virtual_direction directly for the D-pad or forward to
+## _dispatch_virtual_key for confirm/cancel) instead of posting real InputEventKeys,
+## so touch presses reuse the same handling path as a physical keyboard.
 func _add_button(text: String, keycode: int, action_name: String) -> void:
 	var button := Button.new()
 	button.name = "Virtual_" + action_name
@@ -65,10 +75,13 @@ func _layout_buttons() -> void:
 		return
 	var size := get_viewport().get_visible_rect().size
 	var buttons := controls_root.get_children()
+	# Guards against a resize signal firing mid-_build_buttons(), before all 6 children exist.
 	if buttons.size() < 6:
 		return
 	var left := 24.0
 	var bottom := size.y - 24.0 - BUTTON_SIZE.y
+	# D-pad: up sits centered above the left/down/right row; confirm/cancel anchor to
+	# the opposite (right) corner so both thumbs have a cluster in easy reach.
 	buttons[0].position = Vector2(left + BUTTON_SIZE.x + GAP, bottom - BUTTON_SIZE.y - GAP)
 	buttons[1].position = Vector2(left, bottom)
 	buttons[2].position = Vector2(left + BUTTON_SIZE.x + GAP, bottom)

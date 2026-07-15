@@ -1,3 +1,6 @@
+## Loads the game's static content tables (items/npcs/quests/skills, all plain JSON under
+## assets/Data/) plus a one-time scan of every .tmx map for names/types/NPC placement, so
+## the rest of the game can query this instead of re-reading files at runtime.
 extends Node
 
 var items: Dictionary = {}
@@ -47,6 +50,8 @@ func get_quest(quest_id: String) -> Dictionary:
 func get_skill(skill_id: String) -> Dictionary:
 	return skills.get(skill_id, {})
 
+## Re-reads skills.json instead of reusing the cached `skills` table because teachStock
+## is a separate top-level key in the same document that _ready() never extracts.
 func get_teach_entries(npc_id: String) -> Array:
 	var catalog: Dictionary = _load_document("skills.json")
 	var stock: Dictionary = catalog.get("teachStock", {})
@@ -64,6 +69,9 @@ func is_independent_tutor(npc_id: String) -> bool:
 func list_vendor_stock(npc_id: String) -> Array:
 	return vendor_stock.get(npc_id, [])
 
+## Recursively walks the map folder and regex-scrapes each .tmx for the handful of
+## <property> tags we care about, rather than pulling in a full Tiled/XML importer
+## for a one-time startup scan of a few known fields.
 func _scan_maps(path: String) -> void:
 	var dir := DirAccess.open(path)
 	if not dir:
@@ -100,6 +108,9 @@ func _scan_maps(path: String) -> void:
 			_collect_placed_npcs(xml, map_id, map_name)
 	dir.list_dir_end()
 
+## Registers every NPC object placed on a map as a valid quest target, deduped by
+## npc_id+map_id since the same NPC template can be placed on multiple maps and each
+## placement is a distinct target.
 func _collect_placed_npcs(xml: String, map_id: String, map_name: String) -> void:
 	var object_matcher := RegEx.new()
 	object_matcher.compile("<object\\b([^>]*?)>([\\s\\S]*?)</object>")
@@ -143,6 +154,8 @@ func map_display_name(map_id: String) -> String:
 func map_type(map_id: String) -> String:
 	return str(map_types.get(map_id, "outDoor"))
 
+## Sub-areas (e.g. a building interior) declare a parentMap property so their HUD/quest
+## text can show the enclosing region's name instead of the interior's own map name.
 func region_display_name(map_id: String) -> String:
 	var parent_id := str(map_parent_ids.get(map_id, ""))
 	return map_display_name(parent_id if not parent_id.is_empty() else map_id)

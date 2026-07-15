@@ -36,7 +36,10 @@ func resolve_victory(session: Dictionary, lethal: bool = true) -> String:
 
 ## 战败惩罚：除资源损失外，每门已学功法各有 50% 概率倒退 0~2 级
 ## （基础/文识功法保底 1 级、门派功法可退到 0 级），用于放大战败代价。
-func resolve_defeat(session: Dictionary) -> String:
+## 切磋（lethal=false）落败不结算伤势/惩罚，与 resolve_victory/resolve_flee 的 lethal 分支保持一致。
+func resolve_defeat(session: Dictionary, lethal: bool = true) -> String:
+	if not lethal:
+		return "切磋落败，受益匪浅。"
 	_apply_lethal_wounds(session)
 	var vitals: Dictionary = GameState.profile.get("vitals", {})
 	var money_loss := int(floor(float(vitals.get("money", 0)) * randf_range(DEFEAT_LOSS_RATE_MIN, DEFEAT_LOSS_RATE_MAX)))
@@ -58,6 +61,9 @@ func resolve_defeat(session: Dictionary) -> String:
 	GameState.profile.vitals = vitals
 	GameState.profile.skills.levels = levels
 	GameState.combat_state.hp = _effective_hp_max()
+	# 对齐参考项目 BattleHud.ts：其余战斗结算只改内存，等下次自动/手动保存才落盘；
+	# 死亡惩罚是不可逆的永久性损失，这里立即存档，避免玩家靠不存档规避惩罚。
+	GameState.save_game()
 	var suffix := "，%d 门功法生疏" % skill_loss if skill_loss > 0 else ""
 	return "你重伤昏迷，醒来损失 Token %d、潜能 %d、经验 %d%s" % [money_loss, potential_loss, experience_loss, suffix]
 

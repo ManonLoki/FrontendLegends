@@ -284,12 +284,18 @@ func _run() -> void:
 	game.facing = Vector2i.DOWN
 	game.player_moving = false
 	game.animation_frame = 2
-	_assert_true(game._player_frame_key() == "player_male_down_idle_2", "男性静止动画应选择 male/down/idle 对应帧")
+	_assert_true(game._player_frame_key() == "player_male_down_idle_0", "静止时应固定显示当前方向的 idle_0")
 	game_state.profile.gender = "female"
 	game.facing = Vector2i.LEFT
 	game.player_moving = true
+	game.animation_frame = 0
+	_assert_true(game._player_frame_key() == "player_female_left_idle_0", "行走序列第 0 帧应为当前方向的 idle_0")
+	game.animation_frame = 1
+	_assert_true(game._player_frame_key() == "player_female_left_run_1", "行走序列第二帧应使用第一张跨步帧")
+	game.animation_frame = 2
+	_assert_true(game._player_frame_key() == "player_female_left_idle_0", "行走序列第三帧应回到 idle_0")
 	game.animation_frame = 3
-	_assert_true(game._player_frame_key() == "player_female_left_run_3", "女性移动动画应选择 female/left/run 对应帧")
+	_assert_true(game._player_frame_key() == "player_female_left_run_3", "行走序列第四帧应使用相反脚的跨步帧")
 	var female_run_layout: Dictionary = game.player_sprite_layouts[game._player_frame_key()]
 	_assert_true(female_run_layout.canvas_size == Vector2(40.0, 34.0), "Player 裁切帧应归一化到稳定的 40×34 最大逻辑画布，避免动画抖动")
 	for player_layout_value in game.player_sprite_layouts.values():

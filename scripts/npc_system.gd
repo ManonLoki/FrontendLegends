@@ -1,12 +1,20 @@
 extends Node
 
+## Keyed by npc_id → the GameState.game_time_sec value at which the NPC respawns;
+## expressed in game-clock seconds (not wall-clock) so defeat cooldowns pause with
+## the rest of the simulation whenever the game clock itself is paused.
 var defeated_until: Dictionary = {}
+## Per-session overrides layered on top of DataRegistry's static NPC definitions
+## (e.g. quest-spawned or relocated NPCs); build_instance() merges the two rather
+## than mutating DataRegistry so a fresh session always starts from clean data.
 var runtime_npcs: Dictionary = {}
 var sprite_regions: Dictionary = {}
 
 func _ready() -> void:
 	_load_sprite_regions()
 
+## Same TexturePacker-sheet format as player.tpsheet (scripts/game.gd); NPC and
+## player atlases are parsed independently since they're separate source images.
 func _load_sprite_regions() -> void:
 	sprite_regions.clear()
 	var file := FileAccess.open("res://assets/Texture/NPC.tpsheet", FileAccess.READ)
@@ -32,6 +40,9 @@ func sprite_region(npc_id: String) -> Rect2:
 	var sprite := str(build_instance(npc_id).get("sprite", "npc-1"))
 	return sprite_regions.get(sprite.get_file().get_basename(), sprite_regions.get("npc-1", Rect2(0, 0, 1, 1)))
 
+## runtime_npcs takes priority over the static registry so per-session state (relocation,
+## quest overrides) always wins; duplicate(true) protects the source dictionaries from
+## mutation via the returned instance.
 func build_instance(npc_id: String, overrides: Dictionary = {}) -> Dictionary:
 	var definition: Dictionary = runtime_npcs.get(npc_id, DataRegistry.get_npc(npc_id)).duplicate(true)
 	if definition.is_empty():
@@ -58,6 +69,9 @@ func unregister_runtime(npc_id: String) -> void:
 func mark_defeated(npc_id: String, duration_sec: float = 300.0) -> void:
 	defeated_until[npc_id] = GameState.game_time_sec + duration_sec
 
+## Lazily expires entries on read rather than on a timer, so is_defeated() alone is
+## enough to both check and self-clean the map; sweep_defeated() below just forces
+## that cleanup once per frame so stale entries don't accumulate between checks.
 func is_defeated(npc_id: String) -> bool:
 	if not defeated_until.has(npc_id):
 		return false
@@ -70,6 +84,9 @@ func sweep_defeated() -> void:
 	for npc_id in defeated_until.keys():
 		is_defeated(npc_id)
 
+## Reverse lookup: items declare their source NPC via dropNpcId rather than NPCs
+## listing their own drops, so a single item's loot rule lives next to its own
+## definition in items.json instead of being duplicated across NPC entries.
 func get_drop_items(npc_id: String) -> Array:
 	var result: Array = []
 	for item_id in DataRegistry.items:

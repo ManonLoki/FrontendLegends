@@ -15,7 +15,10 @@ func _ready() -> void:
 
 func set_progress(value: int, maximum: int) -> void:
 	current = maxi(0, value)
-	total = maxi(1, maximum)
+	# Keep the true maximum (including 0) for display; _draw() clamps separately
+	# for the fill-ratio math so a genuine 0 max still reads "0/0" in the label
+	# instead of being silently rewritten to "0/1".
+	total = maxi(0, maximum)
 	queue_redraw()
 
 func set_font_size(value: int) -> void:
@@ -33,7 +36,7 @@ func _draw() -> void:
 	var bar_rect := Rect2(Vector2.ZERO, Vector2(maxf(1.0, size.x - text_width), size.y))
 	draw_rect(bar_rect, track_color, true)
 	draw_rect(bar_rect, border_color, false, 2.0)
-	var ratio := clampf(float(current) / float(total), 0.0, 1.0)
+	var ratio := clampf(float(current) / float(maxi(1, total)), 0.0, 1.0)
 	if ratio > 0.0:
 		draw_rect(Rect2(bar_rect.position + Vector2(3.0, 3.0), Vector2(maxf(0.0, (bar_rect.size.x - 6.0) * ratio), maxf(0.0, bar_rect.size.y - 6.0))), fill_color, true)
 	var text := "%d/%d" % [current, total]

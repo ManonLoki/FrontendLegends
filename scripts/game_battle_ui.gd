@@ -73,7 +73,7 @@ func _attack() -> void:
 		if counter.get("damage", 0) > 0:
 			game.message += "；敌方反击造成 %d 伤害" % counter.damage
 		if GameState.combat_state.hp <= 0:
-			end(BattleResolve.resolve_defeat(session))
+			end(BattleResolve.resolve_defeat(session, lethal))
 			return
 		refresh()
 
@@ -85,7 +85,7 @@ func _rest() -> void:
 		if counter.get("damage", 0) > 0:
 			game.message += "；敌方反击造成 %d 伤害" % counter.damage
 		if GameState.combat_state.hp <= 0:
-			end(BattleResolve.resolve_defeat(session))
+			end(BattleResolve.resolve_defeat(session, lethal))
 			return
 	refresh()
 
@@ -133,7 +133,7 @@ func handle_submenu_key(key: Key) -> void:
 				if counter.get("damage", 0) > 0:
 					game.message += "；敌方反击造成 %d 伤害" % counter.damage
 				if GameState.combat_state.hp <= 0:
-					end(BattleResolve.resolve_defeat(session))
+					end(BattleResolve.resolve_defeat(session, lethal))
 					return
 		else:
 			var ult_result: Dictionary = CombatSystem.use_ult(session, submenu_index)
@@ -163,13 +163,13 @@ func refresh() -> void:
 	_label(str(GameState.profile.get("name", "玩家")), Rect2(Vector2(left_x - 90.0, 12.0), Vector2(180.0, 24.0)), 14, HORIZONTAL_ALIGNMENT_CENTER)
 	_label(str(enemy.get("display_name", game.nearby_npc_id)), Rect2(Vector2(right_x - 90.0, 12.0), Vector2(180.0, 24.0)), 14, HORIZONTAL_ALIGNMENT_CENTER)
 	_label("VS", Rect2(Vector2(area.x * 0.5 - 26.0, 62.0), Vector2(52.0, 32.0)), 22, HORIZONTAL_ALIGNMENT_CENTER)
-	_portrait(game.player_texture, game._player_frame_region(), Vector2(left_x, 72.0), Vector2(44.0, 56.0))
+	_portrait(game.player_texture, game._player_battle_portrait_region(), Vector2(left_x, 72.0), Vector2(44.0, 56.0))
 	_portrait(game.npc_texture, NpcSystem.sprite_region(game.nearby_npc_id), Vector2(right_x, 72.0), Vector2(44.0, 56.0))
 
 	var player_hp_max := int(session.get("player_max_hp", game._npc_hp(GameState.profile, true)))
 	var enemy_hp_max := int(session.get("enemy_max_hp", enemy_hp))
-	var player_mp_max := maxi(1, GameState.player_mp_max())
-	var enemy_mp_max := maxi(1, int(session.get("enemy_mp_max", 0)))
+	var player_mp_max := GameState.player_mp_max()
+	var enemy_mp_max := int(session.get("enemy_mp_max", 0))
 	_stat("体力", GameState.combat_state.hp, player_hp_max, Vector2(16.0, 116.0), Color("df352d"), 150.0)
 	_stat("精力", GameState.combat_state.mp, player_mp_max, Vector2(16.0, 142.0), Color("3478d4"), 150.0)
 	_stat("体力", enemy_hp, enemy_hp_max, Vector2(area.x - 212.0, 116.0), Color("df352d"), 150.0)

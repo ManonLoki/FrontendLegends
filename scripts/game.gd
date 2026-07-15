@@ -228,13 +228,6 @@ func _process(delta: float) -> void:
 		virtual_direction = Vector2.ZERO
 		return
 	move_cooldown -= delta
-	# 新图集的 idle 与 run 都各有 4 帧。静止时也推进 idle 动画，而不是
-	# 永远停在第一帧；打开模态 HUD 时仍由上方分支冻结世界动画。
-	animation_timer += delta
-	if animation_timer >= MOVE_STEP_SECONDS:
-		animation_timer = fmod(animation_timer, MOVE_STEP_SECONDS)
-		animation_frame = (animation_frame + 1) % 4
-		queue_redraw()
 	auto_save_timer += delta
 	if auto_save_timer >= 30.0:
 		auto_save_timer = 0.0
@@ -247,9 +240,24 @@ func _process(delta: float) -> void:
 		_position_npc_menu()
 	var direction := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down") + virtual_direction
 	var requested_step := _apply_facing_input(direction)
+	# A held direction alternates a planted idle pose with the two opposing stride
+	# poses. Starting each new walk from frame 0 gives immediate visual feedback
+	# without beginning halfway through a step.
+	if direction.length() > 0.0:
+		if not player_moving:
+			animation_frame = 0
+			animation_timer = 0.0
+			queue_redraw()
+		player_moving = true
+		animation_timer += delta
+		if animation_timer >= MOVE_STEP_SECONDS:
+			animation_timer = fmod(animation_timer, MOVE_STEP_SECONDS)
+			animation_frame = (animation_frame + 1) % 4
+			queue_redraw()
+	else:
+		player_moving = false
 	if move_cooldown <= 0.0:
 		if direction.length() > 0.0:
-			player_moving = true
 			var step := requested_step
 			var next_tile := player_tile + step
 			if map_context and (not map_context.is_walkable(next_tile.x, next_tile.y) or _npc_occupies_tile(next_tile)):
@@ -262,8 +270,6 @@ func _process(delta: float) -> void:
 			message = "当前位置: %s" % player_tile
 			_update_camera()
 			queue_redraw()
-		else:
-			player_moving = false
 	if accept_requested:
 		accept_requested = false
 		# 确认键可能在移动/转向后的下一帧才消费；触发瞬间重新按当前位置与
@@ -294,6 +300,10 @@ func _apply_facing_input(direction: Vector2) -> Vector2i:
 		queue_redraw()
 	return requested_step
 
+## Learning/practice/meditation each run on their own fixed-size tick (accumulated
+## via a `while accumulator >= TICK_SECONDS` catch-up loop) instead of scaling by
+## `delta` directly, so their progression rate is identical regardless of frame rate
+## and multiple ticks fire correctly after a long frame stall.
 func _update_continuous_skill_actions(delta: float) -> void:
 	if learn_open and not learning_skill_id.is_empty():
 		learning_tick_accumulator += maxf(0.0, delta)
@@ -2057,6 +2067,8 @@ func _map_index_by_id(target: String) -> int:
 			return index
 	return -1
 
+## Requires BOTH the basic and sect lightness-skill (tune theme) at level 30+, since
+## either alone only gives partial mastery of movement techniques in this design.
 func _try_cyber_teleport() -> void:
 	var basic_tune_id := SkillSystem.equipped_id("tune", "basic")
 	if SkillSystem.level(basic_tune_id) < CYBER_TELEPORT_SKILL_REQUIREMENT or SkillSystem.equipped_sect_skill_level("tune") < CYBER_TELEPORT_SKILL_REQUIREMENT:
@@ -2071,6 +2083,8 @@ func _try_cyber_teleport() -> void:
 		_show_dialogue("赛博传送", message)
 		return
 	cyber_maps = []
+	# Only outdoor/wild maps are valid teleport destinations; interiors need a real
+	# entrance transaction (door/arrival point) that a blind teleport can't provide.
 	for index in DataRegistry.map_files.size():
 		var map_id := DataRegistry.map_files[index].get_file().get_basename()
 		if DataRegistry.map_type(map_id) != "inDoor":
@@ -2119,6 +2133,9 @@ func _handle_cyber_key(key: Key) -> void:
 	if cyber_open:
 		_refresh_cyber_menu(cost)
 
+## Cost scales off the theoretical mp cap (not current/current-max mp) so raising
+## meditation mastery raises both teleport range... and its price, keeping it a
+## meaningful spend rather than trivial once mp capacity is high.
 func _cyber_teleport_cost() -> int:
 	return maxi(1, int(ceil(float(SkillSystem.meditation_max_mp_cap()) / CYBER_TELEPORT_MP_DIVISOR)))
 
@@ -2215,17 +2232,31 @@ func _load_player_sprite_regions() -> void:
 		layout.canvas_size = maximum_canvas_size
 		player_sprite_layouts[key] = layout
 
+## The walk cycle deliberately alternates one fixed standing frame with the two
+## stride frames that place opposite feet forward: idle_0, run_1, idle_0, run_3.
+## This keeps the legs readable instead of cycling through hand-only in-between art.
 func _player_frame_key() -> String:
 	var gender := "female" if str(GameState.profile.get("gender", "male")).to_lower() == "female" else "male"
 	var direction := "down"
 	if facing == Vector2i.UP: direction = "up"
 	elif facing == Vector2i.LEFT: direction = "left"
 	elif facing == Vector2i.RIGHT: direction = "right"
-	var motion := "run" if player_moving else "idle"
-	return "player_%s_%s_%s_%d" % [gender, direction, motion, posmod(animation_frame, 4)]
+	var frame := posmod(animation_frame, 4)
+	if not player_moving or frame == 0 or frame == 2:
+		return "player_%s_%s_idle_0" % [gender, direction]
+	var stride_frame := 1 if frame == 1 else 3
+	return "player_%s_%s_run_%d" % [gender, direction, stride_frame]
 
 func _player_frame_region() -> Rect2:
 	var key := _player_frame_key()
+	return player_sprite_regions.get(key, player_sprite_regions.get("player_male_down_idle_0", Rect2(0, 0, 1, 1)))
+
+## Battle HUD portrait is a fixed down-facing rest pose regardless of the player's
+## facing/animation_frame on the map, so it never shows a mid-stride frame that would
+## look wrong statically displayed for the whole fight.
+func _player_battle_portrait_region() -> Rect2:
+	var gender := "female" if str(GameState.profile.get("gender", "male")).to_lower() == "female" else "male"
+	var key := "player_%s_down_idle_0" % gender
 	return player_sprite_regions.get(key, player_sprite_regions.get("player_male_down_idle_0", Rect2(0, 0, 1, 1)))
 
 func _player_frame_draw_rect(player_pos: Vector2, source: Rect2 = _player_frame_region()) -> Rect2:

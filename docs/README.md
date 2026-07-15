@@ -1,6 +1,6 @@
 # FrontendLegends 文档
 
-FrontendLegends 当前版本为 **0.0.1**，是使用 Godot 4.7 + GDScript 制作的 2D 格子 RPG。
+FrontendLegends 当前版本为 **0.7.5**，是使用 Godot 4.7 + GDScript 制作的 2D 格子 RPG。
 
 ## 项目入口
 

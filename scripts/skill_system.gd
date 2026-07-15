@@ -302,6 +302,8 @@ func refresh_derived_attributes() -> void:
 const THEME_BASIC_SKILL := {"code": "basicStrength", "tune": "basicAgility", "arch": "basicConstitution", "parry": "basicParry", "knowledge": "literacy"}
 
 ## 基础与特殊功法使用独立槽（见 unequip），装备时按 category 分流到对应槽位。
+## 对齐参考项目 SaveManager.ts：其余状态（生存 tick、消耗品、商贩交易）只改内存缓存，
+## 须玩家 ESC→保存才落盘；唯独功法装备立即写盘，避免退出菜单后丢失当前选择。
 func equip(skill_id: String) -> Dictionary:
 	var definition := DataRegistry.get_skill(skill_id)
 	if definition.is_empty() or level(skill_id) <= 0:
@@ -311,9 +313,10 @@ func equip(skill_id: String) -> Dictionary:
 		return {"ok": false, "message": "无法装备"}
 	var slot := "equipped_basic" if str(definition.get("category", "")) == "basic" else "equipped_special"
 	ensure_skills()[slot][theme] = skill_id
+	GameState.save_game()
 	return {"ok": true, "message": "已装备【%s】" % definition.get("name", skill_id)}
 
-## 基础与特殊功法使用独立槽，卸下其中一类不会影响另一类。
+## 基础与特殊功法使用独立槽，卸下其中一类不会影响另一类。同 equip() 立即落盘。
 func unequip(skill_id: String) -> Dictionary:
 	var definition := DataRegistry.get_skill(skill_id)
 	if definition.is_empty():
@@ -323,6 +326,7 @@ func unequip(skill_id: String) -> Dictionary:
 	if str(ensure_skills()[slot].get(theme, "")) != skill_id:
 		return {"ok": false, "message": "此功法尚未装备"}
 	ensure_skills()[slot].erase(theme)
+	GameState.save_game()
 	return {"ok": true, "message": "已卸下【%s】" % definition.get("name", skill_id)}
 
 func equipped_id(theme: String, category: String) -> String:

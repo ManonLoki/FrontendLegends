@@ -35,7 +35,10 @@ Open the repository root in Godot 4.7, or run:
 - `scripts/npc_system.gd`: NPC registry merge, sprites, defeated state, and drops
 - `scripts/combat_system.gd`: combat sessions and formulas
 - `scripts/battle_resolve.gd`: battle settlement
-- `scripts/virtual_controls.gd`: mobile controls
+- `scripts/game_battle_ui.gd`: battle HUD presentation layer, owned by `game.gd`
+- `scripts/ui_progress_meter.gd`: shared progress-bar widget used by learn/practice/meditation HUDs
+- `scripts/virtual_controls.gd`: mobile on-screen D-pad and confirm/cancel buttons
+- `scripts/mobile_orientation.gd`: forces/requests landscape orientation on mobile OS and mobile web
 
 Autoload registrations are defined in `project.godot`.
 
@@ -46,4 +49,4 @@ Autoload registrations are defined in `project.godot`.
 3. Keep runtime behavior compatible with Godot 4.7 headless execution. Tests must never share the production `user://` save path.
 4. Do not commit `.godot/`; it is generated and ignored.
 5. Node scripts under `tools/` are standalone data/version utilities, not part of the game runtime.
-6. **Frozen Splash and CharacterCreation code:** Do not modify `scenes/splash.tscn`, `scripts/splash.gd`, `scenes/character_creation.tscn`, or `scripts/character_creation.gd` without a separate, explicit second confirmation from the user. The user's initial request to change any of these files does **not** count as confirmation. Before editing, stop and list the exact protected files and intended changes, then ask the user to confirm unlocking them for that one change. Only an affirmative reply in a subsequent user message authorizes the edit. That authorization is one-time and limited to the files and changes listed; all later changes require confirmation again. Reading, inspecting, and testing these files without modifying them remains allowed.
+6. **Frozen Splash/CharacterCreation/HUD code:** Do not modify `scenes/splash.tscn`, `scripts/splash.gd`, `scenes/character_creation.tscn`, `scripts/character_creation.gd`, `scripts/game_battle_ui.gd`, `scripts/ui_progress_meter.gd`, or the HUD panel/layout code in `scripts/game.gd` (the `@onready` HUD node references and any function whose name starts with `_layout_`, plus `_build_detail_huds` and `_use_detail_hud`) without a separate, explicit second confirmation from the user. The user's initial request to change any of these files does **not** count as confirmation. Before editing, stop and list the exact protected files and intended changes, then ask the user to confirm unlocking them for that one change. Only an affirmative reply in a subsequent user message authorizes the edit. That authorization is one-time and limited to the files and changes listed; all later changes require confirmation again. Reading, inspecting, and testing these files without modifying them remains allowed. Non-HUD logic in `scripts/game.gd` (movement, combat resolution, save/load, survival ticking, animation, etc.) is not covered by this rule. See `CLAUDE.md`'s Mandatory Frozen-Scene Rule for the canonical copy of this list.

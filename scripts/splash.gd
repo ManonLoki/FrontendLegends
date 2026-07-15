@@ -67,7 +67,8 @@ func _build_stage() -> void:
 	stage.add_child(background)
 
 	_add_label("前端群侠传", Rect2(0, 92, DESIGN_SIZE.x, 62), 42, Color.WHITE)
-	_add_label("v0.7.4", Rect2(0, 166, DESIGN_SIZE.x, 30), 16, Color.WHITE)
+	var version := str(ProjectSettings.get_setting("application/config/version", "0.0.0"))
+	_add_label("v%s" % version, Rect2(0, 166, DESIGN_SIZE.x, 30), 16, Color.WHITE)
 	var continue_text := "按确认键继续" if mobile_runtime else "按空格继续"
 	prompt = _add_label(continue_text, Rect2(0, 330, DESIGN_SIZE.x, 40), 18, Color.WHITE)
 

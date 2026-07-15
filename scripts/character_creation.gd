@@ -185,7 +185,7 @@ func _finish_intro() -> void:
 	intro_playing = false
 	intro_root.queue_free()
 	form.visible = true
-	_refresh_focus()
+	_activate()
 
 func _build_form() -> void:
 	for index in ROWS.size():
@@ -204,7 +204,7 @@ func _build_form() -> void:
 			name_edit = LineEdit.new()
 			name_edit.position = Vector2(169, y)
 			name_edit.size = Vector2(285, 30)
-			name_edit.placeholder_text = "（按确认键输入）" if mobile_runtime else "（按空格输入）"
+			name_edit.placeholder_text = "（直接输入姓名）"
 			name_edit.add_theme_font_override("font", FONT)
 			name_edit.add_theme_font_size_override("font_size", 16)
 			name_edit.add_theme_color_override("font_color", Color("#222222"))

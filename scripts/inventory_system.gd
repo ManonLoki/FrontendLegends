@@ -1,5 +1,7 @@
 extends Node
 
+## Sell price is a flat fraction of an item's buy price rather than a per-item field,
+## so vendor buy/sell spreads stay consistent without hand-tuning every item entry.
 const SELL_PRICE_RATE := 0.25
 
 func count(item_id: String) -> int:
@@ -24,6 +26,10 @@ func remove_item(item_id: String, amount: int = 1) -> bool:
 		GameState.inventory.erase(item_id)
 	return true
 
+## Consumes the item speculatively up front so the per-kind branches below can just
+## compute their effect; any branch that finds nothing useful to apply (e.g. HP already
+## full) refunds the item via add_item() further down instead of pre-checking every
+## kind's "would this even do anything" condition before removing it.
 func use_item(item_id: String) -> Dictionary:
 	var definition: Dictionary = DataRegistry.get_item(item_id)
 	if not _can_use(item_id, definition):
@@ -88,6 +94,9 @@ func use_item(item_id: String) -> Dictionary:
 	if not bool(result.get("ok", false)):
 		add_item(item_id)
 		return result
+	# Reusable items (consumeOnUse=false, e.g. a bound trinket) still go through the
+	# same remove-then-readd path above so cooldown/effect logic doesn't need a
+	# separate branch for consumable vs. non-consumable items.
 	if definition.get("consumeOnUse", true) == false:
 		add_item(item_id)
 	var interval := float(definition.get("useIntervalSec", 0.0))
@@ -121,6 +130,8 @@ func equip_item(item_id: String) -> Dictionary:
 		elif str(GameState.equipment.get("accessory2", "")).is_empty():
 			actual_slot = "accessory2"
 		else:
+			# Both accessory slots taken: replace accessory2 rather than accessory1,
+			# so the first-equipped accessory sticks around longer by default.
 			actual_slot = "accessory2"
 		previous = str(GameState.equipment.get(actual_slot, ""))
 	else:
@@ -159,6 +170,8 @@ func equipment_bonus() -> Dictionary:
 			total[key] = int(total[key]) + int(bonus.get(key, 0))
 	return total
 
+## Safety net for equipment referencing an item no longer in the inventory (e.g. the
+## backing item was discarded/sold through a path that doesn't call unequip_item first).
 func _normalize_equipment() -> void:
 	for slot in GameState.equipment:
 		var item_id := str(GameState.equipment[slot])
@@ -202,6 +215,8 @@ func discard_item(item_id: String) -> Dictionary:
 		return {"ok": false, "message": "背包中没有该物品"}
 	return {"ok": true, "message": "已丢弃 %s" % definition.get("name", item_id)}
 
+## Mirrors use_item()'s effect-kind whitelist and cooldown/gender checks so the menu
+## can gray out an item (via _use_failure below) before the player even attempts to use it.
 func _can_use(item_id: String, definition: Dictionary) -> bool:
 	if count(item_id) <= 0 or definition.is_empty():
 		return false
