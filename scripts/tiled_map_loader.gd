@@ -1,11 +1,14 @@
 class_name TiledMapLoader
 extends RefCounted
 
+## Tiled 地图/图块集未显式声明 tilewidth/tileheight 时使用的默认边长。
+const DEFAULT_TILE_SIZE := 16
+
 var map_id := ""
 var width := 0
 var height := 0
-var tile_width := 16
-var tile_height := 16
+var tile_width := DEFAULT_TILE_SIZE
+var tile_height := DEFAULT_TILE_SIZE
 var properties: Dictionary = {}
 var layers: Dictionary = {}
 var objects: Array[Dictionary] = []
@@ -20,8 +23,8 @@ func load_file(path: String) -> bool:
 	var map_attrs := _attrs(_first_match(xml, "<map\\b([^>]*)>"))
 	width = int(map_attrs.get("width", 0))
 	height = int(map_attrs.get("height", 0))
-	tile_width = int(map_attrs.get("tilewidth", 16))
-	tile_height = int(map_attrs.get("tileheight", 16))
+	tile_width = int(map_attrs.get("tilewidth", DEFAULT_TILE_SIZE))
+	tile_height = int(map_attrs.get("tileheight", DEFAULT_TILE_SIZE))
 	properties = _properties(_first_match(xml, "<map\\b[^>]*>(.*?)<tileset", true))
 	for match in _all_matches(xml, "<tileset\\b([^>]*?)(?:/>|>(.*?)</tileset>)", true):
 		_load_tileset(path, _attrs(match.get_string(1)), match.get_string(2))
@@ -240,8 +243,8 @@ func _load_tileset(map_path: String, attrs: Dictionary, body: String) -> void:
 		return
 	tilesets.append({
 		"first_gid": first_gid,
-		"tile_width": int(tsx_attrs.get("tilewidth", 16)),
-		"tile_height": int(tsx_attrs.get("tileheight", 16)),
+		"tile_width": int(tsx_attrs.get("tilewidth", DEFAULT_TILE_SIZE)),
+		"tile_height": int(tsx_attrs.get("tileheight", DEFAULT_TILE_SIZE)),
 		"columns": int(tsx_attrs.get("columns", 1)),
 		"spacing": int(tsx_attrs.get("spacing", 0)),
 		"margin": int(tsx_attrs.get("margin", 0)),

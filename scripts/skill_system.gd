@@ -5,10 +5,23 @@ const MEDITATION_TICK_SECONDS := 1.0 / 30.0
 const PRACTICE_TICK_SECONDS := 1.0 / 6.0
 
 const THEMES := ["code", "tune", "arch", "parry", "knowledge"]
+const BASIC_SKILL_IDS: Array[String] = ["basicStrength", "basicAgility", "basicConstitution", "basicParry", "literacy"]
+
+## 悟性（wisdom）对学习速率的软修正：以 25 为中性点，越高悟性研习越快。
+const WISDOM_BASELINE := 25.0
+const WISDOM_LEARN_RATE_PER_POINT := 0.02
+const LEARN_RATE_MIN := 0.65
+const LEARN_RATE_MAX := 1.25
+
+## 门派绝招按内力功法等级解锁：一档 30 级、二档 80 级。
+const ULT_TIER1_ARCH_LEVEL := 30
+const ULT_TIER2_ARCH_LEVEL := 80
 
 func create_default_skills() -> Dictionary:
 	return {"levels": {"basicStrength": 1, "basicAgility": 1, "basicConstitution": 1, "basicParry": 1, "literacy": 1}, "equipped_basic": {"code": "basicStrength", "tune": "basicAgility", "arch": "basicConstitution", "parry": "basicParry", "knowledge": "literacy"}, "equipped_special": {}, "progress": {}}
 
+## 兼容旧存档：早期版本用单一 "equipped" 槽位混存基础/门派功法，这里一次性
+## 迁移拆分为 equipped_basic/equipped_special 两个独立槽位后即删除旧字段。
 func ensure_skills() -> Dictionary:
 	if not GameState.profile.has("skills") or GameState.profile.skills.is_empty():
 		GameState.profile.skills = create_default_skills()
@@ -33,29 +46,8 @@ func ensure_skills() -> Dictionary:
 func level(skill_id: String) -> int:
 	return int(ensure_skills().levels.get(skill_id, 0))
 
-func learn(skill_id: String) -> Dictionary:
-	var definition := DataRegistry.get_skill(skill_id)
-	if definition.is_empty():
-		return {"ok": false, "message": "未知功法"}
-	var skills := ensure_skills()
-	var required_sect := str(definition.get("requires", {}).get("sect", definition.get("sect", "")))
-	if not required_sect.is_empty() and str(GameState.profile.get("sect", "")) != required_sect:
-		return {"ok": false, "message": "未拜入%s，学不得【%s】" % [required_sect, definition.get("name", skill_id)]}
-	var current := level(skill_id)
-	var max_level := int(definition.get("maxLevel", 100))
-	if current >= max_level:
-		return {"ok": false, "message": "已达上限"}
-	var cost := _cost(definition, current)
-	var vitals: Dictionary = GameState.profile.vitals
-	if int(vitals.get("potential", 0)) < cost:
-		return {"ok": false, "message": "潜能不足，需要 %d" % cost}
-	vitals.potential = int(vitals.get("potential", 0)) - cost
-	skills.levels[skill_id] = current + 1
-	_refresh_derived_attributes()
-	GameState.profile.vitals = vitals
-	GameState.profile.skills = skills
-	return {"ok": true, "message": "%s 提升至 %d 级" % [definition.get("name", skill_id), current + 1], "cost": cost}
-
+## 秘籍升级路径：即时生效，只消耗书本本身（消耗品逻辑见 InventorySystem.use_item），
+## 与 learn_tick 的按 tick 消耗潜能/Token 不同，两者是互不干扰的两条升级来源。
 func learn_from_book(skill_id: String) -> Dictionary:
 	var definition := DataRegistry.get_skill(skill_id)
 	if definition.is_empty():
@@ -134,6 +126,7 @@ func join_npc(npc_id: String) -> Dictionary:
 		if current_master == npc_id:
 			return {"ok": false, "message": "你已师从此人。"}
 		var current_master_npc := NpcSystem.build_instance(current_master)
+		# 改投须严格造诣更高，同门同档或更低造诣的师父不允许平替/降级拜师。
 		if _master_tier(npc) <= _master_tier(current_master_npc):
 			return {"ok": false, "message": "%s的造诣不及你现在的师父，无须改投。" % display_name}
 	var attributes: Dictionary = GameState.profile.get("attributes", {})
@@ -156,6 +149,8 @@ func join_npc(npc_id: String) -> Dictionary:
 		return {"ok": true, "message": "你已成功改拜%s为师，你恭恭敬敬的磕了几个响头，可学更高深的功夫了。" % display_name}
 	return {"ok": true, "message": "你已成功拜%s为师，你恭恭敬敬的磕了几个响头。" % display_name}
 
+## 研习为两阶段消耗：先按 tick 花潜能推进进度条到 required，进度满后一次性
+## 支付 Token 学费（80% 曲线成本）才真正升级——潜能只买“进度”，Token 买“结果”。
 func learn_tick(npc_id: String, skill_id: String) -> Dictionary:
 	if skill_id not in learn_options_for_npc(npc_id):
 		return {"ok": false, "message": "此人不传授这门功法", "reason": "requires"}
@@ -181,7 +176,7 @@ func learn_tick(npc_id: String, skill_id: String) -> Dictionary:
 		return {"ok": false, "message": "须先将【%s】练到 %d 级。" % [DataRegistry.get_skill(prereq_id).get("name", prereq_id), int(prereq.get("level", 0))], "reason": "requires"}
 	var progress: Dictionary = ensure_skills().get("learnProgress", {})
 	var next_level := current + 1
-	var rate := clampf(1.0 - (float(attributes.get("wisdom", 25)) - 25.0) * 0.02, 0.65, 1.25)
+	var rate := clampf(1.0 - (float(attributes.get("wisdom", 25)) - WISDOM_BASELINE) * WISDOM_LEARN_RATE_PER_POINT, LEARN_RATE_MIN, LEARN_RATE_MAX)
 	var required := _learn_required(definition, next_level, rate)
 	var current_progress := mini(required, int(progress.get(skill_id, 0)))
 	var vitals: Dictionary = GameState.profile.get("vitals", {})
@@ -209,20 +204,23 @@ func learn_tick(npc_id: String, skill_id: String) -> Dictionary:
 	_refresh_derived_attributes()
 	return {"ok": true, "message": "研习【%s】至 %d 级（耗潜能 %d、Token %d）%s。" % [definition.get("name", skill_id), next_level, spent_potential, tuition, _attribute_growth_suffix(before_attrs)], "level": next_level}
 
+## 综合火候门槛用：门派功法按 2 倍计入，鼓励深耕本门而非只堆基础功法。
 func _skill_power() -> int:
 	var levels: Dictionary = ensure_skills().get("levels", {})
 	var total := 0
-	for basic_id in ["basicStrength", "basicAgility", "basicConstitution", "basicParry", "literacy"]:
+	for basic_id in BASIC_SKILL_IDS:
 		total += maxi(0, int(levels.get(basic_id, 0)))
 	for skill_id in levels:
 		if str(DataRegistry.get_skill(str(skill_id)).get("category", "")) == "sect":
 			total += maxi(0, int(levels[skill_id])) * 2
 	return total
 
+## 均衡度门槛用：与 _skill_power 不同，这里不加权——只看各科是否都有练到，
+## 防止玩家靠单科堆权重刷过均衡门槛。
 func _average_skill_level() -> float:
 	var values: Array[int] = []
 	var levels: Dictionary = ensure_skills().get("levels", {})
-	for basic_id in ["basicStrength", "basicAgility", "basicConstitution", "basicParry", "literacy"]:
+	for basic_id in BASIC_SKILL_IDS:
 		values.append(maxi(0, int(levels.get(basic_id, 0))))
 	for skill_id in levels:
 		if str(DataRegistry.get_skill(str(skill_id)).get("category", "")) == "sect":
@@ -250,7 +248,7 @@ func learning_progress(skill_id: String) -> Dictionary:
 		return {"current": 0, "total": 1}
 	var attributes: Dictionary = GameState.profile.get("attributes", {})
 	var next_level := level(skill_id) + 1
-	var rate := clampf(1.0 - (float(attributes.get("wisdom", 25)) - 25.0) * 0.02, 0.65, 1.25)
+	var rate := clampf(1.0 - (float(attributes.get("wisdom", 25)) - WISDOM_BASELINE) * WISDOM_LEARN_RATE_PER_POINT, LEARN_RATE_MIN, LEARN_RATE_MAX)
 	var required := _learn_required(definition, next_level, rate)
 	return {
 		"current": mini(required, int(ensure_skills().get("learnProgress", {}).get(skill_id, 0))),
@@ -277,11 +275,13 @@ func _learn_required(definition: Dictionary, level_to_reach: int, rate: float) -
 	var normalized_rate := clampf(rate, 0.65, 1.25)
 	return maxi(2, int(ceil(float(base_required) * normalized_rate / 2.0)) * 2)
 
+## 基础功法练至每 10 级为对应属性 +1（封顶 50），按参考项目设定 basicParry
+## 反哺“strength”而非“agility”——招架练的是身法根基，故意与其他映射不对称。
 func _refresh_derived_attributes() -> void:
 	var base: Dictionary = GameState.profile.get("base_attributes", GameState.profile.get("attributes", {}))
 	var levels: Dictionary = ensure_skills().get("levels", {})
 	var attributes := base.duplicate(true)
-	for skill_id in ["basicStrength", "basicAgility", "basicConstitution", "basicParry", "literacy"]:
+	for skill_id in BASIC_SKILL_IDS:
 		var key: String = str({"basicStrength": "strength", "basicAgility": "agility", "basicConstitution": "constitution", "basicParry": "strength", "literacy": "wisdom"}.get(skill_id, ""))
 		if not str(key).is_empty():
 			attributes[key] = mini(50, int(base.get(key, 0)) + int(floor(float(levels.get(skill_id, 0)) / 10.0)))
@@ -292,6 +292,7 @@ func refresh_derived_attributes() -> void:
 
 const THEME_BASIC_SKILL := {"code": "basicStrength", "tune": "basicAgility", "arch": "basicConstitution", "parry": "basicParry", "knowledge": "literacy"}
 
+## 基础与特殊功法使用独立槽（见 unequip），装备时按 category 分流到对应槽位。
 func equip(skill_id: String) -> Dictionary:
 	var definition := DataRegistry.get_skill(skill_id)
 	if definition.is_empty() or level(skill_id) <= 0:
@@ -360,6 +361,8 @@ func combat_bonus() -> Dictionary:
 		result.mp_max += int(combat.get("mpMaxPerLv", 0)) * lv
 	return result
 
+## “加力”是玩家可调节的精力换伤害挡位（见 combat_system.player_attack）：
+## 设得越高，攻击时消耗的精力越多、伤害加成越高，上限由架构功法等级决定。
 func force_power_cap() -> int:
 	return maxi(0, level("basicConstitution") + equipped_sect_skill_level("arch") * 2)
 
@@ -401,20 +404,22 @@ func unlocked_ults() -> Array:
 		return result
 	var arch_level := level(arch_id)
 	var inner_power := level("basicConstitution") + arch_level * 2
-	if arch_level >= 30:
+	if arch_level >= ULT_TIER1_ARCH_LEVEL:
 		result.append(_make_ult(ult, 1, inner_power))
-	if arch_level >= 80:
+	if arch_level >= ULT_TIER2_ARCH_LEVEL:
 		result.append(_make_ult(ult, 2, inner_power))
 	return result
 
 func _make_ult(config: Dictionary, tier: int, inner_power: int) -> Dictionary:
 	var costs := {"multi": [25, 45], "abnormal": [30, 50], "reduceMax": [35, 60], "hugeDamage": [40, 70]}
 	var kind := str(config.get("kind", "hugeDamage"))
-	return {"id": "ult:%s:%d" % [config.get("key", "sect"), 30 if tier == 1 else 80], "name": config.get("names", ["绝招", "绝招"])[tier - 1], "kind": kind, "tier": tier, "inner_power": inner_power, "mp_cost": costs.get(kind, [40, 70])[tier - 1]}
+	return {"id": "ult:%s:%d" % [config.get("key", "sect"), ULT_TIER1_ARCH_LEVEL if tier == 1 else ULT_TIER2_ARCH_LEVEL], "name": config.get("names", ["绝招", "绝招"])[tier - 1], "kind": kind, "tier": tier, "inner_power": inner_power, "mp_cost": costs.get(kind, [40, 70])[tier - 1]}
 
 func _cost(definition: Dictionary, level_before: int) -> int:
 	return maxi(1, int(round(float(definition.get("costBase", 100)) * pow(float(definition.get("costFactor", 1.0)), level_before))))
 
+## 冥想分两阶段：先把精力（mp）当缓冲池慢慢填满到 cap，填满后一次性把这池
+## 精力兑换为 1 点内力修为（neigong）并清零——mp 本身不是内力，只是兑换凭证。
 func meditate_tick() -> Dictionary:
 	if not can_meditate():
 		return {"ok": false, "message": "须装备基础架构与本门架构高级功法，方可冥想。"}
@@ -479,6 +484,8 @@ func practice_tick(skill_id: String) -> Dictionary:
 	var gain_per_tick := maxi(1, int(floor(float(GameState.profile.get("attributes", {}).get("wisdom", 1)) / 5.0)))
 	var gain := mini(gain_per_tick, required - current_progress)
 	var mp_cost := 2 if gain > 0 else 0
+	# 体力消耗按“新进度对应的累计成本”减去“旧进度已付成本”结算，
+	# 避免因中途多次 tick 而对同一段进度重复扣体力。
 	var hp_cost := maxi(0, int(ceil(float(current_progress + gain) * 0.8)) - int(ceil(float(current_progress) * 0.8)))
 	if int(GameState.combat_state.mp) < mp_cost:
 		return {"ok": false, "message": "精力不足，练不动功。"}

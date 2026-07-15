@@ -19,6 +19,36 @@ const ENEMY_REST_HP_RATIO := 0.50
 const ENEMY_REST_MIN_MP := 8
 const ENEMY_CONSUMABLE_HEAL_RATIO := 0.25
 
+## 己方/敌方共用的招式触发概率曲线：基础 25% + 每个已解锁招式 4%，封顶 55%。
+const MOVE_TRIGGER_BASE := 0.25
+const MOVE_TRIGGER_PER_MOVE := 0.04
+const MOVE_TRIGGER_CAP := 0.55
+
+## 招架伤害减免：基础 15% + 每高出敌方 1 级 1%，封顶 35%。
+const PARRY_REDUCE_BASE := 0.15
+const PARRY_REDUCE_PER_LEVEL := 0.01
+const PARRY_REDUCE_CAP := 0.35
+
+const WEAKNESS_DAMAGE_MULT := 1.30
+
+## 绝招按 kind 分级的威力倍率/命中副作用，_enemy_use_ult 与 use_ult 共用同一套数值表。
+const ULT_MULTI_POWER_TIER1 := 0.55
+const ULT_MULTI_POWER_TIER2 := 0.50
+const ULT_MULTI_HITS_TIER1 := 3
+const ULT_MULTI_HITS_TIER2 := 5
+const ULT_ABNORMAL_POWER_TIER1 := 0.60
+const ULT_ABNORMAL_POWER_TIER2 := 0.70
+const ULT_ABNORMAL_PARALYZE_CHANCE_TIER1 := 0.80
+const ULT_ABNORMAL_PARALYZE_CHANCE_TIER2 := 0.95
+const ULT_REDUCE_MAX_POWER_TIER1 := 0.55
+const ULT_REDUCE_MAX_POWER_TIER2 := 0.65
+const ULT_REDUCE_MAX_RATIO_TIER1 := 0.08
+const ULT_REDUCE_MAX_RATIO_TIER2 := 0.15
+const ULT_HUGE_DAMAGE_POWER_TIER1 := 2.5
+const ULT_HUGE_DAMAGE_POWER_TIER2 := 4.0
+
+## initial_player_hp 记录战斗开始时的体力快照，供 battle_resolve.gd 结算战后伤势
+## （伤势 = 战斗中实际损失的体力，与体力上限变动无关）。
 func create_session(enemy_id: String) -> Dictionary:
 	var enemy: Dictionary = NpcSystem.build_instance(enemy_id)
 	var player_attributes: Dictionary = GameState.profile.get("attributes", {})
@@ -59,7 +89,7 @@ func player_attack(session: Dictionary) -> Dictionary:
 	var bonuses: Dictionary = SkillSystem.combat_bonus()
 	var attack_moves: Array = SkillSystem.unlocked_moves().filter(func(move): return move.get("kind", "") == "attack")
 	var attack_move: Dictionary = {}
-	if not attack_moves.is_empty() and randf() < minf(0.55, 0.25 + attack_moves.size() * 0.04):
+	if not attack_moves.is_empty() and randf() < minf(MOVE_TRIGGER_CAP, MOVE_TRIGGER_BASE + attack_moves.size() * MOVE_TRIGGER_PER_MOVE):
 		attack_move = _weighted_pick(attack_moves)
 	var move_hit_bonus := 0.12 if not attack_move.is_empty() else 0.0
 	var enemy_equipment := _npc_equipment_bonus(session.enemy)
@@ -74,9 +104,9 @@ func player_attack(session: Dictionary) -> Dictionary:
 		return {"hit": false, "parried": false, "crit": false, "damage": 0, "dodged": true}
 	var enemy_parry := _npc_move(session.enemy, "parry")
 	if not enemy_parry.is_empty():
-		result.damage = int(floor(float(result.damage) * (1.0 - minf(0.35, 0.15 + maxi(0, int(enemy_parry.get("level", 0)) - int(enemy_parry.get("unlock", 0))) * 0.01))))
+		result.damage = int(floor(float(result.damage) * (1.0 - minf(PARRY_REDUCE_CAP, PARRY_REDUCE_BASE + maxi(0, int(enemy_parry.get("level", 0)) - int(enemy_parry.get("unlock", 0))) * PARRY_REDUCE_PER_LEVEL))))
 	if int(session.get("enemy_status", {}).get("weakness", 0)) > 0:
-		result.damage = int(ceil(float(result.damage) * 1.30))
+		result.damage = int(ceil(float(result.damage) * WEAKNESS_DAMAGE_MULT))
 	var force := mini(SkillSystem.force_power(), int(GameState.combat_state.mp))
 	if force > 0:
 		GameState.combat_state.mp -= force
@@ -97,6 +127,8 @@ func player_attack(session: Dictionary) -> Dictionary:
 	session.log.append("你造成 %d 点%s伤害" % [result.damage, "暴击" if result.crit else ""])
 	return result
 
+## 与 player_attack 结构对称，但敌方没有“加力”（force_power）步骤——
+## 加力是玩家专属的精力换伤害机制，NPC 不消耗精力做等价操作。
 func enemy_attack(session: Dictionary) -> Dictionary:
 	var turn_check := start_turn(session, "enemy")
 	if not turn_check.can_act:
@@ -112,16 +144,16 @@ func enemy_attack(session: Dictionary) -> Dictionary:
 		session.log.append("%s 出招未能命中" % session.enemy.get("displayName", "敌人"))
 		return result
 	var player_dodge_moves: Array = SkillSystem.unlocked_moves().filter(func(move): return move.get("kind", "") == "dodge")
-	if not player_dodge_moves.is_empty() and randf() < minf(0.55, 0.25 + player_dodge_moves.size() * 0.04):
+	if not player_dodge_moves.is_empty() and randf() < minf(MOVE_TRIGGER_CAP, MOVE_TRIGGER_BASE + player_dodge_moves.size() * MOVE_TRIGGER_PER_MOVE):
 		var dodge_move: Dictionary = _weighted_pick(player_dodge_moves)
 		session.log.append("%s 出招，你危急间使出【%s】，身形一晃避开了。" % [session.enemy.get("displayName", "敌人"), dodge_move.get("name", "身法")])
 		return {"hit": false, "parried": false, "crit": false, "damage": 0, "dodged": true, "message": "你成功闪避"}
 	var player_parry := SkillSystem.unlocked_moves().filter(func(move): return move.get("kind", "") == "parry")
-	if not player_parry.is_empty() and randf() < minf(0.55, 0.25 + player_parry.size() * 0.04):
+	if not player_parry.is_empty() and randf() < minf(MOVE_TRIGGER_CAP, MOVE_TRIGGER_BASE + player_parry.size() * MOVE_TRIGGER_PER_MOVE):
 		var parry_move: Dictionary = _weighted_pick(player_parry)
-		result.damage = int(floor(float(result.damage) * (1.0 - minf(0.35, 0.15 + maxi(0, int(parry_move.get("level", 0)) - int(parry_move.get("unlock", 0))) * 0.01))))
+		result.damage = int(floor(float(result.damage) * (1.0 - minf(PARRY_REDUCE_CAP, PARRY_REDUCE_BASE + maxi(0, int(parry_move.get("level", 0)) - int(parry_move.get("unlock", 0))) * PARRY_REDUCE_PER_LEVEL))))
 	if int(session.get("player_status", {}).get("weakness", 0)) > 0:
-		result.damage = int(ceil(float(result.damage) * 1.30))
+		result.damage = int(ceil(float(result.damage) * WEAKNESS_DAMAGE_MULT))
 	if not attack_move.is_empty():
 		var status := _roll_attack_move_status(attack_move)
 		var extra := int(floor(8.0 + maxi(0, int(attack_move.get("level", 0)) - int(attack_move.get("unlock", 0))) * 0.6))
@@ -166,6 +198,8 @@ func _roll_attack_move_status(move: Dictionary) -> Dictionary:
 		return {}
 	return {"kind": ATTACK_MOVE_STATUS_TABLE[unlock]}
 
+## NPC 版“已解锁招式”：theme→kind 映射与触发概率须与玩家侧
+## SkillSystem.unlocked_moves()/player_attack 保持一致，否则双方招式手感会不对称。
 func _npc_move(npc: Dictionary, kind: String) -> Dictionary:
 	var moves: Array = []
 	var skill_levels: Dictionary = npc.get("skillLevels", {})
@@ -178,7 +212,7 @@ func _npc_move(npc: Dictionary, kind: String) -> Dictionary:
 		for move in definition.get("moves", []):
 			if current >= int(move.get("unlockLevel", 0)):
 				moves.append({"name": move.get("name", "招式"), "level": current, "unlock": int(move.get("unlockLevel", 0))})
-	if moves.is_empty() or randf() >= minf(0.55, 0.25 + moves.size() * 0.04):
+	if moves.is_empty() or randf() >= minf(MOVE_TRIGGER_CAP, MOVE_TRIGGER_BASE + moves.size() * MOVE_TRIGGER_PER_MOVE):
 		return {}
 	return _weighted_pick(moves)
 
@@ -221,6 +255,8 @@ func enemy_action(session: Dictionary) -> Dictionary:
 
 	return enemy_attack(session)
 
+## NPC 版“已解锁绝招”：等级门槛（30/80）与消耗表须与玩家侧
+## SkillSystem.unlocked_ults()/_make_ult() 保持一致，两处各自维护同一套数值。
 func _npc_ults(npc: Dictionary) -> Array:
 	var result: Array = []
 	var skill_levels: Dictionary = npc.get("skillLevels", {})
@@ -258,29 +294,29 @@ func _enemy_use_ult(session: Dictionary, ult: Dictionary) -> Dictionary:
 	var landed := 0
 	var defense := _player_defense()
 	if kind == "multi":
-		var hits := 3 if tier == 1 else 5
+		var hits := ULT_MULTI_HITS_TIER1 if tier == 1 else ULT_MULTI_HITS_TIER2
 		for _index in hits:
-			var hit := GameState.resolve_attack(base_power * (0.55 if tier == 1 else 0.50), enemy_attributes, player_attributes, defense, hit_bonus)
+			var hit := GameState.resolve_attack(base_power * (ULT_MULTI_POWER_TIER1 if tier == 1 else ULT_MULTI_POWER_TIER2), enemy_attributes, player_attributes, defense, hit_bonus)
 			if hit.hit:
 				landed += 1
 				total_damage += int(hit.damage)
 	elif kind == "abnormal":
-		var abnormal := GameState.resolve_attack(base_power * (0.60 if tier == 1 else 0.70), enemy_attributes, player_attributes, defense, hit_bonus)
+		var abnormal := GameState.resolve_attack(base_power * (ULT_ABNORMAL_POWER_TIER1 if tier == 1 else ULT_ABNORMAL_POWER_TIER2), enemy_attributes, player_attributes, defense, hit_bonus)
 		if abnormal.hit:
 			landed = 1
 			total_damage = int(abnormal.damage)
-			if randf() < (0.80 if tier == 1 else 0.95):
+			if randf() < (ULT_ABNORMAL_PARALYZE_CHANCE_TIER1 if tier == 1 else ULT_ABNORMAL_PARALYZE_CHANCE_TIER2):
 				add_status(session, "player", "paralysis", 1 if tier == 1 else randi_range(1, 2))
 	elif kind == "reduceMax":
-		var reduced := GameState.resolve_attack(base_power * (0.55 if tier == 1 else 0.65), enemy_attributes, player_attributes, defense, hit_bonus)
+		var reduced := GameState.resolve_attack(base_power * (ULT_REDUCE_MAX_POWER_TIER1 if tier == 1 else ULT_REDUCE_MAX_POWER_TIER2), enemy_attributes, player_attributes, defense, hit_bonus)
 		if reduced.hit:
 			landed = 1
 			total_damage = int(reduced.damage)
-			var ratio := 0.08 if tier == 1 else 0.15
+			var ratio := ULT_REDUCE_MAX_RATIO_TIER1 if tier == 1 else ULT_REDUCE_MAX_RATIO_TIER2
 			session.player_max_hp = maxi(1, int(floor(float(session.get("player_max_hp", _player_hp_max())) * (1.0 - ratio))))
 			session.player_hp = mini(int(session.player_hp), int(session.player_max_hp))
 	else:
-		var huge := GameState.resolve_attack(base_power * (2.5 if tier == 1 else 4.0), enemy_attributes, player_attributes, defense, hit_bonus)
+		var huge := GameState.resolve_attack(base_power * (ULT_HUGE_DAMAGE_POWER_TIER1 if tier == 1 else ULT_HUGE_DAMAGE_POWER_TIER2), enemy_attributes, player_attributes, defense, hit_bonus)
 		if huge.hit:
 			landed = 1
 			total_damage = int(huge.damage)
@@ -326,6 +362,8 @@ func start_turn(session: Dictionary, side: String) -> Dictionary:
 			session.enemy_max_hp = maxi(1, enemy_max - enemy_drain)
 			session.enemy_hp = mini(int(session.enemy_hp), int(session.enemy_max_hp))
 			message = "中毒发作，体力上限 -%d" % enemy_drain
+	# 是否跳过本回合取值须在倒计时递减前读取，否则麻痹只剩 1 回合时会在本回合
+	# 就被清空而不生效——先判定跳过，再统一递减/清除各状态的剩余回合。
 	var skipped := int(statuses.get("paralysis", 0)) > 0
 	for status in statuses.keys():
 		statuses[status] = int(statuses[status]) - 1
@@ -368,28 +406,28 @@ func use_ult(session: Dictionary, ult_index: int = 0) -> Dictionary:
 	var total_damage := 0
 	var landed := 0
 	if kind == "multi":
-		var hits := 3 if int(ult.tier) == 1 else 5
+		var hits := ULT_MULTI_HITS_TIER1 if int(ult.tier) == 1 else ULT_MULTI_HITS_TIER2
 		for _index in hits:
-			var hit: Dictionary = GameState.resolve_attack(base_power * (0.55 if int(ult.tier) == 1 else 0.50), GameState.profile.get("attributes", {}), enemy_attributes, defense, hit_bonus)
+			var hit: Dictionary = GameState.resolve_attack(base_power * (ULT_MULTI_POWER_TIER1 if int(ult.tier) == 1 else ULT_MULTI_POWER_TIER2), GameState.profile.get("attributes", {}), enemy_attributes, defense, hit_bonus)
 			if hit.hit:
 				landed += 1
 				total_damage += int(hit.damage)
 	elif kind == "abnormal":
-		var abnormal: Dictionary = GameState.resolve_attack(base_power * (0.60 if int(ult.tier) == 1 else 0.70), GameState.profile.get("attributes", {}), enemy_attributes, defense, hit_bonus)
+		var abnormal: Dictionary = GameState.resolve_attack(base_power * (ULT_ABNORMAL_POWER_TIER1 if int(ult.tier) == 1 else ULT_ABNORMAL_POWER_TIER2), GameState.profile.get("attributes", {}), enemy_attributes, defense, hit_bonus)
 		if abnormal.hit:
 			landed = 1
 			total_damage = int(abnormal.damage)
-			if randf() < (0.80 if int(ult.tier) == 1 else 0.95): session.enemy_status.paralysis = 1 if int(ult.tier) == 1 else randi_range(1, 2)
+			if randf() < (ULT_ABNORMAL_PARALYZE_CHANCE_TIER1 if int(ult.tier) == 1 else ULT_ABNORMAL_PARALYZE_CHANCE_TIER2): session.enemy_status.paralysis = 1 if int(ult.tier) == 1 else randi_range(1, 2)
 	elif kind == "reduceMax":
-		var reduced: Dictionary = GameState.resolve_attack(base_power * (0.55 if int(ult.tier) == 1 else 0.65), GameState.profile.get("attributes", {}), enemy_attributes, defense, hit_bonus)
+		var reduced: Dictionary = GameState.resolve_attack(base_power * (ULT_REDUCE_MAX_POWER_TIER1 if int(ult.tier) == 1 else ULT_REDUCE_MAX_POWER_TIER2), GameState.profile.get("attributes", {}), enemy_attributes, defense, hit_bonus)
 		if reduced.hit:
 			landed = 1
 			total_damage = int(reduced.damage)
-			var ratio := 0.08 if int(ult.tier) == 1 else 0.15
+			var ratio := ULT_REDUCE_MAX_RATIO_TIER1 if int(ult.tier) == 1 else ULT_REDUCE_MAX_RATIO_TIER2
 			session.enemy_max_hp = maxi(1, int(floor(float(session.enemy_max_hp) * (1.0 - ratio))))
 			session.enemy_hp = mini(session.enemy_hp, session.enemy_max_hp)
 	else:
-		var huge: Dictionary = GameState.resolve_attack(base_power * (2.5 if int(ult.tier) == 1 else 4.0), GameState.profile.get("attributes", {}), enemy_attributes, defense, hit_bonus)
+		var huge: Dictionary = GameState.resolve_attack(base_power * (ULT_HUGE_DAMAGE_POWER_TIER1 if int(ult.tier) == 1 else ULT_HUGE_DAMAGE_POWER_TIER2), GameState.profile.get("attributes", {}), enemy_attributes, defense, hit_bonus)
 		if huge.hit:
 			landed = 1
 			total_damage = int(huge.damage)
@@ -399,20 +437,12 @@ func use_ult(session: Dictionary, ult_index: int = 0) -> Dictionary:
 	session.log.append(log_line)
 	return {"ok": true, "damage": total_damage, "landed": landed, "ult": ult}
 
+## 逃跑成功率恒定夹在 [10%, 90%] 之间：再悬殊的身法差距也留一线生机/风险。
 func flee(session: Dictionary) -> bool:
 	var self_attributes: Dictionary = GameState.profile.get("attributes", {})
 	var enemy_attributes: Dictionary = session.enemy.get("attributes", {})
 	var rate := clampf(FLEE_BASE + (float(self_attributes.get("agility", 0)) - float(enemy_attributes.get("agility", 0))) * FLEE_PER_AGILITY, 0.10, 0.90)
 	return randf() < rate
-
-func tick_status(session: Dictionary) -> void:
-	for side in ["player_status", "enemy_status"]:
-		var statuses: Dictionary = session.get(side, {})
-		for status in statuses.keys():
-			statuses[status] = int(statuses[status]) - 1
-			if statuses[status] <= 0:
-				statuses.erase(status)
-		session[side] = statuses
 
 func _initiative(player: Dictionary, enemy: Dictionary) -> bool:
 	if int(player.get("agility", 0)) != int(enemy.get("agility", 0)):

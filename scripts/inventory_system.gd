@@ -1,5 +1,7 @@
 extends Node
 
+const SELL_PRICE_RATE := 0.25
+
 func count(item_id: String) -> int:
 	return int(GameState.inventory.get(item_id, 0))
 
@@ -183,7 +185,7 @@ func sell_item(item_id: String) -> Dictionary:
 		return {"ok": false, "message": "该物品不可出售"}
 	if not remove_item(item_id):
 		return {"ok": false, "message": "背包中没有该物品"}
-	var gain := int(floor(float(definition.get("price", 0)) * 0.25))
+	var gain := int(floor(float(definition.get("price", 0)) * SELL_PRICE_RATE))
 	var vitals: Dictionary = GameState.profile.vitals
 	vitals.money = int(vitals.get("money", 0)) + gain
 	GameState.profile.vitals = vitals
@@ -227,6 +229,3 @@ func list_entries(kind: String = "") -> Array:
 		if kind.is_empty() or definition.get("kind", "other") == kind:
 			result.append({"id": item_id, "count": count(item_id), "definition": definition})
 	return result
-
-func _hp_max() -> int:
-	return GameState.player_effective_hp_max()

@@ -1,7 +1,6 @@
 extends Node
 
 var active: Dictionary = {}
-var completed: Dictionary = {}
 var bounty_target: Dictionary = {}
 var cooldown_until: Dictionary = {}
 var ring_progress: Dictionary = {}
@@ -26,6 +25,8 @@ func _format_reward(reward: Dictionary) -> String:
 func _on_cooldown(generator_id: String) -> bool:
 	return GameState.game_time_sec < float(cooldown_until.get(generator_id, 0.0))
 
+## giverNpcId 是接任务的 NPC，completion_giver_id 是交任务的 NPC——多数任务两者
+## 是同一人，但 novice_darkxue_project 这类需要分两头跑腿的任务两者不同。
 func _active_for_npc(npc_id: String) -> Dictionary:
 	for runtime_id in active:
 		var runtime: Dictionary = active[runtime_id]
@@ -48,6 +49,9 @@ func _placed_npc_target(exclude_id: String = "") -> Dictionary:
 	var candidates: Array[Dictionary] = DataRegistry.list_placed_npc_targets(excluded)
 	return candidates[randi() % candidates.size()] if not candidates.is_empty() else {}
 
+## 三类任务对话分支，按顺序尝试：1) novice_darkxue_project 硬编码新手任务
+## （独立状态机，不走通用生成器）；2) DataRegistry.quest_generators 驱动的通用
+## 环任务/差事/悬赏；3) 已在跑的送信类任务只记录“已交谈”，不接管对话。
 func interact_npc(npc_id: String) -> String:
 	var novice: Dictionary = DataRegistry.get_quest("novice_darkxue_project")
 	var novice_id := "novice_darkxue_project"
@@ -154,19 +158,6 @@ func finish_novice_completion(endpoint_id: String) -> String:
 	cooldown_until[novice_id] = GameState.game_time_sec + float(definition.get("cooldownSec", 30))
 	return "你完成了%s任务，获得了 %d经验 %d金钱 %d潜能" % [runtime.get("target", "项目"), int(reward.get("experience", 0)), int(reward.get("money", 0)), int(reward.get("potential", 0))]
 
-func offer(quest_id: String) -> Dictionary:
-	if active.has(quest_id):
-		return {"ok": false, "message": "任务进行中"}
-	var definition: Dictionary = DataRegistry.get_quest(quest_id)
-	if definition.is_empty():
-		return {"ok": false, "message": "未知任务"}
-	active[quest_id] = {"state": "active", "progress": 0}
-	return {"ok": true, "message": "已接取：%s" % definition.get("title", quest_id)}
-
-func progress(quest_id: String, amount: int = 1) -> void:
-	if active.has(quest_id):
-		active[quest_id].progress = int(active[quest_id].get("progress", 0)) + amount
-
 func complete(quest_id: String) -> Dictionary:
 	if not active.has(quest_id):
 		return {"ok": false, "message": "没有进行中的任务"}
@@ -178,12 +169,8 @@ func complete(quest_id: String) -> Dictionary:
 	GameState.profile.vitals = vitals
 	vitals.money = int(vitals.get("money", 0)) + int(reward.get("money", 0))
 	GameState.profile.vitals = vitals
-	completed[quest_id] = true
 	active.erase(quest_id)
 	return {"ok": true, "message": "任务完成：%s" % definition.get("title", quest_id), "reward": reward}
-
-func list_active() -> Array:
-	return active.keys()
 
 func can_interact(npc_id: String) -> bool:
 	if not _active_for_npc(npc_id).is_empty():
@@ -194,9 +181,6 @@ func can_interact(npc_id: String) -> bool:
 		if str(DataRegistry.quest_generators[generator_id].get("giverNpcId", "")) == npc_id:
 			return true
 	return false
-
-func on_talk(npc_id: String) -> String:
-	return interact_npc(npc_id)
 
 func reset_runtime() -> void:
 	for runtime_id in active:
@@ -211,6 +195,8 @@ func reset_runtime() -> void:
 	bounty_money_base.clear()
 	bounty_stat_base.clear()
 
+## 按 quests.json 中的 generator_type（errand/bounty/ring/killRing）分流构建
+## runtime.target 的形状；各类型字段结构不同，读取时须按 kind 区分处理。
 func offer_generator(generator_id: String) -> Dictionary:
 	var definition: Dictionary = DataRegistry.quest_generators.get(generator_id, {})
 	var runtime_id := "generator:" + generator_id
@@ -309,6 +295,8 @@ func _kill_ring_reward(definition: Dictionary, target_id: String) -> Dictionary:
 	var potential := clampi(int(round(raw)), int(definition.get("rewardPotentialMin", 0)), int(definition.get("rewardPotentialMax", 999999)))
 	return {"experience": potential, "potential": potential, "money": int(ceil(float(potential) * 0.8))}
 
+## 两种增长配置二选一（ringGrowth 优先）：固定倍率 ringGrowth 用于环任务的
+## 确定性递增；随机区间 rewardGrowthMin/Max 用于悬赏环的浮动式递增，二者互斥。
 func _scaled_reward(definition: Dictionary, reward: Dictionary, round_index: int) -> Dictionary:
 	var result := reward.duplicate(true)
 	var growth := 0.0
@@ -345,6 +333,8 @@ func advance_generator(generator_id: String, amount: int = 1) -> Dictionary:
 		InventorySystem.remove_item(item_id, 1)
 	runtime.progress = int(ring_progress.get(generator_id, runtime.get("progress", 0))) + maxi(0, amount)
 	var ring_size := maxi(1, int(definition.get("ringSize", 1)))
+	# 奖励按“第几轮环”缩放：progress 每满一整圈 ring_size 计为完成一轮，
+	# 轮次从 1 开始，故对 (progress - 1) 整除后 +1。
 	var reward_round := int(floor(float(int(runtime.progress) - 1) / float(ring_size))) + 1
 	var round_index := reward_round
 	var reward: Dictionary = _scaled_reward(definition, runtime.get("reward", _base_reward(definition)), round_index)
@@ -365,38 +355,8 @@ func _generator_advance_message(definition: Dictionary, advanced: Dictionary, ta
 			message += "\n" + ring_done_line
 	return message
 
-func abandon(quest_id: String) -> void:
-	active.erase(quest_id)
-
-func abandon_active() -> Dictionary:
-	if active.is_empty():
-		return {"ok": false, "message": "你没有在办的差事。"}
-	var runtime_id := str(active.keys()[0])
-	var runtime: Dictionary = active[runtime_id]
-	var generator_id := str(runtime.get("generator_id", ""))
-	var name := ""
-	var ring_reset := false
-	if runtime_id == "novice_darkxue_project":
-		name = str(runtime.get("target", "项目"))
-		cooldown_until[runtime_id] = GameState.game_time_sec + float(DataRegistry.get_quest(runtime_id).get("cooldownSec", 30))
-	elif runtime_id.begins_with("generator:"):
-		var definition: Dictionary = DataRegistry.quest_generators.get(generator_id, {})
-		var kind := str(definition.get("type", ""))
-		var target_data: Dictionary = runtime.get("target", {}) if runtime.get("target", {}) is Dictionary else {}
-		name = str(target_data.get("target_name", definition.get("title", generator_id)))
-		if kind == "ring":
-			ring_reset = true
-		if kind == "ring":
-			ring_progress[generator_id] = 0
-		elif kind in ["bounty", "errand"]:
-			cooldown_until[generator_id] = GameState.game_time_sec + float(definition.get("cooldownSec", 30))
-		if str(target_data.get("target_id", "")).begins_with("__bounty_target_"):
-			NpcSystem.unregister_runtime(str(target_data.get("target_id", "")))
-			bounty_target = {}
-	active.erase(runtime_id)
-	var suffix := "，这一环的计数从头再来。" if ring_reset else "。"
-	return {"ok": true, "message": "你放弃了差事（%s）%s" % [name, suffix]}
-
+## 悬赏目标的属性/功法按玩家当前面板动态缩放（target_scale），并随连续
+## 击杀轮次（kill_index）走高——悬赏难度始终围绕玩家实力浮动，而非固定强度。
 func offer_bounty(generator_id: String = "bountyring_xiaobuer") -> Dictionary:
 	var definition: Dictionary = DataRegistry.quest_generators.get(generator_id, {})
 	var runtime_id := "generator:" + generator_id
@@ -449,18 +409,14 @@ func bounty_board_text(generator_id: String = "bountyring_xiaobuer") -> String:
 	var definition: Dictionary = DataRegistry.quest_generators.get(generator_id, {})
 	return _line(definition, "inProgress", "「{target}」已在「{map}」，请速速将其捉拿归案！", {"target": bounty_target.get("target_name", ""), "map": bounty_target.get("map_name", bounty_target.get("map_id", ""))})
 
-func get_active_target() -> Dictionary:
-	for runtime_id in active:
-		var target = active[runtime_id].get("target", {})
-		if target is Dictionary and not str(target.get("target_id", "")).is_empty():
-			return target
-	return {}
-
 func clear_bounty_target() -> void:
 	if not bounty_target.is_empty():
 		NpcSystem.unregister_runtime(str(bounty_target.get("target_id", "")))
 	bounty_target = {}
 
+## 悬赏环奖励基数逐轮复利增长（bounty_money_base/bounty_stat_base 未完成环时
+## 按增长率滚存），与 _settle_kill_ring 的固定奖励不同——悬赏环是持续经营的
+## 系统，需要递增激励；击杀环奖励在生成时已一次性算好，结算时按原值发放。
 func _settle_bounty_ring(runtime_id: String, runtime: Dictionary, definition: Dictionary) -> Dictionary:
 	var generator_id := str(runtime.get("generator_id", ""))
 	var money_base := float(bounty_money_base.get(generator_id, definition.get("rewardBase", 0)))
@@ -516,6 +472,8 @@ func on_enemy_defeated(enemy_id: String) -> String:
 		var kind := str(definition.get("type", ""))
 		var result: Dictionary
 		if kind == "bounty":
+			# 普通悬赏（非环）只标记击杀完成，实际发奖延后到玩家回去交付
+			# （见 _deliver_standard）；环类型悬赏/击杀无需回程交付，击杀即结算。
 			runtime.ready = true
 			return ""
 		elif kind == "bountyRing":

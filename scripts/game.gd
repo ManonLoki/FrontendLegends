@@ -3,8 +3,17 @@ extends Node2D
 const VIRTUAL_CONTROLS := preload("res://scripts/virtual_controls.gd")
 const MOBILE_ORIENTATION := preload("res://scripts/mobile_orientation.gd")
 const UI_PROGRESS_METER := preload("res://scripts/ui_progress_meter.gd")
+const GAME_BATTLE_UI := preload("res://scripts/game_battle_ui.gd")
 const CAMERA_SIZE := Vector2(480.0, 320.0)
 const DESIGN_SIZE := Vector2(480.0, 320.0)
+const VITALS_BASE_CAPACITY := 200
+const VITALS_CAPACITY_PER_STRENGTH := 10
+const MOVE_STEP_SECONDS := 0.15
+const DIALOGUE_AUTO_CLOSE_MSEC := 5000
+const TRADE_MODE_BUY := "buy"
+const TRADE_MODE_SELL := "sell"
+const CYBER_TELEPORT_MP_DIVISOR := 3.0
+const CYBER_TELEPORT_SKILL_REQUIREMENT := 30
 
 var player_tile := Vector2i(8, 5)
 var facing := Vector2i.RIGHT
@@ -40,17 +49,7 @@ var menu_widgets: Array[Control] = []
 var details_widgets: Array[Control] = []
 var profile_panel_open := false
 var npc_view_panel_open := false
-var battle_active := false
-var battle_enemy: Dictionary = {}
-var battle_enemy_hp := 0
-var battle_session: Dictionary = {}
-var battle_lethal := true
-var battle_submenu := ""
-var battle_submenu_index := 0
-var battle_submenu_items: Array = []
-var battle_action_index := 0
-var battle_widgets: Array[Control] = []
-const BATTLE_ACTIONS: Array[String] = ["攻击", "绝招", "用药", "摸鱼", "逃跑"]
+var battle_ui: RefCounted
 var cyber_open := false
 var cyber_index := 0
 var cyber_maps: Array[int] = []
@@ -60,7 +59,7 @@ var npc_menu_actions: Array[String] = []
 var npc_menu_labels: Array[String] = []
 var npc_menu_widgets: Array[Control] = []
 var trade_open := false
-var trade_mode := "buy"
+var trade_mode := TRADE_MODE_BUY
 var trade_index := 0
 var trade_items: Array = []
 var trade_all_items: Array = []
@@ -110,7 +109,6 @@ var map_transitioning := false
 var has_loaded_map := false
 var delete_confirm_open := false
 var delete_confirm_index := 1
-const NPC_MENU_ITEMS := ["交谈", "查看", "切磋", "战斗", "购买", "典当", "拜师", "学习"]
 var map_index := 0
 var player_texture: Texture2D = preload("res://assets/Texture/player.png")
 var npc_texture: Texture2D = preload("res://assets/Texture/NPC.png")
@@ -128,6 +126,7 @@ const SYSTEM_ITEMS := ["赛博传送", "摸鱼", "疗伤", "保存", "退出"]
 const LEARN_CATEGORY_ORDER: Array[String] = ["编码", "思维", "架构", "招架", "灵感"]
 
 func _ready() -> void:
+	battle_ui = GAME_BATTLE_UI.new(self)
 	# 任务槽、冷却、环计数与动态悬赏均为本局内存态，不随存档恢复。
 	QuestSystem.reset_runtime()
 	MOBILE_ORIENTATION.apply()
@@ -159,7 +158,7 @@ func _process(delta: float) -> void:
 		return
 	move_cooldown -= delta
 	animation_timer += delta
-	if animation_timer >= 0.15 and player_moving:
+	if animation_timer >= MOVE_STEP_SECONDS and player_moving:
 		animation_timer = 0.0
 		animation_frame = (animation_frame + 1) % 6
 		queue_redraw()
@@ -186,12 +185,11 @@ func _process(delta: float) -> void:
 			var next_tile := player_tile + step
 			if map_context and (not map_context.is_walkable(next_tile.x, next_tile.y) or _npc_occupies_tile(next_tile)):
 				message = "前方不可通行"
-				_refresh_status()
 				return
 			player_tile = next_tile
 			_refresh_nearby_npc()
 			_try_map_transition()
-			move_cooldown = 0.15
+			move_cooldown = MOVE_STEP_SECONDS
 			message = "当前位置: %s" % player_tile
 			_update_camera()
 			queue_redraw()
@@ -204,12 +202,12 @@ func _process(delta: float) -> void:
 		_refresh_nearby_npc()
 		if not nearby_npc_id.is_empty() or _has_front_interactable():
 			_interact()
-		elif not menu_open and not battle_active:
-			_start_battle()
+		elif not menu_open and not battle_ui.active:
+			battle_ui.start()
 	if cancel_requested:
 		cancel_requested = false
-		if battle_active:
-			_end_battle("你离开了战斗")
+		if battle_ui.active:
+			battle_ui.end("你离开了战斗")
 		else:
 			_toggle_menu()
 
@@ -306,11 +304,11 @@ func _input(event: InputEvent) -> void:
 		if npc_menu_open:
 			_handle_npc_menu_key(event.keycode)
 			return
-		if battle_active:
-			if not battle_submenu.is_empty():
-				_handle_battle_submenu_key(event.keycode)
+		if battle_ui.active:
+			if not battle_ui.submenu.is_empty():
+				battle_ui.handle_submenu_key(event.keycode)
 			else:
-				_handle_battle_key(event.keycode)
+				battle_ui.handle_key(event.keycode)
 			return
 		if details_panel.visible:
 			if event.keycode == KEY_ESCAPE:
@@ -346,7 +344,7 @@ func _on_virtual_key_up(keycode: int) -> void:
 		virtual_direction.x = 0.0
 
 func _has_modal_input() -> bool:
-	return delete_confirm_open or dialogue_open or trade_open or inventory_open or learn_open or meditation_open or practice_open or skill_book_open or cyber_open or npc_menu_open or battle_active or menu_open or details_panel.visible or dialogue_panel.visible
+	return delete_confirm_open or dialogue_open or trade_open or inventory_open or learn_open or meditation_open or practice_open or skill_book_open or cyber_open or npc_menu_open or battle_ui.active or menu_open or details_panel.visible or dialogue_panel.visible
 
 func _dispatch_virtual_key(keycode: int) -> void:
 	var event := InputEventKey.new()
@@ -360,7 +358,6 @@ func _interact() -> void:
 	if nearby_npc_id.is_empty():
 		if not _interact_prop():
 			message = "面前没有可交互对象"
-			_refresh_status()
 	else:
 		npc_menu_open = true
 		npc_menu_index = 0
@@ -378,7 +375,7 @@ func _interact_prop() -> bool:
 	var event := str(properties.get("event", ""))
 	if event == "drink":
 		var vitals: Dictionary = GameState.profile.get("vitals", {})
-		var capacity := 200 + int(GameState.profile.get("attributes", {}).get("strength", 25)) * 10
+		var capacity := VITALS_BASE_CAPACITY + int(GameState.profile.get("attributes", {}).get("strength", 25)) * VITALS_CAPACITY_PER_STRENGTH
 		var gain := mini(20, maxi(0, capacity - int(vitals.get("water", 0))))
 		vitals.water = int(vitals.get("water", 0)) + gain
 		GameState.profile.vitals = vitals
@@ -397,7 +394,6 @@ func _interact_prop() -> bool:
 			if bool(detailed.get("can_finish", false)):
 				after_last = func() -> String: return QuestSystem.finish_novice_completion(quest_endpoint)
 			_show_dialogue(_prop_display_name(object), message, float(detailed.get("lock_seconds", 0.0)), after_last)
-			_refresh_status()
 			return true
 		message = QuestSystem.interact_npc(quest_endpoint)
 	else:
@@ -406,7 +402,6 @@ func _interact_prop() -> bool:
 		_show_dialogue(_prop_display_name(object), message)
 	else:
 		_show_details(message)
-	_refresh_status()
 	return true
 
 func _prop_display_name(object: Dictionary) -> String:
@@ -494,10 +489,10 @@ func _refresh_npc_menu() -> void:
 		npc_menu_actions = ["talk", "view", "spar", "fight"]
 		npc_menu_labels = ["交谈", "查看", "切磋", "战斗"]
 		if "vendor" in roles:
-			npc_menu_actions.append("buy")
+			npc_menu_actions.append(TRADE_MODE_BUY)
 			npc_menu_labels.append("购买")
 		if "pawn" in roles:
-			npc_menu_actions.append("sell")
+			npc_menu_actions.append(TRADE_MODE_SELL)
 			npc_menu_labels.append("典当")
 		var teach_options := SkillSystem.learn_options_for_npc(nearby_npc_id)
 		if SkillSystem.can_join(nearby_npc_id):
@@ -653,7 +648,7 @@ func _handle_trade_key(key: Key) -> void:
 	elif not trade_focus_category and key == KEY_SPACE:
 		if not trade_items.is_empty():
 			var item_id := str(trade_items[trade_index])
-			var result: Dictionary = InventorySystem.buy_item(nearby_npc_id, item_id) if trade_mode == "buy" else InventorySystem.sell_item(item_id)
+			var result: Dictionary = InventorySystem.buy_item(nearby_npc_id, item_id) if trade_mode == TRADE_MODE_BUY else InventorySystem.sell_item(item_id)
 			message = result.message
 			_rebuild_trade_categories()
 	_refresh_trade_list()
@@ -661,17 +656,17 @@ func _handle_trade_key(key: Key) -> void:
 func _refresh_trade_list() -> void:
 	npc_menu_content.visible = true
 	var money := int(GameState.profile.get("vitals", {}).get("money", 0))
-	var lines := ["— %s —" % ("购买" if trade_mode == "buy" else "典当"), "持有 %d Token" % money, "左栏分类 · 右栏物品 · ↑↓选择 · 空格确认", ""]
+	var lines := ["— %s —" % ("购买" if trade_mode == TRADE_MODE_BUY else "典当"), "持有 %d Token" % money, "左栏分类 · 右栏物品 · ↑↓选择 · 空格确认", ""]
 	for category_index in trade_categories.size():
 		lines.append(_cursor(trade_categories[category_index], category_index == trade_category_index))
 	lines.append("")
 	if trade_items.is_empty():
-		lines.append("货已售罄" if trade_mode == "buy" else "已无可卖之物")
+		lines.append("货已售罄" if trade_mode == TRADE_MODE_BUY else "已无可卖之物")
 	else:
 		for index in trade_items.size():
 			var item_id := str(trade_items[index])
 			var definition: Dictionary = DataRegistry.get_item(item_id)
-			var price := int(definition.get("price", 0)) if trade_mode == "buy" else int(floor(float(definition.get("price", 0)) * 0.25))
+			var price := int(definition.get("price", 0)) if trade_mode == TRADE_MODE_BUY else int(floor(float(definition.get("price", 0)) * InventorySystem.SELL_PRICE_RATE))
 			lines.append(_cursor("%s (%d Token)" % [definition.get("name", item_id), price], not trade_focus_category and index == trade_index))
 	if not trade_focus_category and not trade_items.is_empty():
 		lines.append("")
@@ -710,7 +705,7 @@ func _refresh_trade_items() -> void:
 	for item_id in trade_all_items:
 		if _item_category(str(item_id)) == selected:
 			trade_items.append(item_id)
-	if trade_mode == "buy":
+	if trade_mode == TRADE_MODE_BUY:
 		trade_items.sort_custom(func(a, b): return int(DataRegistry.get_item(str(a)).get("price", 0)) < int(DataRegistry.get_item(str(b)).get("price", 0)))
 	trade_index = clampi(trade_index, 0, maxi(0, trade_items.size() - 1))
 	_refresh_trade_list()
@@ -914,27 +909,27 @@ func _select_npc_menu() -> void:
 		"view":
 			_show_npc_view_panel(npc)
 		"spar":
-			battle_lethal = false
-			_start_battle()
+			battle_ui.lethal = false
+			battle_ui.start()
 			return
 		"fight":
-			battle_lethal = true
-			_start_battle()
+			battle_ui.lethal = true
+			battle_ui.start()
 			return
-		"buy":
+		TRADE_MODE_BUY:
 			var stock := DataRegistry.list_vendor_stock(nearby_npc_id)
 			trade_all_items = stock
-			trade_mode = "buy"
+			trade_mode = TRADE_MODE_BUY
 			trade_category_index = 0
 			trade_open = true
 			_show_npc_content_panel()
 			_rebuild_trade_categories()
 			return
-		"sell":
+		TRADE_MODE_SELL:
 			trade_all_items = []
 			for entry in InventorySystem.list_entries():
 				trade_all_items.append(entry.get("id", ""))
-			trade_mode = "sell"
+			trade_mode = TRADE_MODE_SELL
 			trade_category_index = 0
 			trade_open = true
 			_show_npc_content_panel()
@@ -951,7 +946,6 @@ func _select_npc_menu() -> void:
 			details_panel.visible = true
 			_rebuild_learn_categories()
 			return
-	_refresh_status()
 
 func _refresh_nearby_npc() -> void:
 	if not map_context:
@@ -975,6 +969,8 @@ func _npc_occupies_tile(tile: Vector2i) -> bool:
 		var npc_tile := Vector2i(floori(float(object.get("x", 0.0)) / map_context.tile_width), floori(float(object.get("y", 0.0)) / map_context.tile_height))
 		if tile == npc_tile and not npc_id.is_empty() and not NpcSystem.is_defeated(npc_id):
 			return true
+	# 悬赏目标是动态生成的运行时 NPC，不在 Tiled 地图对象列表中，
+	# 须单独并入碰撞检测才会挡住玩家移动。
 	var bounty: Dictionary = QuestSystem.get_bounty_target()
 	return not bounty.is_empty() and _current_map_matches(str(bounty.get("map_id", ""))) and tile == _bounty_tile()
 
@@ -1005,6 +1001,8 @@ func _draw_npcs() -> void:
 func _current_map_matches(map_id: String) -> bool:
 	return not map_id.is_empty() and map_context and (map_context.map_id.to_lower() == map_id.to_lower() or map_context.map_id.to_lower().contains(map_id.to_lower()))
 
+## 悬赏目标的落点选定后须记忆（QuestSystem.set_bounty_target_tile），否则每次
+## 调用都会重新随机，目标会在玩家眼前逐帧瞬移。
 func _bounty_tile() -> Vector2i:
 	var bounty: Dictionary = QuestSystem.get_bounty_target()
 	var saved_tile = bounty.get("tile", Vector2i(-1, -1))
@@ -1094,7 +1092,6 @@ func _select_menu() -> void:
 			_refresh_menu()
 			return
 	_close_menu()
-	_refresh_status()
 
 func _select_skill_menu() -> void:
 	match skill_index:
@@ -1114,7 +1111,6 @@ func _select_skill_menu() -> void:
 			_close_menu()
 			_open_skill_book()
 			return
-	_refresh_status()
 
 func _open_meditation() -> void:
 	if not SkillSystem.can_meditate():
@@ -1181,7 +1177,6 @@ func _select_system_menu() -> void:
 			get_tree().change_scene_to_file("res://scenes/character_creation.tscn")
 	if menu_open:
 		_refresh_menu()
-	_refresh_status()
 
 func _close_menu() -> void:
 	menu_open = false
@@ -1316,7 +1311,7 @@ func _show_profile_panel() -> void:
 	var base: Dictionary = GameState.profile.get("base_attributes", attrs)
 	var hp_max := _npc_hp(GameState.profile, true) - int(GameState.combat_state.get("injury", 0))
 	var mp_max: int = GameState.player_mp_max()
-	var capacity := 200 + int(attrs.get("strength", 25)) * 10
+	var capacity := VITALS_BASE_CAPACITY + int(attrs.get("strength", 25)) * VITALS_CAPACITY_PER_STRENGTH
 	var appearance := int(vitals.get("appearance", 0))
 	details_panel.visible = true
 	details_content.visible = true
@@ -1479,289 +1474,6 @@ func _render_menu_widgets() -> void:
 	for index in dropdown_items.size():
 		_menu_label(dropdown_items[index], Rect2(Vector2(dropdown_x, menu_panel.position.y + menu_panel.size.y + item_height * index), Vector2(dropdown_width, item_height)), index == dropdown_index)
 
-func _start_battle() -> void:
-	if nearby_npc_id.is_empty() or not NpcSystem.can_interact(nearby_npc_id):
-		message = "附近没有可战斗的 NPC"
-		_refresh_status()
-		return
-	battle_enemy = NpcSystem.build_instance(nearby_npc_id)
-	battle_session = CombatSystem.create_session(nearby_npc_id)
-	battle_enemy_hp = int(battle_session.get("enemy_hp", _npc_hp(battle_enemy)))
-	battle_action_index = 0
-	battle_active = true
-	_layout_battle_panel()
-	battle_panel.visible = true
-	_refresh_battle()
-
-func _handle_battle_key(key: Key) -> void:
-	if key == KEY_LEFT:
-		battle_action_index = posmod(battle_action_index - 1, BATTLE_ACTIONS.size())
-		_refresh_battle()
-	elif key == KEY_RIGHT:
-		battle_action_index = posmod(battle_action_index + 1, BATTLE_ACTIONS.size())
-		_refresh_battle()
-	elif key in [KEY_SPACE, KEY_ENTER, KEY_KP_ENTER]:
-		_activate_battle_action()
-
-func _activate_battle_action() -> void:
-	match battle_action_index:
-		0:
-			_battle_attack()
-		1:
-			_open_battle_submenu("ult")
-		2:
-			_open_battle_submenu("item")
-		3:
-			_battle_rest()
-		4:
-			_battle_flee()
-
-func _battle_attack() -> void:
-	var result: Dictionary = CombatSystem.player_attack(battle_session)
-	battle_enemy_hp = int(battle_session.get("enemy_hp", battle_enemy_hp))
-	if result.get("skipped", false):
-		message = str(result.get("message", "无法行动"))
-	elif result.hit:
-		message = "命中 %s，造成 %d 伤害" % ["暴击" if result.crit else "", result.damage]
-	else:
-		message = "攻击未命中"
-	if battle_enemy_hp <= 0:
-		_end_battle(BattleResolve.resolve_victory(battle_session, battle_lethal))
-	else:
-		var counter: Dictionary = CombatSystem.enemy_action(battle_session)
-		if counter.get("damage", 0) > 0:
-			message += "；敌方反击造成 %d 伤害" % counter.damage
-		if GameState.combat_state.hp <= 0:
-			_end_battle(BattleResolve.resolve_defeat(battle_session))
-			return
-		_refresh_battle()
-
-func _battle_rest() -> void:
-	var rest_result: Dictionary = CombatSystem.rest(battle_session)
-	message = rest_result.message
-	if rest_result.get("ok", false):
-		var counter := CombatSystem.enemy_action(battle_session)
-		if counter.get("damage", 0) > 0:
-			message += "；敌方反击造成 %d 伤害" % counter.damage
-		if GameState.combat_state.hp <= 0:
-			_end_battle(BattleResolve.resolve_defeat(battle_session))
-			return
-	_refresh_battle()
-
-func _battle_flee() -> void:
-	if CombatSystem.flee(battle_session):
-		_end_battle(BattleResolve.resolve_flee(battle_session, battle_lethal))
-	else:
-		message = "逃跑失败"
-		_refresh_battle()
-
-func _open_battle_submenu(kind: String) -> void:
-	battle_submenu = kind
-	battle_submenu_index = 0
-	battle_submenu_items = []
-	if kind == "item":
-		for entry in InventorySystem.list_entries("medicine"):
-			var item_id := str(entry.get("id", ""))
-			if int(DataRegistry.get_item(item_id).get("effects", {}).get("hp", 0)) > 0:
-				battle_submenu_items.append(item_id)
-	else:
-		for ult in SkillSystem.unlocked_ults():
-			battle_submenu_items.append(ult)
-	if battle_submenu_items.is_empty():
-		battle_submenu = ""
-		message = "没有可用的战斗选项"
-	_refresh_battle()
-
-func _handle_battle_submenu_key(key: Key) -> void:
-	if key == KEY_ESCAPE or key == KEY_LEFT:
-		battle_submenu = ""
-		_refresh_battle()
-		return
-	if key == KEY_UP:
-		battle_submenu_index = posmod(battle_submenu_index - 1, battle_submenu_items.size())
-	elif key == KEY_DOWN:
-		battle_submenu_index = posmod(battle_submenu_index + 1, battle_submenu_items.size())
-	elif key == KEY_SPACE:
-		if battle_submenu == "item":
-			var item_id := str(battle_submenu_items[battle_submenu_index])
-			var item_result: Dictionary = CombatSystem.use_item(battle_session, item_id)
-			message = str(item_result.get("message", ""))
-			battle_submenu = ""
-			if item_result.get("ok", false):
-				var counter := CombatSystem.enemy_action(battle_session)
-				if counter.get("damage", 0) > 0:
-					message += "；敌方反击造成 %d 伤害" % counter.damage
-				if GameState.combat_state.hp <= 0:
-					_end_battle(BattleResolve.resolve_defeat(battle_session))
-					return
-		else:
-			var ult_result: Dictionary = CombatSystem.use_ult(battle_session, battle_submenu_index)
-			if not ult_result.ok:
-				message = str(ult_result.get("message", ""))
-				_refresh_battle()
-				return
-			message = str(ult_result.ult.get("name", "绝招"))
-			battle_submenu = ""
-			battle_enemy_hp = int(battle_session.get("enemy_hp", battle_enemy_hp))
-			if battle_enemy_hp <= 0:
-				_end_battle(BattleResolve.resolve_victory(battle_session, battle_lethal))
-				return
-			CombatSystem.enemy_action(battle_session)
-	_refresh_battle()
-
-func _refresh_battle() -> void:
-	_clear_battle_widgets()
-	battle_content.text = ""
-	var area := battle_panel.size
-	var scale := _display_scale()
-	battle_panel.add_theme_stylebox_override("panel", _ui_box(Color("a8cc6c"), Color("41493a"), 1))
-	_battle_color_rect(Rect2(Vector2(0.0, 176.0), Vector2(area.x, area.y - 176.0)), Color("84b451"))
-
-	var left_x := area.x * 0.27
-	var right_x := area.x * 0.73
-	_battle_label(str(GameState.profile.get("name", "玩家")), Rect2(Vector2(left_x - 90.0, 12.0), Vector2(180.0, 24.0)), 14, HORIZONTAL_ALIGNMENT_CENTER)
-	_battle_label(str(battle_enemy.get("display_name", nearby_npc_id)), Rect2(Vector2(right_x - 90.0, 12.0), Vector2(180.0, 24.0)), 14, HORIZONTAL_ALIGNMENT_CENTER)
-	_battle_label("VS", Rect2(Vector2(area.x * 0.5 - 26.0, 62.0), Vector2(52.0, 32.0)), 22, HORIZONTAL_ALIGNMENT_CENTER)
-	_battle_portrait(player_texture, player_sprite_regions.get("down_1", Rect2(1, 15, 13, 17)), Vector2(left_x, 72.0), Vector2(44.0, 56.0))
-	_battle_portrait(npc_texture, NpcSystem.sprite_region(nearby_npc_id), Vector2(right_x, 72.0), Vector2(44.0, 56.0))
-
-	var player_hp_max := int(battle_session.get("player_max_hp", _npc_hp(GameState.profile, true)))
-	var enemy_hp_max := int(battle_session.get("enemy_max_hp", battle_enemy_hp))
-	var player_mp_max := maxi(1, GameState.player_mp_max())
-	var enemy_mp_max := maxi(1, int(battle_session.get("enemy_mp_max", 0)))
-	_battle_stat("体力", GameState.combat_state.hp, player_hp_max, Vector2(16.0, 116.0), Color("df352d"), 150.0)
-	_battle_stat("精力", GameState.combat_state.mp, player_mp_max, Vector2(16.0, 142.0), Color("3478d4"), 150.0)
-	_battle_stat("体力", battle_enemy_hp, enemy_hp_max, Vector2(area.x - 212.0, 116.0), Color("df352d"), 150.0)
-	_battle_stat("精力", int(battle_session.get("enemy_mp", 0)), enemy_mp_max, Vector2(area.x - 212.0, 142.0), Color("3478d4"), 150.0)
-
-	if battle_submenu.is_empty():
-		_render_battle_action_bar(area, scale)
-	else:
-		_render_battle_submenu(area, scale)
-	var report := _battle_report_text()
-	var report_label := _battle_label(report, Rect2(Vector2(16.0, area.y - 58.0), Vector2(area.x - 32.0, 48.0)), 11, HORIZONTAL_ALIGNMENT_CENTER, Color("35402e"))
-	report_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	report_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-
-func _battle_report_text() -> String:
-	var log: Array = battle_session.get("log", [])
-	if log.is_empty():
-		return message
-	var first := maxi(0, log.size() - 2)
-	var recent: Array[String] = []
-	for index in range(first, log.size()):
-		recent.append(str(log[index]))
-	return "\n".join(recent)
-
-func _clear_battle_widgets() -> void:
-	for widget in battle_widgets:
-		if is_instance_valid(widget):
-			widget.free()
-	battle_widgets.clear()
-
-func _battle_label(text: String, rect: Rect2, font_size: int, alignment := HORIZONTAL_ALIGNMENT_LEFT, color := Color("292b26")) -> Label:
-	var label := Label.new()
-	label.text = text
-	label.position = rect.position
-	label.size = rect.size
-	label.horizontal_alignment = alignment
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	label.add_theme_font_override("font", preload("res://assets/Font/fusion-pixel-12px-proportional-zh_hans.ttf"))
-	label.add_theme_font_size_override("font_size", maxi(11, int(round(float(font_size) * _display_scale()))))
-	label.add_theme_color_override("font_color", color)
-	battle_content.add_child(label)
-	battle_widgets.append(label)
-	return label
-
-func _battle_color_rect(rect: Rect2, color: Color) -> void:
-	var block := ColorRect.new()
-	block.position = rect.position
-	block.size = rect.size
-	block.color = color
-	block.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	battle_content.add_child(block)
-	battle_widgets.append(block)
-
-func _battle_portrait(texture: Texture2D, region: Rect2, center: Vector2, portrait_size: Vector2) -> void:
-	var atlas := AtlasTexture.new()
-	atlas.atlas = texture
-	atlas.region = region
-	var portrait := TextureRect.new()
-	portrait.texture = atlas
-	portrait.position = center - portrait_size * 0.5
-	portrait.size = portrait_size
-	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	portrait.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	battle_content.add_child(portrait)
-	battle_widgets.append(portrait)
-
-func _battle_stat(title: String, value: int, maximum: int, position: Vector2, color: Color, meter_width: float = 190.0) -> void:
-	var scale := _display_scale()
-	_battle_label(title, Rect2(position, Vector2(42.0, 22.0) * scale), 11)
-	var meter := UI_PROGRESS_METER.new()
-	meter.position = position + Vector2(42.0 * scale, 2.0 * scale)
-	meter.size = Vector2(meter_width, 18.0) * scale
-	meter.set_font_size(maxi(9, int(round(10.0 * scale))))
-	meter.set_colors(color, Color("f3f2ed"), Color("4b5145"))
-	meter.set_progress(value, maximum)
-	battle_content.add_child(meter)
-	battle_widgets.append(meter)
-
-func _render_battle_action_bar(area: Vector2, scale: float) -> void:
-	var bar_size := Vector2(minf(400.0, area.x - 32.0), 42.0) * scale
-	var bar_position := Vector2((area.x - bar_size.x) * 0.5, 181.0 * scale)
-	var background := Panel.new()
-	background.position = bar_position
-	background.size = bar_size
-	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	background.add_theme_stylebox_override("panel", _ui_box(Color("faf9f5"), Color("55524c"), 1))
-	battle_content.add_child(background)
-	battle_widgets.append(background)
-	var action_width := bar_size.x / float(BATTLE_ACTIONS.size())
-	for index in BATTLE_ACTIONS.size():
-		var rect := Rect2(bar_position + Vector2(action_width * index, 0.0), Vector2(action_width, bar_size.y))
-		_battle_label(BATTLE_ACTIONS[index], rect, 12, HORIZONTAL_ALIGNMENT_CENTER)
-		if index == battle_action_index:
-			var selection := Panel.new()
-			selection.position = rect.position + Vector2(4.0, 5.0) * scale
-			selection.size = rect.size - Vector2(8.0, 10.0) * scale
-			selection.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			selection.add_theme_stylebox_override("panel", _ui_box(Color(1, 1, 1, 0), Color("cf3b24"), 2))
-			battle_content.add_child(selection)
-			battle_widgets.append(selection)
-
-func _render_battle_submenu(area: Vector2, scale: float) -> void:
-	var panel_size := Vector2(310.0, 44.0 + battle_submenu_items.size() * 26.0) * scale
-	var panel_position := Vector2((area.x - panel_size.x) * 0.5, area.y - panel_size.y - 76.0 * scale)
-	var panel := Panel.new()
-	panel.position = panel_position
-	panel.size = panel_size
-	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	panel.add_theme_stylebox_override("panel", _ui_box(Color("faf9f5"), Color("55524c"), 1))
-	battle_content.add_child(panel)
-	battle_widgets.append(panel)
-	_battle_label("%s　·　ESC 返回" % ("使用药品" if battle_submenu == "item" else "选择绝招"), Rect2(panel_position + Vector2(10.0, 4.0) * scale, Vector2(panel_size.x - 20.0 * scale, 28.0 * scale)), 11, HORIZONTAL_ALIGNMENT_CENTER)
-	for index in battle_submenu_items.size():
-		var item_label := ""
-		if battle_submenu == "item":
-			var item_id := str(battle_submenu_items[index])
-			item_label = "%s ×%d" % [DataRegistry.get_item(item_id).get("name", item_id), InventorySystem.count(item_id)]
-		else:
-			item_label = str(battle_submenu_items[index].get("name", "绝招"))
-		_battle_label(_cursor(item_label, index == battle_submenu_index), Rect2(panel_position + Vector2(18.0, 32.0 + index * 26.0) * scale, Vector2(panel_size.x - 36.0 * scale, 24.0 * scale)), 12)
-
-func _end_battle(result_message: String) -> void:
-	battle_active = false
-	battle_submenu = ""
-	battle_submenu_items = []
-	battle_panel.visible = false
-	_clear_battle_widgets()
-	message = result_message
-	_refresh_status()
-
 func _npc_hp(npc: Dictionary, is_player := false) -> int:
 	if is_player:
 		return GameState.player_hp_max()
@@ -1777,7 +1489,6 @@ func _show_inventory() -> void:
 	details_panel.visible = true
 	_refresh_inventory_panel()
 	message = "背包已打开"
-	_refresh_status()
 
 func _handle_inventory_key(key: Key) -> void:
 	if key == KEY_ESCAPE:
@@ -1824,7 +1535,6 @@ func _activate_inventory_item() -> void:
 		result = InventorySystem.use_item(item_id)
 	message = str(result.get("message", ""))
 	inventory_feedback = message
-	_refresh_status()
 
 func _refresh_inventory_panel() -> void:
 	var selected := inventory_categories[inventory_category_index]
@@ -1838,16 +1548,6 @@ func _refresh_inventory_panel() -> void:
 	)
 	inventory_index = clampi(inventory_index, 0, maxi(0, inventory_items.size() - 1))
 	_render_inventory_widgets()
-
-func _profile_text() -> String:
-	var vitals: Dictionary = GameState.profile.get("vitals", {})
-	var appearance := int(vitals.get("appearance", 0))
-	var attrs: Dictionary = GameState.profile.get("attributes", {})
-	var base: Dictionary = GameState.profile.get("base_attributes", attrs)
-	var hp_max := _npc_hp(GameState.profile, true) - int(GameState.combat_state.get("injury", 0))
-	var mp_max: int = GameState.player_mp_max()
-	var capacity := 200 + int(attrs.get("strength", 25)) * 10
-	return "%s　　　　　　　　　%s\n年龄：%d　　　　　　　　%s\n%s　　　　　　　　　%s\n\n食物：%d / %d　　　　　　饮水：%d / %d\n体力：%d / %d　　　　　　精力：%d / %d\n编码：%d / %d　　　　　　思维：%d / %d\n架构：%d / %d　　　　　　灵感：%d / %d\n\nToken：%d　　　　　　　 潜能：%d\n经验：%d" % [GameState.profile.get("name", ""), _gender_label(str(GameState.profile.get("gender", ""))), vitals.get("age", 18), _appearance_title(appearance, str(GameState.profile.get("gender", "male"))), GameState.profile.get("sect", "未拜师"), _skill_rating(), vitals.get("food", 0), capacity, vitals.get("water", 0), capacity, GameState.combat_state.get("hp", 0), hp_max, GameState.combat_state.get("mp", 0), mp_max, attrs.get("strength", 0), base.get("strength", 0), attrs.get("agility", 0), base.get("agility", 0), attrs.get("constitution", 0), base.get("constitution", 0), attrs.get("wisdom", 0), base.get("wisdom", 0), vitals.get("money", 0), vitals.get("potential", 0), vitals.get("experience", 0)]
 
 func _open_skill_book() -> void:
 	skill_book_open = true
@@ -1974,7 +1674,7 @@ func _show_dialogue(speaker: String, text: String, lock_seconds: float = 0.0, af
 	dialogue_page_index = 0
 	dialogue_auto_close_at_msec = 0
 	if dialogue_pages.size() == 1 and not after_last.is_valid():
-		dialogue_auto_close_at_msec = Time.get_ticks_msec() + 5000
+		dialogue_auto_close_at_msec = Time.get_ticks_msec() + DIALOGUE_AUTO_CLOSE_MSEC
 	_render_dialogue(clean_speaker)
 	dialogue_open = true
 	dialogue_panel.visible = true
@@ -2018,7 +1718,7 @@ func _advance_dialogue() -> void:
 				dialogue_pages = _paginate_dialogue(followup.strip_edges())
 				dialogue_page_index = 0
 				dialogue_locked_until_msec = 0
-				dialogue_auto_close_at_msec = Time.get_ticks_msec() + 5000 if dialogue_pages.size() == 1 else 0
+				dialogue_auto_close_at_msec = Time.get_ticks_msec() + DIALOGUE_AUTO_CLOSE_MSEC if dialogue_pages.size() == 1 else 0
 				_render_dialogue(dialogue_speaker)
 		else:
 			_close_dialogue()
@@ -2053,6 +1753,7 @@ func _load_map(index: int, arrival_from := "", cyber := false) -> void:
 	if map_transitioning:
 		return
 	map_transitioning = true
+	# 首次加载地图不做淡出，否则游戏一启动就会从黑屏淡入，而非直接呈现画面。
 	if has_loaded_map:
 		var fade_in := create_tween()
 		fade_in.tween_property(transition_overlay, "color:a", 1.0, 0.12)
@@ -2121,15 +1822,13 @@ func _map_index_by_id(target: String) -> int:
 	return -1
 
 func _try_cyber_teleport() -> void:
-	if SkillSystem.level("basicAgility") < 30 or SkillSystem.equipped_sect_skill_level("tune") < 30:
+	if SkillSystem.level("basicAgility") < CYBER_TELEPORT_SKILL_REQUIREMENT or SkillSystem.equipped_sect_skill_level("tune") < CYBER_TELEPORT_SKILL_REQUIREMENT:
 		message = "须装备基础思维与高级身法且均达到 30 级，方可赛博传送"
-		_refresh_status()
 		return
 	var mp_max: int = GameState.player_mp_max()
-	var cost := maxi(1, int(ceil(float(mp_max) / 3.0)))
+	var cost := maxi(1, int(ceil(float(mp_max) / CYBER_TELEPORT_MP_DIVISOR)))
 	if int(GameState.combat_state.mp) < cost:
 		message = "精力不足，赛博传送需要 %d 精力" % cost
-		_refresh_status()
 		return
 	cyber_maps = []
 	for index in DataRegistry.map_files.size():
@@ -2142,7 +1841,6 @@ func _try_cyber_teleport() -> void:
 				cyber_maps.append(index)
 	if cyber_maps.is_empty():
 		message = "暂无可传送的道路地图"
-		_refresh_status()
 		return
 	cyber_open = true
 	cyber_index = 0
@@ -2152,7 +1850,7 @@ func _try_cyber_teleport() -> void:
 	_refresh_cyber_menu(cost)
 
 func _handle_cyber_key(key: Key) -> void:
-	var cost := maxi(1, int(ceil(float(GameState.player_mp_max()) / 3.0)))
+	var cost := maxi(1, int(ceil(float(GameState.player_mp_max()) / CYBER_TELEPORT_MP_DIVISOR)))
 	if key == KEY_ESCAPE:
 		cyber_open = false
 		details_panel.visible = false
@@ -2186,12 +1884,12 @@ func _refresh_cyber_menu(cost: int) -> void:
 
 func _draw() -> void:
 	var grid_origin := _map_draw_origin()
-	var cell := 16.0 * _render_scale()
+	var cell := float(TiledMapLoader.DEFAULT_TILE_SIZE) * _render_scale()
 	if not map_context:
 		for y in range(10):
-			for x in range(16):
+			for x in range(TiledMapLoader.DEFAULT_TILE_SIZE):
 				draw_rect(Rect2(grid_origin + Vector2(x, y) * cell, Vector2(cell - 1, cell - 1)), Color("#274f45"))
-	var player_pos := _world_to_screen(Vector2(player_tile) * Vector2(16, 16)) + Vector2(1, 1) * _render_scale()
+	var player_pos := _world_to_screen(Vector2(player_tile) * Vector2(TiledMapLoader.DEFAULT_TILE_SIZE, TiledMapLoader.DEFAULT_TILE_SIZE)) + Vector2(1, 1) * _render_scale()
 	_draw_npcs()
 	var source := _player_frame_region()
 	var destination := Rect2(player_pos + Vector2(0, -2) * _render_scale(), source.size * _render_scale())
@@ -2216,15 +1914,6 @@ func _player_frame_region() -> Rect2:
 	elif facing == Vector2i.RIGHT: direction = "right"
 	var key := "%s_%d" % [direction, animation_frame + 1]
 	return player_sprite_regions.get(key, Rect2(1, 15, 13, 17))
-
-func _run_combat_test() -> void:
-	var result := GameState.resolve_attack(8.0, GameState.profile.get("attributes", {}), {"strength": 4, "agility": 4, "constitution": 4, "wisdom": 4}, 10.0)
-	message = "战斗测试：未命中" if not result.hit else "战斗测试：造成 %d 点%s伤害" % [result.damage, "暴击" if result.crit else ""]
-	_refresh_status()
-	queue_redraw()
-
-func _refresh_status() -> void:
-	pass
 
 func _game_view_rect() -> Rect2:
 	return Rect2((DESIGN_SIZE - CAMERA_SIZE) * 0.5, CAMERA_SIZE)

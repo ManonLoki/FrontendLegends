@@ -246,13 +246,13 @@ func _run() -> void:
 	for panel in [game.map_badge_panel, game.menu_panel, game.dialogue_panel, game.details_panel, game.tree_confirm_panel, game.battle_panel]:
 		_assert_true(design_rect.encloses(Rect2(panel.position, panel.size)), "%s 必须完整位于设计画布内" % panel.name)
 	game.nearby_npc_id = "jiu_ri"
-	game._start_battle()
+	game.battle_ui.start()
 	await process_frame
-	for widget in game.battle_widgets:
+	for widget in game.battle_ui.widgets:
 		_assert_true(Rect2(Vector2.ZERO, game.battle_panel.size).encloses(Rect2(widget.position, widget.size)), "战斗 UI 元素不得互相挤出面板边界")
-	game.battle_active = false
+	game.battle_ui.active = false
 	game.battle_panel.visible = false
-	game._clear_battle_widgets()
+	game.battle_ui._clear_widgets()
 	_assert_true(game._prop_display_name({"name": "电脑", "properties": {"questGiver": "darkxue_computer"}}) == "电脑", "Props 对话标题应使用 Tiled 对象名")
 	# 歪脖树使用独立 HUD，不得修改或复用 NPC 菜单的正文状态。
 	game.npc_menu_content.visible = false

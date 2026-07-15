@@ -3,15 +3,26 @@ extends Node
 const SAVE_PATH := "user://frontend_legends_save_v1.json"
 const SAVE_VERSION := 1
 
+const SURVIVAL_TICK_SEC := 15.0
+const AGE_TICK_SEC := 28800.0
+const MIN_HIT_RATE := 0.28
+const MAX_HIT_RATE := 0.95
+
 var profile: Dictionary = {}
 var game_time_sec := 0.0
-var combat_state := {"hp": 1, "mp": 0, "injury": 0}
+var combat_state := _default_combat_state()
 var inventory: Dictionary = {}
-var equipment := {"weapon": "", "armor": "", "shoe": "", "accessory": ""}
+var equipment := _default_equipment()
 var item_cooldowns: Dictionary = {}
 
 func _ready() -> void:
 	load_game()
+
+func _default_combat_state(hp: int = 1) -> Dictionary:
+	return {"hp": hp, "mp": 0, "injury": 0}
+
+func _default_equipment() -> Dictionary:
+	return {"weapon": "", "armor": "", "shoe": "", "accessory1": "", "accessory2": ""}
 
 func has_profile() -> bool:
 	return not str(profile.get("name", "")).strip_edges().is_empty()
@@ -36,18 +47,20 @@ func create_profile(player_name: String, custom_attributes: Dictionary = {}, gen
 		"skills": SkillSystem.create_default_skills(),
 		"money": 0
 	}
-	combat_state = {"hp": _true_hp_max(), "mp": 0, "injury": 0}
+	combat_state = _default_combat_state(_true_hp_max())
 	game_time_sec = 0.0
 	inventory = {}
-	equipment = {"weapon": "", "armor": "", "shoe": "", "accessory1": "", "accessory2": ""}
+	equipment = _default_equipment()
 	item_cooldowns = {}
 	save_game()
 
+## 用“跨越了多少个 tick 边界”而非直接除以增量，防止单次 advance_time 跨越
+## 多个 tick 时漏算（如批量快进）；食物/饮水按对子消耗，两者中较少的一项封顶。
 func advance_time(seconds: float) -> void:
 	var previous := game_time_sec
 	game_time_sec = maxf(0.0, game_time_sec + maxf(0.0, seconds))
-	var previous_survival_tick := int(floor(previous / 15.0))
-	var current_survival_tick := int(floor(game_time_sec / 15.0))
+	var previous_survival_tick := int(floor(previous / SURVIVAL_TICK_SEC))
+	var current_survival_tick := int(floor(game_time_sec / SURVIVAL_TICK_SEC))
 	var ticks := current_survival_tick - previous_survival_tick
 	var vitals: Dictionary = profile.get("vitals", {})
 	var pairs := mini(ticks, mini(int(vitals.get("food", 0)), int(vitals.get("water", 0))))
@@ -56,8 +69,8 @@ func advance_time(seconds: float) -> void:
 		vitals.water = int(vitals.get("water", 0)) - pairs
 		combat_state.injury = maxi(0, int(combat_state.get("injury", 0)) - pairs * 2)
 		combat_state.hp = mini(_effective_hp_max(), int(combat_state.get("hp", 0)) + pairs * 3)
-	var previous_age_tick := int(floor(previous / 28800.0))
-	var current_age_tick := int(floor(game_time_sec / 28800.0))
+	var previous_age_tick := int(floor(previous / AGE_TICK_SEC))
+	var current_age_tick := int(floor(game_time_sec / AGE_TICK_SEC))
 	vitals.age = int(vitals.get("age", 18)) + current_age_tick - previous_age_tick
 	profile.vitals = vitals
 
@@ -79,10 +92,10 @@ func load_game() -> bool:
 		return false
 	profile = parsed.get("profile", {})
 	game_time_sec = float(parsed.get("game_time_sec", 0.0))
-	combat_state = parsed.get("combat_state", {"hp": 1, "mp": 0, "injury": 0})
+	combat_state = parsed.get("combat_state", _default_combat_state())
 	inventory = parsed.get("inventory", {})
 	# 旧档可能带 equipment；按原设定读档后一律空手，不恢复该字段。
-	equipment = {"weapon": "", "armor": "", "shoe": "", "accessory1": "", "accessory2": ""}
+	equipment = _default_equipment()
 	item_cooldowns = parsed.get("item_cooldowns", {})
 	if profile.has("skills"):
 		SkillSystem.ensure_skills()
@@ -92,10 +105,10 @@ func load_game() -> bool:
 func delete_save() -> void:
 	QuestSystem.reset_runtime()
 	profile = {}
-	combat_state = {"hp": 1, "mp": 0, "injury": 0}
+	combat_state = _default_combat_state()
 	game_time_sec = 0.0
 	inventory = {}
-	equipment = {"weapon": "", "armor": "", "shoe": "", "accessory1": "", "accessory2": ""}
+	equipment = _default_equipment()
 	item_cooldowns = {}
 	if FileAccess.file_exists(SAVE_PATH):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE_PATH))
@@ -145,19 +158,21 @@ func _effective_hp_max() -> int:
 	return player_effective_hp_max()
 
 func combat_hit_rate(attacker: Dictionary, defender: Dictionary) -> float:
-	return clampf(0.72 + (float(attacker.get("agility", 0)) - float(defender.get("agility", 0))) * 0.02, 0.28, 0.95)
+	return clampf(0.72 + (float(attacker.get("agility", 0)) - float(defender.get("agility", 0))) * 0.02, MIN_HIT_RATE, MAX_HIT_RATE)
 
 func mitigation(defense: float) -> float:
 	var value := maxf(0.0, defense)
 	return value / (value + 80.0)
 
+## 攻击结算顺序固定：命中判定 → 招架判定 → 暴击判定 → 伤害随机浮动，
+## 后续步骤只在命中成立后才滚动，与参考项目的判定顺序保持一致。
 func resolve_attack(attack_power: float, attacker: Dictionary, defender: Dictionary, defense: float, hit_bonus := 0.0, dodge_bonus := 0.0, parry_bonus := 0.0, crit_bonus := 0.0) -> Dictionary:
-	var hit_rate := clampf(combat_hit_rate(attacker, defender) + float(hit_bonus) - float(dodge_bonus), 0.28, 0.95)
+	var hit_rate := clampf(combat_hit_rate(attacker, defender) + float(hit_bonus) - float(dodge_bonus), MIN_HIT_RATE, MAX_HIT_RATE)
 	if randf() >= hit_rate:
 		return {"hit": false, "parried": false, "crit": false, "damage": 0}
 	var parry := clampf(float(defender.get("strength", 0)) * 0.01 - 0.05 + float(parry_bonus), 0.0, 0.65)
 	var is_parried := randf() < parry
-	var is_crit := randf() < clampf(0.03 + float(attacker.get("constitution", 0)) * 0.0035 + float(crit_bonus), 0.02, 0.25)
+	var is_crit := randf() < clampf(CombatSystem.CRIT_BASE + float(attacker.get("constitution", 0)) * CombatSystem.CRIT_PER_CONSTITUTION + float(crit_bonus), 0.02, 0.25)
 	var variance := 0.9 + randf() * 0.2
 	var damage := maxi(1, int(floor(attack_power * (1.0 - mitigation(defense)) * (0.5 if is_parried else 1.0) * (1.5 if is_crit else 1.0) * variance)))
 	return {"hit": true, "parried": is_parried, "crit": is_crit, "damage": damage}
