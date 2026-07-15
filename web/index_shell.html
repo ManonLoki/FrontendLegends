@@ -20,17 +20,17 @@
       visibility:hidden; font-family:ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
     }
     #loading-card {
-      width:min(78vw, 390px); display:flex; flex-direction:column; align-items:center;
-      padding:28px 30px 25px; border:1px solid #f3cf5538; border-radius:22px;
-      background:#080d17d9; box-shadow:0 22px 70px #000a, inset 0 1px #ffffff0d;
+      width:100%; height:100%; display:flex; flex-direction:column; align-items:center;
+      justify-content:center; padding:max(24px, env(safe-area-inset-top)) max(28px, env(safe-area-inset-right))
+        max(24px, env(safe-area-inset-bottom)) max(28px, env(safe-area-inset-left));
     }
-    #loading-logo { width:clamp(112px, 25vw, 164px); height:auto; filter:drop-shadow(0 8px 22px #000c); }
+    #loading-logo { width:clamp(124px, 24vmin, 220px); height:auto; filter:drop-shadow(0 8px 22px #000c); }
     #loading-title {
       min-height:1.5em; margin:13px 0 3px; color:#fff; font-size:clamp(17px, 4vw, 22px);
       letter-spacing:.06em; text-align:center; animation:tip-breathe 1.8s ease-in-out infinite;
     }
     #loading-version { margin:0 0 20px; color:var(--gold); font-size:13px; letter-spacing:.08em; }
-    #progress-row { width:100%; display:none; align-items:center; gap:12px; }
+    #progress-row { width:min(72vw, 680px); display:none; align-items:center; gap:12px; }
     #status-progress {
       flex:1; height:9px; overflow:hidden; border:0; border-radius:999px;
       appearance:none; -webkit-appearance:none; background:var(--track); accent-color:var(--gold);
@@ -48,10 +48,11 @@
     }
     @keyframes tip-breathe { 50% { opacity:.68; } }
     @media (max-height:430px) {
-      #loading-card { width:min(72vw, 440px); padding:14px 24px; }
-      #loading-logo { width:88px; }
+      #loading-card { padding:12px max(28px, env(safe-area-inset-right)) 12px max(28px, env(safe-area-inset-left)); }
+      #loading-logo { width:96px; }
       #loading-title { margin-top:5px; font-size:20px; }
       #loading-version { margin-bottom:10px; }
+      #progress-row { width:min(70vw, 620px); }
     }
   </style>
   $GODOT_HEAD_INCLUDE
