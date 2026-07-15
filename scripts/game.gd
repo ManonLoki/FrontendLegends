@@ -2173,7 +2173,6 @@ func _draw() -> void:
 	var source := _player_frame_region()
 	var destination := _player_frame_draw_rect(player_pos, source)
 	draw_texture_rect_region(player_texture, destination, source)
-	draw_line(player_pos + Vector2(7, 7) * _render_scale(), player_pos + (Vector2(7, 7) + Vector2(facing) * 7) * _render_scale(), Color.WHITE, 2.0 * _render_scale())
 
 func _load_player_sprite_regions() -> void:
 	player_sprite_regions.clear()
