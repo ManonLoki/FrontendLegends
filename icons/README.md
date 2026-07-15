@@ -5,6 +5,7 @@
 - `macos/`: 标准 iconset 与 ICNS。
 - `android/`: 五档 launcher PNG、圆形 PNG、自适应图标前景/背景和 Play Store 512px 图标。
 - `source/`: 透明母版及生成时使用的色键源图。
+- `splash/`: Windows、macOS、Linux 与 Android 共用的 Godot 原生启动图。
 
 Android 自适应图标资源可直接复制到 Android 工程对应的 `res/` 目录。
 

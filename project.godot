@@ -11,12 +11,13 @@ config_version=5
 [application]
 
 config/name="前端群侠传"
-config/version="0.7.5"
+config/version="0.7.6"
 run/main_scene="res://scenes/splash.tscn"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="FrontendLegends"
 config/features=PackedStringArray("4.7", "GL Compatibility")
-boot_splash/show_image=false
+boot_splash/bg_color=Color(0.00784314, 0.0235294, 0.0509804, 1)
+boot_splash/image="res://icons/splash/frontend-legends-boot-splash.png"
 config/icon="res://icons/frontend-legends.svg"
 
 [autoload]

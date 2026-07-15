@@ -18,4 +18,5 @@ static func field_style(fill: Color, border: Color, width: int) -> StyleBoxFlat:
 	style.bg_color = fill
 	style.border_color = border
 	style.set_border_width_all(width)
+	style.set_content_margin_all(4.0)
 	return style

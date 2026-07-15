@@ -2,26 +2,120 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, viewport-fit=cover">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>前端群侠传</title>
+  <title>$GODOT_PROJECT_NAME</title>
   <style>
-    html, body, #canvas { margin: 0; padding: 0; border: 0; }
-    body { background: #000; overflow: hidden; touch-action: none; }
-    #canvas { display: block; }
-    #canvas:focus { outline: none; }
+    :root { color-scheme:dark; --gold:#f3cf55; --track:#20242c; }
+    * { box-sizing:border-box; }
+    html, body, #canvas { margin:0; padding:0; border:0; width:100%; height:100%; }
+    body { overflow:hidden; background:#000; color:#fff; touch-action:none; }
+    #canvas { display:block; }
+    #canvas:focus { outline:none; }
+    #status {
+      position:fixed; inset:0; z-index:10; display:flex; align-items:center; justify-content:center;
+      background:radial-gradient(circle at 50% 42%, #10264b 0, #050b16 44%, #000 78%);
+      visibility:hidden; font-family:ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    }
+    #loading-card {
+      width:min(78vw, 390px); display:flex; flex-direction:column; align-items:center;
+      padding:28px 30px 25px; border:1px solid #f3cf5538; border-radius:22px;
+      background:#080d17d9; box-shadow:0 22px 70px #000a, inset 0 1px #ffffff0d;
+    }
+    #loading-logo { width:clamp(112px, 25vw, 164px); height:auto; filter:drop-shadow(0 8px 22px #000c); }
+    #loading-title {
+      min-height:1.5em; margin:13px 0 3px; color:#fff; font-size:clamp(17px, 4vw, 22px);
+      letter-spacing:.06em; text-align:center; animation:tip-breathe 1.8s ease-in-out infinite;
+    }
+    #loading-version { margin:0 0 20px; color:var(--gold); font-size:13px; letter-spacing:.08em; }
+    #progress-row { width:100%; display:none; align-items:center; gap:12px; }
+    #status-progress {
+      flex:1; height:9px; overflow:hidden; border:0; border-radius:999px;
+      appearance:none; -webkit-appearance:none; background:var(--track); accent-color:var(--gold);
+    }
+    #status-progress::-webkit-progress-bar { background:var(--track); border-radius:999px; }
+    #status-progress::-webkit-progress-value {
+      border-radius:999px; background:linear-gradient(90deg, #b88624, var(--gold), #fff0a1);
+      box-shadow:0 0 12px #f3cf5580;
+    }
+    #status-progress::-moz-progress-bar { border-radius:999px; background:var(--gold); }
+    #progress-label { width:42px; color:var(--gold); font-size:12px; text-align:right; }
+    #status-notice {
+      display:none; width:100%; padding:12px; border:1px solid #9b3943; border-radius:8px;
+      background:#5b394366; color:#f2dfe3; line-height:1.45; text-align:center;
+    }
+    @keyframes tip-breathe { 50% { opacity:.68; } }
+    @media (max-height:430px) {
+      #loading-card { width:min(72vw, 440px); padding:14px 24px; }
+      #loading-logo { width:88px; }
+      #loading-title { margin-top:5px; font-size:20px; }
+      #loading-version { margin-bottom:10px; }
+    }
   </style>
   $GODOT_HEAD_INCLUDE
 </head>
 <body>
   <canvas id="canvas">你的浏览器不支持 Canvas。</canvas>
   <noscript>前端群侠传需要启用 JavaScript。</noscript>
+  <div id="status">
+    <div id="loading-card">
+      <img id="loading-logo" src="index.icon.png" alt="FrontendLegends Logo">
+      <div id="loading-title">正在召唤前端大神</div>
+      <div id="loading-version">v0.7.6</div>
+      <div id="progress-row">
+        <progress id="status-progress"></progress>
+        <span id="progress-label">0%</span>
+      </div>
+      <div id="status-notice"></div>
+    </div>
+  </div>
   <script src="$GODOT_URL"></script>
   <script>
-    const engine = new Engine($GODOT_CONFIG);
-    engine.startGame().catch((error) => console.error(error));
+    const GODOT_CONFIG = $GODOT_CONFIG;
+    const GODOT_THREADS_ENABLED = $GODOT_THREADS_ENABLED;
+    const engine = new Engine(GODOT_CONFIG);
+    const overlay = document.getElementById('status');
+    const progressRow = document.getElementById('progress-row');
+    const progress = document.getElementById('status-progress');
+    const progressLabel = document.getElementById('progress-label');
+    const loadingTitle = document.getElementById('loading-title');
+    const notice = document.getElementById('status-notice');
+    const loadingTips = [
+      '正在召唤前端大神', '外包团队已就位', '实习牲准备完毕',
+      '产品经理正在偷偷溜进来', '客户老板天团潜入完成',
+    ];
+
+    function fail(error) {
+      console.error(error);
+      progressRow.style.display = 'none';
+      notice.style.display = 'block';
+      notice.textContent = error instanceof Error ? error.message : String(error || '加载游戏时发生未知错误。');
+    }
+
+    const missing = Engine.getMissingFeatures({ threads:GODOT_THREADS_ENABLED });
+    overlay.style.visibility = 'visible';
+    if (missing.length) {
+      fail(`当前浏览器缺少以下功能：\n${missing.join('\n')}`);
+    } else {
+      progressRow.style.display = 'flex';
+      engine.startGame({
+        onProgress(current, total) {
+          if (current > 0 && total > 0) {
+            const percent = Math.min(100, Math.round(current / total * 100));
+            progress.value = current;
+            progress.max = total;
+            progressLabel.textContent = `${percent}%`;
+            loadingTitle.textContent = loadingTips[Math.min(loadingTips.length - 1, Math.floor(percent / 20))];
+          } else {
+            progress.removeAttribute('value');
+            progress.removeAttribute('max');
+            progressLabel.textContent = '…';
+          }
+        },
+      }).then(() => overlay.remove(), fail);
+    }
   </script>
 </body>
 </html>

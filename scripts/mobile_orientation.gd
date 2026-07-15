@@ -20,6 +20,10 @@ static func request_from_user_gesture() -> void:
 static func _apply_web_orientation(from_user_gesture: bool) -> void:
 	if not _is_mobile_browser():
 		return
+	JavaScriptBridge.eval(_build_web_script(from_user_gesture))
+
+## 单独生成脚本文本，使 CSS 百分号与手势标记可在非 Web 环境执行回归测试。
+static func _build_web_script(from_user_gesture: bool) -> String:
 	var gesture_flag := "true" if from_user_gesture else "false"
 	var script := """
 	(function () {
@@ -53,7 +57,7 @@ static func _apply_web_orientation(from_user_gesture: bool) -> void:
 	      '}}';
     document.head.appendChild(style);
   }
-	  if (%s && isPortrait) {
+	  if (__FROM_USER_GESTURE__ && isPortrait) {
 	    var fullscreenTarget = document.documentElement;
 	    var requestFullscreen = fullscreenTarget.requestFullscreen || fullscreenTarget.webkitRequestFullscreen;
 	    if (!requestFullscreen) { return; }
@@ -68,8 +72,9 @@ static func _apply_web_orientation(from_user_gesture: bool) -> void:
     }
   }
 })();
-""" % gesture_flag
-	JavaScriptBridge.eval(script)
+	"""
+	script = script.replace("__FROM_USER_GESTURE__", gesture_flag)
+	return script
 
 ## 桌面浏览器也可能命中上述媒体查询，因此再按用户代理过滤，避免桌面端显示旋转提示。
 static func _is_mobile_browser() -> bool:

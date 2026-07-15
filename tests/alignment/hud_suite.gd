@@ -8,6 +8,10 @@ func _run_hud_suite() -> Node:
 	var inventory_system = root.get_node("InventorySystem")
 	var data_registry = root.get_node("DataRegistry")
 	var npc_system = root.get_node("NpcSystem")
+	var orientation_script = load("res://scripts/mobile_orientation.gd")
+	var web_script: String = orientation_script._build_web_script(true)
+	_assert_true(web_script.contains("width:100%") and web_script.contains("translate(-50%,-50%)"), "Web 横屏 CSS 的百分号不得被 GDScript 字符串格式化吞掉")
+	_assert_true(web_script.contains("if (true && isPortrait)") and not web_script.contains("__FROM_USER_GESTURE__"), "Web 横屏脚本必须安全替换用户手势标记")
 	var dark_study_map := TiledMapLoader.new()
 	_assert_true(dark_study_map.load_file("res://assets/Map/maps/LoreWorld/KaiyuanTown/DarkXue.tmx"), "HUD 测试应能加载 DARK学地图")
 	# 三个主场景统一直接使用 640×480 设计坐标，窗口缩放只交给 Godot stretch。
@@ -26,13 +30,17 @@ func _run_hud_suite() -> Node:
 	_assert_true(character_creation.form.scale == Vector2.ONE and character_creation.form.position == Vector2(0.0, 40.0), "CharacterCreation 表单应以原始尺寸在设计画布中居中")
 	var name_style: StyleBoxFlat = character_creation.name_edit.get_theme_stylebox("normal")
 	_assert_true(is_zero_approx(name_style.bg_color.a), "角色姓名输入框普通状态不得保留黄色或其他实色背景")
+	_assert_true(name_style.content_margin_left == 4.0 and name_style.content_margin_top == 4.0 and name_style.content_margin_right == 4.0 and name_style.content_margin_bottom == 4.0, "角色姓名输入框文字应与四边保持 4px 内边距")
 	character_creation.mobile_runtime = true
 	character_creation._finish_intro()
 	_assert_true(not character_creation.name_editing, "移动端进入角色表单时不应在用户按 A 前自动弹出键盘")
-	character_creation._handle_key(KEY_SPACE)
-	_assert_true(character_creation.name_editing and character_creation.name_edit.has_focus(), "移动端首次按 A 应进入姓名编辑并取得输入焦点")
-	character_creation._handle_key(KEY_SPACE)
-	_assert_true(not character_creation.name_editing and not character_creation.name_edit.has_focus(), "移动端再次按 A 应保存姓名并退出输入焦点")
+	var mobile_keyboard_event := InputEventKey.new()
+	mobile_keyboard_event.keycode = KEY_SPACE
+	mobile_keyboard_event.pressed = true
+	character_creation._input(mobile_keyboard_event)
+	_assert_true(character_creation.name_editing and character_creation.name_edit.has_focus(), "移动 Web 实体键盘确认键应与虚拟 A 一样进入姓名输入焦点")
+	character_creation._input(mobile_keyboard_event)
+	_assert_true(not character_creation.name_editing and not character_creation.name_edit.has_focus(), "移动 Web 实体键盘再次确认应退出姓名输入焦点")
 	character_creation.queue_free()
 	await process_frame
 
