@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="40" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="34">
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="40" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="35">
  <properties>
   <property name="Sort" type="int" value="6"/>
   <property name="mapName" value="Ng神教"/>
@@ -26,7 +26,7 @@
  </layer>
  <layer id="3" name="Prop" width="40" height="30">
   <data encoding="base64" compression="zlib">
-   eJzt10tPE1EYxvEXlKYLUNxAGqWosGsjmjFKAipeQgwxCDug5d6tqDsVEEE/hArKzc9gVECunwFF8MIlrnCrIhf9ExYzNDOnDOl4Nn2SX+bk5EzfJ+3ZVGQnkUyRKOrRgEY0oRktaEUsU7Slndkd6MRDdOERutGDx3iSoN/rtB1epJfZfXiBl+jHAAYxhGG8UvSz9tpLx3KfSLHCdd/u8yPMHsUY3mMcE5jEFKYx49DPrk+ijmeZX6hQGtdvntkL+Iwv+IpvWMQSlrGisd86szewiS383e6SJZKGdBzAwSx9/Y4y+xjyEEQ+juMETqIAhYp+dpLZr4TZpbiAi7iEMlzGFVzFNdQGROoC5jPR92d3fj/9IsyOoh4NaEQTmtGCVsRwixltAfOZqJ/d+f30+9+5wfwyhQrN/aypCfP7ow4RRMP25w4ZIoeRjSOGuz23Z625R5/7eIB2dDj0O8X7RTiNM4a7PbdnrXlKn2d4jl70OfSr5P2bqEK14W7P7Vlr3tDnLd5hBKMO/dp4/zbu4K7hbs/tWWs+0mcOnzCPBYd+1nhxF53ymz5r+IN1bOyhnxd3MZnx4i7GZzYk8iGkXjvFi7sYn590+BVSr3Umh3uWG1avdeYcHc6H1WtVVvNEfqDLz38RdKPHb+7rTkZQxId+Og1gEEN+c193gnTIxzidJjCJKb+5n+x8T0/+Z6aSSir68g8v4c1H
+   eJzt10lPE3EYx/EHl6YHEL1IGm0LyK0NSIYgiaAIxBBDQG9Iy85VwJsKCkVfhFpkfw1E2UFfAy5sih71qrK4fA2HGZuZfxnCMJf+kk86+eeZPL+0/0tF9hJJF4miEU1oRgta0YZ2dKSLa+lhdy8e4hH60I8YBvAYT5L0m0zb40Ti7B7ECwxhGCMYxRjGMaHoZ+y1n47XPSIlCtWe/+en2T2DWcxhHgtYxBJe441FP7M+yToWsT9PoTSh3wq7V7GGdWzgIz5hE5/xxcV+O+zexS/8xp9/XTJE0nAMx3Eiw71+59h9Hn4EEEQ2cpCLC8hT9DNzmP0us7sUZbiCqyjHNVSgElW47RNp8Omfyb4/s/mD9IuwO4pGNKEZLWhFG9rRgTvs6PTpn8n6mc0fpN9Rp4b95Qo3XO5nTH2Y3x8NiCAaNp87pYlk4jTOaPbO7M4ac48+9/EAPei16JfP+wW4iELN3pndWWOe0ucZniOOQYt+tbxfh5u4pdk7sztrzEv6vMIUpjFj0a+T97vQjbuavTO7s8a8o897fMAKVi36GePEXbTKT/psYRs72N1HPyfu4mHGibuYmOWQyNuQ+tkqTtzFxHynw4+Q+tnNnOWeZYXVz26mmA6XwupnVb76Rb6hz8t/EcQw4NXP3c7JgIgHw3QawSjGvPq52wnQIYh5Oi1gEUte/TyVVFJJRZW/t4fMXw==
   </data>
  </layer>
  <objectgroup id="4" name="Interactive">
@@ -46,12 +46,6 @@
    <properties>
     <property name="from" value="Xijiao"/>
     <property name="to" value="Angular"/>
-   </properties>
-  </object>
-  <object id="25" name="告示牌" type="Props" x="560.565" y="369.311" width="43.096" height="16">
-   <properties>
-    <property name="text" value="欢迎来到NG神教"/>
-    <property name="type" value="Props"/>
    </properties>
   </object>
   <object id="26" name="Qc." type="NPC" x="249.14" y="379.911">
@@ -94,6 +88,12 @@
    <properties>
     <property name="from" value="AngularZongTan"/>
     <property name="to" value="Angular"/>
+   </properties>
+  </object>
+  <object id="34" name="告示牌" type="Props" gid="742" x="592" y="384" width="16" height="17.9123">
+   <properties>
+    <property name="text" value="欢迎来到NG神教"/>
+    <property name="type" propertytype="Type" value="props"/>
    </properties>
   </object>
  </objectgroup>

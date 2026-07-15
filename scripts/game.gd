@@ -12,7 +12,7 @@ const MOVE_STEP_SECONDS := 0.15
 const DIALOGUE_AUTO_CLOSE_MSEC := 5000
 const TRADE_MODE_BUY := "buy"
 const TRADE_MODE_SELL := "sell"
-const CYBER_TELEPORT_MP_DIVISOR := 3.0
+const CYBER_TELEPORT_MP_DIVISOR := 5.0
 const CYBER_TELEPORT_SKILL_REQUIREMENT := 30
 
 var player_tile := Vector2i(8, 5)
@@ -50,6 +50,9 @@ var system_open := false
 var system_index := 0
 var skill_open := false
 var skill_index := 0
+var force_power_open := false
+var force_power_value := 0
+var force_power_limit := 0
 var menu_widgets: Array[Control] = []
 var details_widgets: Array[Control] = []
 var detail_huds: Dictionary = {}
@@ -61,6 +64,8 @@ var battle_ui: RefCounted
 var cyber_open := false
 var cyber_index := 0
 var cyber_maps: Array[int] = []
+var cyber_labels: Array[Label] = []
+var cyber_selection_widget: Panel
 var npc_menu_open := false
 var npc_menu_index := 0
 var npc_menu_actions: Array[String] = []
@@ -93,6 +98,11 @@ var inventory_feedback := ""
 var practice_open := false
 var practice_index := 0
 var practice_items: Array[String] = []
+var practice_all_items: Array[String] = []
+var practice_categories: Array[String] = ["编码", "思维", "招架"]
+var practice_themes: Array[String] = ["code", "tune", "parry"]
+var practice_category_index := 0
+var practice_focus_category := true
 var practicing_skill_id := ""
 var practice_tick_accumulator := 0.0
 var skill_book_open := false
@@ -122,6 +132,7 @@ var map_index := 0
 var player_texture: Texture2D = preload("res://assets/Texture/player.png")
 var npc_texture: Texture2D = preload("res://assets/Texture/NPC.png")
 var player_sprite_regions: Dictionary = {}
+var player_sprite_layouts: Dictionary = {}
 var animation_timer := 0.0
 var animation_frame := 0
 var player_moving := false
@@ -191,6 +202,8 @@ func _layout_active_detail_hud() -> void:
 		_layout_profile_panel()
 	elif active_detail_hud == "npc_view":
 		_layout_npc_view_panel()
+	elif active_detail_hud == "cyber":
+		_layout_cyber_panel()
 	else:
 		_layout_details_overlay()
 
@@ -215,14 +228,12 @@ func _process(delta: float) -> void:
 		virtual_direction = Vector2.ZERO
 		return
 	move_cooldown -= delta
+	# 新图集的 idle 与 run 都各有 4 帧。静止时也推进 idle 动画，而不是
+	# 永远停在第一帧；打开模态 HUD 时仍由上方分支冻结世界动画。
 	animation_timer += delta
-	if animation_timer >= MOVE_STEP_SECONDS and player_moving:
-		animation_timer = 0.0
-		animation_frame = (animation_frame + 1) % 6
-		queue_redraw()
-	elif not player_moving and animation_frame != 0:
-		animation_timer = 0.0
-		animation_frame = 0
+	if animation_timer >= MOVE_STEP_SECONDS:
+		animation_timer = fmod(animation_timer, MOVE_STEP_SECONDS)
+		animation_frame = (animation_frame + 1) % 4
 		queue_redraw()
 	auto_save_timer += delta
 	if auto_save_timer >= 30.0:
@@ -815,11 +826,16 @@ func _handle_learn_key(key: Key) -> void:
 		if learn_focus_category:
 			learn_open = false
 			details_panel.visible = false
-			npc_menu_open = true
-			_refresh_npc_menu()
+			learning_skill_id = ""
+			learning_tick_accumulator = 0.0
+			_clear_learning_progress_widgets()
+			# 学习是独立 HUD，关闭后直接回到地图，不能重新弹出 NPC 菜单，
+			# 更不能继续执行函数末尾的刷新而把两个面板叠在一起。
+			_close_npc_menu()
 		else:
 			learn_focus_category = true
 			_refresh_learn_items()
+		return
 	elif key == KEY_LEFT:
 		learn_focus_category = true
 		_refresh_learn_items()
@@ -928,16 +944,27 @@ func _refresh_learn_items() -> void:
 	_refresh_learn_list()
 
 func _open_practice() -> void:
-	practice_items = []
+	practice_all_items = []
 	var sect := str(GameState.profile.get("sect", ""))
 	for skill_id in DataRegistry.skills:
 		var definition: Dictionary = DataRegistry.skills[skill_id]
 		if str(definition.get("category", "")) == "sect" and str(definition.get("theme", "")) != "arch" and str(definition.get("sect", "")) == sect and SkillSystem.level(str(skill_id)) > 0:
-			practice_items.append(str(skill_id))
+			practice_all_items.append(str(skill_id))
+	practice_category_index = 0
+	practice_focus_category = true
 	practice_index = 0
 	practice_open = true
 	menu_open = false
 	menu_panel.visible = false
+	_refresh_practice_items()
+
+func _refresh_practice_items() -> void:
+	practice_items = []
+	var selected_theme := practice_themes[practice_category_index]
+	for skill_id in practice_all_items:
+		if str(DataRegistry.get_skill(skill_id).get("theme", "")) == selected_theme:
+			practice_items.append(skill_id)
+	practice_index = clampi(practice_index, 0, maxi(0, practice_items.size() - 1))
 	_refresh_practice()
 
 func _handle_practice_key(key: Key) -> void:
@@ -949,17 +976,32 @@ func _handle_practice_key(key: Key) -> void:
 			_refresh_practice()
 		return
 	if key == KEY_ESCAPE:
-		practice_open = false
-		details_panel.visible = false
-		menu_open = false
-		menu_panel.visible = false
-		_clear_practice_progress_widgets()
+		if practice_focus_category:
+			practice_open = false
+			details_panel.visible = false
+			menu_open = false
+			menu_panel.visible = false
+			_clear_practice_progress_widgets()
+		else:
+			practice_focus_category = true
+			_refresh_practice()
 		return
-	elif key == KEY_UP and not practice_items.is_empty():
+	if key == KEY_LEFT:
+		practice_focus_category = true
+	elif practice_focus_category and key in [KEY_UP, KEY_DOWN]:
+		var delta := -1 if key == KEY_UP else 1
+		practice_category_index = posmod(practice_category_index + delta, practice_categories.size())
+		practice_index = 0
+		_refresh_practice_items()
+		return
+	elif practice_focus_category and key in [KEY_RIGHT, KEY_SPACE, KEY_ENTER, KEY_KP_ENTER]:
+		practice_focus_category = false
+		practice_index = 0
+	elif not practice_focus_category and key == KEY_UP and not practice_items.is_empty():
 		practice_index = posmod(practice_index - 1, practice_items.size())
-	elif key == KEY_DOWN and not practice_items.is_empty():
+	elif not practice_focus_category and key == KEY_DOWN and not practice_items.is_empty():
 		practice_index = posmod(practice_index + 1, practice_items.size())
-	elif key == KEY_SPACE and not practice_items.is_empty():
+	elif not practice_focus_category and key in [KEY_SPACE, KEY_ENTER, KEY_KP_ENTER] and not practice_items.is_empty():
 		practicing_skill_id = practice_items[practice_index]
 		practice_tick_accumulator = 0.0
 		message = "开始练习【%s】。" % DataRegistry.get_skill(practicing_skill_id).get("name", practicing_skill_id)
@@ -970,23 +1012,33 @@ func _refresh_practice() -> void:
 	details_content.visible = true
 	details_content.text = ""
 	_clear_details_widgets()
-	var area := details_content.size
+	# 动态 HUD 首次显示时，PanelContainer 的子内容尺寸可能尚未完成布局；
+	# 面板自身尺寸已经由 _use_detail_hud 同步确定，必须以它作为首帧布局基准。
+	var area := details_panel.size
 	var scale := _display_scale()
-	var pad := 22.0 * scale
-	var row := 31.0 * scale
+	var pad := 20.0 * scale
+	var split := area.x * 0.34
+	var row := 30.0 * scale
 	var content_top := 10.0 * scale
+	var list_bottom := area.y - 46.0 * scale
+	_detail_rule(Vector2(split, content_top), Vector2(split + 1.0, list_bottom), Color("c5bfb2"))
+	for category_index in practice_categories.size():
+		var category_y := content_top + 8.0 * scale + row * category_index
+		_detail_label(practice_categories[category_index], Rect2(Vector2(pad * 1.4, category_y), Vector2(split - pad * 1.6, row)), 13)
+		if practice_focus_category and category_index == practice_category_index:
+			_detail_selection(Rect2(Vector2(pad, category_y), Vector2(split - pad * 1.1, row)))
 	if practice_items.is_empty():
-		_detail_label("（需先拜师并学会门派非架构功法）", Rect2(Vector2(pad, content_top + 14.0 * scale), Vector2(area.x - pad * 2.0, row)), 12, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
+		_detail_label("（该分类尚无可练功法）", Rect2(Vector2(split + pad, content_top + 16.0 * scale), Vector2(area.x - split - pad * 2.0, row)), 12, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
 	else:
 		for index in practice_items.size():
 			var skill_id := practice_items[index]
 			var definition: Dictionary = DataRegistry.get_skill(skill_id)
-			var y := content_top + 10.0 * scale + row * index
-			_detail_label(str(definition.get("name", skill_id)), Rect2(Vector2(pad * 2.0, y), Vector2(area.x - pad * 5.0, row)), 13)
+			var y := content_top + 8.0 * scale + row * index
+			_detail_label(str(definition.get("name", skill_id)), Rect2(Vector2(split + pad, y), Vector2(area.x - split - 125.0 * scale, row)), 13)
 			_detail_label("%d/%d" % [SkillSystem.level(skill_id), SkillSystem.practice_cap(skill_id)], Rect2(Vector2(area.x - 115.0 * scale, y), Vector2(90.0 * scale, row)), 12, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.55, 0.55, 0.55, 1))
-			if index == practice_index:
-				_detail_selection(Rect2(Vector2(pad, y), Vector2(area.x - pad * 2.0, row)))
-	var footer := "练功中 · 空格/ESC 停止" if not practicing_skill_id.is_empty() else "空格 开始练功　·　ESC 返回"
+			if not practice_focus_category and index == practice_index:
+				_detail_selection(Rect2(Vector2(split + pad * 0.5, y), Vector2(area.x - split - pad * 1.5, row)))
+	var footer := "练功中 · 空格/ESC 停止" if not practicing_skill_id.is_empty() else ("↑↓ 选分类　·　空格/→ 查看　·　ESC 返回" if practice_focus_category else "↑↓ 选功法　·　空格 开始练功　·　←/ESC 返回")
 	_detail_label(footer, Rect2(Vector2(pad, area.y - 40.0 * scale), Vector2(area.x - pad * 2.0, 28.0 * scale)), 11, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
 	_render_practice_progress()
 
@@ -1140,6 +1192,9 @@ func _toggle_menu() -> void:
 		_clear_menu_widgets()
 
 func _handle_menu_key(key: Key) -> void:
+	if force_power_open:
+		_handle_force_power_key(key)
+		return
 	if key == KEY_ESCAPE:
 		if system_open or skill_open:
 			system_open = false
@@ -1218,11 +1273,8 @@ func _select_skill_menu() -> void:
 			_open_practice()
 			return
 		2:
-			var result := SkillSystem.set_force_power(SkillSystem.force_power() + 1)
-			message = str(result.get("message", "加力已调整"))
-			# 加力是二级菜单内的即时操作，没有打开新的模态窗口；保留一级与
-			# 二级菜单，方便玩家继续调整或切换其他选项。
-			_set_menu_hint("加力", message)
+			_open_force_power()
+			return
 		3:
 			_close_menu()
 			_open_skill_book()
@@ -1235,6 +1287,41 @@ func _open_meditation() -> void:
 	meditation_open = true
 	meditation_tick_accumulator = 0.0
 	_render_meditation_progress()
+
+func _open_force_power() -> void:
+	force_power_limit = SkillSystem.force_power_cap()
+	if force_power_limit <= 0:
+		_set_menu_hint("加力", "须装备内功功法后方可加力。")
+		return
+	force_power_open = true
+	force_power_value = SkillSystem.force_power()
+	_refresh_force_power_hint()
+
+func _handle_force_power_key(key: Key) -> void:
+	if key in [KEY_UP, KEY_RIGHT]:
+		force_power_value = mini(force_power_limit, force_power_value + 1)
+		_refresh_force_power_hint()
+	elif key in [KEY_DOWN, KEY_LEFT]:
+		force_power_value = maxi(0, force_power_value - 1)
+		_refresh_force_power_hint()
+	elif key in [KEY_SPACE, KEY_ENTER, KEY_KP_ENTER]:
+		_commit_force_power(true)
+	elif key == KEY_ESCAPE:
+		_commit_force_power(false)
+
+func _refresh_force_power_hint() -> void:
+	var detail := "命中耗 %d 精力，附加 0~%d 伤害" % [force_power_value, force_power_value * 2] if force_power_value > 0 else "当前不加力"
+	_set_menu_hint("加力", "加力 %d / %d　↑↓调整 空格确认　（%s）" % [force_power_value, force_power_limit, detail])
+
+func _commit_force_power(show_confirmation: bool) -> void:
+	var result := SkillSystem.set_force_power(force_power_value)
+	force_power_open = false
+	_refresh_menu()
+	if show_confirmation:
+		var value := int(result.get("value", 0))
+		var cap := int(result.get("cap", 0))
+		var confirmation := "已加力 %d / %d。战斗命中时消耗 %d 精力，附加 0~%d 点伤害。" % [value, cap, value, value * 2] if value > 0 else "已取消加力（上限 %d）。" % cap
+		_set_menu_hint("加力", confirmation)
 
 func _handle_meditation_key(key: Key) -> void:
 	if key == KEY_ESCAPE:
@@ -1276,9 +1363,6 @@ func _close_meditation() -> void:
 func _select_system_menu() -> void:
 	match system_index:
 		0:
-			# 目的地列表（或失败原因对话框）是新的模态窗口。必须完整关闭父
-			# 菜单，不能只隐藏一级栏而留下悬空的二级 HUD。
-			_close_menu()
 			_try_cyber_teleport()
 			return
 		1:
@@ -1306,6 +1390,7 @@ func _close_menu() -> void:
 	menu_open = false
 	system_open = false
 	skill_open = false
+	force_power_open = false
 	menu_panel.visible = false
 	map_badge_panel.visible = true
 	_clear_menu_hint()
@@ -1976,33 +2061,43 @@ func _try_cyber_teleport() -> void:
 	var basic_tune_id := SkillSystem.equipped_id("tune", "basic")
 	if SkillSystem.level(basic_tune_id) < CYBER_TELEPORT_SKILL_REQUIREMENT or SkillSystem.equipped_sect_skill_level("tune") < CYBER_TELEPORT_SKILL_REQUIREMENT:
 		message = "赛博传送需要装备的基础轻功与特殊轻功均达到 30 级。"
+		_close_menu()
 		_show_dialogue("赛博传送", message)
 		return
-	var mp_max: int = GameState.player_mp_max()
-	var cost := maxi(1, int(ceil(float(mp_max) / CYBER_TELEPORT_MP_DIVISOR)))
+	var cost := _cyber_teleport_cost()
 	if int(GameState.combat_state.mp) < cost:
 		message = "精力不足，赛博传送需要 %d 精力" % cost
+		_close_menu()
 		_show_dialogue("赛博传送", message)
 		return
 	cyber_maps = []
 	for index in DataRegistry.map_files.size():
-		var candidate := TiledMapLoader.new()
-		if candidate.load_file(DataRegistry.map_files[index]):
-			if str(candidate.properties.get("type", "outDoor")) != "inDoor":
-				cyber_maps.append(index)
+		var map_id := DataRegistry.map_files[index].get_file().get_basename()
+		if DataRegistry.map_type(map_id) != "inDoor":
+			cyber_maps.append(index)
 	if cyber_maps.is_empty():
 		message = "暂无可传送的野外地图。"
+		_close_menu()
 		_show_dialogue("赛博传送", message)
 		return
 	cyber_open = true
 	cyber_index = 0
+	system_open = false
+	skill_open = false
+	_refresh_menu()
 	_refresh_cyber_menu(cost)
 
 func _handle_cyber_key(key: Key) -> void:
-	var cost := maxi(1, int(ceil(float(GameState.player_mp_max()) / CYBER_TELEPORT_MP_DIVISOR)))
+	var cost := _cyber_teleport_cost()
 	if key == KEY_ESCAPE:
 		cyber_open = false
 		details_panel.visible = false
+		menu_open = true
+		menu_panel.visible = true
+		menu_index = 3
+		system_open = true
+		system_index = 0
+		_refresh_menu()
 		return
 	if key == KEY_UP:
 		cyber_index = posmod(cyber_index - 1, cyber_maps.size())
@@ -2017,24 +2112,54 @@ func _handle_cyber_key(key: Key) -> void:
 			var destination := cyber_maps[cyber_index]
 			cyber_open = false
 			details_panel.visible = false
+			_close_menu()
 			_load_map(destination, map_context.map_id if map_context else "", true)
 			message = "赛博传送完成，消耗 %d 精力" % cost
 			return
 	if cyber_open:
 		_refresh_cyber_menu(cost)
 
+func _cyber_teleport_cost() -> int:
+	return maxi(1, int(ceil(float(SkillSystem.meditation_max_mp_cap()) / CYBER_TELEPORT_MP_DIVISOR)))
+
 func _refresh_cyber_menu(cost: int) -> void:
-	_use_detail_hud("cyber")
+	if active_detail_hud != "cyber" or not detail_huds.cyber.panel.visible:
+		_use_detail_hud("cyber")
+	if not is_instance_valid(cyber_selection_widget) or cyber_labels.size() != cyber_maps.size():
+		_build_cyber_menu()
+	else:
+		_layout_cyber_widgets()
+	message = "↑↓选择目的地　空格确认　ESC返回　消耗 %d 精力" % cost
+	_set_menu_hint("赛博传送", message)
+
+func _build_cyber_menu() -> void:
 	details_content.visible = true
-	var lines := ["赛博传送", "↑↓选择目的地 空格确认 ESC返回", "消耗：%d 精力" % cost, ""]
+	details_content.text = ""
+	_clear_details_widgets()
+	cyber_labels.clear()
+	_layout_cyber_panel()
 	for position in cyber_maps.size():
 		var index := cyber_maps[position]
-		var probe := TiledMapLoader.new()
-		var label := DataRegistry.map_files[index].get_file().get_basename()
-		if probe.load_file(DataRegistry.map_files[index]):
-			label = str(probe.properties.get("mapName", probe.map_id))
-		lines.append(_cursor(label, position == cyber_index))
-	details_content.text = "\n".join(lines)
+		var map_id := DataRegistry.map_files[index].get_file().get_basename()
+		var label := _detail_label(DataRegistry.map_display_name(map_id), Rect2(), 13, HORIZONTAL_ALIGNMENT_CENTER)
+		cyber_labels.append(label)
+	cyber_selection_widget = Panel.new()
+	cyber_selection_widget.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cyber_selection_widget.add_theme_stylebox_override("panel", _ui_box(Color(1, 1, 1, 0), Color(0.78, 0.12, 0.06, 1), 2))
+	details_content.add_child(cyber_selection_widget)
+	details_widgets.append(cyber_selection_widget)
+	_layout_cyber_widgets()
+
+func _layout_cyber_widgets() -> void:
+	var scale := _display_scale()
+	var row := 24.0 * scale
+	for position in cyber_labels.size():
+		var label := cyber_labels[position]
+		label.position = Vector2(0.0, row * position)
+		label.size = Vector2(details_panel.size.x, row)
+	if is_instance_valid(cyber_selection_widget):
+		cyber_selection_widget.position = Vector2(1.0 * scale, row * cyber_index)
+		cyber_selection_widget.size = Vector2(details_panel.size.x - 2.0 * scale, row)
 
 func _draw() -> void:
 	var grid_origin := _map_draw_origin()
@@ -2046,28 +2171,72 @@ func _draw() -> void:
 	var player_pos := _world_to_screen(Vector2(player_tile) * Vector2(TiledMapLoader.DEFAULT_TILE_SIZE, TiledMapLoader.DEFAULT_TILE_SIZE)) + Vector2(1, 1) * _render_scale()
 	_draw_npcs()
 	var source := _player_frame_region()
-	var destination := Rect2(player_pos + Vector2(0, -2) * _render_scale(), source.size * _render_scale())
+	var destination := _player_frame_draw_rect(player_pos, source)
 	draw_texture_rect_region(player_texture, destination, source)
 	draw_line(player_pos + Vector2(7, 7) * _render_scale(), player_pos + (Vector2(7, 7) + Vector2(facing) * 7) * _render_scale(), Color.WHITE, 2.0 * _render_scale())
 
 func _load_player_sprite_regions() -> void:
-	var file := FileAccess.open("res://assets/Texture/atlas_regions.json", FileAccess.READ)
+	player_sprite_regions.clear()
+	player_sprite_layouts.clear()
+	var file := FileAccess.open("res://assets/Texture/player.tpsheet", FileAccess.READ)
 	if not file:
 		return
-	var atlas_data = JSON.parse_string(file.get_as_text())
-	if not atlas_data is Dictionary:
+	var sheet = JSON.parse_string(file.get_as_text())
+	if not sheet is Dictionary:
 		return
-	for key in atlas_data.get("player", {}):
-		var region: Array = atlas_data.player[key]
-		player_sprite_regions[key] = Rect2(region[0], region[1], region[2], region[3])
+	var textures: Array = sheet.get("textures", [])
+	if textures.is_empty():
+		return
+	var maximum_canvas_size := Vector2.ZERO
+	for sprite_value in textures[0].get("sprites", []):
+		var sprite: Dictionary = sprite_value
+		var key := str(sprite.get("filename", "")).get_file().get_basename()
+		var region: Dictionary = sprite.get("region", {})
+		var margin: Dictionary = sprite.get("margin", {})
+		var packed_size := Vector2(float(region.get("w", 0)), float(region.get("h", 0)))
+		if key.is_empty() or packed_size.x <= 0.0 or packed_size.y <= 0.0:
+			continue
+		player_sprite_regions[key] = Rect2(
+			float(region.get("x", 0)), float(region.get("y", 0)),
+			packed_size.x, packed_size.y,
+		)
+		var trim_offset := Vector2(float(margin.get("x", 0)), float(margin.get("y", 0)))
+		var source_canvas_size := trim_offset + packed_size + Vector2(float(margin.get("w", 0)), float(margin.get("h", 0)))
+		maximum_canvas_size = maximum_canvas_size.max(source_canvas_size)
+		player_sprite_layouts[key] = {
+			"offset": trim_offset,
+			"source_canvas_size": source_canvas_size,
+		}
+	# 原始动画帧画布本身存在 35～40 × 31～34 的差异。统一到所有帧的
+	# 最大画布，并把较小源画布居中补齐，确保性别/方向/动作切换不改变锚点。
+	for key in player_sprite_layouts:
+		var layout: Dictionary = player_sprite_layouts[key]
+		var source_canvas_size: Vector2 = layout.source_canvas_size
+		layout.offset = (maximum_canvas_size - source_canvas_size) * 0.5 + Vector2(layout.offset)
+		layout.canvas_size = maximum_canvas_size
+		player_sprite_layouts[key] = layout
 
-func _player_frame_region() -> Rect2:
+func _player_frame_key() -> String:
+	var gender := "female" if str(GameState.profile.get("gender", "male")).to_lower() == "female" else "male"
 	var direction := "down"
 	if facing == Vector2i.UP: direction = "up"
 	elif facing == Vector2i.LEFT: direction = "left"
 	elif facing == Vector2i.RIGHT: direction = "right"
-	var key := "%s_%d" % [direction, animation_frame + 1]
-	return player_sprite_regions.get(key, Rect2(1, 15, 13, 17))
+	var motion := "run" if player_moving else "idle"
+	return "player_%s_%s_%s_%d" % [gender, direction, motion, posmod(animation_frame, 4)]
+
+func _player_frame_region() -> Rect2:
+	var key := _player_frame_key()
+	return player_sprite_regions.get(key, player_sprite_regions.get("player_male_down_idle_0", Rect2(0, 0, 1, 1)))
+
+func _player_frame_draw_rect(player_pos: Vector2, source: Rect2 = _player_frame_region()) -> Rect2:
+	var layout: Dictionary = player_sprite_layouts.get(_player_frame_key(), {})
+	var canvas_size: Vector2 = layout.get("canvas_size", source.size)
+	var trim_offset: Vector2 = layout.get("offset", Vector2.ZERO)
+	# 以未裁切的 40×32 逻辑画布相对 16×16 地图格居中、脚底对齐；再叠加
+	# TexturePacker 的 trim offset，从而让不同裁切宽高的帧保持同一锚点。
+	var canvas_origin := player_pos + Vector2((TiledMapLoader.DEFAULT_TILE_SIZE - canvas_size.x) * 0.5, TiledMapLoader.DEFAULT_TILE_SIZE - canvas_size.y) * _render_scale()
+	return Rect2(canvas_origin + trim_offset * _render_scale(), source.size * _render_scale())
 
 func _game_view_rect() -> Rect2:
 	return Rect2((DESIGN_SIZE - CAMERA_SIZE) * 0.5, CAMERA_SIZE)
@@ -2143,6 +2312,9 @@ func _layout_game_view() -> void:
 		_layout_profile_panel()
 	elif npc_view_panel_open:
 		_layout_npc_view_panel()
+	elif cyber_open and active_detail_hud == "cyber":
+		_layout_cyber_panel()
+		_layout_cyber_widgets()
 	else:
 		_layout_details_overlay()
 	_layout_battle_panel()
@@ -2179,6 +2351,19 @@ func _layout_details_overlay() -> void:
 	overlay_size.y = minf(overlay_size.y, DESIGN_SIZE.y - 16.0 * scale)
 	details_panel.position = (DESIGN_SIZE - overlay_size) * 0.5
 	details_panel.size = overlay_size
+
+func _layout_cyber_panel() -> void:
+	var scale := _display_scale()
+	var tab_width := 80.0 * scale
+	var item_gap := 40.0 * scale
+	var group_width := tab_width * MENU_ITEMS.size() + item_gap * (MENU_ITEMS.size() - 1)
+	var group_x := (menu_panel.size.x - group_width) * 0.5
+	var panel_width := 184.0 * scale
+	var system_tab_x := group_x + (tab_width + item_gap) * 3.0
+	var panel_x := system_tab_x - (panel_width - tab_width) * 0.5
+	var row_height := 24.0 * scale
+	details_panel.position = Vector2(panel_x, menu_panel.position.y + menu_panel.size.y)
+	details_panel.size = Vector2(panel_width, row_height * maxi(1, cyber_maps.size()))
 
 func _layout_battle_panel() -> void:
 	var scale := _display_scale()

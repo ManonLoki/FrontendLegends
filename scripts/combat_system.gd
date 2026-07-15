@@ -107,10 +107,7 @@ func player_attack(session: Dictionary) -> Dictionary:
 		result.damage = int(floor(float(result.damage) * (1.0 - minf(PARRY_REDUCE_CAP, PARRY_REDUCE_BASE + maxi(0, int(enemy_parry.get("level", 0)) - int(enemy_parry.get("unlock", 0))) * PARRY_REDUCE_PER_LEVEL))))
 	if int(session.get("enemy_status", {}).get("weakness", 0)) > 0:
 		result.damage = int(ceil(float(result.damage) * WEAKNESS_DAMAGE_MULT))
-	var force := mini(SkillSystem.force_power(), int(GameState.combat_state.mp))
-	if force > 0:
-		GameState.combat_state.mp -= force
-		result.damage += int(round(float(force) * randf_range(0.75, 1.25)))
+	_apply_player_force_power(result)
 	if not attack_move.is_empty():
 		var status := _roll_attack_move_status(attack_move)
 		var extra := int(floor(8.0 + maxi(0, int(attack_move.get("level", 0)) - int(attack_move.get("unlock", 0))) * 0.6))
@@ -126,6 +123,17 @@ func player_attack(session: Dictionary) -> Dictionary:
 	session.enemy_hp = maxi(0, int(session.enemy_hp) - int(result.damage))
 	session.log.append("你造成 %d 点%s伤害" % [result.damage, "暴击" if result.crit else ""])
 	return result
+
+## 严格对齐参考项目：只有当前精力足以支付完整加力档位时才生效，不允许用
+## 剩余精力做“部分加力”；额外伤害按加力面板口径在 0～档位×2 间取整。
+func _apply_player_force_power(result: Dictionary) -> int:
+	var force := SkillSystem.force_power()
+	if force <= 0 or int(GameState.combat_state.mp) < force:
+		return 0
+	GameState.combat_state.mp -= force
+	var extra := randi_range(0, force * 2)
+	result.damage = int(result.get("damage", 0)) + extra
+	return extra
 
 ## 与 player_attack 结构对称，但敌方没有“加力”（force_power）步骤——
 ## 加力是玩家专属的精力换伤害机制，NPC 不消耗精力做等价操作。

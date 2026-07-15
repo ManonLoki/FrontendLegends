@@ -1,0 +1,1068 @@
+{
+	"textures": [
+		{
+			"image": "NPC.png",
+			"size": {
+				"w": 128,
+				"h": 244
+			},
+			"sprites": [
+				{
+					"filename": "npc-1.png",
+					"region": {
+						"x": 103,
+						"y": 218,
+						"w": 15,
+						"h": 24
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-2.png",
+					"region": {
+						"x": 1,
+						"y": 192,
+						"w": 14,
+						"h": 23
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-3.png",
+					"region": {
+						"x": 90,
+						"y": 193,
+						"w": 14,
+						"h": 23
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-4.png",
+					"region": {
+						"x": 106,
+						"y": 193,
+						"w": 14,
+						"h": 23
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-5.png",
+					"region": {
+						"x": 1,
+						"y": 217,
+						"w": 15,
+						"h": 23
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-6.png",
+					"region": {
+						"x": 18,
+						"y": 217,
+						"w": 15,
+						"h": 23
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-7.png",
+					"region": {
+						"x": 35,
+						"y": 217,
+						"w": 15,
+						"h": 23
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-8.png",
+					"region": {
+						"x": 52,
+						"y": 217,
+						"w": 15,
+						"h": 23
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-9.png",
+					"region": {
+						"x": 69,
+						"y": 217,
+						"w": 14,
+						"h": 23
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-10.png",
+					"region": {
+						"x": 37,
+						"y": 1,
+						"w": 15,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-11.png",
+					"region": {
+						"x": 54,
+						"y": 1,
+						"w": 14,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-12.png",
+					"region": {
+						"x": 70,
+						"y": 1,
+						"w": 14,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-13.png",
+					"region": {
+						"x": 86,
+						"y": 1,
+						"w": 14,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-14.png",
+					"region": {
+						"x": 102,
+						"y": 1,
+						"w": 15,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-15.png",
+					"region": {
+						"x": 1,
+						"y": 24,
+						"w": 15,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-16.png",
+					"region": {
+						"x": 18,
+						"y": 24,
+						"w": 14,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-17.png",
+					"region": {
+						"x": 34,
+						"y": 25,
+						"w": 15,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-18.png",
+					"region": {
+						"x": 51,
+						"y": 25,
+						"w": 15,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-19.png",
+					"region": {
+						"x": 68,
+						"y": 25,
+						"w": 14,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-20.png",
+					"region": {
+						"x": 84,
+						"y": 25,
+						"w": 14,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-21.png",
+					"region": {
+						"x": 100,
+						"y": 25,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-22.png",
+					"region": {
+						"x": 1,
+						"y": 48,
+						"w": 15,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-23.png",
+					"region": {
+						"x": 18,
+						"y": 48,
+						"w": 14,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-24.png",
+					"region": {
+						"x": 34,
+						"y": 49,
+						"w": 15,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-25.png",
+					"region": {
+						"x": 51,
+						"y": 49,
+						"w": 14,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-26.png",
+					"region": {
+						"x": 67,
+						"y": 49,
+						"w": 15,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-27.png",
+					"region": {
+						"x": 84,
+						"y": 49,
+						"w": 15,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-28.png",
+					"region": {
+						"x": 101,
+						"y": 49,
+						"w": 15,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-29.png",
+					"region": {
+						"x": 1,
+						"y": 72,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-30.png",
+					"region": {
+						"x": 19,
+						"y": 73,
+						"w": 15,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-31.png",
+					"region": {
+						"x": 36,
+						"y": 73,
+						"w": 15,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-32.png",
+					"region": {
+						"x": 53,
+						"y": 73,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-33.png",
+					"region": {
+						"x": 71,
+						"y": 73,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-34.png",
+					"region": {
+						"x": 89,
+						"y": 73,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-35.png",
+					"region": {
+						"x": 107,
+						"y": 73,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-36.png",
+					"region": {
+						"x": 1,
+						"y": 96,
+						"w": 15,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-37.png",
+					"region": {
+						"x": 18,
+						"y": 97,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-38.png",
+					"region": {
+						"x": 36,
+						"y": 97,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-39.png",
+					"region": {
+						"x": 54,
+						"y": 97,
+						"w": 15,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-40.png",
+					"region": {
+						"x": 71,
+						"y": 97,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-41.png",
+					"region": {
+						"x": 89,
+						"y": 97,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-42.png",
+					"region": {
+						"x": 107,
+						"y": 97,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-43.png",
+					"region": {
+						"x": 85,
+						"y": 218,
+						"w": 16,
+						"h": 23
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-44.png",
+					"region": {
+						"x": 18,
+						"y": 121,
+						"w": 17,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-45.png",
+					"region": {
+						"x": 37,
+						"y": 121,
+						"w": 17,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-46.png",
+					"region": {
+						"x": 56,
+						"y": 121,
+						"w": 18,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-47.png",
+					"region": {
+						"x": 1,
+						"y": 120,
+						"w": 15,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-48.png",
+					"region": {
+						"x": 76,
+						"y": 121,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-49.png",
+					"region": {
+						"x": 94,
+						"y": 121,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-50.png",
+					"region": {
+						"x": 18,
+						"y": 145,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-51.png",
+					"region": {
+						"x": 36,
+						"y": 145,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-52.png",
+					"region": {
+						"x": 112,
+						"y": 121,
+						"w": 15,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-53.png",
+					"region": {
+						"x": 1,
+						"y": 144,
+						"w": 15,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-54.png",
+					"region": {
+						"x": 54,
+						"y": 145,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-55.png",
+					"region": {
+						"x": 72,
+						"y": 145,
+						"w": 15,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-56.png",
+					"region": {
+						"x": 89,
+						"y": 145,
+						"w": 18,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-57.png",
+					"region": {
+						"x": 109,
+						"y": 145,
+						"w": 17,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-58.png",
+					"region": {
+						"x": 18,
+						"y": 169,
+						"w": 18,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-59.png",
+					"region": {
+						"x": 1,
+						"y": 168,
+						"w": 15,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-60.png",
+					"region": {
+						"x": 38,
+						"y": 169,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-61.png",
+					"region": {
+						"x": 56,
+						"y": 169,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-62.png",
+					"region": {
+						"x": 74,
+						"y": 169,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-63.png",
+					"region": {
+						"x": 92,
+						"y": 169,
+						"w": 15,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-64.png",
+					"region": {
+						"x": 109,
+						"y": 169,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-65.png",
+					"region": {
+						"x": 17,
+						"y": 193,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-66.png",
+					"region": {
+						"x": 35,
+						"y": 193,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-67.png",
+					"region": {
+						"x": 53,
+						"y": 193,
+						"w": 17,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-68.png",
+					"region": {
+						"x": 72,
+						"y": 193,
+						"w": 16,
+						"h": 22
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-69.png",
+					"region": {
+						"x": 1,
+						"y": 1,
+						"w": 16,
+						"h": 21
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				},
+				{
+					"filename": "npc-70.png",
+					"region": {
+						"x": 19,
+						"y": 1,
+						"w": 16,
+						"h": 21
+					},
+					"margin": {
+						"x": 0,
+						"y": 0,
+						"w": 0,
+						"h": 0
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"app": "https://www.codeandweb.com/texturepacker",
+		"version": "1.0",
+		"smartupdate": "$TexturePacker:SmartUpdate:0da7bf6168e72978dbe6b114f2e79bd4:23f1edb5ea4df9e1152e795de6926f2a:2b6e48be5d59ac946ff70c7112401fc0$"
+	}
+}

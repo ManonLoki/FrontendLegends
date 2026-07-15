@@ -1,0 +1,978 @@
+{
+	"textures": [
+		{
+			"image": "player.png",
+			"size": {
+				"w": 320,
+				"h": 116
+			},
+			"sprites": [
+				{
+					"filename": "player_female_down_idle_0.png",
+					"region": {
+						"x": 201,
+						"y": 29,
+						"w": 19,
+						"h": 25
+					},
+					"margin": {
+						"x": 9,
+						"y": 1,
+						"w": 12,
+						"h": 6
+					}
+				},
+				{
+					"filename": "player_female_down_idle_1.png",
+					"region": {
+						"x": 218,
+						"y": 1,
+						"w": 19,
+						"h": 25
+					},
+					"margin": {
+						"x": 8,
+						"y": 1,
+						"w": 12,
+						"h": 6
+					}
+				},
+				{
+					"filename": "player_female_down_idle_2.png",
+					"region": {
+						"x": 216,
+						"y": 85,
+						"w": 19,
+						"h": 25
+					},
+					"margin": {
+						"x": 7,
+						"y": 1,
+						"w": 12,
+						"h": 6
+					}
+				},
+				{
+					"filename": "player_female_down_idle_3.png",
+					"region": {
+						"x": 218,
+						"y": 56,
+						"w": 19,
+						"h": 25
+					},
+					"margin": {
+						"x": 6,
+						"y": 1,
+						"w": 12,
+						"h": 6
+					}
+				},
+				{
+					"filename": "player_female_down_run_0.png",
+					"region": {
+						"x": 42,
+						"y": 29,
+						"w": 19,
+						"h": 26
+					},
+					"margin": {
+						"x": 8,
+						"y": 1,
+						"w": 12,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_female_down_run_1.png",
+					"region": {
+						"x": 20,
+						"y": 30,
+						"w": 20,
+						"h": 26
+					},
+					"margin": {
+						"x": 7,
+						"y": 1,
+						"w": 11,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_female_down_run_2.png",
+					"region": {
+						"x": 60,
+						"y": 1,
+						"w": 19,
+						"h": 26
+					},
+					"margin": {
+						"x": 7,
+						"y": 1,
+						"w": 12,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_female_down_run_3.png",
+					"region": {
+						"x": 42,
+						"y": 57,
+						"w": 19,
+						"h": 26
+					},
+					"margin": {
+						"x": 6,
+						"y": 1,
+						"w": 12,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_female_left_idle_0.png",
+					"region": {
+						"x": 59,
+						"y": 85,
+						"w": 19,
+						"h": 26
+					},
+					"margin": {
+						"x": 8,
+						"y": 1,
+						"w": 12,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_female_left_idle_1.png",
+					"region": {
+						"x": 122,
+						"y": 85,
+						"w": 18,
+						"h": 26
+					},
+					"margin": {
+						"x": 8,
+						"y": 1,
+						"w": 13,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_female_left_idle_2.png",
+					"region": {
+						"x": 63,
+						"y": 29,
+						"w": 19,
+						"h": 26
+					},
+					"margin": {
+						"x": 7,
+						"y": 1,
+						"w": 12,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_female_left_idle_3.png",
+					"region": {
+						"x": 222,
+						"y": 28,
+						"w": 19,
+						"h": 25
+					},
+					"margin": {
+						"x": 6,
+						"y": 2,
+						"w": 12,
+						"h": 6
+					}
+				},
+				{
+					"filename": "player_female_left_run_0.png",
+					"region": {
+						"x": 81,
+						"y": 1,
+						"w": 19,
+						"h": 26
+					},
+					"margin": {
+						"x": 8,
+						"y": 2,
+						"w": 12,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_female_left_run_1.png",
+					"region": {
+						"x": 63,
+						"y": 57,
+						"w": 19,
+						"h": 26
+					},
+					"margin": {
+						"x": 7,
+						"y": 2,
+						"w": 12,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_female_left_run_2.png",
+					"region": {
+						"x": 239,
+						"y": 1,
+						"w": 19,
+						"h": 25
+					},
+					"margin": {
+						"x": 6,
+						"y": 2,
+						"w": 12,
+						"h": 6
+					}
+				},
+				{
+					"filename": "player_female_left_run_3.png",
+					"region": {
+						"x": 237,
+						"y": 83,
+						"w": 19,
+						"h": 25
+					},
+					"margin": {
+						"x": 5,
+						"y": 3,
+						"w": 12,
+						"h": 6
+					}
+				},
+				{
+					"filename": "player_female_right_idle_0.png",
+					"region": {
+						"x": 80,
+						"y": 85,
+						"w": 19,
+						"h": 26
+					},
+					"margin": {
+						"x": 8,
+						"y": 1,
+						"w": 12,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_female_right_idle_1.png",
+					"region": {
+						"x": 239,
+						"y": 55,
+						"w": 19,
+						"h": 25
+					},
+					"margin": {
+						"x": 8,
+						"y": 1,
+						"w": 12,
+						"h": 6
+					}
+				},
+				{
+					"filename": "player_female_right_idle_2.png",
+					"region": {
+						"x": 84,
+						"y": 29,
+						"w": 19,
+						"h": 26
+					},
+					"margin": {
+						"x": 7,
+						"y": 1,
+						"w": 12,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_female_right_idle_3.png",
+					"region": {
+						"x": 102,
+						"y": 1,
+						"w": 19,
+						"h": 26
+					},
+					"margin": {
+						"x": 6,
+						"y": 1,
+						"w": 12,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_female_right_run_0.png",
+					"region": {
+						"x": 84,
+						"y": 57,
+						"w": 19,
+						"h": 26
+					},
+					"margin": {
+						"x": 9,
+						"y": 1,
+						"w": 12,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_female_right_run_1.png",
+					"region": {
+						"x": 101,
+						"y": 85,
+						"w": 19,
+						"h": 26
+					},
+					"margin": {
+						"x": 9,
+						"y": 1,
+						"w": 12,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_female_right_run_2.png",
+					"region": {
+						"x": 105,
+						"y": 29,
+						"w": 19,
+						"h": 26
+					},
+					"margin": {
+						"x": 8,
+						"y": 1,
+						"w": 12,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_female_right_run_3.png",
+					"region": {
+						"x": 123,
+						"y": 1,
+						"w": 19,
+						"h": 26
+					},
+					"margin": {
+						"x": 7,
+						"y": 1,
+						"w": 12,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_female_up_idle_0.png",
+					"region": {
+						"x": 243,
+						"y": 28,
+						"w": 19,
+						"h": 25
+					},
+					"margin": {
+						"x": 9,
+						"y": 2,
+						"w": 12,
+						"h": 6
+					}
+				},
+				{
+					"filename": "player_female_up_idle_1.png",
+					"region": {
+						"x": 260,
+						"y": 1,
+						"w": 19,
+						"h": 25
+					},
+					"margin": {
+						"x": 8,
+						"y": 2,
+						"w": 12,
+						"h": 6
+					}
+				},
+				{
+					"filename": "player_female_up_idle_2.png",
+					"region": {
+						"x": 260,
+						"y": 55,
+						"w": 18,
+						"h": 25
+					},
+					"margin": {
+						"x": 8,
+						"y": 2,
+						"w": 13,
+						"h": 6
+					}
+				},
+				{
+					"filename": "player_female_up_idle_3.png",
+					"region": {
+						"x": 258,
+						"y": 82,
+						"w": 19,
+						"h": 25
+					},
+					"margin": {
+						"x": 6,
+						"y": 2,
+						"w": 12,
+						"h": 6
+					}
+				},
+				{
+					"filename": "player_female_up_run_0.png",
+					"region": {
+						"x": 38,
+						"y": 1,
+						"w": 20,
+						"h": 26
+					},
+					"margin": {
+						"x": 8,
+						"y": 2,
+						"w": 11,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_female_up_run_1.png",
+					"region": {
+						"x": 105,
+						"y": 57,
+						"w": 19,
+						"h": 26
+					},
+					"margin": {
+						"x": 7,
+						"y": 2,
+						"w": 12,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_female_up_run_2.png",
+					"region": {
+						"x": 20,
+						"y": 58,
+						"w": 20,
+						"h": 26
+					},
+					"margin": {
+						"x": 6,
+						"y": 2,
+						"w": 11,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_female_up_run_3.png",
+					"region": {
+						"x": 37,
+						"y": 86,
+						"w": 20,
+						"h": 26
+					},
+					"margin": {
+						"x": 5,
+						"y": 2,
+						"w": 11,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_male_down_idle_0.png",
+					"region": {
+						"x": 144,
+						"y": 1,
+						"w": 17,
+						"h": 26
+					},
+					"margin": {
+						"x": 7,
+						"y": 0,
+						"w": 14,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_male_down_idle_1.png",
+					"region": {
+						"x": 126,
+						"y": 57,
+						"w": 17,
+						"h": 26
+					},
+					"margin": {
+						"x": 6,
+						"y": 0,
+						"w": 14,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_male_down_idle_2.png",
+					"region": {
+						"x": 126,
+						"y": 29,
+						"w": 18,
+						"h": 26
+					},
+					"margin": {
+						"x": 5,
+						"y": 0,
+						"w": 13,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_male_down_idle_3.png",
+					"region": {
+						"x": 142,
+						"y": 85,
+						"w": 17,
+						"h": 26
+					},
+					"margin": {
+						"x": 5,
+						"y": 0,
+						"w": 14,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_male_down_run_0.png",
+					"region": {
+						"x": 1,
+						"y": 1,
+						"w": 17,
+						"h": 27
+					},
+					"margin": {
+						"x": 7,
+						"y": 0,
+						"w": 14,
+						"h": 4
+					}
+				},
+				{
+					"filename": "player_male_down_run_1.png",
+					"region": {
+						"x": 1,
+						"y": 30,
+						"w": 17,
+						"h": 27
+					},
+					"margin": {
+						"x": 6,
+						"y": 0,
+						"w": 14,
+						"h": 4
+					}
+				},
+				{
+					"filename": "player_male_down_run_2.png",
+					"region": {
+						"x": 1,
+						"y": 59,
+						"w": 17,
+						"h": 27
+					},
+					"margin": {
+						"x": 5,
+						"y": 0,
+						"w": 14,
+						"h": 4
+					}
+				},
+				{
+					"filename": "player_male_down_run_3.png",
+					"region": {
+						"x": 1,
+						"y": 88,
+						"w": 16,
+						"h": 27
+					},
+					"margin": {
+						"x": 5,
+						"y": 0,
+						"w": 15,
+						"h": 4
+					}
+				},
+				{
+					"filename": "player_male_left_idle_0.png",
+					"region": {
+						"x": 164,
+						"y": 57,
+						"w": 16,
+						"h": 26
+					},
+					"margin": {
+						"x": 7,
+						"y": 1,
+						"w": 15,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_male_left_idle_1.png",
+					"region": {
+						"x": 165,
+						"y": 29,
+						"w": 16,
+						"h": 26
+					},
+					"margin": {
+						"x": 6,
+						"y": 1,
+						"w": 15,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_male_left_idle_2.png",
+					"region": {
+						"x": 182,
+						"y": 1,
+						"w": 16,
+						"h": 26
+					},
+					"margin": {
+						"x": 5,
+						"y": 1,
+						"w": 15,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_male_left_idle_3.png",
+					"region": {
+						"x": 180,
+						"y": 85,
+						"w": 16,
+						"h": 26
+					},
+					"margin": {
+						"x": 5,
+						"y": 1,
+						"w": 15,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_male_left_run_0.png",
+					"region": {
+						"x": 145,
+						"y": 57,
+						"w": 17,
+						"h": 26
+					},
+					"margin": {
+						"x": 7,
+						"y": 1,
+						"w": 14,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_male_left_run_1.png",
+					"region": {
+						"x": 298,
+						"y": 82,
+						"w": 15,
+						"h": 25
+					},
+					"margin": {
+						"x": 6,
+						"y": 2,
+						"w": 16,
+						"h": 6
+					}
+				},
+				{
+					"filename": "player_male_left_run_2.png",
+					"region": {
+						"x": 284,
+						"y": 28,
+						"w": 16,
+						"h": 25
+					},
+					"margin": {
+						"x": 5,
+						"y": 2,
+						"w": 15,
+						"h": 6
+					}
+				},
+				{
+					"filename": "player_male_left_run_3.png",
+					"region": {
+						"x": 299,
+						"y": 55,
+						"w": 15,
+						"h": 25
+					},
+					"margin": {
+						"x": 5,
+						"y": 2,
+						"w": 16,
+						"h": 6
+					}
+				},
+				{
+					"filename": "player_male_right_idle_0.png",
+					"region": {
+						"x": 19,
+						"y": 88,
+						"w": 16,
+						"h": 27
+					},
+					"margin": {
+						"x": 9,
+						"y": 0,
+						"w": 15,
+						"h": 4
+					}
+				},
+				{
+					"filename": "player_male_right_idle_1.png",
+					"region": {
+						"x": 301,
+						"y": 1,
+						"w": 16,
+						"h": 25
+					},
+					"margin": {
+						"x": 7,
+						"y": 1,
+						"w": 15,
+						"h": 6
+					}
+				},
+				{
+					"filename": "player_male_right_idle_2.png",
+					"region": {
+						"x": 20,
+						"y": 1,
+						"w": 16,
+						"h": 27
+					},
+					"margin": {
+						"x": 7,
+						"y": 0,
+						"w": 15,
+						"h": 4
+					}
+				},
+				{
+					"filename": "player_male_right_idle_3.png",
+					"region": {
+						"x": 302,
+						"y": 28,
+						"w": 15,
+						"h": 25
+					},
+					"margin": {
+						"x": 7,
+						"y": 1,
+						"w": 16,
+						"h": 6
+					}
+				},
+				{
+					"filename": "player_male_right_run_0.png",
+					"region": {
+						"x": 182,
+						"y": 57,
+						"w": 16,
+						"h": 26
+					},
+					"margin": {
+						"x": 8,
+						"y": 1,
+						"w": 15,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_male_right_run_1.png",
+					"region": {
+						"x": 183,
+						"y": 29,
+						"w": 16,
+						"h": 26
+					},
+					"margin": {
+						"x": 7,
+						"y": 1,
+						"w": 15,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_male_right_run_2.png",
+					"region": {
+						"x": 200,
+						"y": 1,
+						"w": 16,
+						"h": 26
+					},
+					"margin": {
+						"x": 7,
+						"y": 1,
+						"w": 15,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_male_right_run_3.png",
+					"region": {
+						"x": 198,
+						"y": 85,
+						"w": 16,
+						"h": 26
+					},
+					"margin": {
+						"x": 6,
+						"y": 1,
+						"w": 15,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_male_up_idle_0.png",
+					"region": {
+						"x": 264,
+						"y": 28,
+						"w": 18,
+						"h": 25
+					},
+					"margin": {
+						"x": 6,
+						"y": 3,
+						"w": 13,
+						"h": 6
+					}
+				},
+				{
+					"filename": "player_male_up_idle_1.png",
+					"region": {
+						"x": 279,
+						"y": 82,
+						"w": 17,
+						"h": 25
+					},
+					"margin": {
+						"x": 6,
+						"y": 3,
+						"w": 14,
+						"h": 6
+					}
+				},
+				{
+					"filename": "player_male_up_idle_2.png",
+					"region": {
+						"x": 281,
+						"y": 1,
+						"w": 18,
+						"h": 25
+					},
+					"margin": {
+						"x": 5,
+						"y": 3,
+						"w": 13,
+						"h": 6
+					}
+				},
+				{
+					"filename": "player_male_up_idle_3.png",
+					"region": {
+						"x": 280,
+						"y": 55,
+						"w": 17,
+						"h": 25
+					},
+					"margin": {
+						"x": 5,
+						"y": 3,
+						"w": 14,
+						"h": 6
+					}
+				},
+				{
+					"filename": "player_male_up_run_0.png",
+					"region": {
+						"x": 146,
+						"y": 29,
+						"w": 17,
+						"h": 26
+					},
+					"margin": {
+						"x": 6,
+						"y": 2,
+						"w": 14,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_male_up_run_1.png",
+					"region": {
+						"x": 200,
+						"y": 57,
+						"w": 16,
+						"h": 26
+					},
+					"margin": {
+						"x": 6,
+						"y": 2,
+						"w": 15,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_male_up_run_2.png",
+					"region": {
+						"x": 163,
+						"y": 1,
+						"w": 17,
+						"h": 26
+					},
+					"margin": {
+						"x": 5,
+						"y": 2,
+						"w": 14,
+						"h": 5
+					}
+				},
+				{
+					"filename": "player_male_up_run_3.png",
+					"region": {
+						"x": 161,
+						"y": 85,
+						"w": 17,
+						"h": 26
+					},
+					"margin": {
+						"x": 4,
+						"y": 2,
+						"w": 14,
+						"h": 5
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"app": "https://www.codeandweb.com/texturepacker",
+		"version": "1.0",
+		"smartupdate": "$TexturePacker:SmartUpdate:3b8c9032a355a429e50c9952c9bf7ab2:97312ee22bf6e6d4d07fda433dc1b579:0f3c3fc01f5f43cf60290b5024bbe8b7$"
+	}
+}

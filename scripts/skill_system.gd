@@ -2,7 +2,8 @@ extends Node
 
 const LEARNING_TICK_SECONDS := 1.0 / 30.0
 const MEDITATION_TICK_SECONDS := 1.0 / 30.0
-const PRACTICE_TICK_SECONDS := 1.0 / 6.0
+const PRACTICE_TICK_SECONDS := 1.0 / 5.0
+const MEDITATION_INNER_POWER_UNIT := 25.0
 
 const THEMES := ["code", "tune", "arch", "parry", "knowledge"]
 const BASIC_SKILL_IDS: Array[String] = ["basicStrength", "basicAgility", "basicConstitution", "basicParry", "literacy"]
@@ -178,8 +179,7 @@ func learn_tick(npc_id: String, skill_id: String) -> Dictionary:
 		return {"ok": false, "message": "须先将【%s】练到 %d 级。" % [DataRegistry.get_skill(prereq_id).get("name", prereq_id), int(prereq.get("level", 0))], "reason": "requires"}
 	var progress: Dictionary = ensure_skills().get("learnProgress", {})
 	var next_level := current + 1
-	var rate := clampf(1.0 - (float(attributes.get("wisdom", 25)) - WISDOM_BASELINE) * WISDOM_LEARN_RATE_PER_POINT, LEARN_RATE_MIN, LEARN_RATE_MAX)
-	var required := _learn_required(definition, next_level, rate)
+	var required := _learn_required(definition, next_level, _learning_cost_rate())
 	var current_progress := mini(required, int(progress.get(skill_id, 0)))
 	var vitals: Dictionary = GameState.profile.get("vitals", {})
 	var spent_potential := 0
@@ -248,10 +248,8 @@ func learning_progress(skill_id: String) -> Dictionary:
 	var definition := DataRegistry.get_skill(skill_id)
 	if definition.is_empty():
 		return {"current": 0, "total": 1}
-	var attributes: Dictionary = GameState.profile.get("attributes", {})
 	var next_level := level(skill_id) + 1
-	var rate := clampf(1.0 - (float(attributes.get("wisdom", 25)) - WISDOM_BASELINE) * WISDOM_LEARN_RATE_PER_POINT, LEARN_RATE_MIN, LEARN_RATE_MAX)
-	var required := _learn_required(definition, next_level, rate)
+	var required := _learn_required(definition, next_level, _learning_cost_rate())
 	return {
 		"current": mini(required, int(ensure_skills().get("learnProgress", {}).get(skill_id, 0))),
 		"total": required,
@@ -276,6 +274,15 @@ func _learn_required(definition: Dictionary, level_to_reach: int, rate: float) -
 	var base_required := maxi(1, int(ceil(1.0 + float(max_cost - 1) * pow(t, 2.0))))
 	var normalized_rate := clampf(rate, 0.65, 1.25)
 	return maxi(2, int(ceil(float(base_required) * normalized_rate / 2.0)) * 2)
+
+func _learning_cost_rate() -> float:
+	var wisdom := float(GameState.profile.get("attributes", {}).get("wisdom", 25))
+	return clampf(1.0 - (wisdom - WISDOM_BASELINE) * WISDOM_LEARN_RATE_PER_POINT, LEARN_RATE_MIN, LEARN_RATE_MAX)
+
+## 学艺与练功必须共用同一条技能经验曲线；公开此查询供 HUD 和回归测试使用。
+func skill_exp_required(skill_id: String, level_to_reach: int) -> int:
+	var definition := DataRegistry.get_skill(skill_id)
+	return 1 if definition.is_empty() else _learn_required(definition, level_to_reach, _learning_cost_rate())
 
 ## 基础功法练至每 10 级为对应属性 +1（封顶 50），按参考项目设定 basicParry
 ## 反哺“strength”而非“agility”——招架练的是身法根基，故意与其他映射不对称。
@@ -417,21 +424,34 @@ func _make_ult(config: Dictionary, tier: int, inner_power: int) -> Dictionary:
 	var kind := str(config.get("kind", "hugeDamage"))
 	return {"id": "ult:%s:%d" % [config.get("key", "sect"), ULT_TIER1_ARCH_LEVEL if tier == 1 else ULT_TIER2_ARCH_LEVEL], "name": config.get("names", ["绝招", "绝招"])[tier - 1], "kind": kind, "tier": tier, "inner_power": inner_power, "mp_cost": costs.get(kind, [40, 70])[tier - 1]}
 
-func _cost(definition: Dictionary, level_before: int) -> int:
-	return maxi(1, int(round(float(definition.get("costBase", 100)) * pow(float(definition.get("costFactor", 1.0)), level_before))))
-
 ## 冥想分两阶段：先把精力（mp）当缓冲池慢慢填满到 cap，填满后一次性把这池
 ## 精力兑换为 1 点内力修为（neigong）并清零——mp 本身不是内力，只是兑换凭证。
+## 理论冥想上限只取决于当前装备的基础/门派架构功法和有效根骨，不受玩家目前
+## 已经冥想出的 neigong 高低影响。赛博传送也使用同一个理论上限计算门槛。
+func meditation_cap() -> int:
+	var constitution := float(GameState.profile.get("attributes", {}).get("constitution", 0))
+	return meditation_cap_from_values(constitution, level("basicConstitution"), equipped_sect_skill_level("arch"))
+
+## 纯公式入口，供玩家/NPC规则和回归测试复用。3000 不是特殊上限：它只是
+## 根骨25、基础架构40、已装备高级架构40代入公式后的结果。
+func meditation_cap_from_values(constitution: float, basic_arch_level: int, advanced_arch_level: int) -> int:
+	var modifier := GameState.meditation_modifier(constitution)
+	var inner_power := maxi(0, basic_arch_level) + maxi(0, advanced_arch_level) * 2
+	return maxi(0, int(floor(float(inner_power) * MEDITATION_INNER_POWER_UNIT * modifier)))
+
+## 修为终点对应的最大“当前精力上限”；当前精力上限始终是 neigong 的 2 倍。
+func meditation_max_mp_cap() -> int:
+	return meditation_cap() * GameState.MP_PER_NEIGONG
+
 func meditate_tick() -> Dictionary:
 	if not can_meditate():
 		return {"ok": false, "message": "须装备基础架构与本门架构高级功法，方可冥想。"}
 	var vitals: Dictionary = GameState.profile.get("vitals", {})
 	var constitution := float(GameState.profile.get("attributes", {}).get("constitution", 0))
 	var modifier := GameState.meditation_modifier(constitution)
-	var inner_power := level("basicConstitution") + equipped_sect_skill_level("arch") * 2
-	var cap := int(floor(float(inner_power) * 25.0 * modifier))
+	var cap := meditation_cap()
 	var neigong := int(vitals.get("neigong", 0))
-	var maximum := maxi(0, neigong)
+	var maximum := GameState.player_mp_max()
 	if neigong >= cap and int(GameState.combat_state.mp) >= maximum:
 		return {"ok": false, "message": "冥想已满，无需继续冥想。"}
 	GameState.combat_state.mp = mini(maximum, int(GameState.combat_state.mp) + maxi(1, int(floor(5.0 * modifier))))
@@ -492,7 +512,9 @@ func practice_tick(skill_id: String) -> Dictionary:
 		var cap_reason := "精力修为不足，须多冥想积累内力。" if cap >= mp_max and cap < basic_level else "须提升基础功法等级。"
 		return {"ok": false, "message": "【%s】已到当前上限 %d 级，%s" % [definition.get("name", skill_id), cap, cap_reason], "reason": "cap"}
 	var progress: Dictionary = skills.get("practiceProgress", {})
-	var required := _cost(definition, current)
+	# 与师父学艺严格同口径：练到下一级所需经验使用 skillExpRequiredOf
+	# 对应的缓和曲线，禁止再使用 costFactor^level 的旧指数成本。
+	var required := _learn_required(definition, current + 1, _learning_cost_rate())
 	var current_progress := mini(required, maxi(0, int(progress.get(skill_id, 0))))
 	var gain_per_tick := maxi(1, int(floor(float(GameState.profile.get("attributes", {}).get("wisdom", 1)) / 5.0)))
 	var gain := mini(gain_per_tick, required - current_progress)
@@ -506,7 +528,7 @@ func practice_tick(skill_id: String) -> Dictionary:
 		return {"ok": false, "message": "体力不足，练不动功。", "reason": "resource"}
 	GameState.combat_state.mp -= mp_cost
 	GameState.combat_state.hp -= hp_cost
-	# 练功以 6 Hz 推进；每个有效 tick 同步推进 1/6 秒游戏时钟。
+	# 新设定每秒推进 5 次练功 tick；每个有效 tick 同步推进 1/5 秒游戏时钟。
 	GameState.advance_time(PRACTICE_TICK_SECONDS)
 	var next_progress := current_progress + gain
 	if next_progress >= required:
@@ -517,7 +539,7 @@ func practice_tick(skill_id: String) -> Dictionary:
 		progress[skill_id] = next_progress
 	skills.practiceProgress = progress
 	var shown_progress := int(progress.get(skill_id, 0))
-	var shown_required := _cost(definition, level(skill_id))
+	var shown_required := _learn_required(definition, level(skill_id) + 1, _learning_cost_rate())
 	return {"ok": true, "message": "%s 练功进度 %d/%d" % [definition.get("name", skill_id), shown_progress, shown_required], "level": level(skill_id)}
 
 func practice_progress(skill_id: String) -> Dictionary:
@@ -527,7 +549,7 @@ func practice_progress(skill_id: String) -> Dictionary:
 	var current_level := level(skill_id)
 	return {
 		"current": int(ensure_skills().get("practiceProgress", {}).get(skill_id, 0)),
-		"total": _cost(definition, current_level),
+		"total": _learn_required(definition, current_level + 1, _learning_cost_rate()),
 		"level": current_level,
 	}
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="80" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="81">
+<map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="80" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="87">
  <properties>
   <property name="mapName" value="开源镇"/>
   <property name="region" value="开源镇"/>
@@ -39,7 +39,7 @@
  </layer>
  <layer id="3" name="Prop" width="80" height="40">
   <data encoding="base64" compression="zlib">
-   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
+   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
   </data>
  </layer>
  <objectgroup id="4" name="Interactive">
@@ -187,30 +187,6 @@
    </properties>
    <point/>
   </object>
-  <object id="70" name="路牌" type="Props" x="1166.98" y="307.067" width="32" height="16">
-   <properties>
-    <property name="text" value="前方东郊，去往迷雾森林，鱿鱼山庄"/>
-    <property name="type" value="Props"/>
-   </properties>
-  </object>
-  <object id="71" name="路牌" type="Props" x="49.0224" y="578.045" width="32" height="16">
-   <properties>
-    <property name="text" value="前方西郊，去往空の国，NG神教"/>
-    <property name="type" value="Props"/>
-   </properties>
-  </object>
-  <object id="72" name="路牌" type="Props" x="622.978" y="66.0448" width="48" height="16">
-   <properties>
-    <property name="text" value="↑北郊，去往香草派"/>
-    <property name="type" value="Props"/>
-   </properties>
-  </object>
-  <object id="73" name="路牌" type="Props" x="880" y="467.067" width="48" height="16">
-   <properties>
-    <property name="text" value="↓南郊，去往量子仙宗，笙火喵喵教"/>
-    <property name="type" value="Props"/>
-   </properties>
-  </object>
   <object id="75" name="活阎王" type="NPC" x="599.256" y="68.88">
    <properties>
     <property name="npcId" value="huo_yan_wang"/>
@@ -237,6 +213,30 @@
     <property name="npcId" value="liu_dong_tan_fan"/>
    </properties>
    <point/>
+  </object>
+  <object id="81" name="路牌" type="Props" gid="20043" x="624" y="80" width="16" height="17.8257">
+   <properties>
+    <property name="text" value="↑北郊，去往香草派"/>
+    <property name="type" propertytype="Type" value="props"/>
+   </properties>
+  </object>
+  <object id="83" name="路牌" type="Props" gid="20043" x="912" y="480" width="12" height="16">
+   <properties>
+    <property name="text" value="↓南郊，去往量子仙宗，笙火喵喵教"/>
+    <property name="type" propertytype="Type" value="props"/>
+   </properties>
+  </object>
+  <object id="84" name="路牌" type="Props" gid="20053" x="1168" y="320" width="16" height="16">
+   <properties>
+    <property name="text" value="前方东郊，去往迷雾森林，鱿鱼山庄"/>
+    <property name="type" propertytype="Type" value="props"/>
+   </properties>
+  </object>
+  <object id="86" name="路牌" type="Props" gid="20054" x="48" y="592" width="16" height="16">
+   <properties>
+    <property name="text" value="前方西郊，去往空の国，NG神教"/>
+    <property name="type" propertytype="Type" value="props"/>
+   </properties>
   </object>
  </objectgroup>
 </map>

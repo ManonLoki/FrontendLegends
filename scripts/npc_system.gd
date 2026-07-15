@@ -5,19 +5,32 @@ var runtime_npcs: Dictionary = {}
 var sprite_regions: Dictionary = {}
 
 func _ready() -> void:
-	var file := FileAccess.open("res://assets/Texture/atlas_regions.json", FileAccess.READ)
+	_load_sprite_regions()
+
+func _load_sprite_regions() -> void:
+	sprite_regions.clear()
+	var file := FileAccess.open("res://assets/Texture/NPC.tpsheet", FileAccess.READ)
 	if not file:
 		return
-	var atlas_data = JSON.parse_string(file.get_as_text())
-	if not atlas_data is Dictionary:
+	var sheet = JSON.parse_string(file.get_as_text())
+	if not sheet is Dictionary:
 		return
-	for key in atlas_data.get("npc", {}):
-		var region: Array = atlas_data.npc[key]
-		sprite_regions[key] = Rect2(region[0], region[1], region[2], region[3])
+	var textures: Array = sheet.get("textures", [])
+	if textures.is_empty():
+		return
+	for sprite_value in textures[0].get("sprites", []):
+		var sprite: Dictionary = sprite_value
+		var region: Dictionary = sprite.get("region", {})
+		var key := str(sprite.get("filename", "")).get_file().get_basename()
+		if not key.is_empty():
+			sprite_regions[key] = Rect2(
+				float(region.get("x", 0)), float(region.get("y", 0)),
+				float(region.get("w", 0)), float(region.get("h", 0)),
+			)
 
 func sprite_region(npc_id: String) -> Rect2:
 	var sprite := str(build_instance(npc_id).get("sprite", "npc-1"))
-	return sprite_regions.get(sprite, Rect2(49, 17, 15, 24))
+	return sprite_regions.get(sprite.get_file().get_basename(), sprite_regions.get("npc-1", Rect2(0, 0, 1, 1)))
 
 func build_instance(npc_id: String, overrides: Dictionary = {}) -> Dictionary:
 	var definition: Dictionary = runtime_npcs.get(npc_id, DataRegistry.get_npc(npc_id)).duplicate(true)

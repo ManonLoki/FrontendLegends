@@ -31,9 +31,6 @@
    </properties>
    <point/>
   </object>
-  <object id="2" x="137.502" y="-20.4616">
-   <point/>
-  </object>
   <object id="3" name="雪狼" type="NPC" x="231.625" y="136.684">
    <properties>
     <property name="npcId" value="xue_lang"/>

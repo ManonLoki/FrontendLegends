@@ -16,6 +16,8 @@ func _run() -> void:
 	var quest_system = root.get_node("QuestSystem")
 	var inventory_system = root.get_node("InventorySystem")
 	var data_registry = root.get_node("DataRegistry")
+	var combat_system = root.get_node("CombatSystem")
+	var npc_system = root.get_node("NpcSystem")
 	game_state.delete_save()
 	game_state.create_profile("alignment-test", {"strength": 25, "agility": 25, "constitution": 25, "wisdom": 25})
 	_assert_true(skill_system.ensure_skills().levels.is_empty(), "新角色不应自带任何基础技能")
@@ -62,6 +64,7 @@ func _run() -> void:
 	_assert_true(runtime_bounty.get("skillLevels", {}).keys().size() == 5 and runtime_bounty.get("equippedSkillIds", []).size() == 5, "悬赏目标应缩放并装备五项基础技能")
 	var darkxue_map := TiledMapLoader.new()
 	_assert_true(darkxue_map.load_file("res://assets/Map/maps/LoreWorld/KaiyuanTown/DarkXue.tmx"), "应能加载 DARK学室内地图")
+	_assert_true(data_registry.map_type("DarkXue") == "inDoor" and data_registry.map_type("KaiyuanTown") == "outDoor", "地图注册阶段应缓存室内/室外类型，传送菜单不得临时重读 TMX")
 	_assert_true(not darkxue_map.npc_object_at_tile(7, 6).is_empty(), "NPC point 对象应命中脚下单格")
 	_assert_true(darkxue_map.npc_object_at_tile(8, 6).is_empty(), "NPC point 对象不得扩张命中相邻格")
 	var bounty_tile: Vector2i = darkxue_map.pick_dynamic_npc_tile()
@@ -77,12 +80,16 @@ func _run() -> void:
 	_assert_true(not learn_result.has("reason"), "学习 tick 应实际推进")
 	_assert_true(is_equal_approx(game_state.game_time_sec, before_time), "学习 tick 不应重复推进全局时钟")
 
-	# 连续动作频率：学习/冥想 30 Hz，练功 6 Hz。
+	# 当前设定：学习/冥想 30 Hz、练功每秒 5 tick。
 	_assert_true(is_equal_approx(skill_system.LEARNING_TICK_SECONDS, 1.0 / 30.0), "学习应每秒推进 30 次")
 	_assert_true(is_equal_approx(skill_system.MEDITATION_TICK_SECONDS, 1.0 / 30.0), "冥想应每秒推进 30 次")
-	_assert_true(is_equal_approx(skill_system.PRACTICE_TICK_SECONDS, 1.0 / 6.0), "练功应每秒推进 6 次")
+	_assert_true(is_equal_approx(skill_system.PRACTICE_TICK_SECONDS, 1.0 / 5.0), "练功应每秒推进 5 次")
+	game_state.profile.attributes.constitution = 29
+	game_state.profile.vitals.neigong = 130
+	_assert_true(game_state.player_mp_max() == 260 and game_state.player_hp_max() == 293, "内功修为 130 的当前精力上限应为 260，并按该上限反哺体力至 293")
+	game_state.profile.attributes.constitution = 25
 
-	# 练功：有效 tick 推进 1/6 秒，并消耗精力。
+	# 练功：有效 tick 推进 1/5 秒，并消耗精力。
 	var skills: Dictionary = skill_system.ensure_skills()
 	skills.levels.basicStrength = 5
 	skills.levels.ng_code_decorator = 1
@@ -92,7 +99,7 @@ func _run() -> void:
 	before_time = game_state.game_time_sec
 	var practice_result: Dictionary = skill_system.practice_tick("ng_code_decorator")
 	_assert_true(bool(practice_result.get("ok", false)), "练功 tick 应成功")
-	_assert_true(is_equal_approx(game_state.game_time_sec - before_time, 1.0 / 6.0), "练功 tick 未推进 1/6 秒")
+	_assert_true(is_equal_approx(game_state.game_time_sec - before_time, 1.0 / 5.0), "练功 tick 应推进 1/5 秒")
 
 	# 冥想：装备基础/高级架构后，有效 tick 推进 1/30 秒。
 	skills.levels.basicConstitution = 2
@@ -255,6 +262,42 @@ func _run() -> void:
 	var game = load("res://scenes/game.tscn").instantiate()
 	root.add_child(game)
 	await process_frame
+	# 新 TexturePacker 图集必须直接按 tpsheet 载入，不能继续使用旧横排图集坐标。
+	_assert_true(game.player_sprite_regions.size() == 64 and game.player_sprite_layouts.size() == 64, "Player 图集应载入男女、四方向、idle/run 各四帧，共 64 帧")
+	_assert_true(npc_system.sprite_regions.size() == 70, "NPC 图集应从 NPC.tpsheet 载入全部 70 个角色区域")
+	for gender in ["male", "female"]:
+		for direction in ["down", "left", "right", "up"]:
+			for motion in ["idle", "run"]:
+				for frame in 4:
+					var expected_player_frame := "player_%s_%s_%s_%d" % [gender, direction, motion, frame]
+					_assert_true(game.player_sprite_regions.has(expected_player_frame), "Player 图集缺少帧：%s" % expected_player_frame)
+	for npc_id in data_registry.npcs:
+		var npc_sprite := str(data_registry.npcs[npc_id].get("sprite", "npc-1")).get_file().get_basename()
+		_assert_true(npc_system.sprite_regions.has(npc_sprite), "NPC %s 引用了图集中不存在的角色 %s" % [npc_id, npc_sprite])
+	for player_region_value in game.player_sprite_regions.values():
+		var player_region: Rect2 = player_region_value
+		_assert_true(Rect2(Vector2.ZERO, game.player_texture.get_size()).encloses(player_region), "Player 帧区域不得越出新 320×116 图集")
+	for npc_region_value in npc_system.sprite_regions.values():
+		var npc_region: Rect2 = npc_region_value
+		_assert_true(Rect2(Vector2.ZERO, game.npc_texture.get_size()).encloses(npc_region), "NPC 帧区域不得越出新 128×244 图集")
+	game_state.profile.gender = "male"
+	game.facing = Vector2i.DOWN
+	game.player_moving = false
+	game.animation_frame = 2
+	_assert_true(game._player_frame_key() == "player_male_down_idle_2", "男性静止动画应选择 male/down/idle 对应帧")
+	game_state.profile.gender = "female"
+	game.facing = Vector2i.LEFT
+	game.player_moving = true
+	game.animation_frame = 3
+	_assert_true(game._player_frame_key() == "player_female_left_run_3", "女性移动动画应选择 female/left/run 对应帧")
+	var female_run_layout: Dictionary = game.player_sprite_layouts[game._player_frame_key()]
+	_assert_true(female_run_layout.canvas_size == Vector2(40.0, 34.0), "Player 裁切帧应归一化到稳定的 40×34 最大逻辑画布，避免动画抖动")
+	for player_layout_value in game.player_sprite_layouts.values():
+		_assert_true(player_layout_value.canvas_size == Vector2(40.0, 34.0), "所有 Player 性别、方向和动作帧必须共用同一逻辑画布锚点")
+	game_state.profile.gender = "male"
+	game.facing = Vector2i.DOWN
+	game.player_moving = false
+	game.animation_frame = 0
 	# UI 统一使用 640×480 逻辑坐标；窗口缩放只交给 Godot stretch，避免二次放大。
 	_assert_true(is_equal_approx(game._display_scale(), 1.0), "游戏 UI 不应再按物理窗口执行第二次缩放")
 	_assert_true(game._game_view_rect() == Rect2(0.0, 0.0, 640.0, 480.0), "地图相机应覆盖完整 640×480 设计画布")
@@ -422,8 +465,53 @@ func _run() -> void:
 	_assert_true(is_equal_approx(meditation_meter.position.x + meditation_meter.size.x * 0.5, view_rect.position.x + view_rect.size.x * 0.5), "冥想进度条应相对摄像机视口水平居中")
 	_assert_true(not Rect2(game.map_badge_panel.position, game.map_badge_panel.size).intersects(Rect2(meditation_meter.position, meditation_meter.size)), "房间名 HUD 不得与冥想进度条重叠")
 
+	# 练功必须先选左栏分类，再进入右栏选择具体功法。
+	game_state.profile.sect = "NG神教"
+	game_state.profile.attributes.wisdom = 25
+	game_state.profile.vitals.neigong = 80
+	game_state.combat_state.mp = 10
+	game_state.combat_state.hp = 100
+	skill_system.ensure_skills().levels["basicStrength"] = 80
+	skill_system.ensure_skills().levels["ng_code_decorator"] = 40
+	skill_system.ensure_skills().levels["ng_tune_rx_step"] = 40
+	skill_system.ensure_skills().levels["ng_parry_interceptor"] = 40
+	skill_system.ensure_skills().practiceProgress["ng_code_decorator"] = 365
+	skill_system.ensure_skills().learnProgress["ng_code_decorator"] = 365
+	var ng_definition: Dictionary = data_registry.get_skill("ng_code_decorator")
+	_assert_true(skill_system._learn_required(ng_definition, 41, 1.0) == 492 and skill_system.skill_exp_required("ng_code_decorator", 41) == 492, "40→41 级经验应严格采用参考项目 skillExpRequiredOf 曲线，不得使用指数成本")
+	_assert_true(skill_system.practice_progress("ng_code_decorator").total == 492 and skill_system.learning_progress("ng_code_decorator").total == 492, "学艺与练功必须共用同一经验需求")
+	var practice_hp_before: int = game_state.combat_state.hp
+	var practice_mp_before: int = game_state.combat_state.mp
+	var aligned_practice_tick: Dictionary = skill_system.practice_tick("ng_code_decorator")
+	_assert_true(bool(aligned_practice_tick.get("ok", false)) and int(skill_system.ensure_skills().practiceProgress["ng_code_decorator"]) == 370, "灵感 25 时练功每秒应推进 floor(25/5)=5 点经验")
+	_assert_true(game_state.combat_state.mp == practice_mp_before - 2 and game_state.combat_state.hp == practice_hp_before - 4, "练功每 tick 应固定消耗 2 精力，并按经验增量分摊 80% 体力成本")
+	game._open_practice()
+	_assert_true(game.practice_focus_category and game.practice_categories.size() == 3, "练功打开后应先聚焦编码、思维、招架分类栏")
+	_assert_true(game.practice_items == ["ng_code_decorator"], "编码分类右栏应只显示对应的已学门派功法")
+	var first_category_x := -INF
+	var first_skill_x := -INF
+	for first_practice_widget in game.details_widgets:
+		if first_practice_widget is Label and str(first_practice_widget.text) == "编码":
+			first_category_x = first_practice_widget.position.x
+		elif first_practice_widget is Label and str(first_practice_widget.text) == "模版语法":
+			first_skill_x = first_practice_widget.position.x
+	_assert_true(first_category_x > 0.0 and first_skill_x > game.details_panel.size.x * 0.34, "练功 HUD 首次打开必须按面板实际尺寸完成左右栏布局，不得缩在左上角")
+	game._handle_practice_key(KEY_SPACE)
+	_assert_true(not game.practice_focus_category and game.practicing_skill_id.is_empty(), "分类栏按空格应只进入功法栏，不得立即开始练功")
+	game._handle_practice_key(KEY_SPACE)
+	_assert_true(game.practicing_skill_id == "ng_code_decorator" and game.practice_progress_widgets.size() == 1, "功法栏选中具体功法后按空格才应开始修炼")
+	game._handle_practice_key(KEY_ESCAPE)
+	_assert_true(game.practice_open and not game.practice_focus_category and game.practicing_skill_id.is_empty(), "修炼中按 ESC 应先停止并留在功法栏")
+	game._handle_practice_key(KEY_ESCAPE)
+	_assert_true(game.practice_open and game.practice_focus_category, "功法栏按 ESC 应先退回分类栏")
+	game._handle_practice_key(KEY_DOWN)
+	_assert_true(game.practice_category_index == 1 and game.practice_items == ["ng_tune_rx_step"], "切换练功分类时右栏功法必须同步更新")
+	game._handle_practice_key(KEY_ESCAPE)
+	_assert_true(not game.practice_open and not game.details_panel.visible, "练功分类栏按 ESC 才关闭整个独立 HUD")
+
 	# 练功进度条：开始时显示当前等级内进度，停止后立即清理。
 	game.practice_open = true
+	game.practice_focus_category = false
 	game.practice_items.assign(["ng_code_decorator"])
 	game.practice_index = 0
 	game.practicing_skill_id = "ng_code_decorator"
@@ -443,7 +531,7 @@ func _run() -> void:
 	# 练功失败应按参考项目文案停止，并在底部对话框明确提示原因。
 	skill_system.ensure_skills().levels["basicStrength"] = 10
 	skill_system.ensure_skills().levels["ng_code_decorator"] = 1
-	game_state.profile.vitals.neigong = 6
+	game_state.profile.vitals.neigong = 3
 	game._refresh_practice()
 	var practice_level_cap_visible := false
 	for practice_widget in game.details_widgets:
@@ -453,6 +541,7 @@ func _run() -> void:
 	game_state.profile.vitals.neigong = 10
 	game_state.combat_state.mp = 0
 	game_state.combat_state.hp = 100
+	skill_system.ensure_skills().practiceProgress["ng_code_decorator"] = 0
 	game.practicing_skill_id = "ng_code_decorator"
 	game.practice_tick_accumulator = 0.0
 	game._update_continuous_skill_actions(skill_system.PRACTICE_TICK_SECONDS)
@@ -460,7 +549,7 @@ func _run() -> void:
 	_assert_true(game.dialogue_open and game.dialogue_panel.visible and game.dialogue_content.text.contains("精力不足，练不动功。"), "精力不足时应在底部练功对话框显示参考文案")
 	game._close_dialogue()
 	skill_system.ensure_skills().levels["ng_code_decorator"] = 5
-	game_state.profile.vitals.neigong = 5
+	game_state.profile.vitals.neigong = 2
 	var practice_cap_failure: Dictionary = skill_system.practice_tick("ng_code_decorator")
 	_assert_true(str(practice_cap_failure.get("reason", "")) == "cap" and str(practice_cap_failure.get("message", "")).contains("精力修为不足，须多冥想积累内力。"), "练功达到精力上限时应使用参考项目的原因文案")
 	game.practice_open = true
@@ -472,7 +561,9 @@ func _run() -> void:
 	_assert_true(game.practice_open and game.practicing_skill_id.is_empty() and game.details_panel.visible, "练功中第一次 ESC 应只停止练功并保留面板")
 	_assert_true(not game.menu_open and not game.menu_panel.visible, "停止练功时不得弹出顶部菜单")
 	game._handle_practice_key(KEY_ESCAPE)
-	_assert_true(not game.practice_open and not game.details_panel.visible, "停止状态再次按 ESC 应真正关闭练功面板")
+	_assert_true(game.practice_open and game.practice_focus_category and game.details_panel.visible, "停止状态再次按 ESC 应从功法栏退回分类栏")
+	game._handle_practice_key(KEY_ESCAPE)
+	_assert_true(not game.practice_open and not game.details_panel.visible, "回到分类栏后再次按 ESC 应真正关闭练功面板")
 	_assert_true(not game.menu_open and not game.menu_panel.visible, "关闭练功面板后不得打开顶部菜单")
 
 	# 学习进度条生命周期：进入右栏不显示；空格启动才显示；资源阻断后立即消失。
@@ -507,6 +598,13 @@ func _run() -> void:
 	_assert_true(int(game_state.profile.vitals.potential) == 0, "每个有效学习 tick 应只消耗 1 点潜能")
 	_assert_true(int(game_state.profile.vitals.money) == money_before - ceili(float(selected_required) * 0.8), "升级 Token 学费应为本级经验需求的 80% 向上取整")
 	_assert_true(str(game.learning_skill_id).is_empty() and game.learning_progress_widgets.is_empty(), "学习完成后进度条应立即消失")
+	game.npc_menu_open = false
+	game.npc_menu_panel.visible = false
+	game.learn_focus_category = false
+	game._handle_learn_key(KEY_ESCAPE)
+	_assert_true(game.learn_open and game.learn_focus_category and game.details_panel.visible and not game.npc_menu_panel.visible, "学习功法栏按 ESC 应只退回分类，不得叠加 NPC 菜单")
+	game._handle_learn_key(KEY_ESCAPE)
+	_assert_true(not game.learn_open and not game.details_panel.visible and not game.npc_menu_open and not game.npc_menu_panel.visible, "学习分类层按 ESC 应关闭独立 HUD 并直接回到地图")
 
 	# 顶栏与两个二级菜单必须由独立 HUD 面板承载，切换时互斥显示。
 	game.menu_open = true
@@ -517,6 +615,30 @@ func _run() -> void:
 	game._refresh_menu()
 	_assert_true(game.menu_panel.visible and game.skill_menu_panel.visible and not game.system_menu_panel.visible, "技能二级菜单应保留一级菜单，并只显示独立的 SkillMenu 面板")
 	_assert_true(game.skill_menu_items.get_child_count() == game.SKILL_ITEMS.size(), "技能二级菜单条目应挂在自己的 HUD 面板中")
+	# 加力在技能菜单内进入独立调整态，上下调档、空格确认；上限取基础架构+高级架构×2。
+	game_state.profile.sect = "NG神教"
+	skill_system.ensure_skills().levels["basicConstitution"] = 40
+	skill_system.ensure_skills().levels["ng_arch_zone"] = 40
+	skill_system.ensure_skills().equipped_basic["arch"] = "basicConstitution"
+	skill_system.ensure_skills().equipped_special["arch"] = "ng_arch_zone"
+	skill_system.ensure_skills().forcePower = 0
+	game.skill_index = 2
+	game._select_skill_menu()
+	_assert_true(game.force_power_open and game.force_power_limit == 120 and game.dialogue_content.text.contains("加力 0 / 120"), "选择加力后应按图示进入菜单内调整态，并显示当前值与内功上限")
+	game._handle_menu_key(KEY_UP)
+	_assert_true(game.force_power_value == 1 and game.dialogue_content.text.contains("命中耗 1 精力"), "加力调整态按上应增加一档并实时刷新说明")
+	game._handle_menu_key(KEY_SPACE)
+	_assert_true(not game.force_power_open and skill_system.force_power() == 1 and game.skill_open and game.skill_menu_panel.visible, "加力按空格应提交选定值并返回技能二级菜单")
+	# 精力不足时不得按剩余精力部分加力；足额时整档扣除并附加 0~2 倍伤害。
+	skill_system.set_force_power(10)
+	game_state.combat_state.mp = 5
+	var no_force_result := {"damage": 100}
+	_assert_true(combat_system._apply_player_force_power(no_force_result) == 0 and game_state.combat_state.mp == 5 and no_force_result.damage == 100, "精力不足完整档位时加力必须完全不生效")
+	game_state.combat_state.mp = 10
+	seed(13)
+	var force_result := {"damage": 100}
+	var force_extra: int = combat_system._apply_player_force_power(force_result)
+	_assert_true(game_state.combat_state.mp == 0 and force_extra >= 0 and force_extra <= 20 and force_result.damage == 100 + force_extra, "足额加力应整档扣精力并按图示 0~2 倍公式追加伤害")
 	game.menu_index = 3
 	game.skill_open = false
 	game.system_open = true
@@ -526,6 +648,67 @@ func _run() -> void:
 	game.system_index = 3
 	game._select_system_menu()
 	_assert_true(game.menu_open and game.menu_panel.visible and game.system_menu_panel.visible, "保存等无弹窗的二级操作不得收起父子菜单")
+	# 赛博传送使用自己的下拉 HUD：保留一级菜单、替换系统操作列表，ESC 回系统菜单。
+	game_state.profile.sect = "NG神教"
+	skill_system.ensure_skills().levels["basicAgility"] = 40
+	skill_system.ensure_skills().levels["ng_tune_rx_step"] = 40
+	skill_system.ensure_skills().equipped_basic["tune"] = "basicAgility"
+	skill_system.ensure_skills().equipped_special["tune"] = "ng_tune_rx_step"
+	# 基础架构 40 + NG 架构 40×2，根骨 25 时理论修为终点为 3000，
+	# 对应最大当前精力 6000；即使当前修为很低，传送仍须支付 6000 的 1/5 = 1200。
+	skill_system.ensure_skills().levels["basicConstitution"] = 40
+	skill_system.ensure_skills().levels["ng_arch_zone"] = 40
+	skill_system.ensure_skills().equipped_basic["arch"] = "basicConstitution"
+	skill_system.ensure_skills().equipped_special["arch"] = "ng_arch_zone"
+	game_state.profile.attributes.constitution = 25
+	game_state.profile.vitals.neigong = 30
+	game_state.combat_state.mp = 30
+	game.system_index = 0
+	game._select_system_menu()
+	_assert_true(skill_system.meditation_cap() == 3000 and skill_system.meditation_max_mp_cap() == 6000 and game._cyber_teleport_cost() == 1200, "理论修为终点与对应最大当前精力应保持 1:2，传送取后者的 1/5")
+	# 3000 必须是公式结果而非特判：综合内功 40+40×2=120，每级贡献25，
+	# 初始根骨25修正为1.0，因此 floor(120×25×1.0)=3000。
+	_assert_true(is_equal_approx(game_state.meditation_modifier(25), 1.0), "初始根骨25的冥想修正应处于中性值1.0")
+	_assert_true(skill_system.MEDITATION_INNER_POWER_UNIT == 25.0, "每级综合内功应按公式贡献25点冥想修为上限")
+	_assert_true(skill_system.meditation_cap_from_values(25, 40, 40) == int(floor(float(40 + 40 * 2) * 25.0 * game_state.meditation_modifier(25))), "40级基础+40级高级、根骨25的冥想上限必须由通用公式推得")
+	_assert_true(skill_system.meditation_cap_from_values(25, 39, 40) == 2975 and skill_system.meditation_cap_from_values(25, 40, 39) == 2950, "基础或高级内功等级变化时上限必须随公式变化，不得写死3000")
+	_assert_true(skill_system.meditation_cap_from_values(30, 40, 40) == 3300, "根骨变化时冥想上限必须应用根骨修正动态变化")
+	# 验证真实 tick 的终点行为：最后一层可以从2999升至3000，不越界；达到
+	# 修为上限后仍可把“当前精力”充满至修为的2倍6000，之后才彻底停止。
+	game_state.profile.vitals.neigong = 2999
+	game_state.combat_state.mp = game_state.player_mp_max() - 1
+	var final_layer_result: Dictionary = skill_system.meditate_tick()
+	_assert_true(bool(final_layer_result.get("ok", false)) and game_state.profile.vitals.neigong == 3000 and game_state.combat_state.mp == 0, "真实冥想 tick 应能从2999升至公式上限3000并清空当前精力")
+	game_state.combat_state.mp = game_state.player_mp_max() - 1
+	var fill_final_mp_result: Dictionary = skill_system.meditate_tick()
+	_assert_true(not bool(fill_final_mp_result.get("ok", true)) and game_state.profile.vitals.neigong == 3000 and game_state.combat_state.mp == 6000, "修为到3000后应继续允许当前精力充至6000，并在充满时停止")
+	var capped_neigong_before := int(game_state.profile.vitals.neigong)
+	var capped_mp_before := int(game_state.combat_state.mp)
+	var capped_result: Dictionary = skill_system.meditate_tick()
+	_assert_true(not bool(capped_result.get("ok", true)) and game_state.profile.vitals.neigong == capped_neigong_before and game_state.combat_state.mp == capped_mp_before, "冥想到顶后继续 tick 不得突破公式上限或6000当前精力")
+	game_state.profile.vitals.neigong = 30
+	game_state.combat_state.mp = 30
+	_assert_true(game_state.player_mp_max() == 60 and not game.cyber_open and game.dialogue_open and game.dialogue_content.text.contains("需要 1200 精力"), "当前已冥想精力上限较低时也不得降低传送要求")
+	game._close_dialogue()
+	game_state.profile.vitals.neigong = 600
+	game_state.combat_state.mp = 1200
+	game.menu_open = true
+	game.menu_panel.visible = true
+	game.menu_index = 3
+	game.system_open = true
+	game.system_index = 0
+	game._refresh_menu()
+	game._select_system_menu()
+	_assert_true(game.cyber_open and game.active_detail_hud == "cyber" and game.details_panel == game.detail_huds.cyber.panel, "赛博传送应打开独立 CyberHUD")
+	_assert_true(game.menu_open and game.menu_panel.visible and not game.system_menu_panel.visible, "传送目的地 HUD 应保留一级菜单并替换系统二级菜单")
+	_assert_true(game.details_panel.size.x < 300.0 and is_equal_approx(game.details_panel.position.y, game.menu_panel.position.y + game.menu_panel.size.y), "CyberHUD 应作为系统菜单下方的窄下拉列表，不得使用全屏详情面板")
+	var cyber_labels_before: Array = game.cyber_labels.duplicate()
+	var cyber_selection_before = game.cyber_selection_widget
+	game._handle_cyber_key(KEY_DOWN)
+	_assert_true(game.cyber_selection_widget == cyber_selection_before and game.cyber_labels == cyber_labels_before, "传送光标移动应复用标签和选中框，不得销毁重建整套 HUD")
+	_assert_true(is_equal_approx(game.cyber_selection_widget.position.y, 24.0 * game._display_scale()), "传送光标移动只应更新同一选中框的位置")
+	game._handle_cyber_key(KEY_ESCAPE)
+	_assert_true(not game.cyber_open and not game.details_panel.visible and game.system_open and game.system_menu_panel.visible, "传送 HUD 按 ESC 应退回系统二级菜单")
 	game._close_menu()
 	_assert_true(not game.skill_menu_panel.visible and not game.system_menu_panel.visible, "关闭菜单时应分别隐藏两个二级 HUD 面板")
 

@@ -7,6 +7,7 @@ const SURVIVAL_TICK_SEC := 15.0
 const AGE_TICK_SEC := 28800.0
 const MIN_HIT_RATE := 0.28
 const MAX_HIT_RATE := 0.95
+const MP_PER_NEIGONG := 2
 
 var profile: Dictionary = {}
 var game_time_sec := 0.0
@@ -140,9 +141,10 @@ func base_hp_max(constitution: float) -> int:
 func hp_max_with_mp_boost(constitution: float, mp_max: int) -> int:
 	return base_hp_max(constitution) + int(floor(maxf(0.0, float(mp_max)) * 0.2))
 
-## 玩家精力上限即精力修为（neigong）本身。
+## neigong 是冥想修为层数；战斗中的当前精力上限为修为的 2 倍。
+## 例如修为 130 时当前精力上限 260，修为练至理论终点 3000 时上限 6000。
 func player_mp_max() -> int:
-	return maxi(0, int(profile.get("vitals", {}).get("neigong", 0)))
+	return maxi(0, int(profile.get("vitals", {}).get("neigong", 0)) * MP_PER_NEIGONG)
 
 func player_hp_max() -> int:
 	var attributes: Dictionary = profile.get("attributes", {})

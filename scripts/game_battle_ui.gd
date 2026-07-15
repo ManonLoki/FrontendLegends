@@ -163,7 +163,7 @@ func refresh() -> void:
 	_label(str(GameState.profile.get("name", "玩家")), Rect2(Vector2(left_x - 90.0, 12.0), Vector2(180.0, 24.0)), 14, HORIZONTAL_ALIGNMENT_CENTER)
 	_label(str(enemy.get("display_name", game.nearby_npc_id)), Rect2(Vector2(right_x - 90.0, 12.0), Vector2(180.0, 24.0)), 14, HORIZONTAL_ALIGNMENT_CENTER)
 	_label("VS", Rect2(Vector2(area.x * 0.5 - 26.0, 62.0), Vector2(52.0, 32.0)), 22, HORIZONTAL_ALIGNMENT_CENTER)
-	_portrait(game.player_texture, game.player_sprite_regions.get("down_1", Rect2(1, 15, 13, 17)), Vector2(left_x, 72.0), Vector2(44.0, 56.0))
+	_portrait(game.player_texture, game._player_frame_region(), Vector2(left_x, 72.0), Vector2(44.0, 56.0))
 	_portrait(game.npc_texture, NpcSystem.sprite_region(game.nearby_npc_id), Vector2(right_x, 72.0), Vector2(44.0, 56.0))
 
 	var player_hp_max := int(session.get("player_max_hp", game._npc_hp(GameState.profile, true)))

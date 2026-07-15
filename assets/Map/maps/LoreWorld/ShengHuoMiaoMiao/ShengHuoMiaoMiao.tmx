@@ -25,7 +25,7 @@
  <tileset firstgid="53443" source="../../../tilesets/Game_Maker_Studio_Autotiles_16x16.tsx"/>
  <layer id="1" name="Background" width="40" height="40">
   <data encoding="base64" compression="zlib">
-   eJzt2LEKg0AQhOHF1z7fRGIl2FqIbcTXCLFSbBXENlnBIgh7ooJOYIq//2AOT305kTdotdZpUSjyMIq10d3TtPhSNeRGBX300UcfffQZvqcaMmDffP8mwD70femzG7Qe2NdqjeFF8Pm8iD60fX3nEdHHfc9tiuhbP2PQfCj7+u4KBJ+1I4rv6L7z+2lpVAH4jpyNq317z8bVPsR+vz/4/48++v7P93Hb94fcVKB9ASfNicI=
+   eJzt2DEKg0AQheHBa683CVoFbFNIWoPXkFgZ0kYIac0spJCF2aDB7BOe8PcfzuKonRO5gtZrd+2QixRGpfZ0aXp9fJUaaqMzffTRRx999Bm+Rg0nYJ/fv0dgH/p86bMbtQew76YNhhfBF/Mi+tDmGzuPiD7O97eZIvrCZwyaD2W+sV2B4LPmiOJbO1//fnoxagF8a85GmL+29C09G/++f4jNvz/4/48++vbnm9z3/SGJyrQ3mTmIUw==
   </data>
  </layer>
  <layer id="2" name="Road" width="40" height="40">
