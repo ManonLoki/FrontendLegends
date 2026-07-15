@@ -35,7 +35,11 @@ func _load_sprite_regions() -> void:
 
 # 处理region相关逻辑，并保持调用方状态一致。
 func sprite_region(npc_id: String) -> Rect2:
-	var sprite := str(build_instance(npc_id).get("sprite", "npc-1"))
+	return sprite_region_for_instance(build_instance(npc_id))
+
+## 直接按人物快照解析形象，使动态任务人物和运行时覆盖不会退回临时 ID 的默认头像。
+func sprite_region_for_instance(npc: Dictionary) -> Rect2:
+	var sprite := str(npc.get("sprite", "npc-1"))
 	return sprite_regions.get(sprite.get_file().get_basename(), sprite_regions.get("npc-1", Rect2(0, 0, 1, 1)))
 
 ## 本局覆盖数据优先于静态注册表，深复制结果防止调用方通过人物实例修改源字典。

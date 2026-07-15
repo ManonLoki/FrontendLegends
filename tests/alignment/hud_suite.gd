@@ -204,6 +204,24 @@ func _run_hud_suite() -> Node:
 	game.nearby_npc_id = "jiu_ri"
 	game.battle_ui.start()
 	await process_frame
+	# 高属性与任务人物的资源数值必须使用独立文本区完整显示，头像必须取战斗快照形象。
+	game.battle_ui.enemy_hp = 98765
+	game.battle_ui.session.enemy_hp = 98765
+	game.battle_ui.session.enemy_max_hp = 123456
+	game.battle_ui.session.enemy_mp = 87654
+	game.battle_ui.session.enemy_mp_max = 234567
+	game.battle_ui.refresh()
+	var complete_enemy_values: Dictionary = {}
+	var enemy_portrait_matches := false
+	for battle_widget in game.battle_ui.widgets:
+		if battle_widget is Label and battle_widget.has_meta("battle_stat_value"):
+			complete_enemy_values[str(battle_widget.text)] = true
+		if battle_widget is TextureRect and battle_widget.texture is AtlasTexture:
+			var portrait_atlas := battle_widget.texture as AtlasTexture
+			if portrait_atlas.atlas == game.npc_texture and portrait_atlas.region == npc_system.sprite_region_for_instance(game.battle_ui.enemy):
+				enemy_portrait_matches = true
+	_assert_true(complete_enemy_values.has("98765/123456") and complete_enemy_values.has("87654/234567"), "战斗 HUD 应完整显示高属性和任务人物的体力、精力数值")
+	_assert_true(enemy_portrait_matches, "战斗 HUD 应直接使用本次敌人快照中的任务形象")
 	for widget in game.battle_ui.widgets:
 		_assert_true(Rect2(Vector2.ZERO, game.battle_panel.size).encloses(Rect2(widget.position, widget.size)), "战斗 UI 元素不得互相挤出面板边界：%s %s / %s（面板 %s，报告 %s）" % [widget.get_class(), widget.position, widget.size, game.battle_panel.size, widget.has_meta("battle_report")])
 	game.battle_ui.active = false
