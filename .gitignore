@@ -1,6 +1,7 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+/dist/
 
 # Local tooling and operating-system files
 node_modules/

@@ -102,6 +102,7 @@ func load_game() -> bool:
 	if profile.has("skills"):
 		SkillSystem.ensure_skills()
 		SkillSystem.refresh_derived_attributes()
+	normalize_combat_state()
 	return has_profile()
 
 func delete_save() -> void:
@@ -152,7 +153,18 @@ func player_hp_max() -> int:
 	return hp_max_with_mp_boost(float(attributes.get("constitution", 0)), player_mp_max())
 
 func player_effective_hp_max() -> int:
-	return maxi(1, player_hp_max() - int(combat_state.get("injury", 0)))
+	var true_max := player_hp_max()
+	var injury := clampi(int(combat_state.get("injury", 0)), 0, true_max - 1)
+	return maxi(1, true_max - injury)
+
+func player_effective_hp_percent() -> int:
+	return clampi(int(round(float(player_effective_hp_max()) / float(maxi(1, player_hp_max())) * 100.0)), 1, 100)
+
+func normalize_combat_state() -> void:
+	var true_max := player_hp_max()
+	combat_state.injury = clampi(int(combat_state.get("injury", 0)), 0, true_max - 1)
+	combat_state.hp = clampi(int(combat_state.get("hp", player_effective_hp_max())), 0, player_effective_hp_max())
+	combat_state.mp = clampi(int(combat_state.get("mp", player_mp_max())), 0, player_mp_max())
 
 func _true_hp_max() -> int:
 	return player_hp_max()

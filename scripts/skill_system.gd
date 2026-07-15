@@ -1,5 +1,7 @@
 extends Node
 
+const SKILL_TRAINING := preload("res://scripts/skills/skill_training.gd")
+
 const LEARNING_TICK_SECONDS := 1.0 / 30.0
 const MEDITATION_TICK_SECONDS := 1.0 / 30.0
 const PRACTICE_TICK_SECONDS := 1.0 / 5.0
@@ -17,6 +19,8 @@ const LEARN_RATE_MAX := 1.25
 ## 门派绝招按内力功法等级解锁：一档 30 级、二档 80 级。
 const ULT_TIER1_ARCH_LEVEL := 30
 const ULT_TIER2_ARCH_LEVEL := 80
+
+@onready var training := SKILL_TRAINING.new(self)
 
 func create_default_skills() -> Dictionary:
 	# 对齐参考项目：新角色不会任何技能，也不会自动装备基础功法。
@@ -360,6 +364,9 @@ func _arch_sect_level_sum() -> int:
 			sum += level(str(skill_id))
 	return sum
 
+func arch_sect_level_sum() -> int:
+	return _arch_sect_level_sum()
+
 func combat_bonus() -> Dictionary:
 	var result := {"attack": 0.0, "defense": 0.0, "hit": 0.0, "dodge": 0.0, "parry": 0.0, "mp_max": 0}
 	for skill_id in equipped_skill_ids():
@@ -373,6 +380,16 @@ func combat_bonus() -> Dictionary:
 		result.parry += float(combat.get("parryPerLv", 0.0)) * lv
 		result.mp_max += int(combat.get("mpMaxPerLv", 0)) * lv
 	return result
+
+## BattleController._bestSkillBonus 的 Godot 对应：防御/闪避只取当前已装备
+## 门派高级功法中最高的一项，不把不同功法被动相加。
+func best_combat_bonus(key: String) -> float:
+	var best := 0.0
+	for skill_id in equipped_skill_ids():
+		var definition := DataRegistry.get_skill(skill_id)
+		if str(definition.get("category", "")) != "sect": continue
+		best = maxf(best, float(definition.get("combat", {}).get(key, 0.0)) * level(skill_id))
+	return best
 
 ## “加力”是玩家可调节的精力换伤害挡位（见 combat_system.player_attack）：
 ## 设得越高，攻击时消耗的精力越多、伤害加成越高，上限由架构功法等级决定。
@@ -433,159 +450,37 @@ func _make_ult(config: Dictionary, tier: int, inner_power: int) -> Dictionary:
 ## The theoretical cap depends only on equipped architecture skills and constitution;
 ## current cultivation does not affect it. Cyber teleport uses this cap as well.
 func meditation_cap() -> int:
-	var constitution := float(GameState.profile.get("attributes", {}).get("constitution", 0))
-	return meditation_cap_from_values(constitution, level("basicConstitution"), equipped_sect_skill_level("arch"))
+	return training.meditation_cap()
 
-## 纯公式入口，供玩家/NPC规则和回归测试复用。3000 不是特殊上限：它只是
-## 根骨25、基础架构40、已装备高级架构40代入公式后的结果。
 func meditation_cap_from_values(constitution: float, basic_arch_level: int, advanced_arch_level: int) -> int:
-	var modifier := GameState.meditation_modifier(constitution)
-	var inner_power := maxi(0, basic_arch_level) + maxi(0, advanced_arch_level) * 2
-	return maxi(0, int(floor(float(inner_power) * MEDITATION_INNER_POWER_UNIT * modifier)))
+	return training.meditation_cap_from_values(constitution, basic_arch_level, advanced_arch_level)
 
-## The cultivation cap determines maximum current energy; each level grants two MP.
 func meditation_max_mp_cap() -> int:
-	return meditation_cap() * GameState.MP_PER_CULTIVATION
+	return training.meditation_max_mp_cap()
 
 func meditate_tick() -> Dictionary:
-	if not can_meditate():
-		return {"ok": false, "message": "须装备基础架构与本门架构高级功法，方可冥想。"}
-	var vitals: Dictionary = GameState.profile.get("vitals", {})
-	var constitution := float(GameState.profile.get("attributes", {}).get("constitution", 0))
-	var modifier := GameState.meditation_modifier(constitution)
-	var cap := meditation_cap()
-	var cultivation := int(vitals.get("cultivation", 0))
-	var maximum := GameState.player_mp_max()
-	if cultivation >= cap and int(GameState.combat_state.mp) >= maximum:
-		return {"ok": false, "message": "冥想已满，无需继续冥想。"}
-	GameState.combat_state.mp = mini(maximum, int(GameState.combat_state.mp) + maxi(1, int(floor(5.0 * modifier))))
-	if int(GameState.combat_state.mp) >= maximum:
-		if cultivation < cap:
-			GameState.combat_state.mp = 0
-			vitals.cultivation = mini(cap, cultivation + 1)
-			GameState.profile.vitals = vitals
-			GameState.advance_time(MEDITATION_TICK_SECONDS)
-			if vitals.cultivation >= cap:
-				return {"ok": true, "message": "冥想圆满，精力最大值提升至 %d，已达内功所限。" % vitals.cultivation}
-			return {"ok": true, "message": "冥想圆满，精力最大值提升至 %d。" % vitals.cultivation}
-		return {"ok": false, "message": "冥想已满，无需继续冥想。"}
-	# 冥想以 30 Hz 推进；每个有效 tick 同步推进 1/30 秒游戏时钟。
-	GameState.advance_time(MEDITATION_TICK_SECONDS)
-	return {"ok": true, "message": "你凝神冥想，当前精力 %d / %d。" % [GameState.combat_state.mp, maximum]}
+	return training.meditate_tick()
 
 func meditation_progress() -> Dictionary:
-	return {
-		"current": maxi(0, int(GameState.combat_state.get("mp", 0))),
-		"total": maxi(1, GameState.player_mp_max()),
-	}
+	return training.meditation_progress()
 
-## 返回某主题当前装备的本门特殊功法等级；未装备则为 0。
 func equipped_sect_skill_level(theme: String) -> int:
-	var skill_id := equipped_id(theme, "sect")
-	var definition := DataRegistry.get_skill(skill_id)
-	if str(definition.get("category", "")) != "sect" or str(definition.get("theme", "")) != theme or str(definition.get("sect", "")) != str(GameState.profile.get("sect", "")):
-		return 0
-	return level(skill_id)
+	return training.equipped_sect_skill_level(theme)
 
-## 冥想须装备本门架构（内力）高级功法（不只是基础架构）方可进行。
 func can_meditate() -> bool:
-	return level("basicConstitution") > 0 and equipped_sect_skill_level("arch") > 0
+	return training.can_meditate()
 
-## 当前条件下可自行练到的最高等级：技能硬上限、对应基础功法等级与
-## 精力修为三者取最低值。练功判定与 HUD 的 n/m 必须共用此口径。
 func practice_cap(skill_id: String) -> int:
-	var definition: Dictionary = DataRegistry.get_skill(skill_id)
-	if definition.is_empty() or str(definition.get("category", "")) != "sect" or str(definition.get("theme", "")) == "arch":
-		return 0
-	var basic_id: String = str({"code": "basicStrength", "tune": "basicAgility", "parry": "basicParry", "knowledge": "literacy"}.get(str(definition.get("theme", "")), ""))
-	return mini(int(definition.get("maxLevel", 100)), mini(level(basic_id), GameState.player_mp_max()))
+	return training.practice_cap(skill_id)
 
 func practice_tick(skill_id: String) -> Dictionary:
-	var definition: Dictionary = DataRegistry.get_skill(skill_id)
-	if definition.is_empty() or str(definition.get("category", "")) != "sect" or str(definition.get("theme", "")) == "arch":
-		return {"ok": false, "message": "这门功法不能这样练。", "reason": "invalid"}
-	if str(definition.get("sect", "")) != str(GameState.profile.get("sect", "")) or level(skill_id) <= 0:
-		return {"ok": false, "message": "尚未学会本门这门功法。", "reason": "invalid"}
-	var skills := ensure_skills()
-	var basic_id: String = str({"code": "basicStrength", "tune": "basicAgility", "parry": "basicParry", "knowledge": "literacy"}.get(str(definition.get("theme", "")), ""))
-	var cap := practice_cap(skill_id)
-	var current := level(skill_id)
-	if current >= cap:
-		var basic_level := level(basic_id)
-		var mp_max := GameState.player_mp_max()
-		var cap_reason := "精力修为不足，须多冥想积累内力。" if cap >= mp_max and cap < basic_level else "须提升基础功法等级。"
-		return {"ok": false, "message": "【%s】已到当前上限 %d 级，%s" % [definition.get("name", skill_id), cap, cap_reason], "reason": "cap"}
-	var progress: Dictionary = skills.get("practiceProgress", {})
-	# 与师父学艺严格同口径：练到下一级所需经验使用 skillExpRequiredOf
-	# 对应的缓和曲线，禁止再使用 costFactor^level 的旧指数成本。
-	var required := _learn_required(definition, current + 1, _learning_cost_rate())
-	var current_progress := mini(required, maxi(0, int(progress.get(skill_id, 0))))
-	var gain_per_tick := maxi(1, int(floor(float(GameState.profile.get("attributes", {}).get("wisdom", 1)) / 5.0)))
-	var gain := mini(gain_per_tick, required - current_progress)
-	var mp_cost := 2 if gain > 0 else 0
-	# 体力消耗按“新进度对应的累计成本”减去“旧进度已付成本”结算，
-	# 避免因中途多次 tick 而对同一段进度重复扣体力。
-	var hp_cost := maxi(0, int(ceil(float(current_progress + gain) * 0.8)) - int(ceil(float(current_progress) * 0.8)))
-	if int(GameState.combat_state.mp) < mp_cost:
-		return {"ok": false, "message": "精力不足，练不动功。", "reason": "resource"}
-	if int(GameState.combat_state.hp) - hp_cost < 1:
-		return {"ok": false, "message": "体力不足，练不动功。", "reason": "resource"}
-	GameState.combat_state.mp -= mp_cost
-	GameState.combat_state.hp -= hp_cost
-	# 新设定每秒推进 5 次练功 tick；每个有效 tick 同步推进 1/5 秒游戏时钟。
-	GameState.advance_time(PRACTICE_TICK_SECONDS)
-	var next_progress := current_progress + gain
-	if next_progress >= required:
-		skills.levels[skill_id] = current + 1
-		progress[skill_id] = 0
-		_refresh_derived_attributes()
-	else:
-		progress[skill_id] = next_progress
-	skills.practiceProgress = progress
-	var shown_progress := int(progress.get(skill_id, 0))
-	var shown_required := _learn_required(definition, level(skill_id) + 1, _learning_cost_rate())
-	return {"ok": true, "message": "%s 练功进度 %d/%d" % [definition.get("name", skill_id), shown_progress, shown_required], "level": level(skill_id)}
+	return training.practice_tick(skill_id)
 
 func practice_progress(skill_id: String) -> Dictionary:
-	var definition: Dictionary = DataRegistry.get_skill(skill_id)
-	if definition.is_empty():
-		return {"current": 0, "total": 1, "level": 0}
-	var current_level := level(skill_id)
-	return {
-		"current": int(ensure_skills().get("practiceProgress", {}).get(skill_id, 0)),
-		"total": _learn_required(definition, current_level + 1, _learning_cost_rate()),
-		"level": current_level,
-	}
+	return training.practice_progress(skill_id)
 
 func channel_hp() -> Dictionary:
-	var eff_max := GameState.player_effective_hp_max()
-	var amount := mini(int(GameState.combat_state.mp), maxi(0, eff_max - int(GameState.combat_state.hp)))
-	if amount <= 0:
-		if int(GameState.combat_state.hp) >= eff_max:
-			return {"ok": false, "message": "体力已满，不必摸鱼。"}
-		return {"ok": false, "message": "精力不足，摸不了鱼。"}
-	GameState.combat_state.mp -= amount
-	GameState.combat_state.hp += amount
-	GameState.advance_time(1.0)
-	return {"ok": true, "message": "你偷偷摸了会鱼，消耗 %d 精力，恢复 %d 体力。" % [amount, amount]}
-
-## 疗伤门槛：本门架构（内力）功法等级合计须超过此值。
-const HEAL_INJURY_ARCH_LEVEL_GATE := 30
-const HEAL_INJURY_MP_PER_POINT := 5
+	return training.channel_hp()
 
 func heal_injury() -> Dictionary:
-	var arch_sum := _arch_sect_level_sum()
-	if arch_sum <= HEAL_INJURY_ARCH_LEVEL_GATE:
-		return {"ok": false, "message": "内力尚浅（本门架构功法合计 %d 级，须超过 %d 级），无法疗伤。" % [arch_sum, HEAL_INJURY_ARCH_LEVEL_GATE]}
-	var injury := int(GameState.combat_state.injury)
-	if injury <= 0:
-		return {"ok": false, "message": "并无伤势，无需疗伤。"}
-	var amount := mini(injury, int(GameState.combat_state.mp) / HEAL_INJURY_MP_PER_POINT)
-	if amount <= 0:
-		return {"ok": false, "message": "精力不足（每 %d 精力愈合 1 点伤势），无法疗伤。" % HEAL_INJURY_MP_PER_POINT}
-	GameState.combat_state.mp -= amount * HEAL_INJURY_MP_PER_POINT
-	GameState.combat_state.injury -= amount
-	GameState.advance_time(1.0)
-	var eff_max := GameState.player_effective_hp_max()
-	var suffix := "，余伤 %d 点" % GameState.combat_state.injury if GameState.combat_state.injury > 0 else "，伤势尽愈"
-	return {"ok": true, "message": "你运转内息疗伤，消耗 %d 精力，愈合伤势 %d 点，体力上限恢复至 %d%s。" % [amount * HEAL_INJURY_MP_PER_POINT, amount, eff_max, suffix]}
+	return training.heal_injury()

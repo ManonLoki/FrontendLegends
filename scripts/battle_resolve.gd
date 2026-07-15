@@ -10,7 +10,7 @@ func resolve_victory(session: Dictionary, lethal: bool = true) -> String:
 		_apply_lethal_wounds(session)
 	var lines: Array[String] = []
 	if not lethal:
-		return "切磋结束：你在交流中获益，双方均未受致命伤。"
+		return "切磋胜出，点到为止。"
 	# 任务结算与普通 Token 奖励互斥：若此敌人与某个进行中任务挂钩，奖励走任务
 	# 的 reward 表（金额已按任务配置好），不再叠加按战力估算的野战 Token。
 	var quest_line := QuestSystem.on_enemy_defeated(enemy_id)
@@ -23,16 +23,18 @@ func resolve_victory(session: Dictionary, lethal: bool = true) -> String:
 		var vitals: Dictionary = GameState.profile.get("vitals", {})
 		vitals.money = int(vitals.get("money", 0)) + money
 		GameState.profile.vitals = vitals
-		lines.append("击败强敌，获得 %d Token" % money)
+		lines.append("强敌授首！%s" % ("（Token+%d）" % money if money > 0 else ""))
 	var drops := NpcSystem.get_drop_items(enemy_id)
 	var gained: Array[String] = []
 	for item_id in drops:
 		if InventorySystem.add_item(item_id):
 			gained.append(str(DataRegistry.get_item(item_id).get("name", item_id)))
 	if not gained.is_empty():
-		lines.append("拾获：%s" % "、".join(gained))
+		lines.append("拾获：%s。" % "、".join(gained))
+	var disfigure_text := str(session.get("disfigurement_text", ""))
+	if not disfigure_text.is_empty(): lines.append(disfigure_text)
 	NpcSystem.mark_defeated(enemy_id)
-	return "\n".join(lines)
+	return " ".join(lines)
 
 ## 战败惩罚：除资源损失外，每门已学功法各有 50% 概率倒退 0~2 级
 ## （基础/文识功法保底 1 级、门派功法可退到 0 级），用于放大战败代价。
@@ -64,21 +66,26 @@ func resolve_defeat(session: Dictionary, lethal: bool = true) -> String:
 	# 对齐参考项目 BattleHud.ts：其余战斗结算只改内存，等下次自动/手动保存才落盘；
 	# 死亡惩罚是不可逆的永久性损失，这里立即存档，避免玩家靠不存档规避惩罚。
 	GameState.save_game()
-	var suffix := "，%d 门功法生疏" % skill_loss if skill_loss > 0 else ""
-	return "你重伤昏迷，醒来损失 Token %d、潜能 %d、经验 %d%s" % [money_loss, potential_loss, experience_loss, suffix]
+	var suffix := "，%d 门功夫生疏" % skill_loss if skill_loss > 0 else ""
+	var result := "你重伤昏迷，醒来已失 Token %d、潜能 %d、经验 %d%s。" % [money_loss, potential_loss, experience_loss, suffix]
+	var disfigure_text := str(session.get("disfigurement_text", ""))
+	return result + (" " + disfigure_text if not disfigure_text.is_empty() else "")
 
 func resolve_flee(session: Dictionary, lethal: bool = true) -> String:
 	if not lethal:
 		return "你收招退了下来。"
 	_apply_lethal_wounds(session)
-	return "你脱身遁走。" + (" 你在这场恶战中破了相。" if session.get("disfigurement", false) else "")
+	var disfigure_text := str(session.get("disfigurement_text", ""))
+	return "你脱身遁走。" + (disfigure_text if not disfigure_text.is_empty() else "")
 
 ## 濒死（reached_zero）与重伤（near_death，见 combat_system._track_player_state）
 ## 各自独立判定“破相”：外观值永久下降，模拟战斗中留下的伤疤/损容代价。
 func _apply_lethal_wounds(session: Dictionary) -> void:
-	var damage_taken := maxi(0, int(session.get("initial_player_hp", GameState.combat_state.hp)) - int(GameState.combat_state.hp))
+	var damage_taken := maxi(0, int(session.get("player_damage_taken", 0)))
+	var in_battle_injury := maxi(0, int(session.get("player_in_battle_injury", 0)))
 	var reduce := SkillSystem.injury_reduce()
-	GameState.combat_state.injury = maxi(0, int(GameState.combat_state.injury) + int(ceil(damage_taken * 0.2 * (1.0 - reduce))))
+	var injury_gain := int(ceil(damage_taken * 0.2 * (1.0 - reduce))) + in_battle_injury
+	GameState.combat_state.injury = clampi(int(GameState.combat_state.injury) + injury_gain, 0, GameState.player_hp_max() - 1)
 	var appearance_drops := 0
 	if bool(session.get("player_reached_zero", false)) and randf() < 0.30:
 		appearance_drops += 1
@@ -89,6 +96,7 @@ func _apply_lethal_wounds(session: Dictionary) -> void:
 		vitals.appearance = maxi(0, int(vitals.get("appearance", 0)) - appearance_drops * 20)
 		GameState.profile.vitals = vitals
 		session.disfigurement = true
+		session.disfigurement_text = "你在生死边缘挣扎，容貌大损！" if appearance_drops > 1 else "你在这场恶战中破了相。"
 	GameState.combat_state.hp = mini(_effective_hp_max(), int(GameState.combat_state.hp))
 
 func _effective_hp_max() -> int:
