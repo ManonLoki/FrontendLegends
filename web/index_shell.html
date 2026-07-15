@@ -2,7 +2,9 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1,
+    minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover,
+    interactive-widget=resizes-content">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -10,10 +12,26 @@
   <style>
     :root { color-scheme:dark; --gold:#f3cf55; --track:#20242c; }
     * { box-sizing:border-box; }
-    html, body, #canvas { margin:0; padding:0; border:0; width:100%; height:100%; }
-    body { overflow:hidden; background:#000; color:#fff; touch-action:none; }
-    #canvas { display:block; }
+    html, body {
+      margin:0; padding:0; border:0; width:100vw; height:100vh; height:100dvh;
+      min-width:100vw; min-height:100vh; min-height:100dvh;
+      max-width:100vw; max-height:100vh; max-height:100dvh;
+      -webkit-text-size-adjust:100%; text-size-adjust:100%;
+    }
+    body {
+      position:fixed; inset:0; display:grid; place-items:center;
+      overflow:hidden; background:#000; color:#fff;
+      overscroll-behavior:none; touch-action:none;
+    }
+    #game-frame { position:fixed; transform-origin:0 0; }
+    #canvas { display:block; max-width:none; max-height:none; }
     #canvas:focus { outline:none; }
+    #mobile-name-input {
+      position:fixed; z-index:30; left:50%; bottom:max(16px, env(safe-area-inset-bottom));
+      display:none; width:min(86vw, 420px); transform:translateX(-50%); padding:10px 12px;
+      border:2px solid var(--gold); border-radius:8px; background:#080d17; color:#fff;
+      font:18px ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    }
     #status {
       position:fixed; inset:0; z-index:10; display:flex; align-items:center; justify-content:center;
       background:radial-gradient(circle at 50% 42%, #10264b 0, #050b16 44%, #000 78%);
@@ -58,7 +76,9 @@
   $GODOT_HEAD_INCLUDE
 </head>
 <body>
-  <canvas id="canvas">你的浏览器不支持 Canvas。</canvas>
+  <div id="game-frame"><canvas id="canvas" width="640" height="480">你的浏览器不支持 Canvas。</canvas></div>
+  <input id="mobile-name-input" type="text" inputmode="text" enterkeyhint="done"
+    autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="角色姓名">
   <noscript>前端群侠传需要启用 JavaScript。</noscript>
   <div id="status">
     <div id="loading-card">
@@ -83,10 +103,113 @@
     const progressLabel = document.getElementById('progress-label');
     const loadingTitle = document.getElementById('loading-title');
     const notice = document.getElementById('status-notice');
+    const gameFrame = document.getElementById('game-frame');
+    const mobileNameInput = document.getElementById('mobile-name-input');
+    const canvas = document.getElementById('canvas');
     const loadingTips = [
       '正在召唤前端大神', '外包团队已就位', '实习牲准备完毕',
       '产品经理正在偷偷溜进来', '客户老板天团潜入完成',
     ];
+    const mobileBrowser = /Android|iPhone|iPad|Mobile|MicroMessenger/i.test(navigator.userAgent);
+    const forceCssLandscape = new URLSearchParams(location.search).has('css-landscape-preview');
+    let nameSubmission = 0;
+    let cssLandscape = false;
+    let canvasLayoutSignature = '';
+
+    window.FrontendNameInput = {
+      open(value) {
+        mobileNameInput.value = value || '';
+        mobileNameInput.style.display = 'block';
+        try { mobileNameInput.focus({preventScroll:true}); } catch (_) { mobileNameInput.focus(); }
+        mobileNameInput.setSelectionRange(mobileNameInput.value.length, mobileNameInput.value.length);
+        return Number(mobileNameInput.dataset.submission);
+      },
+      value:() => mobileNameInput.value,
+      submission:() => Number(mobileNameInput.dataset.submission),
+      close() {
+        mobileNameInput.blur();
+        mobileNameInput.style.display = 'none';
+        const canvas = document.getElementById('canvas');
+        try { canvas.focus({preventScroll:true}); } catch (_) { canvas.focus(); }
+      },
+    };
+    mobileNameInput.dataset.submission = '0';
+    mobileNameInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        nameSubmission += 1;
+        mobileNameInput.dataset.submission = String(nameSubmission);
+      }
+    });
+
+    function refreshOrientation() {
+      if (document.activeElement === mobileNameInput && canvasLayoutSignature) return;
+      const viewport = window.visualViewport;
+      const viewportWidth = viewport?.width || innerWidth;
+      const viewportHeight = viewport?.height || innerHeight;
+      const viewportLeft = viewport?.offsetLeft || 0;
+      const viewportTop = viewport?.offsetTop || 0;
+      const nextCssLandscape = forceCssLandscape || mobileBrowser && viewportHeight > viewportWidth;
+      const naturalWidth = canvas.offsetWidth || canvas.width / (devicePixelRatio || 1);
+      const naturalHeight = canvas.offsetHeight || canvas.height / (devicePixelRatio || 1);
+      const availableHeight = nextCssLandscape ? viewportWidth : viewportHeight;
+      // 固定按旋转后的可视高度生成唯一倍率，宽度严格使用相同倍率。
+      const uniformScale = availableHeight / naturalHeight;
+      const canvasWidth = naturalWidth * uniformScale;
+      const canvasHeight = naturalHeight * uniformScale;
+      const visualWidth = nextCssLandscape ? canvasHeight : canvasWidth;
+      const visualHeight = nextCssLandscape ? canvasWidth : canvasHeight;
+      const left = viewportLeft + (viewportWidth - visualWidth) / 2;
+      const top = viewportTop + (viewportHeight - visualHeight) / 2;
+      const signature = [viewportLeft, viewportTop, viewportWidth, viewportHeight,
+        nextCssLandscape, naturalWidth, naturalHeight].join(':');
+      cssLandscape = nextCssLandscape;
+      document.documentElement.classList.toggle('css-landscape', cssLandscape);
+      gameFrame.style.left = `${left}px`;
+      gameFrame.style.top = `${top}px`;
+      gameFrame.style.width = `${naturalWidth}px`;
+      gameFrame.style.height = `${naturalHeight}px`;
+      gameFrame.style.transform = cssLandscape
+        ? `matrix(0, ${uniformScale}, ${-uniformScale}, 0, ${canvasHeight}, 0)`
+        : `matrix(${uniformScale}, 0, 0, ${uniformScale}, 0, 0)`;
+      if (signature !== canvasLayoutSignature) {
+        canvasLayoutSignature = signature;
+        requestAnimationFrame(() => dispatchEvent(new Event('resize')));
+      }
+    }
+    async function requestLandscape() {
+      try {
+        const fullscreen = document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen;
+        if (fullscreen && !document.fullscreenElement) await fullscreen.call(document.documentElement);
+        if (screen.orientation?.lock) await screen.orientation.lock('landscape');
+      } catch (_) {}
+      refreshOrientation();
+    }
+    window.FrontendMobileOrientation = {request:requestLandscape, refresh:refreshOrientation};
+
+    // Godot 只按旋转后的外接矩形缩放坐标；在捕获阶段交换并翻转坐标轴。
+    function remapRotatedTouch(event) {
+      if (!cssLandscape) return;
+      const rect = canvas.getBoundingClientRect();
+      for (const touch of event.changedTouches) {
+        const clientX = rect.left + (touch.clientY - rect.top) * rect.width / rect.height;
+        const clientY = rect.top + (rect.right - touch.clientX) * rect.height / rect.width;
+        try {
+          Object.defineProperties(touch, {
+            clientX:{value:clientX, configurable:true},
+            clientY:{value:clientY, configurable:true},
+          });
+        } catch (_) {}
+      }
+    }
+    for (const type of ['touchstart', 'touchmove', 'touchend', 'touchcancel']) {
+      canvas.addEventListener(type, remapRotatedTouch, {capture:true, passive:false});
+    }
+    addEventListener('resize', refreshOrientation);
+    addEventListener('orientationchange', refreshOrientation);
+    visualViewport?.addEventListener('resize', refreshOrientation);
+    visualViewport?.addEventListener('scroll', refreshOrientation);
+    refreshOrientation();
 
     function fail(error) {
       console.error(error);
@@ -115,7 +238,10 @@
             progressLabel.textContent = '…';
           }
         },
-      }).then(() => overlay.remove(), fail);
+      }).then(() => {
+        overlay.remove();
+        refreshOrientation();
+      }, fail);
     }
   </script>
 </body>

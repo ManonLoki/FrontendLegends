@@ -17,6 +17,7 @@ const VIRTUAL_CONTROLS := preload("res://scripts/virtual_controls.gd")
 const MOBILE_ORIENTATION := preload("res://scripts/mobile_orientation.gd")
 const CREATION_INTRO := preload("res://scripts/character_creation/creation_intro.gd")
 const CREATION_WIDGETS := preload("res://scripts/character_creation/creation_widgets.gd")
+const WEB_NAME_INPUT := preload("res://scripts/character_creation/web_name_input.gd")
 
 ## 设计舞台、开场字幕与角色表单的节点引用。
 var stage: Control
@@ -36,7 +37,7 @@ var attributes := {"strength": 25, "agility": 25, "constitution": 25, "wisdom": 
 var mobile_runtime := false
 var name_editing := false
 var saved_name := ""
-
+var web_name_submission := -1
 ## 初始化平台能力、设计舞台、虚拟控制器和开场字幕。
 func _ready() -> void:
 	mobile_runtime = VIRTUAL_CONTROLS.is_mobile_runtime()
@@ -46,17 +47,19 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_layout_stage)
 	_layout_stage()
 	_build_intro()
-
 ## 按固定速度向上滚动开场字幕，完全离场后切换到角色表单。
 func _process(delta: float) -> void:
 	if not intro_playing:
+		_sync_web_name_input()
 		return
 	intro_content.position.y -= INTRO_SPEED * delta
 	if intro_content.position.y + intro_total_height < -28.0:
 		_finish_intro()
-
 ## 处理桌面键盘输入；姓名编辑状态优先于表单导航。
 func _input(event: InputEvent) -> void:
+	if event is InputEventScreenTouch:
+		_handle_name_touch(event)
+		return
 	if not event is InputEventKey:
 		return
 	if not event.is_pressed():
@@ -77,6 +80,17 @@ func _input(event: InputEvent) -> void:
 		return
 	get_viewport().set_input_as_handled()
 	_handle_key(event.keycode)
+
+## 微信触摸必须在原始 touch 事件栈中直接激活 DOM 输入框，不能等待延迟焦点信号。
+func _handle_name_touch(event: InputEventScreenTouch) -> void:
+	if not event.pressed or intro_playing or not is_instance_valid(name_edit):
+		return
+	if not name_edit.get_global_rect().has_point(event.position):
+		return
+	get_viewport().set_input_as_handled()
+	focus_index = 0
+	if not name_editing:
+		_activate()
 
 ## 安装移动端虚拟方向键和确认、取消按钮。
 func _install_virtual_controls() -> void:
@@ -174,7 +188,9 @@ func _build_form() -> void:
 			name_edit.add_theme_color_override("font_placeholder_color", COLOR_GRAY)
 			name_edit.add_theme_stylebox_override("normal", CREATION_WIDGETS.field_style(COLOR_FIELD, COLOR_GRAY, 1))
 			name_edit.add_theme_stylebox_override("focus", CREATION_WIDGETS.field_style(COLOR_FIELD, COLOR_YELLOW, 2))
-			name_edit.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			name_edit.mouse_filter = Control.MOUSE_FILTER_STOP
+			name_edit.focus_entered.connect(_on_name_focus_entered)
+			name_edit.text_submitted.connect(func(_text: String) -> void: _save_name_edit())
 			form.add_child(name_edit)
 		else:
 			value_labels[row] = CREATION_WIDGETS.label("", 16, COLOR_WHITE, FONT)
@@ -188,6 +204,25 @@ func _build_form() -> void:
 	form.add_child(message)
 	_refresh_values()
 
+## 触摸姓名框时同步表单编辑状态；Web 导出器随后负责连接浏览器软键盘。
+func _on_name_focus_entered() -> void:
+	if intro_playing or name_editing:
+		return
+	focus_index = 0
+	saved_name = name_edit.text
+	name_editing = true
+	name_edit.edit()
+	web_name_submission = WEB_NAME_INPUT.open(name_edit.text)
+	_refresh_focus()
+
+## 从真实 DOM 输入框同步微信输入法文本，并在键盘确认时保存。
+func _sync_web_name_input() -> void:
+	if not name_editing or not WEB_NAME_INPUT.available():
+		return
+	name_edit.text = WEB_NAME_INPUT.value()
+	if WEB_NAME_INPUT.submission() != web_name_submission:
+		_save_name_edit()
+
 ## 激活当前字段：姓名进入编辑状态，确认行尝试创建角色。
 func _activate() -> void:
 	var row: String = ROWS[focus_index]
@@ -198,6 +233,7 @@ func _activate() -> void:
 		name_edit.grab_focus()
 		if mobile_runtime:
 			DisplayServer.virtual_keyboard_show(name_edit.text, name_edit.get_global_rect())
+		web_name_submission = WEB_NAME_INPUT.open(name_edit.text)
 		_refresh_focus()
 	elif row == "confirm":
 		_start_game()
@@ -270,6 +306,7 @@ func _save_name_edit() -> void:
 	name_editing = false
 	name_edit.text = saved_name
 	DisplayServer.virtual_keyboard_hide()
+	WEB_NAME_INPUT.close()
 	name_edit.release_focus()
 	_refresh_focus()
 
@@ -280,6 +317,7 @@ func _cancel_name_edit() -> void:
 	name_editing = false
 	name_edit.text = saved_name
 	DisplayServer.virtual_keyboard_hide()
+	WEB_NAME_INPUT.close()
 	name_edit.release_focus()
 	_refresh_focus()
 

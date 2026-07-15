@@ -16,7 +16,7 @@ static func request_from_user_gesture() -> void:
 	if OS.has_feature("web"):
 		_apply_web_orientation(true)
 
-## 注入横屏样式：浏览器拒绝方向锁定时，竖屏设备直接把游戏画布旋转为横屏。
+## 请求浏览器横屏；微信拒绝锁定时由 HTML 桥旋转画布并同步修正触摸坐标。
 static func _apply_web_orientation(from_user_gesture: bool) -> void:
 	if not _is_mobile_browser():
 		return
@@ -27,7 +27,11 @@ static func _build_web_script(from_user_gesture: bool) -> String:
 	var gesture_flag := "true" if from_user_gesture else "false"
 	var script := """
 	(function () {
-	  var isPortrait = window.matchMedia && window.matchMedia('(orientation: portrait)').matches;
+	  if (window.FrontendMobileOrientation) {
+	    window.FrontendMobileOrientation.refresh();
+	    if (__FROM_USER_GESTURE__) window.FrontendMobileOrientation.request();
+	    return;
+	  }
   var meta = document.querySelector('meta[name=screen-orientation]');
   if (!meta) {
 	    meta = document.createElement('meta');
@@ -39,25 +43,7 @@ static func _build_web_script(from_user_gesture: bool) -> String:
 	    var lock = window.screen.orientation.lock('landscape');
 	    if (lock && lock.catch) { lock.catch(function () {}); }
 	  }
-	  document.documentElement.setAttribute('data-frontend-landscape', '1');
-  var style = document.getElementById('frontend-landscape-style');
-  if (!style) {
-    style = document.createElement('style');
-    style.id = 'frontend-landscape-style';
-	    style.textContent =
-	      'html[data-frontend-landscape="1"], html[data-frontend-landscape="1"] body {' +
-	      'margin:0!important; width:100%!important; height:100%!important; overflow:hidden!important;' +
-	      'background:#000!important; overscroll-behavior:none; touch-action:none; }' +
-	      '@media (orientation: portrait) {' +
-	      'html[data-frontend-landscape="1"] canvas {' +
-	      'position:fixed!important; left:50%!important; top:50%!important;' +
-	      'width:100vh!important; height:100vw!important; max-width:none!important; max-height:none!important;' +
-	      'transform:translate(-50%,-50%) rotate(90deg); transform-origin:center center;' +
-	      'display:block!important; }' +
-	      '}}';
-    document.head.appendChild(style);
-  }
-	  if (__FROM_USER_GESTURE__ && isPortrait) {
+	  if (__FROM_USER_GESTURE__) {
 	    var fullscreenTarget = document.documentElement;
 	    var requestFullscreen = fullscreenTarget.requestFullscreen || fullscreenTarget.webkitRequestFullscreen;
 	    if (!requestFullscreen) { return; }
@@ -76,7 +62,7 @@ static func _build_web_script(from_user_gesture: bool) -> String:
 	script = script.replace("__FROM_USER_GESTURE__", gesture_flag)
 	return script
 
-## 桌面浏览器也可能命中上述媒体查询，因此再按用户代理过滤，避免桌面端显示旋转提示。
+## 仅移动浏览器需要请求横屏，桌面端保持普通响应式画布。
 static func _is_mobile_browser() -> bool:
 	var user_agent := str(JavaScriptBridge.eval("navigator.userAgent || ''"))
 	return user_agent.contains("Android") or user_agent.contains("iPhone") \

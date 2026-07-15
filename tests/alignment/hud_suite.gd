@@ -10,8 +10,17 @@ func _run_hud_suite() -> Node:
 	var npc_system = root.get_node("NpcSystem")
 	var orientation_script = load("res://scripts/mobile_orientation.gd")
 	var web_script: String = orientation_script._build_web_script(true)
-	_assert_true(web_script.contains("width:100%") and web_script.contains("translate(-50%,-50%)"), "Web 横屏 CSS 的百分号不得被 GDScript 字符串格式化吞掉")
-	_assert_true(web_script.contains("if (true && isPortrait)") and not web_script.contains("__FROM_USER_GESTURE__"), "Web 横屏脚本必须安全替换用户手势标记")
+	_assert_true(not web_script.contains("rotate(90deg)"), "Web 横屏失败时不得旋转 Canvas，否则微信触摸坐标会与画面错位")
+	_assert_true(web_script.contains("if (true)") and not web_script.contains("__FROM_USER_GESTURE__"), "Web 横屏脚本必须安全替换用户手势标记")
+	_assert_true(web_script.contains("FrontendMobileOrientation.request()"), "移动 Web 横屏必须通过 HTML 用户手势桥请求")
+	var web_shell := FileAccess.get_file_as_string("res://web/index_shell.html")
+	_assert_true(web_shell.contains("id=\"game-frame\"") and web_shell.contains("remapRotatedTouch"), "微信 CSS 横屏必须在 Godot Canvas 外层旋转并重映射触摸坐标")
+	_assert_true(web_shell.contains("width=\"640\" height=\"480\""), "Web Canvas 必须在 HTML 层声明固定 640×480 内部尺寸")
+	_assert_true(web_shell.contains("gameFrame.style.left") and web_shell.contains("matrix(0, ${uniformScale}"), "旋转容器必须按实时可视区使用像素矩阵居中")
+	_assert_true(web_shell.contains("availableHeight / naturalHeight") and web_shell.contains("naturalWidth * uniformScale"), "微信 WebGL 必须按高度生成唯一倍率并等比缩放宽度")
+	_assert_true(web_shell.contains("window.visualViewport") and web_shell.contains("maximum-scale=1"), "微信缩放必须锁定页面级缩放并使用真实可视视口")
+	var web_builder := FileAccess.get_file_as_string("res://tools/build-web.mjs")
+	_assert_true(web_builder.contains("html/canvas_resize_policy=0") and web_builder.contains("originalPresets"), "Web 构建必须禁止引擎调整 Canvas，并在 Godot 导出后恢复预设")
 	var dark_study_map := TiledMapLoader.new()
 	_assert_true(dark_study_map.load_file("res://assets/Map/maps/LoreWorld/KaiyuanTown/DarkXue.tmx"), "HUD 测试应能加载 DARK学地图")
 	# 三个主场景统一直接使用 640×480 设计坐标，窗口缩放只交给 Godot stretch。
@@ -31,9 +40,16 @@ func _run_hud_suite() -> Node:
 	var name_style: StyleBoxFlat = character_creation.name_edit.get_theme_stylebox("normal")
 	_assert_true(is_zero_approx(name_style.bg_color.a), "角色姓名输入框普通状态不得保留黄色或其他实色背景")
 	_assert_true(name_style.content_margin_left == 4.0 and name_style.content_margin_top == 4.0 and name_style.content_margin_right == 4.0 and name_style.content_margin_bottom == 4.0, "角色姓名输入框文字应与四边保持 4px 内边距")
+	_assert_true(character_creation.name_edit.mouse_filter == Control.MOUSE_FILTER_STOP, "角色姓名输入框必须接收移动端触摸以唤起软键盘")
 	character_creation.mobile_runtime = true
 	character_creation._finish_intro()
 	_assert_true(not character_creation.name_editing, "移动端进入角色表单时不应在用户按 A 前自动弹出键盘")
+	var name_touch := InputEventScreenTouch.new()
+	name_touch.pressed = true
+	name_touch.position = character_creation.name_edit.get_global_rect().get_center()
+	character_creation._input(name_touch)
+	_assert_true(character_creation.name_editing and character_creation.name_edit.has_focus(), "移动端直接触摸姓名输入框应在同一事件栈进入编辑状态")
+	character_creation._save_name_edit()
 	var mobile_keyboard_event := InputEventKey.new()
 	mobile_keyboard_event.keycode = KEY_SPACE
 	mobile_keyboard_event.pressed = true
