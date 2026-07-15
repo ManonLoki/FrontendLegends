@@ -219,8 +219,11 @@
     }
 
     const missing = Engine.getMissingFeatures({ threads:GODOT_THREADS_ENABLED });
+    const invalidMobileBuild = mobileBrowser && GODOT_CONFIG.canvasResizePolicy !== 0;
     overlay.style.visibility = 'visible';
-    if (missing.length) {
+    if (invalidMobileBuild) {
+      fail('移动 Web 构建配置无效，请使用 npm run build:web 重新完整构建。');
+    } else if (missing.length) {
       fail(`当前浏览器缺少以下功能：\n${missing.join('\n')}`);
     } else {
       progressRow.style.display = 'flex';

@@ -21,6 +21,8 @@ func _run_hud_suite() -> Node:
 	_assert_true(web_shell.contains("window.visualViewport") and web_shell.contains("maximum-scale=1"), "微信缩放必须锁定页面级缩放并使用真实可视视口")
 	var web_builder := FileAccess.get_file_as_string("res://tools/build-web.mjs")
 	_assert_true(web_builder.contains("html/canvas_resize_policy=0") and web_builder.contains("originalPresets"), "Web 构建必须禁止引擎调整 Canvas，并在 Godot 导出后恢复预设")
+	var export_presets := FileAccess.get_file_as_string("res://export_presets.cfg")
+	_assert_true(export_presets.contains("export_path=\"dist/web-preview/index.html\"") and export_presets.contains("html/canvas_resize_policy=0"), "编辑器 Web 预览不得覆盖正式构建，且必须保持固定 Canvas")
 	var dark_study_map := TiledMapLoader.new()
 	_assert_true(dark_study_map.load_file("res://assets/Map/maps/LoreWorld/KaiyuanTown/DarkXue.tmx"), "HUD 测试应能加载 DARK学地图")
 	# 三个主场景统一直接使用 640×480 设计坐标，窗口缩放只交给 Godot stretch。
