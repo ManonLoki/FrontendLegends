@@ -16,7 +16,7 @@ static func request_from_user_gesture() -> void:
 	if OS.has_feature("web"):
 		_apply_web_orientation(true)
 
-## 注入少量样式和属性：横屏锁定失败时，竖屏手机隐藏画布并显示旋转设备提示。
+## 注入横屏样式：浏览器拒绝方向锁定时，竖屏设备直接把游戏画布旋转为横屏。
 static func _apply_web_orientation(from_user_gesture: bool) -> void:
 	if not _is_mobile_browser():
 		return
@@ -35,23 +35,29 @@ static func _apply_web_orientation(from_user_gesture: bool) -> void:
 	    var lock = window.screen.orientation.lock('landscape');
 	    if (lock && lock.catch) { lock.catch(function () {}); }
 	  }
-  document.documentElement.setAttribute('data-frontend-landscape', '1');
+	  document.documentElement.setAttribute('data-frontend-landscape', '1');
   var style = document.getElementById('frontend-landscape-style');
   if (!style) {
     style = document.createElement('style');
     style.id = 'frontend-landscape-style';
-    style.textContent = '@media (orientation: portrait) {' +
-      'html[data-frontend-landscape="1"] body:after {' +
-      'content:"请旋转设备至横屏"; position:fixed; inset:0; z-index:2147483647;' +
-      'display:flex; align-items:center; justify-content:center; background:#000; color:#fff;' +
-      'font-family:monospace; font-size:24px;' +
-      '}' +
-      'html[data-frontend-landscape="1"] canvas { visibility:hidden; }' +
-      '}';
+	    style.textContent =
+	      'html[data-frontend-landscape="1"], html[data-frontend-landscape="1"] body {' +
+	      'margin:0!important; width:100%!important; height:100%!important; overflow:hidden!important;' +
+	      'background:#000!important; overscroll-behavior:none; touch-action:none; }' +
+	      '@media (orientation: portrait) {' +
+	      'html[data-frontend-landscape="1"] canvas {' +
+	      'position:fixed!important; left:50%!important; top:50%!important;' +
+	      'width:100vh!important; height:100vw!important; max-width:none!important; max-height:none!important;' +
+	      'transform:translate(-50%,-50%) rotate(90deg); transform-origin:center center;' +
+	      'display:block!important; }' +
+	      '}}';
     document.head.appendChild(style);
   }
-  if (%s && isPortrait && document.documentElement.requestFullscreen) {
-    var fullscreen = document.documentElement.requestFullscreen();
+	  if (%s && isPortrait) {
+	    var fullscreenTarget = document.documentElement;
+	    var requestFullscreen = fullscreenTarget.requestFullscreen || fullscreenTarget.webkitRequestFullscreen;
+	    if (!requestFullscreen) { return; }
+	    var fullscreen = requestFullscreen.call(fullscreenTarget);
     if (fullscreen && fullscreen.then) {
       fullscreen.then(function () {
         if (window.screen.orientation && window.screen.orientation.lock) {

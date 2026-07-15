@@ -2,6 +2,7 @@
 .godot/
 /android/
 /dist/
+/icons/android/signing/
 
 # Local tooling and operating-system files
 node_modules/

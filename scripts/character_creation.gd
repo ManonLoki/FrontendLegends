@@ -12,7 +12,7 @@ const ATTR_LABELS := {"strength": "编码", "agility": "思维", "constitution":
 const COLOR_YELLOW := Color("#ffe678")
 const COLOR_GRAY := Color("#b8b8b8")
 const COLOR_WHITE := Color("#ffffff")
-const COLOR_FIELD := Color("#f5f5f5")
+const COLOR_FIELD := Color("#00000000")
 const VIRTUAL_CONTROLS := preload("res://scripts/virtual_controls.gd")
 const MOBILE_ORIENTATION := preload("res://scripts/mobile_orientation.gd")
 const CREATION_INTRO := preload("res://scripts/character_creation/creation_intro.gd")
@@ -144,7 +144,10 @@ func _finish_intro() -> void:
 	intro_playing = false
 	intro_root.queue_free()
 	form.visible = true
-	_activate()
+	if mobile_runtime:
+		_refresh_focus()
+	else:
+		_activate()
 
 ## 按字段定义构建姓名、性别、四维属性和确认行。
 func _build_form() -> void:
@@ -167,9 +170,9 @@ func _build_form() -> void:
 			name_edit.placeholder_text = "（直接输入姓名）"
 			name_edit.add_theme_font_override("font", FONT)
 			name_edit.add_theme_font_size_override("font_size", 16)
-			name_edit.add_theme_color_override("font_color", Color("#222222"))
-			name_edit.add_theme_color_override("font_placeholder_color", COLOR_YELLOW)
-			name_edit.add_theme_stylebox_override("normal", CREATION_WIDGETS.field_style(COLOR_FIELD, COLOR_YELLOW, 2))
+			name_edit.add_theme_color_override("font_color", COLOR_WHITE)
+			name_edit.add_theme_color_override("font_placeholder_color", COLOR_GRAY)
+			name_edit.add_theme_stylebox_override("normal", CREATION_WIDGETS.field_style(COLOR_FIELD, COLOR_GRAY, 1))
 			name_edit.add_theme_stylebox_override("focus", CREATION_WIDGETS.field_style(COLOR_FIELD, COLOR_YELLOW, 2))
 			name_edit.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			form.add_child(name_edit)
@@ -193,6 +196,8 @@ func _activate() -> void:
 		name_edit.text = saved_name
 		name_edit.edit()
 		name_edit.grab_focus()
+		if mobile_runtime:
+			DisplayServer.virtual_keyboard_show(name_edit.text, name_edit.get_global_rect())
 		_refresh_focus()
 	elif row == "confirm":
 		_start_game()
@@ -221,8 +226,6 @@ func _refresh_focus() -> void:
 		cursor_labels[row].text = "▶" if selected else ""
 		if value_labels.has(row):
 			value_labels[row].modulate = COLOR_YELLOW if selected else COLOR_WHITE
-		if row == "name":
-			name_edit.modulate = COLOR_YELLOW if selected else COLOR_WHITE
 	if name_editing:
 		name_edit.grab_focus()
 	else:
@@ -266,6 +269,7 @@ func _save_name_edit() -> void:
 	saved_name = name_edit.text.strip_edges()
 	name_editing = false
 	name_edit.text = saved_name
+	DisplayServer.virtual_keyboard_hide()
 	name_edit.release_focus()
 	_refresh_focus()
 
@@ -275,6 +279,7 @@ func _cancel_name_edit() -> void:
 		return
 	name_editing = false
 	name_edit.text = saved_name
+	DisplayServer.virtual_keyboard_hide()
 	name_edit.release_focus()
 	_refresh_focus()
 

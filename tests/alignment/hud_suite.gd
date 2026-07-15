@@ -24,6 +24,15 @@ func _run_hud_suite() -> Node:
 	_assert_true(character_creation.stage.size == Vector2(640.0, 480.0) and character_creation.stage.scale == Vector2.ONE and character_creation.stage.position == Vector2.ZERO, "CharacterCreation 应与 Game 共用 640×480 原点设计画布")
 	_assert_true(character_creation.intro_root.scale == Vector2.ONE and character_creation.intro_root.position == Vector2(0.0, 40.0), "CharacterCreation 开场内容应以原始尺寸在设计画布中居中")
 	_assert_true(character_creation.form.scale == Vector2.ONE and character_creation.form.position == Vector2(0.0, 40.0), "CharacterCreation 表单应以原始尺寸在设计画布中居中")
+	var name_style: StyleBoxFlat = character_creation.name_edit.get_theme_stylebox("normal")
+	_assert_true(is_zero_approx(name_style.bg_color.a), "角色姓名输入框普通状态不得保留黄色或其他实色背景")
+	character_creation.mobile_runtime = true
+	character_creation._finish_intro()
+	_assert_true(not character_creation.name_editing, "移动端进入角色表单时不应在用户按 A 前自动弹出键盘")
+	character_creation._handle_key(KEY_SPACE)
+	_assert_true(character_creation.name_editing and character_creation.name_edit.has_focus(), "移动端首次按 A 应进入姓名编辑并取得输入焦点")
+	character_creation._handle_key(KEY_SPACE)
+	_assert_true(not character_creation.name_editing and not character_creation.name_edit.has_focus(), "移动端再次按 A 应保存姓名并退出输入焦点")
 	character_creation.queue_free()
 	await process_frame
 
