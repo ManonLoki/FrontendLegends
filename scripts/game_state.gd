@@ -1,13 +1,14 @@
 extends Node
 
-const SAVE_PATH := "user://frontend_legends_save_v1.json"
-const SAVE_VERSION := 1
+const SAVE_PATH := "user://frontend_legends_save_v2.json"
+const SAVE_VERSION := 2
 
 const SURVIVAL_TICK_SEC := 15.0
 const AGE_TICK_SEC := 28800.0
 const MIN_HIT_RATE := 0.28
 const MAX_HIT_RATE := 0.95
-const MP_PER_NEIGONG := 2
+## Each cultivation level increases the maximum current energy by this amount.
+const MP_PER_CULTIVATION := 2
 
 var profile: Dictionary = {}
 var game_time_sec := 0.0
@@ -42,7 +43,7 @@ func create_profile(player_name: String, custom_attributes: Dictionary = {}, gen
 		"gender": gender,
 		"base_attributes": attributes.duplicate(true),
 		"attributes": attributes.duplicate(true),
-		"vitals": {"food": capacity, "water": capacity, "money": 100000, "potential": 100000, "experience": 0, "age": 18, "appearance": appearance, "neigong": 0},
+		"vitals": {"food": capacity, "water": capacity, "money": 0, "potential": 0, "experience": 0, "age": 18, "appearance": appearance, "cultivation": 0},
 		"sect": "",
 		"master": "",
 		"skills": SkillSystem.create_default_skills(),
@@ -141,10 +142,10 @@ func base_hp_max(constitution: float) -> int:
 func hp_max_with_mp_boost(constitution: float, mp_max: int) -> int:
 	return base_hp_max(constitution) + int(floor(maxf(0.0, float(mp_max)) * 0.2))
 
-## neigong 是冥想修为层数；战斗中的当前精力上限为修为的 2 倍。
-## 例如修为 130 时当前精力上限 260，修为练至理论终点 3000 时上限 6000。
+## Cultivation is the number of meditation advancement levels. Its value doubles
+## to determine the maximum current energy in combat (for example, 130 → 260).
 func player_mp_max() -> int:
-	return maxi(0, int(profile.get("vitals", {}).get("neigong", 0)) * MP_PER_NEIGONG)
+	return maxi(0, int(profile.get("vitals", {}).get("cultivation", 0)) * MP_PER_CULTIVATION)
 
 func player_hp_max() -> int:
 	var attributes: Dictionary = profile.get("attributes", {})

@@ -424,10 +424,10 @@ func _make_ult(config: Dictionary, tier: int, inner_power: int) -> Dictionary:
 	var kind := str(config.get("kind", "hugeDamage"))
 	return {"id": "ult:%s:%d" % [config.get("key", "sect"), ULT_TIER1_ARCH_LEVEL if tier == 1 else ULT_TIER2_ARCH_LEVEL], "name": config.get("names", ["绝招", "绝招"])[tier - 1], "kind": kind, "tier": tier, "inner_power": inner_power, "mp_cost": costs.get(kind, [40, 70])[tier - 1]}
 
-## 冥想分两阶段：先把精力（mp）当缓冲池慢慢填满到 cap，填满后一次性把这池
-## 精力兑换为 1 点内力修为（neigong）并清零——mp 本身不是内力，只是兑换凭证。
-## 理论冥想上限只取决于当前装备的基础/门派架构功法和有效根骨，不受玩家目前
-## 已经冥想出的 neigong 高低影响。赛博传送也使用同一个理论上限计算门槛。
+## Meditation has two phases: current energy (mp) fills a buffer to its cap, then
+## becomes one cultivation level and resets. MP is a conversion resource, not cultivation.
+## The theoretical cap depends only on equipped architecture skills and constitution;
+## current cultivation does not affect it. Cyber teleport uses this cap as well.
 func meditation_cap() -> int:
 	var constitution := float(GameState.profile.get("attributes", {}).get("constitution", 0))
 	return meditation_cap_from_values(constitution, level("basicConstitution"), equipped_sect_skill_level("arch"))
@@ -439,9 +439,9 @@ func meditation_cap_from_values(constitution: float, basic_arch_level: int, adva
 	var inner_power := maxi(0, basic_arch_level) + maxi(0, advanced_arch_level) * 2
 	return maxi(0, int(floor(float(inner_power) * MEDITATION_INNER_POWER_UNIT * modifier)))
 
-## 修为终点对应的最大“当前精力上限”；当前精力上限始终是 neigong 的 2 倍。
+## The cultivation cap determines maximum current energy; each level grants two MP.
 func meditation_max_mp_cap() -> int:
-	return meditation_cap() * GameState.MP_PER_NEIGONG
+	return meditation_cap() * GameState.MP_PER_CULTIVATION
 
 func meditate_tick() -> Dictionary:
 	if not can_meditate():
@@ -450,20 +450,20 @@ func meditate_tick() -> Dictionary:
 	var constitution := float(GameState.profile.get("attributes", {}).get("constitution", 0))
 	var modifier := GameState.meditation_modifier(constitution)
 	var cap := meditation_cap()
-	var neigong := int(vitals.get("neigong", 0))
+	var cultivation := int(vitals.get("cultivation", 0))
 	var maximum := GameState.player_mp_max()
-	if neigong >= cap and int(GameState.combat_state.mp) >= maximum:
+	if cultivation >= cap and int(GameState.combat_state.mp) >= maximum:
 		return {"ok": false, "message": "冥想已满，无需继续冥想。"}
 	GameState.combat_state.mp = mini(maximum, int(GameState.combat_state.mp) + maxi(1, int(floor(5.0 * modifier))))
 	if int(GameState.combat_state.mp) >= maximum:
-		if neigong < cap:
+		if cultivation < cap:
 			GameState.combat_state.mp = 0
-			vitals.neigong = mini(cap, neigong + 1)
+			vitals.cultivation = mini(cap, cultivation + 1)
 			GameState.profile.vitals = vitals
 			GameState.advance_time(MEDITATION_TICK_SECONDS)
-			if vitals.neigong >= cap:
-				return {"ok": true, "message": "冥想圆满，精力最大值提升至 %d，已达内功所限。" % vitals.neigong}
-			return {"ok": true, "message": "冥想圆满，精力最大值提升至 %d。" % vitals.neigong}
+			if vitals.cultivation >= cap:
+				return {"ok": true, "message": "冥想圆满，精力最大值提升至 %d，已达内功所限。" % vitals.cultivation}
+			return {"ok": true, "message": "冥想圆满，精力最大值提升至 %d。" % vitals.cultivation}
 		return {"ok": false, "message": "冥想已满，无需继续冥想。"}
 	# 冥想以 30 Hz 推进；每个有效 tick 同步推进 1/30 秒游戏时钟。
 	GameState.advance_time(MEDITATION_TICK_SECONDS)

@@ -22,7 +22,7 @@ func _run() -> void:
 	game_state.create_profile("alignment-test", {"strength": 25, "agility": 25, "constitution": 25, "wisdom": 25})
 	_assert_true(skill_system.ensure_skills().levels.is_empty(), "新角色不应自带任何基础技能")
 	_assert_true(skill_system.ensure_skills().equipped_basic.is_empty() and skill_system.ensure_skills().equipped_special.is_empty(), "新角色不应预装备任何功法")
-	_assert_true(int(game_state.profile.vitals.money) == 100000 and int(game_state.profile.vitals.potential) == 100000, "新角色测试资源应为 100000 Token 和 100000 潜能")
+	_assert_true(int(game_state.profile.vitals.money) == 0 and int(game_state.profile.vitals.potential) == 0, "新角色的 Token 和潜能应从 0 开始")
 	game_state.profile.vitals.potential = 100000
 	game_state.profile.vitals.money = 100000
 	_assert_true(int(ProjectSettings.get_setting("display/window/size/viewport_width")) == 640 and int(ProjectSettings.get_setting("display/window/size/viewport_height")) == 480, "设计分辨率应为 640×480")
@@ -85,7 +85,7 @@ func _run() -> void:
 	_assert_true(is_equal_approx(skill_system.MEDITATION_TICK_SECONDS, 1.0 / 30.0), "冥想应每秒推进 30 次")
 	_assert_true(is_equal_approx(skill_system.PRACTICE_TICK_SECONDS, 1.0 / 5.0), "练功应每秒推进 5 次")
 	game_state.profile.attributes.constitution = 29
-	game_state.profile.vitals.neigong = 130
+	game_state.profile.vitals.cultivation = 130
 	_assert_true(game_state.player_mp_max() == 260 and game_state.player_hp_max() == 293, "内功修为 130 的当前精力上限应为 260，并按该上限反哺体力至 293")
 	game_state.profile.attributes.constitution = 25
 
@@ -93,7 +93,7 @@ func _run() -> void:
 	var skills: Dictionary = skill_system.ensure_skills()
 	skills.levels.basicStrength = 5
 	skills.levels.ng_code_decorator = 1
-	game_state.profile.vitals.neigong = 5
+	game_state.profile.vitals.cultivation = 5
 	game_state.combat_state.hp = game_state.player_effective_hp_max()
 	game_state.combat_state.mp = 5
 	before_time = game_state.game_time_sec
@@ -105,7 +105,7 @@ func _run() -> void:
 	skills.levels.basicConstitution = 2
 	skills.levels.ng_arch_zone = 1
 	skills.equipped_special.arch = "ng_arch_zone"
-	game_state.profile.vitals.neigong = 1
+	game_state.profile.vitals.cultivation = 1
 	game_state.combat_state.mp = 0
 	before_time = game_state.game_time_sec
 	var meditation_result: Dictionary = skill_system.meditate_tick()
@@ -468,7 +468,7 @@ func _run() -> void:
 	# 练功必须先选左栏分类，再进入右栏选择具体功法。
 	game_state.profile.sect = "NG神教"
 	game_state.profile.attributes.wisdom = 25
-	game_state.profile.vitals.neigong = 80
+	game_state.profile.vitals.cultivation = 80
 	game_state.combat_state.mp = 10
 	game_state.combat_state.hp = 100
 	skill_system.ensure_skills().levels["basicStrength"] = 80
@@ -531,14 +531,14 @@ func _run() -> void:
 	# 练功失败应按参考项目文案停止，并在底部对话框明确提示原因。
 	skill_system.ensure_skills().levels["basicStrength"] = 10
 	skill_system.ensure_skills().levels["ng_code_decorator"] = 1
-	game_state.profile.vitals.neigong = 3
+	game_state.profile.vitals.cultivation = 3
 	game._refresh_practice()
 	var practice_level_cap_visible := false
 	for practice_widget in game.details_widgets:
 		if practice_widget is Label and str(practice_widget.text) == "1/6":
 			practice_level_cap_visible = true
 	_assert_true(skill_system.practice_cap("ng_code_decorator") == 6 and practice_level_cap_visible, "练功 n/m 应显示当前等级与当前最大可练等级")
-	game_state.profile.vitals.neigong = 10
+	game_state.profile.vitals.cultivation = 10
 	game_state.combat_state.mp = 0
 	game_state.combat_state.hp = 100
 	skill_system.ensure_skills().practiceProgress["ng_code_decorator"] = 0
@@ -549,7 +549,7 @@ func _run() -> void:
 	_assert_true(game.dialogue_open and game.dialogue_panel.visible and game.dialogue_content.text.contains("精力不足，练不动功。"), "精力不足时应在底部练功对话框显示参考文案")
 	game._close_dialogue()
 	skill_system.ensure_skills().levels["ng_code_decorator"] = 5
-	game_state.profile.vitals.neigong = 2
+	game_state.profile.vitals.cultivation = 2
 	var practice_cap_failure: Dictionary = skill_system.practice_tick("ng_code_decorator")
 	_assert_true(str(practice_cap_failure.get("reason", "")) == "cap" and str(practice_cap_failure.get("message", "")).contains("精力修为不足，须多冥想积累内力。"), "练功达到精力上限时应使用参考项目的原因文案")
 	game.practice_open = true
@@ -661,7 +661,7 @@ func _run() -> void:
 	skill_system.ensure_skills().equipped_basic["arch"] = "basicConstitution"
 	skill_system.ensure_skills().equipped_special["arch"] = "ng_arch_zone"
 	game_state.profile.attributes.constitution = 25
-	game_state.profile.vitals.neigong = 30
+	game_state.profile.vitals.cultivation = 30
 	game_state.combat_state.mp = 30
 	game.system_index = 0
 	game._select_system_menu()
@@ -675,22 +675,22 @@ func _run() -> void:
 	_assert_true(skill_system.meditation_cap_from_values(30, 40, 40) == 3300, "根骨变化时冥想上限必须应用根骨修正动态变化")
 	# 验证真实 tick 的终点行为：最后一层可以从2999升至3000，不越界；达到
 	# 修为上限后仍可把“当前精力”充满至修为的2倍6000，之后才彻底停止。
-	game_state.profile.vitals.neigong = 2999
+	game_state.profile.vitals.cultivation = 2999
 	game_state.combat_state.mp = game_state.player_mp_max() - 1
 	var final_layer_result: Dictionary = skill_system.meditate_tick()
-	_assert_true(bool(final_layer_result.get("ok", false)) and game_state.profile.vitals.neigong == 3000 and game_state.combat_state.mp == 0, "真实冥想 tick 应能从2999升至公式上限3000并清空当前精力")
+	_assert_true(bool(final_layer_result.get("ok", false)) and game_state.profile.vitals.cultivation == 3000 and game_state.combat_state.mp == 0, "真实冥想 tick 应能从2999升至公式上限3000并清空当前精力")
 	game_state.combat_state.mp = game_state.player_mp_max() - 1
 	var fill_final_mp_result: Dictionary = skill_system.meditate_tick()
-	_assert_true(not bool(fill_final_mp_result.get("ok", true)) and game_state.profile.vitals.neigong == 3000 and game_state.combat_state.mp == 6000, "修为到3000后应继续允许当前精力充至6000，并在充满时停止")
-	var capped_neigong_before := int(game_state.profile.vitals.neigong)
+	_assert_true(not bool(fill_final_mp_result.get("ok", true)) and game_state.profile.vitals.cultivation == 3000 and game_state.combat_state.mp == 6000, "修为到3000后应继续允许当前精力充至6000，并在充满时停止")
+	var capped_cultivation_before := int(game_state.profile.vitals.cultivation)
 	var capped_mp_before := int(game_state.combat_state.mp)
 	var capped_result: Dictionary = skill_system.meditate_tick()
-	_assert_true(not bool(capped_result.get("ok", true)) and game_state.profile.vitals.neigong == capped_neigong_before and game_state.combat_state.mp == capped_mp_before, "冥想到顶后继续 tick 不得突破公式上限或6000当前精力")
-	game_state.profile.vitals.neigong = 30
+	_assert_true(not bool(capped_result.get("ok", true)) and game_state.profile.vitals.cultivation == capped_cultivation_before and game_state.combat_state.mp == capped_mp_before, "冥想到顶后继续 tick 不得突破公式上限或6000当前精力")
+	game_state.profile.vitals.cultivation = 30
 	game_state.combat_state.mp = 30
 	_assert_true(game_state.player_mp_max() == 60 and not game.cyber_open and game.dialogue_open and game.dialogue_content.text.contains("需要 1200 精力"), "当前已冥想精力上限较低时也不得降低传送要求")
 	game._close_dialogue()
-	game_state.profile.vitals.neigong = 600
+	game_state.profile.vitals.cultivation = 600
 	game_state.combat_state.mp = 1200
 	game.menu_open = true
 	game.menu_panel.visible = true
