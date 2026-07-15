@@ -52,7 +52,7 @@
    </properties>
    <point/>
   </object>
-  <object id="6" type="Transaction" x="224" y="288" width="48" height="16">
+  <object id="6" type="Transaction" x="240" y="288" width="16" height="16">
    <properties>
     <property name="from" value="Angular"/>
     <property name="to" value="AngularZongTan"/>

@@ -29,7 +29,7 @@
     <property name="to" value="KaiyuanTown"/>
    </properties>
   </object>
-  <object id="2" type="Transaction" x="96" y="208" width="48" height="16">
+  <object id="2" type="Transaction" x="112" y="208" width="16" height="16">
    <properties>
     <property name="from" value="KaiyuanTown"/>
     <property name="to" value="ResidentialHouseDing"/>

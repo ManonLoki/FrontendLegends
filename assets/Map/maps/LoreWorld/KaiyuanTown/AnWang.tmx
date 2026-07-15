@@ -15,14 +15,15 @@
  <tileset firstgid="594" source="../../../tilesets/树木.tsx"/>
  <tileset firstgid="605" source="../../../tilesets/1_Terrains_16x16.tsx"/>
  <tileset firstgid="1341" source="../../../tilesets/Game_Maker_Studio_Autotiles_16x16.tsx"/>
+ <tileset firstgid="2589" source="../../../tilesets/Godot_Autotiles_16x16.tsx"/>
  <layer id="1" name="Background" width="20" height="15">
   <data encoding="base64" compression="zlib">
-   eJzbwMnAsIhKeBMQzwPiPirhZaPmjZo3ah5e87YB8So8eBoQTyKgBoa3ADEhMA9qL7XANiLthQEAXqGhrw==
+   eJzbwMnAsIhKeBMQzwPiPirhZaPmjZo3ah5e87YB8So8GF0PPrVbgJgQKOVjYKgD4gl8hNUSA2YCzZkFxHOINA8AYwGiPw==
   </data>
  </layer>
  <layer id="2" name="Road" width="20" height="15">
   <data encoding="base64" compression="zlib">
-   eJzbwMnAsIhKeBMQzwPiPirhZcPAPGQwWMxD1kvIPGTx4RAfw828bUC8Cg+eBsSTCKiB4S1o6QEbmAe1l1pgG5H2wgAAZk+bMg==
+   eJzbwMnAsIhKeBMQzwPiPirhZcPAPGQwWMxD1kvIPGTx4RAfw828bUC8Cg9GVo9PHQhvQUsP2EAjH9AsIJ7AR1gtMWAm0JxZQDyHSPMAjd+b+g==
   </data>
  </layer>
  <layer id="3" name="Prop" width="20" height="15">
@@ -49,13 +50,13 @@
     <property name="text" value="悬赏信息"/>
    </properties>
   </object>
-  <object id="9" type="Transaction" x="128" y="208" width="32" height="16">
+  <object id="9" type="Transaction" x="144" y="208" width="16" height="16">
    <properties>
     <property name="from" value="KaiyuanTown"/>
     <property name="to" value="AnWang"/>
    </properties>
   </object>
-  <object id="10" type="Transaction" x="128" y="224" width="32" height="16">
+  <object id="10" type="Transaction" x="128" y="224" width="48" height="16">
    <properties>
     <property name="from" value="AnWang"/>
     <property name="to" value="KaiyuanTown"/>

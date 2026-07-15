@@ -18,9 +18,12 @@ func _run() -> void:
 	var data_registry = root.get_node("DataRegistry")
 	game_state.delete_save()
 	game_state.create_profile("alignment-test", {"strength": 25, "agility": 25, "constitution": 25, "wisdom": 25})
+	_assert_true(skill_system.ensure_skills().levels.is_empty(), "新角色不应自带任何基础技能")
+	_assert_true(skill_system.ensure_skills().equipped_basic.is_empty() and skill_system.ensure_skills().equipped_special.is_empty(), "新角色不应预装备任何功法")
+	_assert_true(int(game_state.profile.vitals.money) == 100000 and int(game_state.profile.vitals.potential) == 100000, "新角色测试资源应为 100000 Token 和 100000 潜能")
 	game_state.profile.vitals.potential = 100000
 	game_state.profile.vitals.money = 100000
-	_assert_true(int(ProjectSettings.get_setting("display/window/size/viewport_width")) == 480 and int(ProjectSettings.get_setting("display/window/size/viewport_height")) == 320, "设计分辨率应为 480×320")
+	_assert_true(int(ProjectSettings.get_setting("display/window/size/viewport_width")) == 640 and int(ProjectSettings.get_setting("display/window/size/viewport_height")) == 480, "设计分辨率应为 640×480")
 	_assert_true(str(ProjectSettings.get_setting("display/window/stretch/aspect")) == "keep", "运行窗口放大时应保持宽高比等量缩放")
 
 	# 全地图 NPC 目标注册：读取 TMX property npcId，并保留地图显示名。
@@ -231,20 +234,131 @@ func _run() -> void:
 	game_state.load_game()
 	_assert_true(str(game_state.equipment.weapon).is_empty(), "穿戴状态不应写入或恢复自存档")
 
+	# 三个主场景统一直接使用 640×480 设计坐标，窗口缩放只交给 Godot stretch。
+	var splash = load("res://scenes/splash.tscn").instantiate()
+	root.add_child(splash)
+	await process_frame
+	_assert_true(splash.stage.size == Vector2(640.0, 480.0) and splash.stage.scale == Vector2.ONE and splash.stage.position == Vector2.ZERO, "Splash 应与 Game 共用 640×480 原点设计画布")
+	_assert_true(splash.prompt.size.x == 640.0 and is_equal_approx(splash.prompt.position.x, 0.0), "Splash 提示文字应在完整设计画布上居中，不得缩在左上角")
+	splash.queue_free()
+	await process_frame
+	var character_creation = load("res://scenes/character_creation.tscn").instantiate()
+	root.add_child(character_creation)
+	await process_frame
+	_assert_true(character_creation.stage.size == Vector2(640.0, 480.0) and character_creation.stage.scale == Vector2.ONE and character_creation.stage.position == Vector2.ZERO, "CharacterCreation 应与 Game 共用 640×480 原点设计画布")
+	_assert_true(character_creation.intro_root.scale == Vector2.ONE and character_creation.intro_root.position == Vector2(0.0, 40.0), "CharacterCreation 开场内容应以原始尺寸在设计画布中居中")
+	_assert_true(character_creation.form.scale == Vector2.ONE and character_creation.form.position == Vector2(0.0, 40.0), "CharacterCreation 表单应以原始尺寸在设计画布中居中")
+	character_creation.queue_free()
+	await process_frame
+
 	# 对话分页与顶部进度条几何：一行一页；相机视口顶部 16px、水平居中。
 	var game = load("res://scenes/game.tscn").instantiate()
 	root.add_child(game)
 	await process_frame
-	# UI 统一使用 480×320 逻辑坐标；窗口缩放只交给 Godot stretch，避免二次放大。
+	# UI 统一使用 640×480 逻辑坐标；窗口缩放只交给 Godot stretch，避免二次放大。
 	_assert_true(is_equal_approx(game._display_scale(), 1.0), "游戏 UI 不应再按物理窗口执行第二次缩放")
-	_assert_true(game._game_view_rect() == Rect2(0.0, 0.0, 480.0, 320.0), "地图相机应覆盖完整 480×320 设计画布")
+	_assert_true(game._game_view_rect() == Rect2(0.0, 0.0, 640.0, 480.0), "地图相机应覆盖完整 640×480 设计画布")
 	game.map_context = darkxue_map
 	var covered_map_size: Vector2 = Vector2(darkxue_map.width * darkxue_map.tile_width, darkxue_map.height * darkxue_map.tile_height) * game._map_zoom()
-	_assert_true(covered_map_size.x >= 480.0 and covered_map_size.y >= 320.0, "小地图应等比 cover 相机，不得产生黑边")
+	_assert_true(covered_map_size.x >= 640.0 and covered_map_size.y >= 480.0, "小地图应等比 cover 相机，不得产生黑边")
 	game._layout_game_view()
-	var design_rect := Rect2(Vector2.ZERO, Vector2(480.0, 320.0))
+	game._toggle_menu()
+	var stable_menu_widgets: Array = game.menu_widgets.duplicate()
+	for frame in 3:
+		game._process(1.0 / 60.0)
+	_assert_true(game.menu_widgets.size() == stable_menu_widgets.size(), "菜单连续帧不应重复创建控件")
+	for index in stable_menu_widgets.size():
+		_assert_true(game.menu_widgets[index] == stable_menu_widgets[index], "菜单连续帧应复用同一批控件，避免闪烁")
+	game._toggle_menu()
+	var design_rect := Rect2(Vector2.ZERO, Vector2(640.0, 480.0))
 	for panel in [game.map_badge_panel, game.menu_panel, game.dialogue_panel, game.details_panel, game.tree_confirm_panel, game.battle_panel]:
 		_assert_true(design_rect.encloses(Rect2(panel.position, panel.size)), "%s 必须完整位于设计画布内" % panel.name)
+	game._show_inventory()
+	var inventory_has_title := false
+	var first_inventory_category_y := INF
+	for widget in game.details_widgets:
+		if widget is Label and str(widget.text).begins_with("背包"):
+			inventory_has_title = true
+		if widget is Label and str(widget.text) == "食物":
+			first_inventory_category_y = widget.position.y
+	_assert_true(not inventory_has_title, "背包详情面板不应再创建顶部 Title")
+	_assert_true(first_inventory_category_y < 30.0, "移除 Title 后背包内容应上移并回收顶部空间")
+	var inventory_hud: PanelContainer = game.detail_huds.inventory.panel
+	var inventory_child_count: int = (game.detail_huds.inventory.content as Label).get_child_count()
+	game._render_skill_book_widgets()
+	_assert_true(game.detail_huds.skill_book.panel != inventory_hud, "背包与功法必须使用不同 HUD 面板")
+	_assert_true(not inventory_hud.visible and game.detail_huds.skill_book.panel.visible, "切换详情 HUD 时只应显示目标面板")
+	_assert_true(game.detail_huds.inventory.content.get_child_count() == inventory_child_count, "渲染功法 HUD 不得清理或重建背包 HUD 的控件")
+	var unique_detail_panel_ids: Dictionary = {}
+	for detail_entry in game.detail_huds.values():
+		unique_detail_panel_ids[(detail_entry.panel as PanelContainer).get_instance_id()] = true
+	_assert_true(unique_detail_panel_ids.size() == game.detail_huds.size(), "每类详情 HUD 必须拥有独立 PanelContainer，不得复用")
+	game.nearby_npc_id = "nai_cha_mei_mei"
+	game.trade_mode = game.TRADE_MODE_BUY
+	game.trade_all_items = data_registry.list_vendor_stock("nai_cha_mei_mei")
+	game.trade_open = true
+	game._rebuild_trade_categories()
+	_assert_true(game.active_detail_hud == "buy" and game.details_panel == game.detail_huds.buy.panel, "购买应使用独立 BuyHUD，不得复用 NPC 菜单")
+	_assert_true(game.details_panel != game.npc_menu_panel, "购买 HUD 与 NPC 交互 HUD 必须是不同节点")
+	_assert_true(game.detail_huds.buy.panel != game.detail_huds.sell.panel, "购买与典当必须使用不同 HUD 面板")
+	var trade_has_title := false
+	var trade_has_money := false
+	var trade_has_divider := false
+	for widget in game.details_widgets:
+		if widget is Label and str(widget.text) == "— 购买 —":
+			trade_has_title = true
+		elif widget is Label and str(widget.text).begins_with("持有 "):
+			trade_has_money = true
+		elif widget is ColorRect and widget.size.x <= 1.0 and widget.position.y >= 60.0:
+			trade_has_divider = true
+	_assert_true(trade_has_title and trade_has_money and trade_has_divider, "购买 HUD 应包含标题、余额和左右栏分隔线")
+	game._handle_trade_key(KEY_SPACE)
+	var repeatedly_traded_item := str(game.trade_items[game.trade_index])
+	var count_before_repeated_buy: int = inventory_system.count(repeatedly_traded_item)
+	game._handle_trade_key(KEY_SPACE)
+	_assert_true(not game.trade_focus_category and str(game.trade_items[game.trade_index]) == repeatedly_traded_item, "购买一次后应停留在当前右栏物品")
+	game._handle_trade_key(KEY_SPACE)
+	_assert_true(inventory_system.count(repeatedly_traded_item) == count_before_repeated_buy + 2, "右栏按两次空格应连续购买同一物品两次")
+	game._handle_trade_key(KEY_ESCAPE)
+	_assert_true(game.trade_open and game.trade_focus_category and game.details_panel.visible, "购买右栏按 ESC 应先退回分类层，不得直接关闭")
+	_assert_true(not game.npc_menu_open and not game.npc_menu_panel.visible, "购买回退过程中不得重新叠加 NPC 菜单")
+	game._handle_trade_key(KEY_ESCAPE)
+	_assert_true(not game.trade_open and not game.details_panel.visible, "购买在分类层按 ESC 应关闭整个交易面板")
+	_assert_true(not game.npc_menu_open and not game.npc_menu_panel.visible, "关闭购买面板后不得弹回 NPC 菜单")
+	game.trade_mode = game.TRADE_MODE_SELL
+	game.trade_open = true
+	game.trade_all_items.clear()
+	for inventory_entry in inventory_system.list_entries():
+		game.trade_all_items.append(inventory_entry.get("id", ""))
+	game.trade_category_index = 0
+	game._rebuild_trade_categories()
+	var sold_category: String = game._item_category(repeatedly_traded_item)
+	game.trade_category_index = game.trade_categories.find(sold_category)
+	game._refresh_trade_items()
+	game._handle_trade_key(KEY_SPACE)
+	game.trade_index = game.trade_items.find(repeatedly_traded_item)
+	var count_before_repeated_sell: int = inventory_system.count(repeatedly_traded_item)
+	var sell_quantity_visible := false
+	for sell_widget in game.details_widgets:
+		if sell_widget is Label and str(sell_widget.text) == "× %d" % count_before_repeated_sell:
+			sell_quantity_visible = true
+	_assert_true(count_before_repeated_sell > 1 and sell_quantity_visible, "典当物品存在多个时应显示当前剩余数量")
+	game._handle_trade_key(KEY_SPACE)
+	_assert_true(not game.trade_focus_category, "典当一次后应停留在右栏，不得跳回分类")
+	var single_quantity_hidden := true
+	for sell_widget in game.details_widgets:
+		if sell_widget is Label and str(sell_widget.text) == "× 1":
+			single_quantity_hidden = false
+	_assert_true(inventory_system.count(repeatedly_traded_item) == 1 and single_quantity_hidden, "典当后只剩一个时数量应实时更新并隐藏单件标记")
+	game._handle_trade_key(KEY_SPACE)
+	_assert_true(inventory_system.count(repeatedly_traded_item) == count_before_repeated_sell - 2, "右栏按两次空格应连续典当物品两次")
+	game._handle_trade_key(KEY_ESCAPE)
+	_assert_true(game.trade_open and game.trade_focus_category, "典当右栏按 ESC 应先退回分类层")
+	game._handle_trade_key(KEY_ESCAPE)
+	_assert_true(not game.trade_open and not game.details_panel.visible and not game.npc_menu_open, "典当分类层按 ESC 应直接关闭且不重开 NPC 菜单")
+	game.trade_open = false
+	game.details_panel.visible = false
+	game.inventory_open = false
 	game.nearby_npc_id = "jiu_ri"
 	game.battle_ui.start()
 	await process_frame
@@ -300,11 +414,66 @@ func _run() -> void:
 	var scale: float = game._display_scale()
 	_assert_true(is_equal_approx(meter.position.y, view_rect.position.y + 16.0 * scale), "学习进度条顶部 margin 应为 16px")
 	_assert_true(is_equal_approx(meter.position.x + meter.size.x * 0.5, view_rect.position.x + view_rect.size.x * 0.5), "学习进度条应相对摄像机视口水平居中")
+	_assert_true(not Rect2(game.map_badge_panel.position, game.map_badge_panel.size).intersects(Rect2(meter.position, meter.size)), "房间名 HUD 不得与学习进度条重叠")
 	var meditation_meter := Control.new()
 	game.hud.add_child(meditation_meter)
 	game._layout_top_progress_meter(meditation_meter)
 	_assert_true(is_equal_approx(meditation_meter.position.y, view_rect.position.y + 16.0 * scale), "冥想进度条顶部 margin 应为 16px")
 	_assert_true(is_equal_approx(meditation_meter.position.x + meditation_meter.size.x * 0.5, view_rect.position.x + view_rect.size.x * 0.5), "冥想进度条应相对摄像机视口水平居中")
+	_assert_true(not Rect2(game.map_badge_panel.position, game.map_badge_panel.size).intersects(Rect2(meditation_meter.position, meditation_meter.size)), "房间名 HUD 不得与冥想进度条重叠")
+
+	# 练功进度条：开始时显示当前等级内进度，停止后立即清理。
+	game.practice_open = true
+	game.practice_items.assign(["ng_code_decorator"])
+	game.practice_index = 0
+	game.practicing_skill_id = "ng_code_decorator"
+	skill_system.ensure_skills().practiceProgress["ng_code_decorator"] = 3
+	game._refresh_practice()
+	_assert_true(game.practice_progress_widgets.size() == 1, "开始练功后应显示独立进度条")
+	var practice_meter = game.practice_progress_widgets[0]
+	var expected_practice_progress: Dictionary = skill_system.practice_progress("ng_code_decorator")
+	_assert_true(practice_meter.current == int(expected_practice_progress.current) and practice_meter.total == int(expected_practice_progress.total), "练功进度条应显示当前等级内的真实进度")
+	_assert_true(not Rect2(game.map_badge_panel.position, game.map_badge_panel.size).intersects(Rect2(practice_meter.position, practice_meter.size)), "房间名 HUD 不得与练功进度条重叠")
+	skill_system.ensure_skills().practiceProgress["ng_code_decorator"] = 4
+	game._refresh_practice()
+	_assert_true(game.practice_progress_widgets[0] == practice_meter and practice_meter.current == 4, "练功 tick 刷新时应复用并更新同一进度条，避免闪烁")
+	game.practicing_skill_id = ""
+	game._refresh_practice()
+	_assert_true(game.practice_progress_widgets.is_empty(), "停止练功后应立即清理进度条")
+	# 练功失败应按参考项目文案停止，并在底部对话框明确提示原因。
+	skill_system.ensure_skills().levels["basicStrength"] = 10
+	skill_system.ensure_skills().levels["ng_code_decorator"] = 1
+	game_state.profile.vitals.neigong = 6
+	game._refresh_practice()
+	var practice_level_cap_visible := false
+	for practice_widget in game.details_widgets:
+		if practice_widget is Label and str(practice_widget.text) == "1/6":
+			practice_level_cap_visible = true
+	_assert_true(skill_system.practice_cap("ng_code_decorator") == 6 and practice_level_cap_visible, "练功 n/m 应显示当前等级与当前最大可练等级")
+	game_state.profile.vitals.neigong = 10
+	game_state.combat_state.mp = 0
+	game_state.combat_state.hp = 100
+	game.practicing_skill_id = "ng_code_decorator"
+	game.practice_tick_accumulator = 0.0
+	game._update_continuous_skill_actions(skill_system.PRACTICE_TICK_SECONDS)
+	_assert_true(game.practicing_skill_id.is_empty() and game.practice_progress_widgets.is_empty(), "练功失败后应停止并清理进度条")
+	_assert_true(game.dialogue_open and game.dialogue_panel.visible and game.dialogue_content.text.contains("精力不足，练不动功。"), "精力不足时应在底部练功对话框显示参考文案")
+	game._close_dialogue()
+	skill_system.ensure_skills().levels["ng_code_decorator"] = 5
+	game_state.profile.vitals.neigong = 5
+	var practice_cap_failure: Dictionary = skill_system.practice_tick("ng_code_decorator")
+	_assert_true(str(practice_cap_failure.get("reason", "")) == "cap" and str(practice_cap_failure.get("message", "")).contains("精力修为不足，须多冥想积累内力。"), "练功达到精力上限时应使用参考项目的原因文案")
+	game.practice_open = true
+	game.menu_open = false
+	game.menu_panel.visible = false
+	game.practicing_skill_id = "ng_code_decorator"
+	game._refresh_practice()
+	game._handle_practice_key(KEY_ESCAPE)
+	_assert_true(game.practice_open and game.practicing_skill_id.is_empty() and game.details_panel.visible, "练功中第一次 ESC 应只停止练功并保留面板")
+	_assert_true(not game.menu_open and not game.menu_panel.visible, "停止练功时不得弹出顶部菜单")
+	game._handle_practice_key(KEY_ESCAPE)
+	_assert_true(not game.practice_open and not game.details_panel.visible, "停止状态再次按 ESC 应真正关闭练功面板")
+	_assert_true(not game.menu_open and not game.menu_panel.visible, "关闭练功面板后不得打开顶部菜单")
 
 	# 学习进度条生命周期：进入右栏不显示；空格启动才显示；资源阻断后立即消失。
 	game._clear_learning_progress_widgets()
@@ -338,6 +507,40 @@ func _run() -> void:
 	_assert_true(int(game_state.profile.vitals.potential) == 0, "每个有效学习 tick 应只消耗 1 点潜能")
 	_assert_true(int(game_state.profile.vitals.money) == money_before - ceili(float(selected_required) * 0.8), "升级 Token 学费应为本级经验需求的 80% 向上取整")
 	_assert_true(str(game.learning_skill_id).is_empty() and game.learning_progress_widgets.is_empty(), "学习完成后进度条应立即消失")
+
+	# 顶栏与两个二级菜单必须由独立 HUD 面板承载，切换时互斥显示。
+	game.menu_open = true
+	game.menu_panel.visible = true
+	game.menu_index = 2
+	game.skill_open = true
+	game.system_open = false
+	game._refresh_menu()
+	_assert_true(game.menu_panel.visible and game.skill_menu_panel.visible and not game.system_menu_panel.visible, "技能二级菜单应保留一级菜单，并只显示独立的 SkillMenu 面板")
+	_assert_true(game.skill_menu_items.get_child_count() == game.SKILL_ITEMS.size(), "技能二级菜单条目应挂在自己的 HUD 面板中")
+	game.menu_index = 3
+	game.skill_open = false
+	game.system_open = true
+	game._refresh_menu()
+	_assert_true(game.menu_panel.visible and game.system_menu_panel.visible and not game.skill_menu_panel.visible, "系统二级菜单应保留一级菜单，并只显示独立的 SystemMenu 面板")
+	_assert_true(game.system_menu_items.get_child_count() == game.SYSTEM_ITEMS.size(), "系统二级菜单条目应挂在自己的 HUD 面板中")
+	game.system_index = 3
+	game._select_system_menu()
+	_assert_true(game.menu_open and game.menu_panel.visible and game.system_menu_panel.visible, "保存等无弹窗的二级操作不得收起父子菜单")
+	game._close_menu()
+	_assert_true(not game.skill_menu_panel.visible and not game.system_menu_panel.visible, "关闭菜单时应分别隐藏两个二级 HUD 面板")
+
+	# “退出”只返回 Splash，不得隐式保存、删除或重建存档。
+	game_state.profile.vitals.potential = 2468
+	game_state.save_game()
+	var save_before_exit := FileAccess.get_file_as_string(game_state.SAVE_PATH)
+	game_state.profile.vitals.potential = 1357
+	game.system_index = 4
+	game._select_system_menu()
+	await process_frame
+	await process_frame
+	_assert_true(current_scene != null and current_scene.scene_file_path == "res://scenes/splash.tscn", "系统菜单退出应返回 Splash 页面")
+	_assert_true(FileAccess.get_file_as_string(game_state.SAVE_PATH) == save_before_exit, "退出不得写入或删除存档文件")
+	_assert_true(int(game_state.profile.vitals.potential) == 1357, "退出不得重新加载或重建内存中的存档状态")
 	game.queue_free()
 
 	game_state.delete_save()

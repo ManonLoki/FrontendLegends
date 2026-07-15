@@ -4,8 +4,8 @@ const VIRTUAL_CONTROLS := preload("res://scripts/virtual_controls.gd")
 const MOBILE_ORIENTATION := preload("res://scripts/mobile_orientation.gd")
 const UI_PROGRESS_METER := preload("res://scripts/ui_progress_meter.gd")
 const GAME_BATTLE_UI := preload("res://scripts/game_battle_ui.gd")
-const CAMERA_SIZE := Vector2(480.0, 320.0)
-const DESIGN_SIZE := Vector2(480.0, 320.0)
+const CAMERA_SIZE := Vector2(640.0, 480.0)
+const DESIGN_SIZE := Vector2(640.0, 480.0)
 const VITALS_BASE_CAPACITY := 200
 const VITALS_CAPACITY_PER_STRENGTH := 10
 const MOVE_STEP_SECONDS := 0.15
@@ -26,11 +26,16 @@ var message := "欢迎来到开源镇"
 @onready var hud: CanvasLayer = $HUD
 @onready var menu_panel: PanelContainer = $HUD/Menu
 @onready var menu_content: Label = $HUD/Menu/Content
+@onready var menu_items: Control = $HUD/Menu/Items
+@onready var skill_menu_panel: PanelContainer = $HUD/SkillMenu
+@onready var skill_menu_items: Control = $HUD/SkillMenu/Items
+@onready var system_menu_panel: PanelContainer = $HUD/SystemMenu
+@onready var system_menu_items: Control = $HUD/SystemMenu/Items
 @onready var battle_panel: PanelContainer = $HUD/Battle
 @onready var battle_content: Label = $HUD/Battle/Content
-@onready var details_panel: PanelContainer = $HUD/Details
-@onready var details_content: Label = $HUD/Details/Content
-@onready var npc_portrait: TextureRect = $HUD/Details/Content/Portrait
+@onready var details_panel: PanelContainer = $HUD/NpcViewHUD
+@onready var details_content: Label = $HUD/NpcViewHUD/Content
+@onready var npc_portrait: TextureRect = $HUD/NpcViewHUD/Content/Portrait
 @onready var dialogue_panel: PanelContainer = $HUD/Dialogue
 @onready var dialogue_content: Label = $HUD/Dialogue/Content
 @onready var tree_confirm_panel: PanelContainer = $HUD/TreeConfirm
@@ -47,6 +52,9 @@ var skill_open := false
 var skill_index := 0
 var menu_widgets: Array[Control] = []
 var details_widgets: Array[Control] = []
+var detail_huds: Dictionary = {}
+var detail_widget_sets: Dictionary = {}
+var active_detail_hud := "generic"
 var profile_panel_open := false
 var npc_view_panel_open := false
 var battle_ui: RefCounted
@@ -96,6 +104,7 @@ var skill_book_index := 0
 var meditation_open := false
 var meditation_widgets: Array[Control] = []
 var learning_progress_widgets: Array[Control] = []
+var practice_progress_widgets: Array[Control] = []
 var meditation_tick_accumulator := 0.0
 var SKILL_BOOK_THEMES: Array[String] = ["code", "tune", "arch", "parry", "knowledge"]
 var dialogue_open := false
@@ -120,6 +129,7 @@ var virtual_direction := Vector2.ZERO
 var accept_requested := false
 var cancel_requested := false
 var auto_save_timer := 0.0
+var last_layout_viewport_size := Vector2.ZERO
 const MENU_ITEMS := ["查看", "背包", "技能", "系统"]
 const SKILL_ITEMS := ["冥想", "练功", "加力", "功法"]
 const SYSTEM_ITEMS := ["赛博传送", "摸鱼", "疗伤", "保存", "退出"]
@@ -127,6 +137,7 @@ const LEARN_CATEGORY_ORDER: Array[String] = ["编码", "思维", "架构", "招�
 
 func _ready() -> void:
 	battle_ui = GAME_BATTLE_UI.new(self)
+	_build_detail_huds()
 	# 任务槽、冷却、环计数与动态悬赏均为本局内存态，不随存档恢复。
 	QuestSystem.reset_runtime()
 	MOBILE_ORIENTATION.apply()
@@ -140,12 +151,59 @@ func _ready() -> void:
 	_load_initial_map()
 	queue_redraw()
 
+func _build_detail_huds() -> void:
+	detail_huds["npc_view"] = {"panel": details_panel, "content": details_content}
+	detail_widget_sets["npc_view"] = details_widgets
+	for kind in ["profile", "inventory", "skill_book", "learn", "practice", "cyber", "buy", "sell", "generic"]:
+		var panel := PanelContainer.new()
+		panel.name = "%sHUD" % kind.to_pascal_case()
+		panel.visible = false
+		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		hud.add_child(panel)
+		var content := Label.new()
+		content.name = "Content"
+		content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		content.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		content.add_theme_font_override("font", preload("res://assets/Font/fusion-pixel-12px-proportional-zh_hans.ttf"))
+		content.add_theme_font_size_override("font_size", 13)
+		panel.add_child(content)
+		detail_huds[kind] = {"panel": panel, "content": content}
+		var widget_set: Array[Control] = []
+		detail_widget_sets[kind] = widget_set
+	_use_detail_hud("generic", false)
+
+func _use_detail_hud(kind: String, show := true) -> void:
+	if not detail_huds.has(kind):
+		return
+	for entry in detail_huds.values():
+		(entry.get("panel") as PanelContainer).visible = false
+	active_detail_hud = kind
+	var entry: Dictionary = detail_huds[kind]
+	details_panel = entry.get("panel")
+	details_content = entry.get("content")
+	details_widgets = detail_widget_sets[kind]
+	_layout_active_detail_hud()
+	details_panel.visible = show
+
+func _layout_active_detail_hud() -> void:
+	if active_detail_hud == "profile":
+		_layout_profile_panel()
+	elif active_detail_hud == "npc_view":
+		_layout_npc_view_panel()
+	else:
+		_layout_details_overlay()
+
 func _process(delta: float) -> void:
 	# Re-sync HUD panel geometry every frame instead of relying solely on the
 	# viewport size_changed signal, which can miss web/mobile resizes that happen
 	# after _ready() (e.g. fullscreen-on-gesture in mobile_orientation.gd) and
 	# leave panels frozen at a stale size/position from an earlier viewport reading.
-	_layout_game_view()
+	# 只在真实尺寸变化时重新布局。菜单节点不能每帧销毁重建，否则 Web
+	# 渲染时会出现旧帧/新帧交替的闪烁。
+	var viewport_size := get_viewport_rect().size
+	if not viewport_size.is_equal_approx(last_layout_viewport_size):
+		_layout_game_view()
 	# 原项目的 PlayerSurvivalController 无论 HUD 是否打开都持续推进唯一游戏时钟；
 	# 学习依赖这条基础时间轴，练功/冥想另有动作快进。
 	GameState.advance_time(delta)
@@ -248,9 +306,12 @@ func _update_continuous_skill_actions(delta: float) -> void:
 			var result: Dictionary = SkillSystem.practice_tick(practicing_skill_id)
 			message = str(result.get("message", ""))
 			var after := SkillSystem.practice_progress(practicing_skill_id)
-			if not bool(result.get("ok", false)) or (before == after and int(after.get("current", 0)) == 0):
+			var failed := not bool(result.get("ok", false))
+			if failed or (before == after and int(after.get("current", 0)) == 0):
 				practicing_skill_id = ""
 			_refresh_practice()
+			if failed:
+				_show_dialogue("练功", str(result.get("message", "练功失败。")))
 	if meditation_open:
 		meditation_tick_accumulator += maxf(0.0, delta)
 		var meditation_changed := false
@@ -516,16 +577,6 @@ func _close_npc_menu() -> void:
 	npc_menu_panel.visible = false
 	_clear_npc_menu_widgets()
 
-func _show_npc_content_panel() -> void:
-	_clear_npc_menu_widgets()
-	var scale := _display_scale()
-	var view_rect := _game_view_rect()
-	var inset := Vector2(8.0, 8.0) * scale
-	npc_menu_panel.position = view_rect.position + inset
-	npc_menu_panel.size = view_rect.size - inset * 2.0
-	npc_menu_content.visible = true
-	npc_menu_panel.visible = true
-
 func _render_npc_menu_widgets() -> void:
 	# Keep this menu small enough to sit beside the NPC. Its position is chosen
 	# from the NPC's visible sprite rect in _position_npc_menu().
@@ -622,8 +673,10 @@ func _handle_trade_key(key: Key) -> void:
 	if key == KEY_ESCAPE:
 		if trade_focus_category:
 			trade_open = false
-			npc_menu_open = true
-			_refresh_npc_menu()
+			details_panel.visible = false
+			npc_menu_open = false
+			npc_menu_panel.visible = false
+			_clear_npc_menu_widgets()
 		else:
 			trade_focus_category = true
 			_refresh_trade_items()
@@ -650,28 +703,57 @@ func _handle_trade_key(key: Key) -> void:
 			var item_id := str(trade_items[trade_index])
 			var result: Dictionary = InventorySystem.buy_item(nearby_npc_id, item_id) if trade_mode == TRADE_MODE_BUY else InventorySystem.sell_item(item_id)
 			message = result.message
-			_rebuild_trade_categories()
-	_refresh_trade_list()
+			if trade_mode == TRADE_MODE_SELL and bool(result.get("ok", false)):
+				trade_all_items.clear()
+				for entry in InventorySystem.list_entries():
+					trade_all_items.append(entry.get("id", ""))
+			_rebuild_trade_categories(false)
+	if trade_open:
+		_refresh_trade_list()
 
 func _refresh_trade_list() -> void:
-	npc_menu_content.visible = true
+	_use_detail_hud("buy" if trade_mode == TRADE_MODE_BUY else "sell")
+	details_content.visible = true
+	details_content.text = ""
+	_clear_details_widgets()
+	var area := details_panel.size
+	var scale := _display_scale()
+	var pad := 20.0 * scale
+	var split := area.x * 0.34
+	var row := 27.0 * scale
 	var money := int(GameState.profile.get("vitals", {}).get("money", 0))
-	var lines := ["— %s —" % ("购买" if trade_mode == TRADE_MODE_BUY else "典当"), "持有 %d Token" % money, "左栏分类 · 右栏物品 · ↑↓选择 · 空格确认", ""]
+	_detail_label("— %s —" % ("购买" if trade_mode == TRADE_MODE_BUY else "典当"), Rect2(Vector2(pad, 8.0 * scale), Vector2(area.x - pad * 2.0, 30.0 * scale)), 16, HORIZONTAL_ALIGNMENT_CENTER)
+	_detail_label("持有 %d Token" % money, Rect2(Vector2(pad, 37.0 * scale), Vector2(area.x - pad * 2.0, 24.0 * scale)), 12, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
+	var content_top := 68.0 * scale
+	var list_bottom := area.y - 52.0 * scale
+	_detail_rule(Vector2(split, content_top), Vector2(split + 1.0, list_bottom), Color("77736b"))
 	for category_index in trade_categories.size():
-		lines.append(_cursor(trade_categories[category_index], category_index == trade_category_index))
-	lines.append("")
+		var y := content_top + 8.0 * scale + row * category_index
+		_detail_label(trade_categories[category_index], Rect2(Vector2(pad * 1.4, y), Vector2(split - pad * 1.7, row)), 13)
+		if trade_focus_category and category_index == trade_category_index:
+			_detail_selection(Rect2(Vector2(pad, y), Vector2(split - pad * 1.1, row)))
 	if trade_items.is_empty():
-		lines.append("货已售罄" if trade_mode == TRADE_MODE_BUY else "已无可卖之物")
+		_detail_label("货已售罄" if trade_mode == TRADE_MODE_BUY else "已无可卖之物", Rect2(Vector2(split + pad, content_top + 16.0 * scale), Vector2(area.x - split - pad * 2.0, row)), 12, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
 	else:
 		for index in trade_items.size():
 			var item_id := str(trade_items[index])
 			var definition: Dictionary = DataRegistry.get_item(item_id)
 			var price := int(definition.get("price", 0)) if trade_mode == TRADE_MODE_BUY else int(floor(float(definition.get("price", 0)) * InventorySystem.SELL_PRICE_RATE))
-			lines.append(_cursor("%s (%d Token)" % [definition.get("name", item_id), price], not trade_focus_category and index == trade_index))
+			var y := content_top + 8.0 * scale + row * index
+			var item_rect := Rect2(Vector2(split + pad * 0.5, y), Vector2(area.x - split - pad * 1.5, row))
+			_detail_label(str(definition.get("name", item_id)), Rect2(Vector2(split + pad, y), Vector2(area.x - split - 185.0 * scale, row)), 13)
+			if trade_mode == TRADE_MODE_SELL:
+				var remaining := InventorySystem.count(item_id)
+				if remaining > 1:
+					_detail_label("× %d" % remaining, Rect2(Vector2(area.x - 180.0 * scale, y), Vector2(50.0 * scale, row)), 12, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.45, 0.45, 0.45, 1))
+			_detail_label("%d Token" % price, Rect2(Vector2(area.x - 120.0 * scale, y), Vector2(95.0 * scale, row)), 12, HORIZONTAL_ALIGNMENT_RIGHT)
+			if not trade_focus_category and index == trade_index:
+				_detail_selection(item_rect)
+	var footer := "↑↓ 选分类　·　空格/→ 查看　·　ESC 返回" if trade_focus_category else "↑↓ 选物品　·　空格 确认　·　←/ESC 返回"
 	if not trade_focus_category and not trade_items.is_empty():
-		lines.append("")
-		lines.append(str(DataRegistry.get_item(str(trade_items[trade_index])).get("description", "暂无说明")))
-	npc_menu_content.text = "\n".join(lines)
+		footer = str(DataRegistry.get_item(str(trade_items[trade_index])).get("description", "暂无说明"))
+	var footer_label := _detail_label(footer, Rect2(Vector2(pad, list_bottom + 6.0 * scale), Vector2(area.x - pad * 2.0, area.y - list_bottom - 12.0 * scale)), 11, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
+	footer_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
 func _item_category(item_id: String) -> String:
 	var definition: Dictionary = DataRegistry.get_item(item_id)
@@ -683,7 +765,9 @@ func _item_category(item_id: String) -> String:
 
 const TRADE_CATEGORY_ORDER := ["食物", "药物", "武器", "防具", "鞋子", "饰品", "其他"]
 
-func _rebuild_trade_categories() -> void:
+func _rebuild_trade_categories(reset_focus := true) -> void:
+	var selected_category := trade_categories[trade_category_index] if not trade_categories.is_empty() and trade_category_index < trade_categories.size() else ""
+	var previous_focus := trade_focus_category
 	var present: Array[String] = []
 	for item_id in trade_all_items:
 		var category := _item_category(str(item_id))
@@ -695,9 +779,17 @@ func _rebuild_trade_categories() -> void:
 			trade_categories.append(category)
 	if trade_categories.is_empty():
 		trade_categories.append("其他")
-	trade_category_index = clampi(trade_category_index, 0, trade_categories.size() - 1)
-	trade_focus_category = true
+	if reset_focus:
+		trade_category_index = clampi(trade_category_index, 0, trade_categories.size() - 1)
+		trade_focus_category = true
+	else:
+		var preserved_index := trade_categories.find(selected_category)
+		trade_category_index = preserved_index if preserved_index >= 0 else clampi(trade_category_index, 0, trade_categories.size() - 1)
+		trade_focus_category = previous_focus
 	_refresh_trade_items()
+	if not reset_focus and trade_items.is_empty():
+		trade_focus_category = true
+		_refresh_trade_list()
 
 func _refresh_trade_items() -> void:
 	trade_items = []
@@ -758,6 +850,7 @@ func _refresh_learn_list() -> void:
 	_render_learn_widgets()
 
 func _render_learn_widgets() -> void:
+	_use_detail_hud("learn")
 	details_content.visible = true
 	details_content.text = ""
 	_clear_details_widgets()
@@ -766,7 +859,7 @@ func _render_learn_widgets() -> void:
 	var pad := 20.0 * scale
 	var split := area.x * 0.34
 	var row := 28.0 * scale
-	var content_top := _detail_chrome("学习")
+	var content_top := 10.0 * scale
 	var list_bottom := area.y - 55.0 * scale
 	_detail_rule(Vector2(split, content_top), Vector2(split + 1.0, list_bottom), Color("77736b"))
 	for index in learn_categories.size():
@@ -845,7 +938,6 @@ func _open_practice() -> void:
 	practice_open = true
 	menu_open = false
 	menu_panel.visible = false
-	details_panel.visible = true
 	_refresh_practice()
 
 func _handle_practice_key(key: Key) -> void:
@@ -859,9 +951,10 @@ func _handle_practice_key(key: Key) -> void:
 	if key == KEY_ESCAPE:
 		practice_open = false
 		details_panel.visible = false
-		menu_open = true
-		menu_panel.visible = true
-		_refresh_menu()
+		menu_open = false
+		menu_panel.visible = false
+		_clear_practice_progress_widgets()
+		return
 	elif key == KEY_UP and not practice_items.is_empty():
 		practice_index = posmod(practice_index - 1, practice_items.size())
 	elif key == KEY_DOWN and not practice_items.is_empty():
@@ -873,6 +966,7 @@ func _handle_practice_key(key: Key) -> void:
 	_refresh_practice()
 
 func _refresh_practice() -> void:
+	_use_detail_hud("practice")
 	details_content.visible = true
 	details_content.text = ""
 	_clear_details_widgets()
@@ -880,7 +974,7 @@ func _refresh_practice() -> void:
 	var scale := _display_scale()
 	var pad := 22.0 * scale
 	var row := 31.0 * scale
-	var content_top := _detail_chrome("练功", "PRACTICE / 门派功法")
+	var content_top := 10.0 * scale
 	if practice_items.is_empty():
 		_detail_label("（需先拜师并学会门派非架构功法）", Rect2(Vector2(pad, content_top + 14.0 * scale), Vector2(area.x - pad * 2.0, row)), 12, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
 	else:
@@ -889,11 +983,34 @@ func _refresh_practice() -> void:
 			var definition: Dictionary = DataRegistry.get_skill(skill_id)
 			var y := content_top + 10.0 * scale + row * index
 			_detail_label(str(definition.get("name", skill_id)), Rect2(Vector2(pad * 2.0, y), Vector2(area.x - pad * 5.0, row)), 13)
-			_detail_label("%d/%d" % [SkillSystem.level(skill_id), int(definition.get("maxLevel", 100))], Rect2(Vector2(area.x - 115.0 * scale, y), Vector2(90.0 * scale, row)), 12, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.55, 0.55, 0.55, 1))
+			_detail_label("%d/%d" % [SkillSystem.level(skill_id), SkillSystem.practice_cap(skill_id)], Rect2(Vector2(area.x - 115.0 * scale, y), Vector2(90.0 * scale, row)), 12, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.55, 0.55, 0.55, 1))
 			if index == practice_index:
 				_detail_selection(Rect2(Vector2(pad, y), Vector2(area.x - pad * 2.0, row)))
 	var footer := "练功中 · 空格/ESC 停止" if not practicing_skill_id.is_empty() else "空格 开始练功　·　ESC 返回"
 	_detail_label(footer, Rect2(Vector2(pad, area.y - 40.0 * scale), Vector2(area.x - pad * 2.0, 28.0 * scale)), 11, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
+	_render_practice_progress()
+
+func _render_practice_progress() -> void:
+	if practicing_skill_id.is_empty():
+		_clear_practice_progress_widgets()
+		return
+	var progress: Dictionary = SkillSystem.practice_progress(practicing_skill_id)
+	var meter
+	if practice_progress_widgets.is_empty():
+		meter = UI_PROGRESS_METER.new()
+		hud.add_child(meter)
+		practice_progress_widgets.append(meter)
+		_layout_top_progress_meter(meter)
+		meter.set_font_size(maxi(11, int(round(12.0 * _display_scale()))))
+	else:
+		meter = practice_progress_widgets[0]
+	meter.set_progress(int(progress.get("current", 0)), int(progress.get("total", 1)))
+
+func _clear_practice_progress_widgets() -> void:
+	for widget in practice_progress_widgets:
+		if is_instance_valid(widget):
+			widget.free()
+	practice_progress_widgets.clear()
 
 func _select_npc_menu() -> void:
 	var npc: Dictionary = NpcSystem.build_instance(nearby_npc_id)
@@ -922,7 +1039,6 @@ func _select_npc_menu() -> void:
 			trade_mode = TRADE_MODE_BUY
 			trade_category_index = 0
 			trade_open = true
-			_show_npc_content_panel()
 			_rebuild_trade_categories()
 			return
 		TRADE_MODE_SELL:
@@ -932,7 +1048,6 @@ func _select_npc_menu() -> void:
 			trade_mode = TRADE_MODE_SELL
 			trade_category_index = 0
 			trade_open = true
-			_show_npc_content_panel()
 			_rebuild_trade_categories()
 			return
 		"join":
@@ -942,8 +1057,6 @@ func _select_npc_menu() -> void:
 			learn_all_items = SkillSystem.learn_options_for_npc(nearby_npc_id)
 			learn_category_index = 0
 			learn_open = true
-			_layout_details_overlay()
-			details_panel.visible = true
 			_rebuild_learn_categories()
 			return
 
@@ -1015,6 +1128,7 @@ func _bounty_tile() -> Vector2i:
 func _toggle_menu() -> void:
 	menu_open = not menu_open
 	menu_panel.visible = menu_open
+	map_badge_panel.visible = not menu_open
 	if menu_open:
 		details_panel.visible = false
 		menu_index = 0
@@ -1064,7 +1178,7 @@ func _refresh_menu() -> void:
 		var skill_hints := ["冥想：静坐调息，恢复精力。", "练功：选择已学会的门派功法修炼。", "加力：调整本次攻击额外消耗的精力与伤害。", "功法：查看已经学会的基础与门派功法。"]
 		_set_menu_hint(SKILL_ITEMS[skill_index], skill_hints[skill_index])
 	elif system_open:
-		var system_hints := ["赛博传送将消耗精力。选择目的地后立即传送。", "摸鱼：消磨时间并恢复体力。", "疗伤：消耗资源治疗伤势。", "保存：将当前进度写入存档。", "退出：保存后返回创建角色页面。"]
+		var system_hints := ["赛博传送将消耗精力。选择目的地后立即传送。", "摸鱼：消磨时间并恢复体力。", "疗伤：消耗资源治疗伤势。", "保存：将当前进度写入存档。", "退出：返回标题页面，不修改当前存档。"]
 		_set_menu_hint(SYSTEM_ITEMS[system_index], system_hints[system_index])
 	else:
 		_clear_menu_hint()
@@ -1106,7 +1220,9 @@ func _select_skill_menu() -> void:
 		2:
 			var result := SkillSystem.set_force_power(SkillSystem.force_power() + 1)
 			message = str(result.get("message", "加力已调整"))
-			_close_menu()
+			# 加力是二级菜单内的即时操作，没有打开新的模态窗口；保留一级与
+			# 二级菜单，方便玩家继续调整或切换其他选项。
+			_set_menu_hint("加力", message)
 		3:
 			_close_menu()
 			_open_skill_book()
@@ -1160,21 +1276,29 @@ func _close_meditation() -> void:
 func _select_system_menu() -> void:
 	match system_index:
 		0:
-			system_open = false
-			menu_open = false
-			menu_panel.visible = false
+			# 目的地列表（或失败原因对话框）是新的模态窗口。必须完整关闭父
+			# 菜单，不能只隐藏一级栏而留下悬空的二级 HUD。
+			_close_menu()
 			_try_cyber_teleport()
+			return
 		1:
-			message = SkillSystem.channel_hp().message
+			var channel_result: Dictionary = SkillSystem.channel_hp()
+			_close_menu()
+			_show_dialogue("摸鱼", str(channel_result.get("message", "")))
+			return
 		2:
-			message = SkillSystem.heal_injury().message
+			var heal_result: Dictionary = SkillSystem.heal_injury()
+			_close_menu()
+			_show_dialogue("疗伤", str(heal_result.get("message", "")))
+			return
 		3:
 			GameState.save_game()
 			message = "游戏已保存"
-			_close_menu()
+			# 保存不会生成新窗口，继续保留当前父子菜单。
+			_set_menu_hint("保存", message)
+			return
 		4:
-			GameState.save_game()
-			get_tree().change_scene_to_file("res://scenes/character_creation.tscn")
+			get_tree().change_scene_to_file("res://scenes/splash.tscn")
 	if menu_open:
 		_refresh_menu()
 
@@ -1183,6 +1307,7 @@ func _close_menu() -> void:
 	system_open = false
 	skill_open = false
 	menu_panel.visible = false
+	map_badge_panel.visible = true
 	_clear_menu_hint()
 	_clear_menu_widgets()
 
@@ -1220,7 +1345,10 @@ func _apply_hud_theme() -> void:
 	var paper := Color("f8f6ee")
 	var ink := Color("4b4943")
 	var warm_paper := Color("fcfbf6")
-	for panel in [map_badge_panel, details_panel, tree_confirm_panel, npc_menu_panel, menu_panel, battle_panel]:
+	var themed_panels: Array = [map_badge_panel, tree_confirm_panel, npc_menu_panel, menu_panel, battle_panel]
+	for entry in detail_huds.values():
+		themed_panels.append(entry.get("panel"))
+	for panel in themed_panels:
 		panel.add_theme_stylebox_override("panel", _ui_box(paper, ink, 1))
 		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var dialogue_box := _ui_box(warm_paper, ink, 1)
@@ -1230,43 +1358,31 @@ func _apply_hud_theme() -> void:
 	dialogue_box.content_margin_bottom = 8.0
 	dialogue_panel.add_theme_stylebox_override("panel", dialogue_box)
 	map_badge.add_theme_color_override("font_color", Color("302f2b"))
+	map_badge.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	map_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	npc_portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for label in [details_content, tree_confirm_content, npc_menu_content, menu_content, battle_content, dialogue_content]:
+	var themed_labels: Array = [tree_confirm_content, npc_menu_content, menu_content, battle_content, dialogue_content]
+	for entry in detail_huds.values():
+		themed_labels.append(entry.get("content"))
+	for label in themed_labels:
 		label.add_theme_color_override("font_color", Color("302f2b"))
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	dialogue_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-func _detail_chrome(title: String, subtitle: String = "") -> float:
-	npc_portrait.visible = false
-	var scale := _display_scale()
-	var area := details_panel.size
-	var header := Panel.new()
-	header.position = Vector2(10.0, 8.0) * scale
-	header.size = Vector2(area.x / scale - 20.0, 38.0) * scale
-	header.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	header.add_theme_stylebox_override("panel", _ui_box(Color("ebe7da"), Color("a19b8d"), 1))
-	details_content.add_child(header)
-	details_widgets.append(header)
-	_detail_label(title, Rect2(Vector2(24.0, 10.0) * scale, Vector2(area.x / scale - 48.0, 22.0) * scale), 16, HORIZONTAL_ALIGNMENT_CENTER, Color("393731"))
-	if not subtitle.is_empty():
-		_detail_label(subtitle, Rect2(Vector2(22.0, 30.0) * scale, Vector2(area.x / scale - 44.0, 16.0) * scale), 9, HORIZONTAL_ALIGNMENT_CENTER, Color("817b70"))
-	return 58.0 * scale
-
 func _clear_menu_widgets() -> void:
-	# _render_menu_widgets() runs every frame while the menu is open (via
-	# _layout_game_view()), so deletion must be synchronous: queue_free()
-	# defers removal to end-of-frame, leaving the about-to-be-freed old
-	# labels and the freshly created ones overlapping as siblings for that
-	# frame, which reads as a continuous flicker at 60 fps.
+	# 菜单仅在打开、切换选项或真实窗口尺寸变化时重建。同步删除保证同一次
+	# 状态刷新中不会短暂叠放旧节点和新节点。
 	for widget in menu_widgets:
 		if is_instance_valid(widget):
 			widget.free()
 	menu_widgets.clear()
+	skill_menu_panel.visible = false
+	system_menu_panel.visible = false
 
 func _clear_details_widgets() -> void:
 	profile_panel_open = false
 	npc_view_panel_open = false
+	npc_portrait.visible = false
 	for widget in details_widgets:
 		if is_instance_valid(widget):
 			widget.free()
@@ -1306,6 +1422,7 @@ func _detail_selection(rect: Rect2) -> void:
 	details_widgets.append(selection)
 
 func _show_profile_panel() -> void:
+	_use_detail_hud("profile")
 	var vitals: Dictionary = GameState.profile.get("vitals", {})
 	var attrs: Dictionary = GameState.profile.get("attributes", {})
 	var base: Dictionary = GameState.profile.get("base_attributes", attrs)
@@ -1338,6 +1455,7 @@ func _layout_profile_panel() -> void:
 	details_panel.size = panel_size
 
 func _show_npc_view_panel(npc: Dictionary) -> void:
+	_use_detail_hud("npc_view")
 	var atlas := AtlasTexture.new()
 	atlas.atlas = npc_texture
 	atlas.region = NpcSystem.sprite_region(nearby_npc_id)
@@ -1391,6 +1509,7 @@ func _npc_skill_rating(npc: Dictionary) -> String:
 	return "不通武艺"
 
 func _render_inventory_widgets() -> void:
+	_use_detail_hud("inventory")
 	details_content.visible = true
 	details_content.text = ""
 	_clear_details_widgets()
@@ -1401,8 +1520,8 @@ func _render_inventory_widgets() -> void:
 	var pad := 20.0 * scale
 	var split := area.x * 0.34
 	var row := 27.0 * scale
-	var content_top := _detail_chrome("背包（%d）" % InventorySystem.list_entries().size())
-	var list_bottom := minf(content_top + row * inventory_categories.size() + 8.0 * scale, area.y - 80.0 * scale)
+	var content_top := 10.0 * scale
+	var list_bottom := minf(content_top + row * inventory_categories.size() + 8.0 * scale, area.y - 46.0 * scale)
 	_detail_rule(Vector2(split, content_top), Vector2(split + 1.0, list_bottom), Color("77736b"))
 	for index in inventory_categories.size():
 		var y := content_top + 8.0 * scale + row * index
@@ -1433,7 +1552,7 @@ func _render_inventory_widgets() -> void:
 	footer_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	footer_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP if not inventory_focus_category else VERTICAL_ALIGNMENT_CENTER
 
-func _menu_label(text: String, rect: Rect2, selected: bool) -> Label:
+func _menu_label(text: String, rect: Rect2, selected: bool, host: Control) -> Label:
 	var label := Label.new()
 	label.text = text
 	label.position = rect.position
@@ -1442,10 +1561,18 @@ func _menu_label(text: String, rect: Rect2, selected: bool) -> Label:
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.add_theme_font_override("font", preload("res://assets/Font/fusion-pixel-12px-proportional-zh_hans.ttf"))
-	label.add_theme_font_size_override("font_size", maxi(12, int(round(18.0 * _display_scale()))))
+	label.add_theme_font_size_override("font_size", maxi(12, int(round(14.0 * _display_scale()))))
 	label.add_theme_color_override("font_color", Color(0.12, 0.12, 0.12, 1.0))
-	label.add_theme_stylebox_override("normal", _ui_box(Color(0.98, 0.98, 0.97, 1.0), Color(0.78, 0.12, 0.06, 1.0) if selected else Color(0.98, 0.98, 0.97, 1.0), 2 if selected else 0))
-	hud.add_child(label)
+	var selection := StyleBoxFlat.new()
+	selection.bg_color = Color(1, 1, 1, 0)
+	if selected:
+		selection.border_color = Color(0.78, 0.12, 0.06, 1.0)
+		selection.border_width_left = 2
+		selection.border_width_top = 2
+		selection.border_width_right = 2
+		selection.border_width_bottom = 2
+	label.add_theme_stylebox_override("normal", selection)
+	host.add_child(label)
 	menu_widgets.append(label)
 	return label
 
@@ -1454,10 +1581,24 @@ func _render_menu_widgets() -> void:
 	if not menu_open:
 		return
 	var scale := _display_scale()
-	menu_panel.add_theme_stylebox_override("panel", _ui_box(Color(0.98, 0.98, 0.97, 1.0), Color(0.32, 0.32, 0.32, 1.0), 1))
-	var tab_width := menu_panel.size.x / float(MENU_ITEMS.size())
+	var bar_style := StyleBoxFlat.new()
+	bar_style.bg_color = Color(0.988, 0.988, 0.98, 1.0)
+	bar_style.border_color = Color(0.31, 0.31, 0.31, 1.0)
+	bar_style.border_width_bottom = 1
+	menu_panel.add_theme_stylebox_override("panel", bar_style)
+	menu_content.visible = false
+	# 参考版顶栏：四项在全宽白条内居中分布，高亮框只包住文字槽，
+	# 而不是把整块四分之一屏幕画成巨型按钮。
+	var tab_width := 80.0 * scale
+	var item_gap := 40.0 * scale
+	var group_width := tab_width * MENU_ITEMS.size() + item_gap * (MENU_ITEMS.size() - 1)
+	var group_x := (menu_panel.size.x - group_width) * 0.5
+	var row_height := 26.0 * scale
+	var row_y := (menu_panel.size.y - row_height) * 0.5
 	for index in MENU_ITEMS.size():
-		_menu_label(MENU_ITEMS[index], Rect2(menu_panel.position + Vector2(tab_width * index, 0), Vector2(tab_width, menu_panel.size.y)), index == menu_index)
+		# 参考版的红框在 80px 文字槽左右各外扩 8px。
+		var highlight_pad := 8.0 * scale
+		_menu_label(MENU_ITEMS[index], Rect2(Vector2(group_x + (tab_width + item_gap) * index - highlight_pad, row_y), Vector2(tab_width + highlight_pad * 2.0, row_height)), index == menu_index, menu_items)
 	var dropdown_items: Array[String] = []
 	var dropdown_index := 0
 	if skill_open:
@@ -1468,11 +1609,18 @@ func _render_menu_widgets() -> void:
 		dropdown_index = system_index
 	if dropdown_items.is_empty():
 		return
-	var item_height := 32.0 * scale
-	var dropdown_width := tab_width
-	var dropdown_x := menu_panel.position.x + tab_width * menu_index
+	var item_height := 26.0 * scale
+	var dropdown_width := 104.0 * scale
+	var dropdown_x := group_x + (tab_width + item_gap) * menu_index
+	dropdown_x -= (dropdown_width - tab_width) * 0.5
+	var dropdown_panel := skill_menu_panel if skill_open else system_menu_panel
+	var dropdown_host := skill_menu_items if skill_open else system_menu_items
+	dropdown_panel.position = Vector2(dropdown_x, menu_panel.position.y + menu_panel.size.y)
+	dropdown_panel.size = Vector2(dropdown_width, item_height * dropdown_items.size())
+	dropdown_panel.add_theme_stylebox_override("panel", _ui_box(Color(0.988, 0.988, 0.98, 1.0), Color(0.31, 0.31, 0.31, 1.0), 1))
+	dropdown_panel.visible = true
 	for index in dropdown_items.size():
-		_menu_label(dropdown_items[index], Rect2(Vector2(dropdown_x, menu_panel.position.y + menu_panel.size.y + item_height * index), Vector2(dropdown_width, item_height)), index == dropdown_index)
+		_menu_label(dropdown_items[index], Rect2(Vector2(0.0, item_height * index), Vector2(dropdown_width, item_height)), index == dropdown_index, dropdown_host)
 
 func _npc_hp(npc: Dictionary, is_player := false) -> int:
 	if is_player:
@@ -1485,8 +1633,6 @@ func _show_inventory() -> void:
 	inventory_category_index = 0
 	inventory_focus_category = true
 	inventory_feedback = ""
-	_layout_details_overlay()
-	details_panel.visible = true
 	_refresh_inventory_panel()
 	message = "背包已打开"
 
@@ -1553,8 +1699,6 @@ func _open_skill_book() -> void:
 	skill_book_open = true
 	skill_book_category_index = 0
 	skill_book_focus_category = true
-	_layout_details_overlay()
-	details_panel.visible = true
 	_refresh_skill_book_panel()
 
 func _handle_skill_book_key(key: Key) -> void:
@@ -1603,6 +1747,7 @@ func _refresh_skill_book_panel() -> void:
 	_render_skill_book_widgets()
 
 func _render_skill_book_widgets() -> void:
+	_use_detail_hud("skill_book")
 	details_content.visible = true
 	details_content.text = ""
 	_clear_details_widgets()
@@ -1611,7 +1756,7 @@ func _render_skill_book_widgets() -> void:
 	var pad := 20.0 * scale
 	var split := area.x * 0.34
 	var row := 30.0 * scale
-	var content_top := _detail_chrome("功法", "SKILLS / 装备与修习")
+	var content_top := 10.0 * scale
 	_detail_rule(Vector2(split, content_top), Vector2(split + 1.0, area.y - 46.0 * scale), Color("c5bfb2"))
 	for index in skill_book_categories.size():
 		var y := content_top + 8.0 * scale + row * index
@@ -1654,6 +1799,7 @@ func _appearance_title(score: int, gender: String) -> String:
 	return str(options[posmod(score, options.size())])
 
 func _show_details(text: String) -> void:
+	_use_detail_hud("generic")
 	_clear_details_widgets()
 	details_content.visible = true
 	details_content.text = text
@@ -1774,6 +1920,11 @@ func _load_map(index: int, arrival_from := "", cyber := false) -> void:
 		var arrival := map_context.transaction_for_arrival(arrival_from, map_context.map_id, cyber)
 		if not arrival.is_empty():
 			player_tile = Vector2i(int(floor(float(arrival.get("x", 0)) / map_context.tile_width)), int(floor(float(arrival.get("y", 0)) / map_context.tile_height)))
+		elif cyber:
+			# 参考版在目标图没有合格 Transaction 时回退普通出生点。
+			var fallback_spawn := map_context.spawn_point()
+			if not fallback_spawn.is_empty():
+				player_tile = Vector2i(int(floor(float(fallback_spawn.get("x", 0)) / map_context.tile_width)), int(floor(float(fallback_spawn.get("y", 0)) / map_context.tile_height)))
 	else:
 		var spawn := map_context.spawn_point()
 		if not spawn.is_empty():
@@ -1822,31 +1973,29 @@ func _map_index_by_id(target: String) -> int:
 	return -1
 
 func _try_cyber_teleport() -> void:
-	if SkillSystem.level("basicAgility") < CYBER_TELEPORT_SKILL_REQUIREMENT or SkillSystem.equipped_sect_skill_level("tune") < CYBER_TELEPORT_SKILL_REQUIREMENT:
-		message = "须装备基础思维与高级身法且均达到 30 级，方可赛博传送"
+	var basic_tune_id := SkillSystem.equipped_id("tune", "basic")
+	if SkillSystem.level(basic_tune_id) < CYBER_TELEPORT_SKILL_REQUIREMENT or SkillSystem.equipped_sect_skill_level("tune") < CYBER_TELEPORT_SKILL_REQUIREMENT:
+		message = "赛博传送需要装备的基础轻功与特殊轻功均达到 30 级。"
+		_show_dialogue("赛博传送", message)
 		return
 	var mp_max: int = GameState.player_mp_max()
 	var cost := maxi(1, int(ceil(float(mp_max) / CYBER_TELEPORT_MP_DIVISOR)))
 	if int(GameState.combat_state.mp) < cost:
 		message = "精力不足，赛博传送需要 %d 精力" % cost
+		_show_dialogue("赛博传送", message)
 		return
 	cyber_maps = []
 	for index in DataRegistry.map_files.size():
-		if index == map_index:
-			continue
 		var candidate := TiledMapLoader.new()
 		if candidate.load_file(DataRegistry.map_files[index]):
-			var arrival := candidate.transaction_for_arrival(map_context.map_id if map_context else "", candidate.map_id, true)
-			if not arrival.is_empty():
+			if str(candidate.properties.get("type", "outDoor")) != "inDoor":
 				cyber_maps.append(index)
 	if cyber_maps.is_empty():
-		message = "暂无可传送的道路地图"
+		message = "暂无可传送的野外地图。"
+		_show_dialogue("赛博传送", message)
 		return
 	cyber_open = true
 	cyber_index = 0
-	menu_open = false
-	menu_panel.visible = false
-	details_panel.visible = true
 	_refresh_cyber_menu(cost)
 
 func _handle_cyber_key(key: Key) -> void:
@@ -1864,14 +2013,19 @@ func _handle_cyber_key(key: Key) -> void:
 			message = "精力不足，赛博传送需要 %d 精力" % cost
 		else:
 			GameState.combat_state.mp -= cost
+			GameState.advance_time(1.0)
 			var destination := cyber_maps[cyber_index]
 			cyber_open = false
 			details_panel.visible = false
 			_load_map(destination, map_context.map_id if map_context else "", true)
 			message = "赛博传送完成，消耗 %d 精力" % cost
-	_refresh_cyber_menu(cost)
+			return
+	if cyber_open:
+		_refresh_cyber_menu(cost)
 
 func _refresh_cyber_menu(cost: int) -> void:
+	_use_detail_hud("cyber")
+	details_content.visible = true
 	var lines := ["赛博传送", "↑↓选择目的地 空格确认 ESC返回", "消耗：%d 精力" % cost, ""]
 	for position in cyber_maps.size():
 		var index := cyber_maps[position]
@@ -1919,14 +2073,14 @@ func _game_view_rect() -> Rect2:
 	return Rect2((DESIGN_SIZE - CAMERA_SIZE) * 0.5, CAMERA_SIZE)
 
 func _display_scale() -> float:
-	# ProjectSettings 负责把固定 480×320 画布等比拉伸到窗口；UI 始终使用设计坐标。
+	# ProjectSettings 负责把固定 640×480 画布等比拉伸到窗口；UI 始终使用设计坐标。
 	return 1.0
 
 func _map_zoom() -> float:
 	if not map_context:
 		return 1.0
 	var map_size := Vector2(map_context.width * map_context.tile_width, map_context.height * map_context.tile_height)
-	# 等比 cover：至少覆盖完整相机，超出的地图内容交给 480×320 视口裁切。
+	# 等比 cover：至少覆盖完整相机，超出的地图内容交给 640×480 视口裁切。
 	var cover_scale := maxf(CAMERA_SIZE.x / map_size.x, CAMERA_SIZE.y / map_size.y)
 	return maxf(1.0, cover_scale)
 
@@ -1977,13 +2131,14 @@ func _update_camera() -> void:
 	queue_redraw()
 
 func _layout_game_view() -> void:
+	last_layout_viewport_size = get_viewport_rect().size
 	var view_rect := _game_view_rect()
 	var scale := _display_scale()
 	var inset := Vector2(8, 8) * scale
 	var inset_rect := Rect2(view_rect.position + inset, view_rect.size - inset * 2.0)
 	map_badge_panel.position = Vector2(8, 8) * scale
-	map_badge_panel.size = Vector2(160, 46) * scale
-	map_badge.add_theme_font_size_override("font_size", maxi(12, int(round(16.0 * scale))))
+	map_badge_panel.size = Vector2(132, 34) * scale
+	map_badge.add_theme_font_size_override("font_size", maxi(12, int(round(13.0 * scale))))
 	if profile_panel_open:
 		_layout_profile_panel()
 	elif npc_view_panel_open:
@@ -1999,7 +2154,7 @@ func _layout_game_view() -> void:
 		npc_menu_panel.position = inset_rect.position
 		npc_menu_panel.size = inset_rect.size
 	menu_panel.position = Vector2.ZERO
-	menu_panel.size = Vector2(DESIGN_SIZE.x, 42.0) * scale
+	menu_panel.size = Vector2(DESIGN_SIZE.x, 32.0) * scale
 	var dialogue_size := Vector2(minf(DESIGN_SIZE.x, view_rect.size.x / scale) - 16.0, 44.0) * scale
 	var dialogue_bottom_margin := 28.0 if OS.has_feature("mobile") else 8.0
 	dialogue_panel.position = Vector2(view_rect.position.x + (view_rect.size.x - dialogue_size.x) * 0.5, view_rect.end.y - dialogue_size.y - dialogue_bottom_margin * scale)
@@ -2013,6 +2168,8 @@ func _layout_game_view() -> void:
 		_layout_meditation_widgets()
 	if not learning_progress_widgets.is_empty():
 		_layout_top_progress_meter(learning_progress_widgets[0])
+	if not practice_progress_widgets.is_empty():
+		_layout_top_progress_meter(practice_progress_widgets[0])
 	_update_camera()
 
 func _layout_details_overlay() -> void:

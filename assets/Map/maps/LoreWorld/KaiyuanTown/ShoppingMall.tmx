@@ -24,7 +24,7 @@
   </data>
  </layer>
  <objectgroup id="5" name="Interactive">
-  <object id="8" type="Transaction" x="208" y="448" width="64" height="16">
+  <object id="8" type="Transaction" x="224" y="448" width="32" height="16">
    <properties>
     <property name="from" value="KaiyuanTown"/>
     <property name="to" value="ShoppingMall"/>

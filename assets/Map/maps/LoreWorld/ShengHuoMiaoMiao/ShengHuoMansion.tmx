@@ -49,7 +49,7 @@
    </properties>
    <point/>
   </object>
-  <object id="6" type="Transaction" x="144" y="208" width="48" height="16">
+  <object id="6" type="Transaction" x="160" y="208" width="16" height="16">
    <properties>
     <property name="from" value="ShengHuoMiaoMiao"/>
     <property name="to" value="ShengHuoMansion"/>

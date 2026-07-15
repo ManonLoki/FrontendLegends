@@ -54,22 +54,22 @@ z_index = -1
 [node name="MapBadge" type="PanelContainer" parent="HUD"]
 offset_left = 8.0
 offset_top = 8.0
-offset_right = 168.0
-offset_bottom = 54.0
+offset_right = 140.0
+offset_bottom = 42.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 
 [node name="Content" type="Label" parent="HUD/MapBadge"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 13
 theme_override_fonts/font = ExtResource("3")
 theme_override_colors/font_color = Color(0.12, 0.12, 0.12, 1)
 horizontal_alignment = 1
 vertical_alignment = 1
 text = "地点"
 
-[node name="Details" type="PanelContainer" parent="HUD"]
+[node name="NpcViewHUD" type="PanelContainer" parent="HUD"]
 visible = false
 offset_left = 360.0
 offset_top = 120.0
@@ -77,7 +77,7 @@ offset_right = 860.0
 offset_bottom = 560.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 
-[node name="Content" type="Label" parent="HUD/Details"]
+[node name="Content" type="Label" parent="HUD/NpcViewHUD"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -86,7 +86,7 @@ theme_override_fonts/font = ExtResource("3")
 theme_override_colors/font_color = Color(0.12, 0.12, 0.12, 1)
 text = "详情"
 
-[node name="Portrait" type="TextureRect" parent="HUD/Details/Content"]
+[node name="Portrait" type="TextureRect" parent="HUD/NpcViewHUD/Content"]
 visible = false
 texture_filter = 1
 offset_left = 141.0
@@ -166,6 +166,34 @@ theme_override_font_sizes/font_size = 16
 theme_override_fonts/font = ExtResource("3")
 theme_override_colors/font_color = Color(0.12, 0.12, 0.12, 1)
 text = "菜单"
+
+[node name="Items" type="Control" parent="HUD/Menu"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="SkillMenu" type="PanelContainer" parent="HUD"]
+visible = false
+offset_left = 320.0
+offset_top = 32.0
+offset_right = 424.0
+offset_bottom = 136.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
+
+[node name="Items" type="Control" parent="HUD/SkillMenu"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="SystemMenu" type="PanelContainer" parent="HUD"]
+visible = false
+offset_left = 440.0
+offset_top = 32.0
+offset_right = 544.0
+offset_bottom = 162.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
+
+[node name="Items" type="Control" parent="HUD/SystemMenu"]
+layout_mode = 2
+mouse_filter = 2
 
 [node name="Battle" type="PanelContainer" parent="HUD"]
 visible = false

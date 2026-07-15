@@ -18,7 +18,9 @@ const ULT_TIER1_ARCH_LEVEL := 30
 const ULT_TIER2_ARCH_LEVEL := 80
 
 func create_default_skills() -> Dictionary:
-	return {"levels": {"basicStrength": 1, "basicAgility": 1, "basicConstitution": 1, "basicParry": 1, "literacy": 1}, "equipped_basic": {"code": "basicStrength", "tune": "basicAgility", "arch": "basicConstitution", "parry": "basicParry", "knowledge": "literacy"}, "equipped_special": {}, "progress": {}}
+	# 对齐参考项目：新角色不会任何技能，也不会自动装备基础功法。
+	# 基础功法须经师父或秘籍学会，再由玩家在功法菜单中主动装备。
+	return {"levels": {}, "equipped_basic": {}, "equipped_special": {}, "progress": {}, "learnProgress": {}, "practiceProgress": {}, "forcePower": 0}
 
 ## 兼容旧存档：早期版本用单一 "equipped" 槽位混存基础/门派功法，这里一次性
 ## 迁移拆分为 equipped_basic/equipped_special 两个独立槽位后即删除旧字段。
@@ -465,19 +467,30 @@ func equipped_sect_skill_level(theme: String) -> int:
 func can_meditate() -> bool:
 	return level("basicConstitution") > 0 and equipped_sect_skill_level("arch") > 0
 
+## 当前条件下可自行练到的最高等级：技能硬上限、对应基础功法等级与
+## 精力修为三者取最低值。练功判定与 HUD 的 n/m 必须共用此口径。
+func practice_cap(skill_id: String) -> int:
+	var definition: Dictionary = DataRegistry.get_skill(skill_id)
+	if definition.is_empty() or str(definition.get("category", "")) != "sect" or str(definition.get("theme", "")) == "arch":
+		return 0
+	var basic_id: String = str({"code": "basicStrength", "tune": "basicAgility", "parry": "basicParry", "knowledge": "literacy"}.get(str(definition.get("theme", "")), ""))
+	return mini(int(definition.get("maxLevel", 100)), mini(level(basic_id), GameState.player_mp_max()))
+
 func practice_tick(skill_id: String) -> Dictionary:
 	var definition: Dictionary = DataRegistry.get_skill(skill_id)
 	if definition.is_empty() or str(definition.get("category", "")) != "sect" or str(definition.get("theme", "")) == "arch":
-		return {"ok": false, "message": "这门功法不能通过练功提升"}
+		return {"ok": false, "message": "这门功法不能这样练。", "reason": "invalid"}
 	if str(definition.get("sect", "")) != str(GameState.profile.get("sect", "")) or level(skill_id) <= 0:
-		return {"ok": false, "message": "尚未学会本门功法"}
+		return {"ok": false, "message": "尚未学会本门这门功法。", "reason": "invalid"}
 	var skills := ensure_skills()
 	var basic_id: String = str({"code": "basicStrength", "tune": "basicAgility", "parry": "basicParry", "knowledge": "literacy"}.get(str(definition.get("theme", "")), ""))
-	var cap := mini(int(definition.get("maxLevel", 100)), level(str(basic_id)))
-	cap = mini(cap, int(GameState.profile.get("vitals", {}).get("neigong", 0)))
+	var cap := practice_cap(skill_id)
 	var current := level(skill_id)
 	if current >= cap:
-		return {"ok": false, "message": "已达当前练功上限 %d 级" % cap}
+		var basic_level := level(basic_id)
+		var mp_max := GameState.player_mp_max()
+		var cap_reason := "精力修为不足，须多冥想积累内力。" if cap >= mp_max and cap < basic_level else "须提升基础功法等级。"
+		return {"ok": false, "message": "【%s】已到当前上限 %d 级，%s" % [definition.get("name", skill_id), cap, cap_reason], "reason": "cap"}
 	var progress: Dictionary = skills.get("practiceProgress", {})
 	var required := _cost(definition, current)
 	var current_progress := mini(required, maxi(0, int(progress.get(skill_id, 0))))
@@ -488,9 +501,9 @@ func practice_tick(skill_id: String) -> Dictionary:
 	# 避免因中途多次 tick 而对同一段进度重复扣体力。
 	var hp_cost := maxi(0, int(ceil(float(current_progress + gain) * 0.8)) - int(ceil(float(current_progress) * 0.8)))
 	if int(GameState.combat_state.mp) < mp_cost:
-		return {"ok": false, "message": "精力不足，练不动功。"}
+		return {"ok": false, "message": "精力不足，练不动功。", "reason": "resource"}
 	if int(GameState.combat_state.hp) - hp_cost < 1:
-		return {"ok": false, "message": "体力不足，练不动功。"}
+		return {"ok": false, "message": "体力不足，练不动功。", "reason": "resource"}
 	GameState.combat_state.mp -= mp_cost
 	GameState.combat_state.hp -= hp_cost
 	# 练功以 6 Hz 推进；每个有效 tick 同步推进 1/6 秒游戏时钟。

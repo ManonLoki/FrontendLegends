@@ -1,9 +1,8 @@
 extends Control
 
 const FONT := preload("res://assets/Font/fusion-pixel-12px-proportional-zh_hans.ttf")
-const DESIGN_SIZE := Vector2(480.0, 320.0)
+const DESIGN_SIZE := Vector2(640.0, 480.0)
 const CONTENT_SIZE := Vector2(640.0, 400.0)
-const CONTENT_SCALE := 0.75
 const INTRO_SPEED := 58.0
 const ROW_H := 35.0
 const ROWS := ["name", "gender", "strength", "agility", "constitution", "wisdom", "confirm"]
@@ -116,8 +115,7 @@ func _build_intro() -> void:
 	intro_root = Control.new()
 	intro_root.name = "OpeningText"
 	intro_root.size = CONTENT_SIZE
-	intro_root.scale = Vector2.ONE * CONTENT_SCALE
-	intro_root.position = Vector2(0.0, 10.0)
+	intro_root.position = Vector2(0.0, (DESIGN_SIZE.y - CONTENT_SIZE.y) * 0.5)
 	intro_root.clip_contents = true
 	intro_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	stage.add_child(intro_root)
@@ -176,8 +174,7 @@ func _build_intro() -> void:
 	form = Control.new()
 	form.name = "CreationForm"
 	form.size = CONTENT_SIZE
-	form.scale = Vector2.ONE * CONTENT_SCALE
-	form.position = Vector2(0.0, 10.0)
+	form.position = Vector2(0.0, (DESIGN_SIZE.y - CONTENT_SIZE.y) * 0.5)
 	form.visible = false
 	stage.add_child(form)
 	_build_form()

@@ -41,7 +41,7 @@ func create_profile(player_name: String, custom_attributes: Dictionary = {}, gen
 		"gender": gender,
 		"base_attributes": attributes.duplicate(true),
 		"attributes": attributes.duplicate(true),
-		"vitals": {"food": capacity, "water": capacity, "money": 50, "potential": 0, "experience": 0, "age": 18, "appearance": appearance, "neigong": 0},
+		"vitals": {"food": capacity, "water": capacity, "money": 100000, "potential": 100000, "experience": 0, "age": 18, "appearance": appearance, "neigong": 0},
 		"sect": "",
 		"master": "",
 		"skills": SkillSystem.create_default_skills(),
