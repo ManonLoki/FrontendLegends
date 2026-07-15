@@ -13,6 +13,10 @@ func _initialize() -> void:
 func _run() -> void:
 	var state = root.get_node("GameState")
 	var combat = root.get_node("CombatSystem")
+	# 玩家与 NPC 必须共用参照项目的被动招式触发曲线和异常档位。
+	_assert_true(is_equal_approx(combat.rules.MOVE_TRIGGER_BASE, 0.25) and is_equal_approx(combat.rules.MOVE_TRIGGER_PER_MOVE, 0.04) and is_equal_approx(combat.rules.MOVE_TRIGGER_CAP, 0.55), "NPC 招式触发率应为 25% + 每招 4%，封顶 55%")
+	_assert_true(combat.rules.ATTACK_MOVE_STATUS_TABLE == {20: "paralysis", 40: "weakness", 50: "poison", 70: "paralysis", 80: "weakness", 90: "poison"}, "NPC 攻击招式的六个异常档位应与参照项目一致")
+	_assert_true(combat.rules.npc_mp_max(root.get_node("NpcSystem").build_instance("jiu_ri")) == 3750, "九日精力上限应按装备内功等级、25 点单位和架构修正计算")
 	state.delete_save()
 	state.create_profile("战斗测试", {"strength": 25, "agility": 25, "constitution": 25, "wisdom": 25})
 	state.profile.vitals.money = 1000

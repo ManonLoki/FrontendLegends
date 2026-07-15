@@ -226,11 +226,16 @@ func refresh() -> void:
 	game.battle_content.add_child(report_background)
 	widgets.append(report_background)
 	var report := _report_text()
-	var report_label := _label(report, report_rect.grow(-10.0 * scale), 11, HORIZONTAL_ALIGNMENT_LEFT, Color("35402e"))
+	var report_label_rect := report_rect.grow(-10.0 * scale)
+	var report_label := _label(report, report_label_rect, 11, HORIZONTAL_ALIGNMENT_LEFT, Color("35402e"))
 	report_label.set_meta("battle_report", true)
 	report_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	report_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	report_label.clip_text = true
+	# Label 在开启自动换行前会按整段战报计算最小宽度；长称号/战报会把节点
+	# 撑出面板。设置换行后重新施加目标矩形，确保尺寸以战报区域为准。
+	report_label.position = report_label_rect.position
+	report_label.size = report_label_rect.size
 
 func _report_rect(area: Vector2, scale: float) -> Rect2:
 	var top := (190.0 if ended else 233.0) * scale

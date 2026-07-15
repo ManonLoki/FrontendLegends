@@ -15,7 +15,7 @@ func try_open() -> void:
 		return
 	var teleport_cost := cost()
 	if int(GameState.combat_state.mp) < teleport_cost:
-		game.message = "精力不足，赛博传送需要 %d 精力" % teleport_cost
+		game.message = "精力不足，赛博传送需要 %d 点精力。" % teleport_cost
 		game._close_menu()
 		game._show_dialogue("赛博传送", game.message)
 		return
@@ -54,7 +54,7 @@ func handle_key(key: Key) -> void:
 		game.cyber_index = posmod(game.cyber_index + 1, game.cyber_maps.size())
 	elif key == KEY_SPACE:
 		if int(GameState.combat_state.mp) < teleport_cost:
-			game.message = "精力不足，赛博传送需要 %d 精力" % teleport_cost
+			game.message = "精力不足，赛博传送需要 %d 点精力。" % teleport_cost
 		else:
 			GameState.combat_state.mp -= teleport_cost
 			GameState.advance_time(1.0)
@@ -69,7 +69,8 @@ func handle_key(key: Key) -> void:
 		refresh_menu(teleport_cost)
 
 func cost() -> int:
-	return maxi(1, int(ceil(float(SkillSystem.meditation_max_mp_cap()) / game.CYBER_TELEPORT_MP_DIVISOR)))
+	var maximum := GameState.player_mp_max()
+	return maxi(1, int(ceil(float(maximum) / 3.0))) if maximum > 0 else 0
 
 func refresh_menu(teleport_cost: int) -> void:
 	if game.active_detail_hud != "cyber" or not game.detail_huds.cyber.panel.visible:

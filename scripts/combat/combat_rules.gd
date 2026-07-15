@@ -1,23 +1,30 @@
 extends RefCounted
 ## 无战斗流程状态的规则集合：会话初值、招式抽取、伤势判定与数值查询。
 
-const MOVE_TRIGGER_BASE := 0.15
-const MOVE_TRIGGER_PER_MOVE := 0.02
-const MOVE_TRIGGER_CAP := 0.35
-const ATTACK_MOVE_STATUS_TABLE := {10: "paralysis", 50: "weakness", 100: "poison"}
+## 与参照项目 SectMoves.ts 共用：25% 基础率，每个已解锁招式 +4%，封顶 55%。
+const MOVE_TRIGGER_BASE := 0.25
+const MOVE_TRIGGER_PER_MOVE := 0.04
+const MOVE_TRIGGER_CAP := 0.55
+## 十个招式档位中六个可附带异常；10/30/60/100 保持为纯伤害招式。
+const ATTACK_MOVE_STATUS_TABLE := {
+	20: "paralysis", 40: "weakness", 50: "poison",
+	70: "paralysis", 80: "weakness", 90: "poison",
+}
 
 func create_session(enemy_id: String, lethal: bool = true) -> Dictionary:
 	var enemy: Dictionary = NpcSystem.build_instance(enemy_id)
-	var player_attributes: Dictionary = GameState.profile.get("attributes", {})
-	var enemy_attributes: Dictionary = enemy.get("attributes", {})
+	var player_attributes := player_combat_attributes()
+	var enemy_attributes := npc_combat_attributes(enemy)
 	var enemy_mp_max := npc_mp_max(enemy)
+	var player_true_max_hp := hp_max(player_attributes, GameState.player_mp_max())
+	var player_effective_max_hp := maxi(1, player_true_max_hp - int(GameState.combat_state.get("injury", 0)))
 	return {
 		"enemy_id": enemy_id,
 		"enemy": enemy,
 		"player_hp": int(GameState.combat_state.get("hp", 1)),
 		"lethal": lethal,
-		"player_true_max_hp": GameState.player_hp_max(),
-		"player_max_hp": GameState.player_effective_hp_max(),
+		"player_true_max_hp": player_true_max_hp,
+		"player_max_hp": player_effective_max_hp,
 		"initial_player_hp": int(GameState.combat_state.get("hp", 1)),
 		"player_mp": int(GameState.combat_state.get("mp", 0)),
 		"enemy_hp": hp_max(enemy_attributes, enemy_mp_max),
@@ -35,12 +42,14 @@ func create_session(enemy_id: String, lethal: bool = true) -> Dictionary:
 	}
 
 func npc_mp_max(npc: Dictionary) -> int:
-	var total := maxi(0, int(npc.get("mp", 0)))
 	var levels: Dictionary = npc.get("skillLevels", {})
+	var inner_level := int(levels.get("basicConstitution", 0))
+	var attributes := npc_combat_attributes(npc)
 	for skill_id in npc.get("equippedSkillIds", []):
 		var definition: Dictionary = DataRegistry.get_skill(str(skill_id))
-		total += int(definition.get("combat", {}).get("mpMaxPerLv", 0)) * int(levels.get(str(skill_id), 0))
-	return total
+		if str(definition.get("category", "")) == "sect" and str(definition.get("theme", "")) == "arch":
+			inner_level += int(levels.get(str(skill_id), 0)) * 2
+	return maxi(0, int(floor(float(inner_level) * 25.0 * GameState.meditation_modifier(float(attributes.get("constitution", 0))))))
 
 func maybe_apply_in_battle_injury(session: Dictionary, result: Dictionary) -> String:
 	if not bool(session.get("lethal", true)):
@@ -111,21 +120,38 @@ func hp_max(attributes: Dictionary, mp_max: int) -> int:
 	return GameState.hp_max_with_mp_boost(float(attributes.get("constitution", 0)), mp_max)
 
 func player_hp_max() -> int:
-	return GameState.player_effective_hp_max()
+	return maxi(1, hp_max(player_combat_attributes(), GameState.player_mp_max()) - int(GameState.combat_state.get("injury", 0)))
+
+func _attributes_with_bonus(base: Dictionary, bonus: Dictionary) -> Dictionary:
+	var result := base.duplicate(true)
+	for key in ["strength", "agility", "constitution", "wisdom"]:
+		result[key] = maxi(0, int(base.get(key, 0)) + int(bonus.get(key, 0)))
+	return result
+
+func player_combat_attributes() -> Dictionary:
+	return _attributes_with_bonus(GameState.profile.get("attributes", {}), InventorySystem.equipment_attribute_bonus())
+
+func npc_combat_attributes(npc: Dictionary) -> Dictionary:
+	var bonus := {"strength": 0, "agility": 0, "constitution": 0, "wisdom": 0}
+	for item_id in npc.get("equipment", []):
+		var item_bonus: Dictionary = DataRegistry.get_item(str(item_id)).get("attributes", {})
+		for key in bonus:
+			bonus[key] = int(bonus[key]) + maxi(0, int(item_bonus.get(key, 0)))
+	return _attributes_with_bonus(npc.get("attributes", {}), bonus)
 
 func player_attack_power() -> float:
-	var attributes: Dictionary = GameState.profile.get("attributes", {})
+	var attributes := player_combat_attributes()
 	return maxf(1.0, GameState.attack_base(float(attributes.get("strength", 0))) + float(InventorySystem.equipment_bonus().get("attack", 0)))
 
 func player_name() -> String:
 	return str(GameState.profile.get("name", "玩家"))
 
 func player_defense() -> float:
-	var attributes: Dictionary = GameState.profile.get("attributes", {})
+	var attributes := player_combat_attributes()
 	return GameState.defense_base(float(attributes.get("constitution", 0))) + SkillSystem.best_combat_bonus("defPerLv") + float(InventorySystem.equipment_bonus().get("defense", 0))
 
 func enemy_attack_power(enemy: Dictionary) -> float:
-	return maxf(1.0, GameState.attack_base(float(enemy.get("attributes", {}).get("strength", 1))) + float(npc_equipment_bonus(enemy).get("attack", 0)))
+	return maxf(1.0, GameState.attack_base(float(npc_combat_attributes(enemy).get("strength", 1))) + float(npc_equipment_bonus(enemy).get("attack", 0)))
 
 func npc_best_combat_bonus(npc: Dictionary, key: String) -> float:
 	var best := 0.0

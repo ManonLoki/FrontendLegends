@@ -64,7 +64,8 @@ func player_attack(session: Dictionary, turn_started := false, damage_scale := 1
 	var turn_check := {"can_act": true, "message": ""} if turn_started else start_turn(session, "player")
 	if not turn_check.can_act:
 		return {"hit": false, "parried": false, "crit": false, "damage": 0, "skipped": true, "message": turn_check.message}
-	var enemy_attributes: Dictionary = session.enemy.get("attributes", {})
+	var enemy_attributes: Dictionary = rules.npc_combat_attributes(session.enemy)
+	var player_attributes: Dictionary = rules.player_combat_attributes()
 	var attack_moves: Array = SkillSystem.unlocked_moves().filter(func(move): return move.get("kind", "") == "attack") if allow_attack_move else []
 	var attack_move: Dictionary = {}
 	if not attack_moves.is_empty() and randf() < minf(MOVE_TRIGGER_CAP, MOVE_TRIGGER_BASE + attack_moves.size() * MOVE_TRIGGER_PER_MOVE):
@@ -73,7 +74,7 @@ func player_attack(session: Dictionary, turn_started := false, damage_scale := 1
 	var attack_verb := "使出【%s】" % attack_move.get("name", "招式") if not attack_move.is_empty() else action_label
 	var enemy_equipment := _npc_equipment_bonus(session.enemy)
 	var defense := GameState.defense_base(float(enemy_attributes.get("constitution", 0))) + _npc_best_combat_bonus(session.enemy, "defPerLv") + float(enemy_equipment.get("defense", 0))
-	var result: Dictionary = GameState.resolve_attack(_player_attack_power() + attack_power_bonus, GameState.profile.get("attributes", {}), enemy_attributes, defense, float(InventorySystem.equipment_bonus().get("hit", 0)) * 0.01 + move_hit_bonus + hit_bonus_extra, (_npc_best_combat_bonus(session.enemy, "dodgePerLv") + float(enemy_equipment.get("dodge", 0))) * 0.01, (_npc_passive_parry(session.enemy) + float(enemy_equipment.get("parry", 0))) * 0.01, float(InventorySystem.equipment_bonus().get("crit", 0)) * 0.01)
+	var result: Dictionary = GameState.resolve_attack(_player_attack_power() + attack_power_bonus, player_attributes, enemy_attributes, defense, float(InventorySystem.equipment_bonus().get("hit", 0)) * 0.01 + move_hit_bonus + hit_bonus_extra, (_npc_best_combat_bonus(session.enemy, "dodgePerLv") + float(enemy_equipment.get("dodge", 0))) * 0.01, (_npc_passive_parry(session.enemy) + float(enemy_equipment.get("parry", 0))) * 0.01, float(InventorySystem.equipment_bonus().get("crit", 0)) * 0.01)
 	if not result.hit:
 		session.log.append("%s%s，%s身形一晃避开了。" % [_player_name(), attack_verb, session.enemy.get("displayName", "敌人")])
 		return result
@@ -137,8 +138,8 @@ func enemy_attack(session: Dictionary, turn_started := false, damage_scale := 1.
 	var turn_check := {"can_act": true, "message": ""} if turn_started else start_turn(session, "enemy")
 	if not turn_check.can_act:
 		return {"hit": false, "parried": false, "crit": false, "damage": 0, "skipped": true, "message": turn_check.message}
-	var enemy_attributes: Dictionary = session.enemy.get("attributes", {})
-	var player_attributes: Dictionary = GameState.profile.get("attributes", {})
+	var enemy_attributes: Dictionary = rules.npc_combat_attributes(session.enemy)
+	var player_attributes: Dictionary = rules.player_combat_attributes()
 	var enemy_equipment := _npc_equipment_bonus(session.enemy)
 	var equipment := InventorySystem.equipment_bonus()
 	var attack_move := _npc_move(session.enemy, "attack") if allow_attack_move else {}

@@ -55,7 +55,7 @@ func level(skill_id: String) -> int:
 
 ## 秘籍升级路径：即时生效，只消耗书本本身（消耗品逻辑见 InventorySystem.use_item），
 ## 与 learn_tick 的按 tick 消耗潜能/Token 不同，两者是互不干扰的两条升级来源。
-func learn_from_book(skill_id: String) -> Dictionary:
+func learn_from_book(skill_id: String, max_learn_level: int = -1) -> Dictionary:
 	var definition := DataRegistry.get_skill(skill_id)
 	if definition.is_empty():
 		return {"ok": false, "message": "未知功法"}
@@ -64,8 +64,9 @@ func learn_from_book(skill_id: String) -> Dictionary:
 		return {"ok": false, "message": "未拜入%s，学不得【%s】" % [requires.get("sect", ""), definition.get("name", skill_id)]}
 	var current := level(skill_id)
 	var max_level := int(definition.get("maxLevel", 100))
-	if current >= max_level:
-		return {"ok": false, "message": "此书只能将【%s】读到 %d 级。" % [definition.get("name", skill_id), max_level]}
+	var book_cap := mini(max_level, maxi(0, max_learn_level)) if max_learn_level >= 0 else max_level
+	if current >= book_cap:
+		return {"ok": false, "message": "此书只能将【%s】读到 %d 级。" % [definition.get("name", skill_id), book_cap]}
 	var before_attrs: Dictionary = GameState.profile.get("attributes", {}).duplicate()
 	ensure_skills().levels[skill_id] = current + 1
 	ensure_skills().get("learnProgress", {}).erase(skill_id)
@@ -95,13 +96,13 @@ func learn_options_for_npc(npc_id: String) -> Array[String]:
 
 const JOIN_ATTR_LABELS := {"strength": "编码", "agility": "思维", "constitution": "架构", "wisdom": "灵感"}
 
-## 师父造诣档位：以其收徒功法门槛总和衡量，门槛越高的师父能教得越深。
-func _master_tier(npc: Dictionary) -> int:
-	var requirements: Dictionary = npc.get("joinSkillRequirements", {})
-	var total := 0
-	for value in requirements.values():
-		total += int(value)
-	return total
+## 师父高低只按其教学表中显式 maxTeachLevel 的最高值比较；字符串旧格式
+## 没有上限字段，按参照项目视为 0，而不是由拜师门槛推断造诣。
+func _master_teach_cap(npc_id: String) -> int:
+	var cap := 0
+	for entry in DataRegistry.get_teach_entries(npc_id):
+		cap = maxi(cap, int(entry.get("maxTeachLevel", 0)))
+	return cap
 
 ## 菜单显隐用：未拜入该门派，或已拜入但此人造诣高于当前师父（可改投深造）。
 func can_join(npc_id: String) -> bool:
@@ -115,7 +116,7 @@ func can_join(npc_id: String) -> bool:
 		return true
 	if current_master == npc_id:
 		return false
-	return _master_tier(npc) > _master_tier(NpcSystem.build_instance(current_master))
+	return _master_teach_cap(npc_id) > _master_teach_cap(current_master)
 
 func join_npc(npc_id: String) -> Dictionary:
 	var npc := NpcSystem.build_instance(npc_id)
@@ -132,9 +133,8 @@ func join_npc(npc_id: String) -> Dictionary:
 	if upgrading:
 		if current_master == npc_id:
 			return {"ok": false, "message": "你已师从此人。"}
-		var current_master_npc := NpcSystem.build_instance(current_master)
 		# 改投须严格造诣更高，同门同档或更低造诣的师父不允许平替/降级拜师。
-		if _master_tier(npc) <= _master_tier(current_master_npc):
+		if _master_teach_cap(npc_id) <= _master_teach_cap(current_master):
 			return {"ok": false, "message": "%s的造诣不及你现在的师父，无须改投。" % display_name}
 	var attributes: Dictionary = GameState.profile.get("attributes", {})
 	var missing_attrs: Array[String] = []
@@ -294,10 +294,13 @@ func _refresh_derived_attributes() -> void:
 	var base: Dictionary = GameState.profile.get("base_attributes", GameState.profile.get("attributes", {}))
 	var levels: Dictionary = ensure_skills().get("levels", {})
 	var attributes := base.duplicate(true)
+	var nudges := {"strength": 0, "agility": 0, "constitution": 0, "wisdom": 0}
 	for skill_id in BASIC_SKILL_IDS:
 		var key: String = str({"basicStrength": "strength", "basicAgility": "agility", "basicConstitution": "constitution", "basicParry": "strength", "literacy": "wisdom"}.get(skill_id, ""))
 		if not str(key).is_empty():
-			attributes[key] = mini(50, int(base.get(key, 0)) + int(floor(float(levels.get(skill_id, 0)) / 10.0)))
+			nudges[key] = int(nudges.get(key, 0)) + int(floor(float(levels.get(skill_id, 0)) / 10.0))
+	for key in nudges:
+		attributes[key] = mini(50, int(base.get(key, 0)) + int(nudges[key]))
 	GameState.profile.attributes = attributes
 
 func refresh_derived_attributes() -> void:
@@ -310,15 +313,19 @@ const THEME_BASIC_SKILL := {"code": "basicStrength", "tune": "basicAgility", "ar
 ## 须玩家 ESC→保存才落盘；唯独功法装备立即写盘，避免退出菜单后丢失当前选择。
 func equip(skill_id: String) -> Dictionary:
 	var definition := DataRegistry.get_skill(skill_id)
-	if definition.is_empty() or level(skill_id) <= 0:
-		return {"ok": false, "message": "尚未学会"}
+	if definition.is_empty():
+		return {"ok": false, "message": "没有这门功法。"}
+	if str(definition.get("category", "")) == "sect" and str(definition.get("sect", "")) != str(GameState.profile.get("sect", "")):
+		return {"ok": false, "message": "非本门功法，不能装备。"}
+	if level(skill_id) <= 0:
+		return {"ok": false, "message": "尚未学会【%s】。" % definition.get("name", skill_id)}
 	var theme := str(definition.get("theme", ""))
 	if theme not in THEMES:
-		return {"ok": false, "message": "无法装备"}
+		return {"ok": false, "message": "无法装备。"}
 	var slot := "equipped_basic" if str(definition.get("category", "")) == "basic" else "equipped_special"
 	ensure_skills()[slot][theme] = skill_id
 	GameState.save_game()
-	return {"ok": true, "message": "已装备【%s】" % definition.get("name", skill_id)}
+	return {"ok": true, "message": "已装备【%s】。" % definition.get("name", skill_id)}
 
 ## 基础与特殊功法使用独立槽，卸下其中一类不会影响另一类。同 equip() 立即落盘。
 func unequip(skill_id: String) -> Dictionary:

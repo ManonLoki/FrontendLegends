@@ -136,12 +136,12 @@ func _refresh_npc_menu() -> void:
 	var npc: Dictionary = NpcSystem.build_instance(game.nearby_npc_id)
 	var roles: Array = npc.get("roles", [])
 	if "static" in roles:
-		game.npc_menu_actions = ["view"]
-		game.npc_menu_labels = ["查看"]
+		game.npc_menu_actions.assign(["view"])
+		game.npc_menu_labels.assign(["查看"])
 		game.npc_menu_index = 0
 	else:
-		game.npc_menu_actions = ["talk", "view", "spar", "fight"]
-		game.npc_menu_labels = ["交谈", "查看", "切磋", "战斗"]
+		game.npc_menu_actions.assign(["talk", "view", "spar", "fight"])
+		game.npc_menu_labels.assign(["交谈", "查看", "切磋", "战斗"])
 		if "vendor" in roles:
 			game.npc_menu_actions.append(game.TRADE_MODE_BUY)
 			game.npc_menu_labels.append("购买")

@@ -1,4 +1,6 @@
 extends RefCounted
+
+const SKILL_RATING := preload("res://scripts/skills/skill_rating.gd")
 ## HUD 主题、通用控件、详情视图、背包内容与顶部菜单渲染。
 
 var game: Node
@@ -180,17 +182,8 @@ func _layout_npc_view_panel() -> void:
 
 func _npc_skill_rating(npc: Dictionary) -> String:
 	var levels: Dictionary = npc.get("skillLevels", {})
-	if levels.is_empty():
-		return "不通武艺"
-	var total := 0
-	for value in levels.values():
-		total += int(value)
-	var average := total / maxi(1, levels.size())
-	if average >= 80: return "出神入化"
-	if average >= 60: return "炉火纯青"
-	if average >= 40: return "登堂入室"
-	if average >= 20: return "略通武艺"
-	return "不通武艺"
+	var equipped: Array = npc.get("equippedSkillIds", [])
+	return SKILL_RATING.title(SKILL_RATING.equipped_average(levels, equipped))
 
 func _render_inventory_widgets() -> void:
 	game._use_detail_hud("inventory")

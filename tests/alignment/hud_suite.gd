@@ -180,7 +180,7 @@ func _run_hud_suite() -> Node:
 	game.battle_ui.start()
 	await process_frame
 	for widget in game.battle_ui.widgets:
-		_assert_true(Rect2(Vector2.ZERO, game.battle_panel.size).encloses(Rect2(widget.position, widget.size)), "战斗 UI 元素不得互相挤出面板边界")
+		_assert_true(Rect2(Vector2.ZERO, game.battle_panel.size).encloses(Rect2(widget.position, widget.size)), "战斗 UI 元素不得互相挤出面板边界：%s %s / %s（面板 %s，报告 %s）" % [widget.get_class(), widget.position, widget.size, game.battle_panel.size, widget.has_meta("battle_report")])
 	game.battle_ui.active = false
 	game.battle_panel.visible = false
 	game.battle_ui._clear_widgets()

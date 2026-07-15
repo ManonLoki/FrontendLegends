@@ -205,7 +205,8 @@ func offer_generator(generator_id: String) -> Dictionary:
 	if active.has(runtime_id) or _on_cooldown(generator_id):
 		return {"ok": false, "message": "该环任务进行中"}
 	var generator_type := str(definition.get("type", ""))
-	var target := _placed_npc_target(str(definition.get("giverNpcId", "")))
+	var excluded_npc_id := "" if generator_type == "killRing" else str(definition.get("giverNpcId", ""))
+	var target := _placed_npc_target(excluded_npc_id)
 	if generator_type in ["ring", "killRing"] and target.is_empty():
 		return {"ok": false, "message": "（环任务目标池是空的，请检查地图 Interactive 层 NPC id）"}
 	var runtime := {"generator_id": generator_id, "kind": generator_type, "giverNpcId": definition.get("giverNpcId", ""), "state": "active", "progress": 0, "round": 1}
@@ -277,7 +278,7 @@ func _base_reward(definition: Dictionary) -> Dictionary:
 		return explicit.duplicate(true)
 	var base := int(definition.get("rewardBase", 0))
 	if base > 0:
-		return {"experience": base * 2, "potential": base * 2, "money": int(round(float(base) * 1.6))}
+		return {"experience": base * 2, "potential": base * 3, "money": int(ceil(float(base) * 3.0 * 0.8))}
 	return {}
 
 func _kill_ring_reward(definition: Dictionary, target_id: String) -> Dictionary:
@@ -314,7 +315,7 @@ func _scaled_reward(definition: Dictionary, reward: Dictionary, round_index: int
 	var fluctuation := 1.0 + randf_range(fluctuation_min, fluctuation_max)
 	for key in result:
 		if result[key] is int or result[key] is float:
-			result[key] = maxi(0, int(round(float(result[key]) * growth * fluctuation)))
+			result[key] = maxi(0, int(floor(float(result[key]) * growth * fluctuation)))
 	return result
 
 func advance_generator(generator_id: String, amount: int = 1) -> Dictionary:
@@ -407,7 +408,7 @@ func bounty_board_text(generator_id: String = "bountyring_xiaobuer") -> String:
 	if bounty_target.is_empty():
 		return "暗网悬赏榜暂时空着，去找小不二接一单吧。"
 	var definition: Dictionary = DataRegistry.quest_generators.get(generator_id, {})
-	return _line(definition, "inProgress", "「{target}」已在「{map}」，请速速将其捉拿归案！", {"target": bounty_target.get("target_name", ""), "map": bounty_target.get("map_name", bounty_target.get("map_id", ""))})
+	return _line(definition, "offer", "「{target}」已在「{map}」，请速速将其捉拿归案！", {"target": bounty_target.get("target_name", ""), "map": bounty_target.get("map_name", bounty_target.get("map_id", ""))})
 
 func clear_bounty_target() -> void:
 	if not bounty_target.is_empty():
@@ -426,9 +427,9 @@ func _settle_bounty_ring(runtime_id: String, runtime: Dictionary, definition: Di
 	var roll := func(base: float) -> int:
 		return maxi(0, int(floor(base * (1.0 + randf_range(fluctuation_min, fluctuation_max)))))
 	var reward := {
-		"experience": roll.call(stat_base * 2.0),
-		"potential": roll.call(stat_base * 2.0),
-		"money": roll.call(money_base * 1.6),
+		"experience": roll.call(stat_base * 3.0),
+		"potential": roll.call(stat_base * 3.0),
+		"money": roll.call(money_base * 3.0 * 0.8),
 	}
 	_grant_reward(reward)
 	var kills_done := int(ring_progress.get(generator_id, 0)) + 1

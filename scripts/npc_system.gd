@@ -54,7 +54,7 @@ func build_instance(npc_id: String, overrides: Dictionary = {}) -> Dictionary:
 	return definition
 
 func dialogue(npc_id: String) -> String:
-	var npc: Dictionary = DataRegistry.get_npc(npc_id)
+	var npc: Dictionary = build_instance(npc_id)
 	return str(npc.get("defaultLine", "……"))
 
 func can_interact(npc_id: String) -> bool:
@@ -68,6 +68,9 @@ func unregister_runtime(npc_id: String) -> void:
 
 func mark_defeated(npc_id: String, duration_sec: float = 300.0) -> void:
 	defeated_until[npc_id] = GameState.game_time_sec + duration_sec
+
+func clear_defeated() -> void:
+	defeated_until.clear()
 
 ## Lazily expires entries on read rather than on a timer, so is_defeated() alone is
 ## enough to both check and self-clean the map; sweep_defeated() below just forces

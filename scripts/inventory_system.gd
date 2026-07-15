@@ -89,7 +89,7 @@ func use_item(item_id: String) -> Dictionary:
 			if potential_gain != 0: parts.append("潜能 %s%d" % ["+" if potential_gain > 0 else "", potential_gain])
 			result = {"ok": true, "message": "服下%s，%s。" % [definition.get("name", item_id), "，".join(parts)]}
 	elif kind == "book" and definition.get("skillId", "") != "":
-		var learn_result: Dictionary = SkillSystem.learn_from_book(str(definition.skillId))
+		var learn_result: Dictionary = SkillSystem.learn_from_book(str(definition.skillId), int(definition.get("maxLearnLevel", DataRegistry.get_skill(str(definition.skillId)).get("maxLevel", 100))))
 		result = learn_result
 	if not bool(result.get("ok", false)):
 		add_item(item_id)
@@ -144,7 +144,7 @@ func equip_item(item_id: String) -> Dictionary:
 func unequip(slot: String) -> Dictionary:
 	var previous := str(GameState.equipment.get(slot, ""))
 	if previous.is_empty():
-		return {"ok": false, "message": "该部位没有装备"}
+		return {"ok": false, "message": "该部位未曾穿戴。"}
 	GameState.equipment[slot] = ""
 	return {"ok": true, "message": "卸下了%s。" % DataRegistry.get_item(previous).get("name", previous)}
 
@@ -158,7 +158,8 @@ func equipped_slot(item_id: String) -> String:
 func unequip_item(item_id: String) -> Dictionary:
 	var slot := equipped_slot(item_id)
 	if slot.is_empty():
-		return {"ok": false, "message": "该物品没有装备"}
+		var definition: Dictionary = DataRegistry.get_item(item_id)
+		return {"ok": false, "message": "%s 未曾穿戴。" % definition.get("name", item_id)}
 	return unequip(slot)
 
 func equipment_bonus() -> Dictionary:
@@ -168,6 +169,15 @@ func equipment_bonus() -> Dictionary:
 		var bonus: Dictionary = DataRegistry.get_item(str(item_id)).get("equipmentBonus", {})
 		for key in total:
 			total[key] = int(total[key]) + int(bonus.get(key, 0))
+	return total
+
+func equipment_attribute_bonus() -> Dictionary:
+	_normalize_equipment()
+	var total := {"strength": 0, "agility": 0, "constitution": 0, "wisdom": 0}
+	for item_id in GameState.equipment.values():
+		var bonus: Dictionary = DataRegistry.get_item(str(item_id)).get("attributes", {})
+		for key in total:
+			total[key] = int(total[key]) + maxi(0, int(bonus.get(key, 0)))
 	return total
 
 ## Safety net for equipment referencing an item no longer in the inventory (e.g. the
@@ -180,40 +190,44 @@ func _normalize_equipment() -> void:
 
 func buy_item(npc_id: String, item_id: String) -> Dictionary:
 	if item_id not in DataRegistry.list_vendor_stock(npc_id):
-		return {"ok": false, "message": "该商贩不出售此物品"}
+		return {"ok": false, "message": "此处不售此物。"}
 	var definition: Dictionary = DataRegistry.get_item(item_id)
+	if definition.is_empty():
+		return {"ok": false, "message": "货单无效。"}
 	var price := int(definition.get("price", 0))
 	var vitals: Dictionary = GameState.profile.vitals
 	if int(vitals.get("money", 0)) < price:
-		return {"ok": false, "message": "Token 不足"}
+		return {"ok": false, "message": "Token 不足，%s 要价 %d。" % [definition.get("name", item_id), price]}
 	if not add_item(item_id):
 		return {"ok": false, "message": "背包已满"}
 	vitals.money = int(vitals.get("money", 0)) - price
 	GameState.profile.vitals = vitals
-	return {"ok": true, "message": "购买了 %s" % definition.get("name", item_id)}
+	return {"ok": true, "message": "买下%s，花费 %d Token。" % [definition.get("name", item_id), price]}
 
 func sell_item(item_id: String) -> Dictionary:
 	var definition: Dictionary = DataRegistry.get_item(item_id)
-	if definition.is_empty() or definition.get("kind", "") == "quest" or definition.get("sellable", true) == false:
-		return {"ok": false, "message": "该物品不可出售"}
+	if definition.is_empty():
+		return {"ok": false, "message": "这不是我能收的东西。"}
+	if definition.get("kind", "") == "quest" or definition.get("sellable", true) == false:
+		return {"ok": false, "message": "%s 不能卖。" % definition.get("name", item_id)}
 	if not remove_item(item_id):
-		return {"ok": false, "message": "背包中没有该物品"}
+		return {"ok": false, "message": "你没有%s。" % definition.get("name", item_id)}
 	var gain := int(floor(float(definition.get("price", 0)) * SELL_PRICE_RATE))
 	var vitals: Dictionary = GameState.profile.vitals
 	vitals.money = int(vitals.get("money", 0)) + gain
 	GameState.profile.vitals = vitals
-	return {"ok": true, "message": "出售获得 %d Token" % gain}
+	return {"ok": true, "message": "卖出%s，得 %d Token。" % [definition.get("name", item_id), gain]}
 
 func discard_item(item_id: String) -> Dictionary:
 	var definition: Dictionary = DataRegistry.get_item(item_id)
 	if definition.is_empty() or str(definition.get("kind", "")) == "quest" or definition.get("discardable", true) == false:
-		return {"ok": false, "message": "该物品不可丢弃"}
+		return {"ok": false, "message": "%s 不能丢弃。" % definition.get("name", item_id)}
 	for slot in GameState.equipment:
 		if str(GameState.equipment[slot]) == item_id:
 			return {"ok": false, "message": "请先卸下装备再丢弃"}
 	if not remove_item(item_id):
-		return {"ok": false, "message": "背包中没有该物品"}
-	return {"ok": true, "message": "已丢弃 %s" % definition.get("name", item_id)}
+		return {"ok": false, "message": "你没有%s。" % definition.get("name", item_id)}
+	return {"ok": true, "message": "丢弃了%s。" % definition.get("name", item_id)}
 
 ## Mirrors use_item()'s effect-kind whitelist and cooldown/gender checks so the menu
 ## can gray out an item (via _use_failure below) before the player even attempts to use it.
@@ -239,7 +253,9 @@ func _use_failure(item_id: String, definition: Dictionary) -> String:
 
 func list_entries(kind: String = "") -> Array:
 	var result: Array = []
-	for item_id in GameState.inventory:
+	var item_ids: Array = GameState.inventory.keys()
+	item_ids.sort()
+	for item_id in item_ids:
 		var definition: Dictionary = DataRegistry.get_item(item_id)
 		if kind.is_empty() or definition.get("kind", "other") == kind:
 			result.append({"id": item_id, "count": count(item_id), "definition": definition})

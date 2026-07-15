@@ -1,6 +1,8 @@
 extends RefCounted
 ## 背包与功法册的状态、输入、内容刷新及角色展示文案。
 
+const SKILL_RATING := preload("res://scripts/skills/skill_rating.gd")
+
 var game: Node
 
 func _init(owner: Node) -> void:
@@ -166,14 +168,8 @@ func _gender_label(gender: String) -> String:
 	return "女" if gender.to_lower() == "female" else "男" if gender.to_lower() == "male" else "未知"
 
 func _skill_rating() -> String:
-	var levels: Dictionary = SkillSystem.ensure_skills().get("levels", {})
-	var total := 0
-	for value in levels.values(): total += int(value)
-	var average := total / maxi(1, levels.size())
-	if average >= 80: return "出神入化"
-	if average >= 50: return "炉火纯青"
-	if average >= 20: return "登堂入室"
-	return "不堪一击"
+	var skills: Dictionary = SkillSystem.ensure_skills()
+	return SKILL_RATING.title(SKILL_RATING.equipped_average(skills.get("levels", {}), SKILL_RATING.player_equipped_ids(skills)))
 
 func _appearance_title(score: int, gender: String) -> String:
 	var male := [["惨不忍睹", "面目狰狞"], ["相貌平平", "浓眉大眼"], ["五官端正", "气宇轩昂"], ["英俊潇洒", "风流倜傥"], ["玉树临风", "潘安再生"]]

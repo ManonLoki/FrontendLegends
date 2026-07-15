@@ -8,7 +8,7 @@ const AGE_TICK_SEC := 28800.0
 const MIN_HIT_RATE := 0.28
 const MAX_HIT_RATE := 0.95
 ## Each cultivation level increases the maximum current energy by this amount.
-const MP_PER_CULTIVATION := 2
+const MP_PER_CULTIVATION := 1
 
 var profile: Dictionary = {}
 var game_time_sec := 0.0
@@ -43,7 +43,7 @@ func create_profile(player_name: String, custom_attributes: Dictionary = {}, gen
 		"gender": gender,
 		"base_attributes": attributes.duplicate(true),
 		"attributes": attributes.duplicate(true),
-		"vitals": {"food": capacity, "water": capacity, "money": 0, "potential": 0, "experience": 0, "age": 18, "appearance": appearance, "cultivation": 0},
+		"vitals": {"food": capacity, "water": capacity, "money": 50, "potential": 0, "experience": 0, "age": 18, "appearance": appearance, "cultivation": 0},
 		"sect": "",
 		"master": "",
 		"skills": SkillSystem.create_default_skills(),
@@ -80,7 +80,11 @@ func save_game() -> void:
 	if not has_profile():
 		return
 	# 对齐原项目：穿戴状态仅在本局内存中存在，不进入存档。
-	var data := {"version": SAVE_VERSION, "profile": profile, "game_time_sec": game_time_sec, "combat_state": combat_state, "inventory": inventory, "item_cooldowns": item_cooldowns}
+	# attributes 是由 base_attributes + 基础功法反哺生成的运行时派生值，保存时剥离，
+	# 读档统一重算，避免冗余字段成为第二个互相冲突的数据源。
+	var saved_profile := profile.duplicate(true)
+	saved_profile.erase("attributes")
+	var data := {"version": SAVE_VERSION, "profile": saved_profile, "game_time_sec": game_time_sec, "combat_state": combat_state, "inventory": inventory, "item_cooldowns": item_cooldowns}
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
 		file.store_string(JSON.stringify(data))
@@ -101,9 +105,81 @@ func load_game() -> bool:
 	item_cooldowns = parsed.get("item_cooldowns", {})
 	if profile.has("skills"):
 		SkillSystem.ensure_skills()
+		_normalize_base_attributes()
 		SkillSystem.refresh_derived_attributes()
+	_normalize_loaded_profile()
 	normalize_combat_state()
 	return has_profile()
+
+func _normalize_loaded_profile() -> void:
+	profile.name = str(profile.get("name", "")).strip_edges().substr(0, 10)
+	var attributes: Dictionary = profile.get("attributes", {"strength": 25, "agility": 25, "constitution": 25, "wisdom": 25})
+	var vitals: Dictionary = profile.get("vitals", {})
+	var capacity := 200 + int(attributes.get("strength", 25)) * 10
+	vitals.food = clampi(int(vitals.get("food", 0)), 0, capacity)
+	vitals.water = clampi(int(vitals.get("water", 0)), 0, capacity)
+	for key in ["money", "potential", "experience", "cultivation"]:
+		vitals[key] = maxi(0, int(vitals.get(key, 0)))
+	profile.vitals = vitals
+	if not str(profile.get("sect", "")).is_empty() and str(profile.get("master", "")).is_empty():
+		profile.master = _entry_master_for_sect(str(profile.sect))
+	var item_catalog: Dictionary = _load_data_document("items.json").get("items", {})
+	inventory = _normalize_item_map(inventory, item_catalog, true)
+	item_cooldowns = _normalize_item_map(item_cooldowns, item_catalog, false)
+
+func _normalize_base_attributes() -> void:
+	var current: Dictionary = profile.get("attributes", {})
+	var base: Dictionary = profile.get("base_attributes", {})
+	var levels: Dictionary = profile.get("skills", {}).get("levels", {})
+	var nudges := {"strength": 0, "agility": 0, "constitution": 0, "wisdom": 0}
+	var mapping := {
+		"basicStrength": "strength", "basicAgility": "agility",
+		"basicConstitution": "constitution", "basicParry": "strength", "literacy": "wisdom",
+	}
+	for skill_id in mapping:
+		var key: String = mapping[skill_id]
+		nudges[key] = int(nudges[key]) + int(floor(float(levels.get(skill_id, 0)) / 10.0))
+	for key in nudges:
+		var fallback := int(current.get(key, 25)) - int(nudges[key])
+		base[key] = maxi(5, int(floor(float(base.get(key, fallback)))))
+	profile.base_attributes = base
+
+func _normalize_item_map(raw: Dictionary, known_items: Dictionary, counts: bool) -> Dictionary:
+	var result: Dictionary = {}
+	for raw_id in raw:
+		var item_id := str(raw_id).strip_edges()
+		if item_id.is_empty() or not known_items.has(item_id):
+			continue
+		if counts:
+			var amount := maxi(0, int(raw[raw_id]))
+			if amount > 0:
+				result[item_id] = amount
+		else:
+			result[item_id] = maxf(0.0, float(raw[raw_id]))
+	return result
+
+func _entry_master_for_sect(sect_name: String) -> String:
+	var npc_catalog: Dictionary = _load_data_document("npcs.json").get("npcs", {})
+	var teach_stock: Dictionary = _load_data_document("skills.json").get("teachStock", {})
+	var best_id := ""
+	var best_cap := 2147483647
+	for npc_id in npc_catalog:
+		var npc: Dictionary = npc_catalog[npc_id]
+		if not npc.has("joinSect") or str(npc.get("sect", "")) != sect_name:
+			continue
+		var cap := 0
+		for entry in teach_stock.get(npc_id, []):
+			if entry is Dictionary:
+				cap = maxi(cap, int(entry.get("maxTeachLevel", 0)))
+		if cap < best_cap:
+			best_id = str(npc_id)
+			best_cap = cap
+	return best_id
+
+func _load_data_document(file_name: String) -> Dictionary:
+	var file := FileAccess.open("res://assets/Data/" + file_name, FileAccess.READ)
+	var parsed = JSON.parse_string(file.get_as_text()) if file else null
+	return parsed if parsed is Dictionary else {}
 
 func delete_save() -> void:
 	QuestSystem.reset_runtime()
@@ -143,10 +219,9 @@ func base_hp_max(constitution: float) -> int:
 func hp_max_with_mp_boost(constitution: float, mp_max: int) -> int:
 	return base_hp_max(constitution) + int(floor(maxf(0.0, float(mp_max)) * 0.2))
 
-## Cultivation is the number of meditation advancement levels. Its value doubles
-## to determine the maximum current energy in combat (for example, 130 → 260).
+## 精力上限与精力修为 1:1，对齐参照项目 PlayerCombatState.getMpMax。
 func player_mp_max() -> int:
-	return maxi(0, int(profile.get("vitals", {}).get("cultivation", 0)) * MP_PER_CULTIVATION)
+	return maxi(0, int(profile.get("vitals", {}).get("cultivation", 0)))
 
 func player_hp_max() -> int:
 	var attributes: Dictionary = profile.get("attributes", {})

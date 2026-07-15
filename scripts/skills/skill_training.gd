@@ -63,7 +63,8 @@ func equipped_sect_skill_level(theme: String) -> int:
 	return skills.level(skill_id)
 
 func can_meditate() -> bool:
-	return skills.level("basicConstitution") > 0 and equipped_sect_skill_level("arch") > 0
+	var basic_arch_id: String = skills.equipped_id("arch", "basic")
+	return basic_arch_id == "basicConstitution" and skills.level(basic_arch_id) > 0 and equipped_sect_skill_level("arch") > 0
 
 func practice_cap(skill_id: String) -> int:
 	var definition: Dictionary = DataRegistry.get_skill(skill_id)
@@ -102,16 +103,20 @@ func practice_tick(skill_id: String) -> Dictionary:
 	GameState.combat_state.hp -= hp_cost
 	GameState.advance_time(PRACTICE_TICK_SECONDS)
 	var next_progress := current_progress + gain
+	var gained_level := false
 	if next_progress >= required:
 		skill_state.levels[skill_id] = current + 1
 		progress[skill_id] = 0
 		skills.refresh_derived_attributes()
+		gained_level = true
 	else:
 		progress[skill_id] = next_progress
 	skill_state.practiceProgress = progress
 	var shown_progress := int(progress.get(skill_id, 0))
 	var shown_required: int = skills.skill_exp_required(skill_id, skills.level(skill_id) + 1)
-	return {"ok": true, "message": "%s 练功进度 %d/%d" % [definition.get("name", skill_id), shown_progress, shown_required], "level": skills.level(skill_id)}
+	var suffix := "，已达当前上限 %d 级" % cap if skills.level(skill_id) >= cap else "，进度 %d / %d" % [shown_progress, shown_required]
+	var message := "你苦练【%s】，提升至 %d 级%s。" % [definition.get("name", skill_id), skills.level(skill_id), suffix] if gained_level else "你苦练【%s】%s。" % [definition.get("name", skill_id), suffix]
+	return {"ok": true, "message": message, "level": skills.level(skill_id)}
 
 func practice_progress(skill_id: String) -> Dictionary:
 	var definition: Dictionary = DataRegistry.get_skill(skill_id)
