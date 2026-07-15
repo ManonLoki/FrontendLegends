@@ -12,6 +12,8 @@ config_version=5
 
 config/name="前端群侠传"
 config/version="0.7.5"
+config/use_custom_user_dir=true
+config/custom_user_dir_name="FrontendLegends"
 run/main_scene="res://scenes/splash.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 boot_splash/show_image=false

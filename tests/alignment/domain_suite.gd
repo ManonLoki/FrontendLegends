@@ -18,6 +18,7 @@ func _run_domain_suite() -> void:
 	var data_registry = root.get_node("DataRegistry")
 	var combat_system = root.get_node("CombatSystem")
 	var npc_system = root.get_node("NpcSystem")
+	game_state.use_test_save_path("alignment")
 	npc_system.register_runtime("__dialogue_target", {"displayName": "动态目标", "defaultLine": "你……找我有事？"})
 	_assert_true(npc_system.dialogue("__dialogue_target") == "你……找我有事？", "动态 NPC 应读取运行时 defaultLine")
 	npc_system.unregister_runtime("__dialogue_target")
@@ -31,8 +32,20 @@ func _run_domain_suite() -> void:
 	_assert_true(skill_system.ensure_skills().equipped_basic.is_empty() and skill_system.ensure_skills().equipped_special.is_empty(), "新角色不应预装备任何功法")
 	_assert_true(int(game_state.profile.vitals.money) == 50 and int(game_state.profile.vitals.potential) == 0, "新角色应有 50 Token，潜能从 0 开始")
 	game_state.save_game()
-	var saved_document: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(game_state.SAVE_PATH))
+	var saved_document: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(game_state.current_save_path()))
 	_assert_true(not saved_document.get("profile", {}).has("attributes") and saved_document.get("profile", {}).has("base_attributes"), "存档只应持久化基础四维，派生 attributes 必须在读档时重算")
+	# 主存档损坏时必须从上一次完整备份恢复，且测试路径不得指向正式存档。
+	_assert_true(game_state.current_save_path().begins_with("user://test_saves/"), "回归测试必须使用隔离存档路径，不得读写正式 user:// 存档")
+	_assert_true(not game_state._read_save_document(game_state.current_save_path() + ".bak").is_empty(), "第二次安全保存后应保留上一份完整 .bak 存档")
+	var corrupt_file := FileAccess.open(game_state.current_save_path(), FileAccess.WRITE)
+	corrupt_file.store_string("{损坏的存档")
+	corrupt_file = null
+	var recovered_from_backup: bool = game_state.load_game()
+	_assert_true(recovered_from_backup, "主存档损坏后应自动从 .bak 读取最近一次完整存档")
+	var expected_recovered_name := str(saved_document.get("profile", {}).get("name", "")).substr(0, 10)
+	_assert_true(str(game_state.profile.get("name", "")) == expected_recovered_name, "备份恢复后应按正常读档规则保留原角色资料")
+	var restored_document = JSON.parse_string(FileAccess.get_file_as_string(game_state.current_save_path()))
+	_assert_true(restored_document is Dictionary and str(restored_document.get("profile", {}).get("name", "")) == "alignment-test", "备份恢复后主存档文件本身也应重新变为有效 JSON")
 	var rating_rules = load("res://scripts/skills/skill_rating.gd")
 	_assert_true(rating_rules.title(1) == "不堪一击" and rating_rules.title(60) == "略有小成" and rating_rules.title(300) == "返璞归真", "武学称号应使用参照项目的完整分段表")
 	var rating_levels := {"basicStrength": 60, "literacy": 100}
@@ -65,7 +78,7 @@ func _run_domain_suite() -> void:
 	legacy_vitals["money"] = -7
 	legacy_vitals["potential"] = -3
 	legacy_profile["vitals"] = legacy_vitals
-	var legacy_file := FileAccess.open(game_state.SAVE_PATH, FileAccess.WRITE)
+	var legacy_file := FileAccess.open(game_state.current_save_path(), FileAccess.WRITE)
 	legacy_file.store_string(JSON.stringify({"version": 2, "profile": legacy_profile, "game_time_sec": 0, "combat_state": {"hp": 1, "mp": 0, "injury": 0}, "inventory": {"fagun": 2, "removed_item": 9}, "item_cooldowns": {"fagun": 12.0, "removed_item": 99.0}}))
 	legacy_file = null
 	_assert_true(game_state.load_game(), "归一化测试存档应可读取")

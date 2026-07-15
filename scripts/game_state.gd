@@ -1,8 +1,10 @@
 extends Node
 
-const SAVE_PATH := "user://frontend_legends_save_v2.json"
+const PRODUCTION_SAVE_PATH := "user://frontend_legends_save_v2.json"
 const SAVE_VERSION := 3
 const COMPATIBLE_SAVE_VERSIONS: Array[int] = [2, SAVE_VERSION]
+
+var active_save_path := PRODUCTION_SAVE_PATH
 
 const SURVIVAL_TICK_SEC := 15.0
 const AGE_TICK_SEC := 28800.0
@@ -20,7 +22,17 @@ var item_cooldowns: Dictionary = {}
 
 ## 自动加载单例就绪时尝试读取现有存档。
 func _ready() -> void:
+	_migrate_legacy_save_if_needed()
 	load_game()
+
+## 将测试切换到独立存档；正式存档路径和备份绝不会被测试删除或覆盖。
+func use_test_save_path(suite_name: String) -> void:
+	var safe_name := suite_name.validate_filename().to_lower()
+	active_save_path = "user://test_saves/%s.json" % (safe_name if not safe_name.is_empty() else "unnamed")
+
+## 返回当前实际读写路径，供测试和诊断使用。
+func current_save_path() -> String:
+	return active_save_path
 
 ## 创建体力、精力和伤势的默认战斗状态。
 func _default_combat_state(hp: int = 1) -> Dictionary:
@@ -82,27 +94,29 @@ func advance_time(seconds: float) -> void:
 	vitals.age = int(vitals.get("age", 18)) + current_age_tick - previous_age_tick
 	profile.vitals = vitals
 
-## 剥离运行时派生属性和本局装备后写出 v3 存档。
-func save_game() -> void:
+## 剥离运行时派生属性和本局装备后，以临时文件和备份轮换安全写出 v3 存档。
+func save_game() -> bool:
 	if not has_profile():
-		return
+		return false
 	# 对齐原项目：穿戴状态仅在本局内存中存在，不进入存档。
 	# attributes 是由 base_attributes + 基础功法反哺生成的运行时派生值，保存时剥离，
 	# 读档统一重算，避免冗余字段成为第二个互相冲突的数据源。
 	var saved_profile := profile.duplicate(true)
 	saved_profile.erase("attributes")
 	var data := {"version": SAVE_VERSION, "profile": saved_profile, "game_time_sec": game_time_sec, "combat_state": combat_state, "inventory": inventory, "item_cooldowns": item_cooldowns}
-	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	if file:
-		file.store_string(JSON.stringify(data))
+	return _write_save_document(data)
 
 ## 读取兼容版本存档，迁移字段并重建派生状态。
 func load_game() -> bool:
-	if not FileAccess.file_exists(SAVE_PATH):
-		return false
-	var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
-	var parsed = JSON.parse_string(file.get_as_text()) if file else null
-	if typeof(parsed) != TYPE_DICTIONARY or not COMPATIBLE_SAVE_VERSIONS.has(int(parsed.get("version", 0))):
+	var parsed := _read_save_document(active_save_path)
+	if parsed.is_empty():
+		var backup_path := active_save_path + ".bak"
+		parsed = _read_save_document(backup_path)
+		if parsed.is_empty():
+			return false
+		# 主文件损坏或缺失时从已验证备份恢复，避免下一次保存覆盖唯一可用副本。
+		_restore_backup(backup_path, active_save_path)
+	if not COMPATIBLE_SAVE_VERSIONS.has(int(parsed.get("version", 0))):
 		return false
 	profile = parsed.get("profile", {})
 	game_time_sec = float(parsed.get("game_time_sec", 0.0))
@@ -118,6 +132,101 @@ func load_game() -> bool:
 	_normalize_loaded_profile()
 	normalize_combat_state()
 	return has_profile()
+
+## 读取并校验存档文档；无效 JSON、版本或角色资料统一视为不可用。
+func _read_save_document(path: String) -> Dictionary:
+	if not FileAccess.file_exists(path):
+		return {}
+	var file := FileAccess.open(path, FileAccess.READ)
+	if not file:
+		return {}
+	var parser := JSON.new()
+	if parser.parse(file.get_as_text()) != OK:
+		return {}
+	var parsed = parser.data
+	if not parsed is Dictionary:
+		return {}
+	if not COMPATIBLE_SAVE_VERSIONS.has(int(parsed.get("version", 0))):
+		return {}
+	if not parsed.get("profile", {}) is Dictionary or str(parsed.get("profile", {}).get("name", "")).strip_edges().is_empty():
+		return {}
+	return parsed
+
+## 先完整写入临时文件，再轮换旧档为备份并替换主文件，任何一步失败都保留可恢复副本。
+func _write_save_document(data: Dictionary) -> bool:
+	var target := ProjectSettings.globalize_path(active_save_path)
+	var temporary := target + ".tmp"
+	var backup := target + ".bak"
+	DirAccess.make_dir_recursive_absolute(target.get_base_dir())
+	var file := FileAccess.open(temporary, FileAccess.WRITE)
+	if not file:
+		return false
+	file.store_string(JSON.stringify(data))
+	file.flush()
+	file = null
+	if _read_save_document(temporary).is_empty():
+		DirAccess.remove_absolute(temporary)
+		return false
+	if FileAccess.file_exists(backup):
+		DirAccess.remove_absolute(backup)
+	if FileAccess.file_exists(target) and DirAccess.rename_absolute(target, backup) != OK:
+		DirAccess.remove_absolute(temporary)
+		return false
+	if DirAccess.rename_absolute(temporary, target) == OK:
+		return true
+	if FileAccess.file_exists(backup) and not FileAccess.file_exists(target):
+		DirAccess.rename_absolute(backup, target)
+	return false
+
+## 将验证通过的备份复制回主文件，同时保留原备份以便再次恢复。
+func _restore_backup(backup_path: String, target_path: String) -> void:
+	var backup := ProjectSettings.globalize_path(backup_path)
+	var target := ProjectSettings.globalize_path(target_path)
+	var recovery := target + ".recover"
+	DirAccess.make_dir_recursive_absolute(target.get_base_dir())
+	if FileAccess.file_exists(recovery):
+		DirAccess.remove_absolute(recovery)
+	if DirAccess.copy_absolute(backup, recovery) != OK:
+		return
+	if FileAccess.file_exists(target):
+		DirAccess.remove_absolute(target)
+	if DirAccess.rename_absolute(recovery, target) != OK:
+		DirAccess.copy_absolute(backup, target)
+
+## 项目显示名曾改变 user:// 目录；首次启动时选择最新的有效旧档迁入固定目录。
+func _migrate_legacy_save_if_needed() -> void:
+	if active_save_path != PRODUCTION_SAVE_PATH:
+		return
+	var target := ProjectSettings.globalize_path(active_save_path)
+	var target_valid := not _read_save_document(active_save_path).is_empty()
+	var target_modified := int(FileAccess.get_modified_time(target)) if target_valid else 0
+	var target_parent := target.get_base_dir().get_base_dir()
+	var data_roots := [
+		OS.get_data_dir().path_join("Godot/app_userdata"),
+		OS.get_data_dir().path_join("app_userdata"),
+		target_parent.path_join("Godot/app_userdata"),
+	]
+	var candidates: Array[String] = []
+	for data_root in data_roots:
+		for legacy_directory in ["前端群侠传", "FrontendLegends"]:
+			var candidate := str(data_root).path_join(legacy_directory).path_join("frontend_legends_save_v2.json")
+			if not candidates.has(candidate):
+				candidates.append(candidate)
+	var selected := ""
+	var newest_time := 0
+	for candidate in candidates:
+		if _read_save_document(candidate).is_empty():
+			continue
+		var modified := int(FileAccess.get_modified_time(candidate))
+		if selected.is_empty() or modified > newest_time:
+			selected = candidate
+			newest_time = modified
+	if selected.is_empty() or (target_valid and target_modified >= newest_time):
+		return
+	DirAccess.make_dir_recursive_absolute(target.get_base_dir())
+	DirAccess.copy_absolute(selected, target)
+	if FileAccess.file_exists(selected + ".bak"):
+		DirAccess.copy_absolute(selected + ".bak", target + ".bak")
 
 ## 裁剪角色资料、钳制资源并清理未知物品记录。
 func _normalize_loaded_profile() -> void:
@@ -203,8 +312,10 @@ func delete_save() -> void:
 	inventory = {}
 	equipment = _default_equipment()
 	item_cooldowns = {}
-	if FileAccess.file_exists(SAVE_PATH):
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE_PATH))
+	for suffix in ["", ".bak", ".tmp", ".recover"]:
+		var path := ProjectSettings.globalize_path(active_save_path + suffix)
+		if FileAccess.file_exists(path):
+			DirAccess.remove_absolute(path)
 
 ## 四维以 25 为中性点的统一软修正（对齐参考项目 AttributeFormulas.ts）。
 const ATTRIBUTE_NEUTRAL := 25.0

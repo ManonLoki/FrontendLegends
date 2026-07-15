@@ -16,6 +16,7 @@ func _initialize() -> void:
 func _run() -> void:
 	var state = root.get_node("GameState")
 	var combat = root.get_node("CombatSystem")
+	state.use_test_save_path("combat_alignment")
 	# 玩家与 NPC 必须共用参照项目的被动招式触发曲线和异常档位。
 	_assert_true(is_equal_approx(combat.rules.MOVE_TRIGGER_BASE, 0.25) and is_equal_approx(combat.rules.MOVE_TRIGGER_PER_MOVE, 0.04) and is_equal_approx(combat.rules.MOVE_TRIGGER_CAP, 0.55), "NPC 招式触发率应为 25% + 每招 4%，封顶 55%")
 	_assert_true(combat.rules.ATTACK_MOVE_STATUS_TABLE == {20: "paralysis", 40: "weakness", 50: "poison", 70: "paralysis", 80: "weakness", 90: "poison"}, "NPC 攻击招式的六个异常档位应与参照项目一致")
@@ -203,7 +204,7 @@ func _run() -> void:
 	var defeat_text: String = root.get_node("BattleResolve").resolve_defeat(session, true)
 	_assert_true(int(state.profile.vitals.money) < 1000 and int(state.profile.vitals.potential) < 1000 and int(state.profile.vitals.experience) < 1000, "死亡应扣除 Token、潜能和经验")
 	_assert_true(state.combat_state.hp == state.player_effective_hp_max(), "死亡惩罚后应按伤势后的有效上限满血复活")
-	_assert_true(defeat_text.contains("Token") and FileAccess.file_exists(state.SAVE_PATH), "死亡惩罚应生成结算文案并立即保存")
+	_assert_true(defeat_text.contains("Token") and FileAccess.file_exists(state.current_save_path()), "死亡惩罚应生成结算文案并立即保存")
 
 	state.delete_save()
 	if failures.is_empty():

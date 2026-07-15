@@ -67,9 +67,9 @@ func _run_hud_suite() -> Node:
 	_assert_true(game._player_frame_key() == "player_female_left_idle_0", "行走序列第三帧应回到 idle_0")
 	game.animation_frame = 3
 	_assert_true(game._player_frame_key() == "player_female_left_run_3", "行走序列第四帧应使用相反脚的跨步帧")
-	_assert_true(is_equal_approx(game.world_renderer.player_frame_horizontal_shear(), -0.12), "朝左侧身帧应以脚底为轴向右扶正上半身")
+	_assert_true(is_equal_approx(game.world_renderer.player_frame_horizontal_shear(), -0.08), "朝左侧身帧应以脚底为轴适度扶正上半身，避免过度剪切后反向偏斜")
 	game.facing = Vector2i.RIGHT
-	_assert_true(is_equal_approx(game.world_renderer.player_frame_horizontal_shear(), 0.12), "朝右侧身帧应使用相反方向的水平剪切")
+	_assert_true(is_equal_approx(game.world_renderer.player_frame_horizontal_shear(), 0.08), "朝右侧身帧应使用相反方向且相同幅度的水平剪切")
 	game.facing = Vector2i.UP
 	_assert_true(is_zero_approx(game.world_renderer.player_frame_horizontal_shear()), "上下朝向已经对齐，不应应用侧身剪切")
 	game.facing = Vector2i.LEFT

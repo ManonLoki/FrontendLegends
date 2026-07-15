@@ -266,13 +266,13 @@ func _run_menu_suite(game: Node) -> void:
 	# “退出”只返回 Splash，不得隐式保存、删除或重建存档。
 	game_state.profile.vitals.potential = 2468
 	game_state.save_game()
-	var save_before_exit := FileAccess.get_file_as_string(game_state.SAVE_PATH)
+	var save_before_exit := FileAccess.get_file_as_string(game_state.current_save_path())
 	game_state.profile.vitals.potential = 1357
 	game.system_index = 4
 	game._select_system_menu()
 	await process_frame
 	await process_frame
 	_assert_true(current_scene != null and current_scene.scene_file_path == "res://scenes/splash.tscn", "系统菜单退出应返回 Splash 页面")
-	_assert_true(FileAccess.get_file_as_string(game_state.SAVE_PATH) == save_before_exit, "退出不得写入或删除存档文件")
+	_assert_true(FileAccess.get_file_as_string(game_state.current_save_path()) == save_before_exit, "退出不得写入或删除存档文件")
 	_assert_true(int(game_state.profile.vitals.potential) == 1357, "退出不得重新加载或重建内存中的存档状态")
 	game.queue_free()

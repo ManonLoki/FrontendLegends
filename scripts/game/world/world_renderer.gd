@@ -111,9 +111,9 @@ func player_frame_key() -> String:
 # 左右侧身帧的头脚轴线方向相反，以轻微剪切抵消贴图本身的倾斜。
 func player_frame_horizontal_shear() -> float:
 	if game.facing == Vector2i.LEFT:
-		return -0.12
+		return -0.08
 	if game.facing == Vector2i.RIGHT:
-		return 0.12
+		return 0.08
 	return 0.0
 
 # 处理frame、region相关逻辑，并保持调用方状态一致。
