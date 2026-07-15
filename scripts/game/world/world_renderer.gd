@@ -18,7 +18,17 @@ func draw() -> void:
 	var player_pos := world_to_screen(Vector2(game.player_tile) * Vector2(TiledMapLoader.DEFAULT_TILE_SIZE, TiledMapLoader.DEFAULT_TILE_SIZE)) + Vector2(1, 1) * render_scale()
 	game._draw_npcs()
 	var source := player_frame_region()
-	game.draw_texture_rect_region(game.player_texture, player_frame_draw_rect(player_pos, source), source)
+	var draw_rect := player_frame_draw_rect(player_pos, source)
+	var horizontal_shear := player_frame_horizontal_shear()
+	if is_zero_approx(horizontal_shear):
+		game.draw_texture_rect_region(game.player_texture, draw_rect, source)
+	else:
+		# 以脚底中心为固定轴剪切侧身帧，只扶正上半身，不移动角色所处逻辑格。
+		var foot_pivot := Vector2(draw_rect.get_center().x, draw_rect.end.y)
+		var shear_transform := Transform2D(Vector2(1.0, 0.0), Vector2(horizontal_shear, 1.0), foot_pivot)
+		game.draw_set_transform_matrix(shear_transform)
+		game.draw_texture_rect_region(game.player_texture, Rect2(draw_rect.position - foot_pivot, draw_rect.size), source)
+		game.draw_set_transform_matrix(Transform2D.IDENTITY)
 
 # 加载player、sprite、regions相关逻辑，并保持调用方状态一致。
 func load_player_sprite_regions() -> void:
@@ -97,6 +107,14 @@ func player_frame_key() -> String:
 	if not game.player_moving or frame == 0 or frame == 2:
 		return "player_%s_%s_idle_0" % [gender, direction]
 	return "player_%s_%s_run_%d" % [gender, direction, 1 if frame == 1 else 3]
+
+# 左右侧身帧的头脚轴线方向相反，以轻微剪切抵消贴图本身的倾斜。
+func player_frame_horizontal_shear() -> float:
+	if game.facing == Vector2i.LEFT:
+		return -0.12
+	if game.facing == Vector2i.RIGHT:
+		return 0.12
+	return 0.0
 
 # 处理frame、region相关逻辑，并保持调用方状态一致。
 func player_frame_region() -> Rect2:

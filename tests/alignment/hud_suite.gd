@@ -67,6 +67,12 @@ func _run_hud_suite() -> Node:
 	_assert_true(game._player_frame_key() == "player_female_left_idle_0", "行走序列第三帧应回到 idle_0")
 	game.animation_frame = 3
 	_assert_true(game._player_frame_key() == "player_female_left_run_3", "行走序列第四帧应使用相反脚的跨步帧")
+	_assert_true(is_equal_approx(game.world_renderer.player_frame_horizontal_shear(), -0.12), "朝左侧身帧应以脚底为轴向右扶正上半身")
+	game.facing = Vector2i.RIGHT
+	_assert_true(is_equal_approx(game.world_renderer.player_frame_horizontal_shear(), 0.12), "朝右侧身帧应使用相反方向的水平剪切")
+	game.facing = Vector2i.UP
+	_assert_true(is_zero_approx(game.world_renderer.player_frame_horizontal_shear()), "上下朝向已经对齐，不应应用侧身剪切")
+	game.facing = Vector2i.LEFT
 	var female_run_layout: Dictionary = game.player_sprite_layouts[game._player_frame_key()]
 	_assert_true(female_run_layout.canvas_size == Vector2(40.0, 34.0), "Player 裁切帧应归一化到稳定的 40×34 最大逻辑画布，避免动画抖动")
 	for player_layout_value in game.player_sprite_layouts.values():
