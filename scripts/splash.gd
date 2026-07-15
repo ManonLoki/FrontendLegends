@@ -1,5 +1,6 @@
 extends Control
 
+## 启动画面使用的固定设计尺寸、字体和跨平台输入组件。
 const FONT := preload("res://assets/Font/fusion-pixel-12px-proportional-zh_hans.ttf")
 const DESIGN_SIZE := Vector2(640.0, 480.0)
 const BLINK_TIME := 0.5
@@ -12,6 +13,7 @@ var blink_elapsed := 0.0
 var mobile_runtime := false
 var transitioning := false
 
+## 创建启动画面并连接窗口尺寸变化；移动端同时安装虚拟控制器。
 func _ready() -> void:
 	mobile_runtime = VIRTUAL_CONTROLS.is_mobile_runtime()
 	MOBILE_ORIENTATION.apply()
@@ -20,6 +22,7 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_layout_stage)
 	_layout_stage()
 
+## 按固定周期切换提示文字可见性，形成闪烁效果。
 func _process(delta: float) -> void:
 	if not is_instance_valid(prompt):
 		return
@@ -28,6 +31,7 @@ func _process(delta: float) -> void:
 		blink_elapsed -= BLINK_TIME
 		prompt.visible = not prompt.visible
 
+## 桌面端仅响应按下空格，避免按键释放事件重复切换场景。
 func _unhandled_key_input(event: InputEvent) -> void:
 	if not event is InputEventKey:
 		return
@@ -36,16 +40,19 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		_continue_from_splash()
 
+## 移动端和桌面端共用同一套虚拟按键信号接口。
 func _install_virtual_controls() -> void:
 	var controls = VIRTUAL_CONTROLS.new()
 	add_child(controls)
 	controls.key_down.connect(_on_virtual_key_down)
 
+## 虚拟确认键请求横屏权限并继续游戏。
 func _on_virtual_key_down(keycode: int) -> void:
 	if keycode == KEY_SPACE:
 		MOBILE_ORIENTATION.request_from_user_gesture()
 		_continue_from_splash()
 
+## 根据是否已有角色资料选择进入主游戏或角色创建场景。
 func _continue_from_splash() -> void:
 	if transitioning:
 		return
@@ -53,6 +60,7 @@ func _continue_from_splash() -> void:
 	var next_scene := "res://scenes/game.tscn" if GameState.has_profile() else "res://scenes/character_creation.tscn"
 	get_tree().change_scene_to_file(next_scene)
 
+## 在 640×480 设计舞台中动态构建纯黑启动画面。
 func _build_stage() -> void:
 	stage = Control.new()
 	stage.name = "DesignStage"
@@ -72,6 +80,7 @@ func _build_stage() -> void:
 	var continue_text := "按确认键继续" if mobile_runtime else "按空格继续"
 	prompt = _add_label(continue_text, Rect2(0, 330, DESIGN_SIZE.x, 40), 18, Color.WHITE)
 
+## 创建并挂载一个采用统一字体、居中显示且不拦截输入的标签。
 func _add_label(text: String, rect: Rect2, font_size: int, color: Color) -> Label:
 	var label := Label.new()
 	label.text = text
@@ -86,6 +95,7 @@ func _add_label(text: String, rect: Rect2, font_size: int, color: Color) -> Labe
 	stage.add_child(label)
 	return label
 
+## 舞台始终保持设计尺寸与原点，视口缩放由项目拉伸设置负责。
 func _layout_stage() -> void:
 	if not is_instance_valid(stage):
 		return

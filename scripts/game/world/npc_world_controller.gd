@@ -3,9 +3,11 @@ extends RefCounted
 
 var game: Node2D
 
+# 处理init相关逻辑，并保持调用方状态一致。
 func _init(owner: Node2D) -> void:
 	game = owner
 
+# 选择menu、action相关逻辑，并保持调用方状态一致。
 func select_menu_action() -> void:
 	var npc: Dictionary = NpcSystem.build_instance(game.nearby_npc_id)
 	if game.npc_menu_actions.is_empty():
@@ -46,6 +48,7 @@ func select_menu_action() -> void:
 			game.learn_open = true
 			game._rebuild_learn_categories()
 
+# 刷新nearby相关逻辑，并保持调用方状态一致。
 func refresh_nearby() -> void:
 	if not game.map_context:
 		return
@@ -58,6 +61,7 @@ func refresh_nearby() -> void:
 	if not bounty.is_empty() and current_map_matches(str(bounty.get("map_id", ""))) and game.player_tile + game.facing == bounty_tile():
 		game.nearby_npc_id = str(bounty.get("target_id", ""))
 
+# 处理tile相关逻辑，并保持调用方状态一致。
 func occupies_tile(tile: Vector2i) -> bool:
 	if not game.map_context:
 		return false
@@ -69,6 +73,7 @@ func occupies_tile(tile: Vector2i) -> bool:
 	var bounty: Dictionary = QuestSystem.get_bounty_target()
 	return not bounty.is_empty() and current_map_matches(str(bounty.get("map_id", ""))) and tile == bounty_tile()
 
+# 绘制npcs相关逻辑，并保持调用方状态一致。
 func draw_npcs() -> void:
 	if not game.map_context:
 		return
@@ -91,9 +96,11 @@ func draw_npcs() -> void:
 			var target_source := NpcSystem.sprite_region(str(bounty.get("target_id", "")))
 			game.draw_texture_rect_region(game.npc_texture, Rect2(target_position + Vector2(1, -target_source.size.y + 16) * game._render_scale(), target_source.size * game._render_scale()), target_source)
 
+# 处理map、matches相关逻辑，并保持调用方状态一致。
 func current_map_matches(map_id: String) -> bool:
 	return not map_id.is_empty() and game.map_context and (game.map_context.map_id.to_lower() == map_id.to_lower() or game.map_context.map_id.to_lower().contains(map_id.to_lower()))
 
+# 处理tile相关逻辑，并保持调用方状态一致。
 func bounty_tile() -> Vector2i:
 	var bounty: Dictionary = QuestSystem.get_bounty_target()
 	var saved_tile = bounty.get("tile", Vector2i(-1, -1))

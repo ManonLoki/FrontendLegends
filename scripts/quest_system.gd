@@ -1,5 +1,9 @@
 extends Node
 
+const BOUNTY_CONTROLLER := preload("res://scripts/quests/bounty_controller.gd")
+const QUEST_REWARDS := preload("res://scripts/quests/quest_rewards.gd")
+const QUEST_GENERATOR := preload("res://scripts/quests/quest_generator.gd")
+
 var active: Dictionary = {}
 var bounty_target: Dictionary = {}
 var cooldown_until: Dictionary = {}
@@ -7,21 +11,23 @@ var ring_progress: Dictionary = {}
 var bounty_money_base: Dictionary = {}
 var bounty_stat_base: Dictionary = {}
 var bounty_sequence := 0
-const BASIC_SKILL_KEYS: Array[String] = ["basicStrength", "basicAgility", "basicConstitution", "basicParry", "literacy"]
-const BOUNTY_NAME_MODIFIERS: Array[String] = ["傻X", "脑残", "白痴", "霸道", "凶狠"]
-const BOUNTY_NAME_ROLES: Array[String] = ["老板", "客户", "领导", "同事", "朋友"]
-const BOUNTY_NAME_SURNAMES: Array[String] = ["赵", "钱", "孙", "李", "周", "吴", "郑", "王"]
-const BOUNTY_NAME_GIVEN: Array[String] = ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十"]
 
+@onready var bounty := BOUNTY_CONTROLLER.new(self)
+@onready var rewards := QUEST_REWARDS.new(self)
+@onready var generator := QUEST_GENERATOR.new(self)
+
+## 读取任务文案模板并替换全部花括号变量。
 func _line(definition: Dictionary, key: String, fallback: String, values: Dictionary = {}) -> String:
 	var result := str(definition.get("lines", {}).get(key, fallback))
 	for name in values:
 		result = result.replace("{" + str(name) + "}", str(values[name]))
 	return result
 
+## 把经验、潜能和 Token 奖励格式化为统一短文本。
 func _format_reward(reward: Dictionary) -> String:
 	return "（经验+%d 潜能+%d Token+%d）" % [int(reward.get("experience", 0)), int(reward.get("potential", 0)), int(reward.get("money", 0))]
 
+## 判断任务生成器是否仍处于游戏时钟冷却期。
 func _on_cooldown(generator_id: String) -> bool:
 	return GameState.game_time_sec < float(cooldown_until.get(generator_id, 0.0))
 
@@ -38,12 +44,14 @@ func _active_for_npc(npc_id: String) -> Dictionary:
 			return runtime
 	return {}
 
+## 将任务奖励安全累加到角色生命资源。
 func _grant_reward(reward: Dictionary) -> void:
 	var vitals: Dictionary = GameState.profile.get("vitals", {})
 	for key in ["experience", "potential", "money"]:
 		vitals[key] = int(vitals.get(key, 0)) + int(reward.get(key, 0))
 	GameState.profile.vitals = vitals
 
+## 从地图人物摆放池随机选取任务目标并排除指定人物。
 func _placed_npc_target(exclude_id: String = "") -> Dictionary:
 	var excluded: Array = [exclude_id] if not exclude_id.is_empty() else []
 	var candidates: Array[Dictionary] = DataRegistry.list_placed_npc_targets(excluded)
@@ -123,6 +131,7 @@ func interact_npc(npc_id: String) -> String:
 			return _line(definition, "inProgress", "任务进行中。", {"target": target_data.get("target_name", ""), "map": target_data.get("map_id", "")})
 	return ""
 
+## 锁定 DARK 学电脑交互并返回延迟结算所需信息。
 func begin_novice_completion(endpoint_id: String) -> Dictionary:
 	var novice_id := "novice_darkxue_project"
 	if not active.has(novice_id):
@@ -140,6 +149,7 @@ func begin_novice_completion(endpoint_id: String) -> Dictionary:
 		"can_finish": true,
 	}
 
+## 在工作演出结束后扣除体力、发放奖励并进入冷却。
 func finish_novice_completion(endpoint_id: String) -> String:
 	var novice_id := "novice_darkxue_project"
 	if not active.has(novice_id):
@@ -158,6 +168,7 @@ func finish_novice_completion(endpoint_id: String) -> String:
 	cooldown_until[novice_id] = GameState.game_time_sec + float(definition.get("cooldownSec", 30))
 	return "你完成了%s任务，获得了 %d经验 %d金钱 %d潜能" % [runtime.get("target", "项目"), int(reward.get("experience", 0)), int(reward.get("money", 0)), int(reward.get("potential", 0))]
 
+## 完成指定固定任务并发放其配置奖励。
 func complete(quest_id: String) -> Dictionary:
 	if not active.has(quest_id):
 		return {"ok": false, "message": "没有进行中的任务"}
@@ -172,6 +183,7 @@ func complete(quest_id: String) -> Dictionary:
 	active.erase(quest_id)
 	return {"ok": true, "message": "任务完成：%s" % definition.get("title", quest_id), "reward": reward}
 
+## 判断人物是否是当前任务的发布、交付或目标端点。
 func can_interact(npc_id: String) -> bool:
 	if not _active_for_npc(npc_id).is_empty():
 		return true
@@ -182,6 +194,7 @@ func can_interact(npc_id: String) -> bool:
 			return true
 	return false
 
+## 注销动态人物并清空仅属于本局会话的任务状态。
 func reset_runtime() -> void:
 	for runtime_id in active:
 		var runtime: Dictionary = active[runtime_id]
@@ -198,61 +211,9 @@ func reset_runtime() -> void:
 ## 按 quests.json 中的 generator_type（errand/bounty/ring/killRing）分流构建
 ## runtime.target 的形状；各类型字段结构不同，读取时须按 kind 区分处理。
 func offer_generator(generator_id: String) -> Dictionary:
-	var definition: Dictionary = DataRegistry.quest_generators.get(generator_id, {})
-	var runtime_id := "generator:" + generator_id
-	if definition.is_empty():
-		return {"ok": false, "message": "未知任务生成器"}
-	if active.has(runtime_id) or _on_cooldown(generator_id):
-		return {"ok": false, "message": "该环任务进行中"}
-	var generator_type := str(definition.get("type", ""))
-	var excluded_npc_id := "" if generator_type == "killRing" else str(definition.get("giverNpcId", ""))
-	var target := _placed_npc_target(excluded_npc_id)
-	if generator_type in ["ring", "killRing"] and target.is_empty():
-		return {"ok": false, "message": "（环任务目标池是空的，请检查地图 Interactive 层 NPC id）"}
-	var runtime := {"generator_id": generator_id, "kind": generator_type, "giverNpcId": definition.get("giverNpcId", ""), "state": "active", "progress": 0, "round": 1}
-	if generator_type == "errand":
-		var candidates: Array[Dictionary] = []
-		var pool: Dictionary = definition.get("pool", {})
-		for item_id in pool.get("items", []):
-			candidates.append({"target_id": str(item_id), "target_name": DataRegistry.get_item(str(item_id)).get("name", item_id), "target_kind": "item"})
-		for npc_id in pool.get("npcs", []):
-			var npc: Dictionary = DataRegistry.get_npc(str(npc_id))
-			candidates.append({"target_id": str(npc_id), "target_name": npc.get("displayName", npc_id), "target_kind": "npc"})
-		if candidates.is_empty():
-			return {"ok": false, "message": "（差事池是空的，先在 quests.json 配置）"}
-		runtime.target = candidates[randi() % candidates.size()]
-		runtime.met_goal = false
-	elif generator_type == "bounty":
-		var enemies: Array = definition.get("enemyPool", [])
-		if enemies.is_empty():
-			return {"ok": false, "message": "（悬赏池是空的，先在 quests.json 配置）"}
-		var enemy_id := str(enemies[randi() % enemies.size()])
-		var enemy: Dictionary = DataRegistry.get_npc(enemy_id)
-		var prefixes: Array = definition.get("enemyTemplate", {}).get("namePrefix", [])
-		var prefix := str(prefixes[randi() % prefixes.size()]) if not prefixes.is_empty() else ""
-		var maps: Array = definition.get("spawnMaps", [])
-		runtime.target = {"target_id": enemy_id, "target_name": prefix + str(enemy.get("displayName", enemy_id)), "target_kind": "npc", "map_id": str(maps[randi() % maps.size()]) if not maps.is_empty() else ""}
-		runtime.ready = false
-	if str(definition.get("type", "")) in ["ring", "killRing"] and not target.is_empty():
-		var target_npc: Dictionary = DataRegistry.get_npc(target.get("npc_id", ""))
-		runtime.target = {"target_id": target.get("npc_id", ""), "target_name": target_npc.get("display_name", target_npc.get("displayName", target.get("npc_id", ""))), "map_id": target.get("map_id", ""), "map_name": target.get("map_name", target.get("map_id", ""))}
-	if str(definition.get("type", "")) == "ring":
-		var items: Array = definition.get("items", [])
-		if not items.is_empty() and randf() < float(definition.get("itemChance", 0.5)):
-			var item_id := str(items[randi() % items.size()])
-			runtime.item_id = item_id
-			runtime.item_name = DataRegistry.get_item(item_id).get("name", item_id)
-	if str(definition.get("type", "")) == "killRing":
-		runtime.reward = _kill_ring_reward(definition, str(runtime.get("target", {}).get("target_id", "")))
-	else:
-		runtime.reward = _base_reward(definition)
-		if str(definition.get("type", "")) == "ring" and not str(runtime.get("item_id", "")).is_empty():
-			runtime.reward.money = int(runtime.reward.get("money", 0)) + int(definition.get("itemExtraMoney", 0))
-	active[runtime_id] = runtime
-	var target_data: Dictionary = runtime.get("target", {})
-	var line_key := "offerItem" if not str(runtime.get("item_id", "")).is_empty() else "offer"
-	return {"ok": true, "message": _line(definition, line_key, "已接取：{target}", {"target": target_data.get("target_name", ""), "map": target_data.get("map_name", target_data.get("map_id", "")), "item": runtime.get("item_name", ""), "count": int(ring_progress.get(generator_id, 0)) % maxi(1, int(definition.get("ringSize", 1))) + 1, "ringSize": int(definition.get("ringSize", 1))})}
+	return generator.offer(generator_id)
 
+## 验证并交付普通差事或普通悬赏。
 func _deliver_standard(runtime_id: String, runtime: Dictionary, definition: Dictionary) -> String:
 	var target: Dictionary = runtime.get("target", {}) if runtime.get("target", {}) is Dictionary else {}
 	var kind := str(runtime.get("kind", ""))
@@ -272,193 +233,60 @@ func _deliver_standard(runtime_id: String, runtime: Dictionary, definition: Dict
 	cooldown_until[str(runtime.get("generator_id", ""))] = GameState.game_time_sec + float(definition.get("cooldownSec", 300))
 	return _line(definition, "done", "办得好！{reward}", {"target": target.get("target_name", ""), "reward": _format_reward(reward)})
 
+## 返回任务配置的通用基础奖励。
 func _base_reward(definition: Dictionary) -> Dictionary:
-	var explicit: Dictionary = definition.get("reward", {})
-	if not explicit.is_empty():
-		return explicit.duplicate(true)
-	var base := int(definition.get("rewardBase", 0))
-	if base > 0:
-		return {"experience": base * 2, "potential": base * 3, "money": int(ceil(float(base) * 3.0 * 0.8))}
-	return {}
+	return rewards.base_reward(definition)
 
+## 按击杀目标强度计算生死簿奖励。
 func _kill_ring_reward(definition: Dictionary, target_id: String) -> Dictionary:
-	var target: Dictionary = DataRegistry.get_npc(target_id)
-	var attributes: Dictionary = target.get("attributes", {})
-	var skills: Dictionary = target.get("skillLevels", {})
-	var attribute_score := 0.0
-	for key in ["strength", "agility", "constitution", "wisdom"]:
-		attribute_score += float(attributes.get(key, 1))
-	var skill_score := 0.0
-	for skill_id in skills:
-		skill_score += float(skills[skill_id])
-	var average_skill := skill_score / float(maxi(1, skills.size()))
-	var raw := (attribute_score * 1.5 + average_skill * 4.0) * float(definition.get("rewardPotentialScale", 1.0))
-	var potential := clampi(int(round(raw)), int(definition.get("rewardPotentialMin", 0)), int(definition.get("rewardPotentialMax", 999999)))
-	return {"experience": potential, "potential": potential, "money": int(ceil(float(potential) * 0.8))}
+	return rewards.kill_ring_reward(definition, target_id)
 
 ## 两种增长配置二选一（ringGrowth 优先）：固定倍率 ringGrowth 用于环任务的
 ## 确定性递增；随机区间 rewardGrowthMin/Max 用于悬赏环的浮动式递增，二者互斥。
 func _scaled_reward(definition: Dictionary, reward: Dictionary, round_index: int) -> Dictionary:
-	var result := reward.duplicate(true)
-	var growth := 0.0
-	if definition.has("ringGrowth"):
-		growth = pow(1.0 + float(definition.get("ringGrowth", 0.0)), maxi(0, round_index - 1))
-	elif definition.has("rewardGrowthMin"):
-		growth = pow(1.0 + randf_range(float(definition.get("rewardGrowthMin", 0.0)), float(definition.get("rewardGrowthMax", 0.0))), maxi(0, round_index - 1))
-	else:
-		growth = 1.0
-	var fluctuation_min := -float(definition.get("fluctuation", 0.0))
-	var fluctuation_max := float(definition.get("fluctuation", 0.0))
-	if definition.has("fluctuationMin"):
-		fluctuation_min = float(definition.get("fluctuationMin", 0.0))
-		fluctuation_max = float(definition.get("fluctuationMax", 0.0))
-	var fluctuation := 1.0 + randf_range(fluctuation_min, fluctuation_max)
-	for key in result:
-		if result[key] is int or result[key] is float:
-			result[key] = maxi(0, int(floor(float(result[key]) * growth * fluctuation)))
-	return result
+	return rewards.scaled_reward(definition, reward, round_index)
 
+## 推进通用环任务并完成物品交付与奖励结算。
 func advance_generator(generator_id: String, amount: int = 1) -> Dictionary:
-	var runtime_id := "generator:" + generator_id
-	if not active.has(runtime_id):
-		return {"ok": false, "message": "没有进行中的环任务"}
-	var definition: Dictionary = DataRegistry.quest_generators.get(generator_id, {})
-	var runtime: Dictionary = active[runtime_id]
-	var target_data: Dictionary = runtime.get("target", {}) if runtime.get("target", {}) is Dictionary else {}
-	if str(definition.get("type", "")) == "ring" and not str(runtime.get("item_id", "")).is_empty():
-		var item_id := str(runtime.get("item_id", ""))
-		if InventorySystem.count(item_id) < 1:
-			return {"ok": false, "message": _line(definition, "needItem", "【{item}】不在你身上，可交不了差。", {"item": runtime.get("item_name", item_id)})}
-		if not InventorySystem.equipped_slot(item_id).is_empty():
-			return {"ok": false, "message": _line(definition, "itemEquipped", "先卸下【{item}】再交付。", {"item": runtime.get("item_name", item_id)})}
-		InventorySystem.remove_item(item_id, 1)
-	runtime.progress = int(ring_progress.get(generator_id, runtime.get("progress", 0))) + maxi(0, amount)
-	var ring_size := maxi(1, int(definition.get("ringSize", 1)))
-	# 奖励按“第几轮环”缩放：progress 每满一整圈 ring_size 计为完成一轮，
-	# 轮次从 1 开始，故对 (progress - 1) 整除后 +1。
-	var reward_round := int(floor(float(int(runtime.progress) - 1) / float(ring_size))) + 1
-	var round_index := reward_round
-	var reward: Dictionary = _scaled_reward(definition, runtime.get("reward", _base_reward(definition)), round_index)
-	_grant_reward(reward)
-	ring_progress[generator_id] = int(runtime.progress)
-	active.erase(runtime_id)
-	cooldown_until[generator_id] = GameState.game_time_sec + float(definition.get("cooldownSec", 30))
-	return {"ok": true, "complete": int(runtime.progress) % ring_size == 0, "progress": runtime.progress, "required": ring_size, "reward": reward, "target": target_data}
+	return generator.advance(generator_id, amount)
 
 ## 环任务推进后的展示文案：talk_key 按触发场景传入实际使用的 lines key（谈话用 targetTalk，击杀用 done），
 ## 环满时追加 ringDone 彩蛋文案。
 func _generator_advance_message(definition: Dictionary, advanced: Dictionary, talk_key: String, fallback: String) -> String:
-	var target_data: Dictionary = advanced.get("target", {})
-	var message := _line(definition, talk_key, fallback, {"target": target_data.get("target_name", ""), "map": target_data.get("map_id", ""), "reward": _format_reward(advanced.get("reward", {}))})
-	if bool(advanced.get("complete", false)):
-		var ring_done_line := _line(definition, "ringDone", "", {"ringSize": int(definition.get("ringSize", 1))})
-		if not ring_done_line.is_empty():
-			message += "\n" + ring_done_line
-	return message
+	return generator.advance_message(definition, advanced, talk_key, fallback)
 
 ## 悬赏目标的属性/功法按玩家当前面板动态缩放（target_scale），并随连续
 ## 击杀轮次（kill_index）走高——悬赏难度始终围绕玩家实力浮动，而非固定强度。
 func offer_bounty(generator_id: String = "bountyring_xiaobuer") -> Dictionary:
-	var definition: Dictionary = DataRegistry.quest_generators.get(generator_id, {})
-	var runtime_id := "generator:" + generator_id
-	if definition.is_empty() or active.has(runtime_id) or _on_cooldown(generator_id):
-		return {"ok": false, "message": "悬赏暂不可接取"}
-	bounty_sequence += 1
-	var target_id := "__bounty_target_%d" % bounty_sequence
-	var spawn_maps: Array = definition.get("spawnMaps", [])
-	if spawn_maps.is_empty():
-		return {"ok": false, "message": "（悬赏池是空的，先在 quests.json 配置）"}
-	var target_map := str(spawn_maps[randi() % spawn_maps.size()])
-	var player_attributes: Dictionary = GameState.profile.get("attributes", {})
-	var player_skills: Dictionary = GameState.profile.get("skills", {}).get("levels", {})
-	var kill_index := int(ring_progress.get(generator_id, 0))
-	var target_scale := maxf(0.05, 1.0 - float(definition.get("baseDiscount", 0.0)) + float(definition.get("roundGrowth", 0.0)) * kill_index)
-	var scaled_attributes: Dictionary = {}
-	for key in player_attributes:
-		scaled_attributes[key] = maxi(1, int(round(float(player_attributes[key]) * target_scale)))
-	var scaled_skills: Dictionary = {}
-	for skill_id in BASIC_SKILL_KEYS:
-		scaled_skills[skill_id] = maxi(1, int(round(float(player_skills.get(skill_id, 1)) * target_scale)))
-	var target_name: String = str(BOUNTY_NAME_MODIFIERS.pick_random()) + str(BOUNTY_NAME_ROLES.pick_random()) + str(BOUNTY_NAME_SURNAMES.pick_random()) + str(BOUNTY_NAME_GIVEN.pick_random())
-	var target_sprite := str(definition.get("targetSprite", "npc-30")).strip_edges()
-	if target_sprite.is_empty():
-		target_sprite = "npc-30"
-	NpcSystem.register_runtime(target_id, {"displayName": target_name, "sprite": target_sprite, "roles": ["civilian"], "description": "小不二悬赏缉拿的对象，据说与你有些渊源。", "defaultLine": "你……找我有事？", "attributes": scaled_attributes, "skillLevels": scaled_skills, "equippedSkillIds": BASIC_SKILL_KEYS.duplicate()})
-	bounty_target = {"target_id": target_id, "target_name": target_name, "target_sprite": target_sprite, "map_id": target_map, "map_name": DataRegistry.region_display_name(target_map), "generator_id": generator_id}
-	if not bounty_money_base.has(generator_id):
-		bounty_money_base[generator_id] = float(definition.get("rewardBase", 0))
-	if not bounty_stat_base.has(generator_id):
-		bounty_stat_base[generator_id] = float(definition.get("rewardBase", 0))
-	active[runtime_id] = {"generator_id": generator_id, "kind": "bountyRing", "giverNpcId": definition.get("giverNpcId", ""), "state": "active", "progress": 0, "round": kill_index + 1, "target": bounty_target}
-	return {"ok": true, "message": _line(definition, "offer", "悬赏目标：{target}（{map}）", {"target": bounty_target.target_name, "map": bounty_target.map_name}), "target": bounty_target}
+	return bounty.offer(generator_id)
 
+## 返回当前动态悬赏人物及地图信息。
 func get_bounty_target() -> Dictionary:
 	return bounty_target
 
+## 记录动态悬赏人物最终选择的安全地图格。
 func set_bounty_target_tile(tile: Vector2i) -> void:
-	if bounty_target.is_empty():
-		return
-	bounty_target["tile"] = tile
-	for runtime_id in active:
-		var runtime: Dictionary = active[runtime_id]
-		if str(runtime.get("generator_id", "")) == str(bounty_target.get("generator_id", "")):
-			runtime["target"] = bounty_target
+	bounty.set_target_tile(tile)
 
+## 返回暗网悬赏榜当前展示文案。
 func bounty_board_text(generator_id: String = "bountyring_xiaobuer") -> String:
-	if bounty_target.is_empty():
-		return "暗网悬赏榜暂时空着，去找小不二接一单吧。"
-	var definition: Dictionary = DataRegistry.quest_generators.get(generator_id, {})
-	return _line(definition, "offer", "「{target}」已在「{map}」，请速速将其捉拿归案！", {"target": bounty_target.get("target_name", ""), "map": bounty_target.get("map_name", bounty_target.get("map_id", ""))})
+	return bounty.board_text(generator_id)
 
+## 注销并清空当前动态悬赏人物。
 func clear_bounty_target() -> void:
-	if not bounty_target.is_empty():
-		NpcSystem.unregister_runtime(str(bounty_target.get("target_id", "")))
-	bounty_target = {}
+	bounty.clear_target()
 
 ## 悬赏环奖励基数逐轮复利增长（bounty_money_base/bounty_stat_base 未完成环时
 ## 按增长率滚存），与 _settle_kill_ring 的固定奖励不同——悬赏环是持续经营的
 ## 系统，需要递增激励；击杀环奖励在生成时已一次性算好，结算时按原值发放。
 func _settle_bounty_ring(runtime_id: String, runtime: Dictionary, definition: Dictionary) -> Dictionary:
-	var generator_id := str(runtime.get("generator_id", ""))
-	var money_base := float(bounty_money_base.get(generator_id, definition.get("rewardBase", 0)))
-	var stat_base := float(bounty_stat_base.get(generator_id, definition.get("rewardBase", 0)))
-	var fluctuation_min := float(definition.get("fluctuationMin", 0.0))
-	var fluctuation_max := maxf(fluctuation_min, float(definition.get("fluctuationMax", fluctuation_min)))
-	var roll := func(base: float) -> int:
-		return maxi(0, int(floor(base * (1.0 + randf_range(fluctuation_min, fluctuation_max)))))
-	var reward := {
-		"experience": roll.call(stat_base * 3.0),
-		"potential": roll.call(stat_base * 3.0),
-		"money": roll.call(money_base * 3.0 * 0.8),
-	}
-	_grant_reward(reward)
-	var kills_done := int(ring_progress.get(generator_id, 0)) + 1
-	var ring_size := maxi(1, int(definition.get("ringSize", 1)))
-	var ring_done := kills_done >= ring_size
-	if ring_done:
-		ring_progress[generator_id] = 0
-		bounty_money_base[generator_id] = float(definition.get("rewardBase", 0))
-		bounty_stat_base[generator_id] = float(definition.get("rewardBase", 0))
-	else:
-		ring_progress[generator_id] = kills_done
-		bounty_money_base[generator_id] = money_base * (1.0 + randf_range(float(definition.get("rewardGrowthMin", 0.0)), float(definition.get("rewardGrowthMax", 0.0))))
-		bounty_stat_base[generator_id] = stat_base * (1.0 + randf_range(float(definition.get("statGrowthMin", definition.get("rewardGrowthMin", 0.0))), float(definition.get("statGrowthMax", definition.get("rewardGrowthMax", 0.0)))))
-	active.erase(runtime_id)
-	cooldown_until[generator_id] = GameState.game_time_sec + float(definition.get("cooldownSec", 0))
-	return {"reward": reward, "complete": ring_done, "target": runtime.get("target", {})}
+	return bounty.settle_ring(runtime_id, runtime, definition)
 
+## 发放一次击杀环奖励并更新环进度。
 func _settle_kill_ring(runtime_id: String, runtime: Dictionary, definition: Dictionary) -> Dictionary:
-	var generator_id := str(runtime.get("generator_id", ""))
-	var reward: Dictionary = runtime.get("reward", {})
-	_grant_reward(reward)
-	var kills_done := int(ring_progress.get(generator_id, 0)) + 1
-	var ring_size := maxi(1, int(definition.get("ringSize", 1)))
-	var ring_done := kills_done >= ring_size
-	ring_progress[generator_id] = 0 if ring_done else kills_done
-	active.erase(runtime_id)
-	cooldown_until[generator_id] = GameState.game_time_sec + float(definition.get("cooldownSec", 0))
-	return {"reward": reward, "complete": ring_done, "target": runtime.get("target", {})}
+	return rewards.settle_kill_ring(runtime_id, runtime, definition)
 
+## 将击败人物事件路由到普通悬赏、悬赏环或击杀环。
 func on_enemy_defeated(enemy_id: String) -> String:
 	for runtime_id in active.keys():
 		var runtime: Dictionary = active[runtime_id]

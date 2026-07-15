@@ -6,9 +6,11 @@ const CATEGORY_ORDER: Array[String] = ["编码", "思维", "架构", "招架", "
 
 var game: Node
 
+# 处理init相关逻辑，并保持调用方状态一致。
 func _init(owner: Node) -> void:
 	game = owner
 
+# 处理key相关逻辑，并保持调用方状态一致。
 func handle_key(key: Key) -> void:
 	if not game.learning_skill_id.is_empty():
 		if key in [KEY_ESCAPE, KEY_SPACE]:
@@ -55,6 +57,7 @@ func handle_key(key: Key) -> void:
 		render_progress()
 	render()
 
+# 渲染render相关逻辑，并保持调用方状态一致。
 func render() -> void:
 	game._use_detail_hud("learn")
 	game.details_content.visible = true
@@ -93,9 +96,11 @@ func render() -> void:
 		footer = "研习【%s】，进度 %d/%d。　%s" % [DataRegistry.get_skill(focused_id).get("name", focused_id), focused_progress.get("current", 0), focused_progress.get("total", 1), "研习中 · 空格/ESC 停止" if game.learning_skill_id == focused_id else "空格 开始研习 · ←/ESC 返回"]
 	game._detail_label(footer, Rect2(Vector2(pad, area.y - 42.0 * scale), Vector2(area.x - pad * 2.0, 30.0 * scale)), 11, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
 
+# 处理cap相关逻辑，并保持调用方状态一致。
 func teach_cap(skill_id: String) -> int:
 	return SkillSystem.teach_cap(game.nearby_npc_id, skill_id)
 
+# 渲染progress相关逻辑，并保持调用方状态一致。
 func render_progress() -> void:
 	clear_progress()
 	if game.learning_skill_id.is_empty():
@@ -108,22 +113,26 @@ func render_progress() -> void:
 	meter.set_font_size(maxi(11, int(round(12.0 * game._display_scale()))))
 	meter.set_progress(int(progress.get("current", 0)), int(progress.get("total", 1)))
 
+# 清理progress相关逻辑，并保持调用方状态一致。
 func clear_progress() -> void:
 	for widget in game.learning_progress_widgets:
 		if is_instance_valid(widget):
 			widget.free()
 	game.learning_progress_widgets.clear()
 
+# 处理category相关逻辑，并保持调用方状态一致。
 func skill_category(skill_id: String) -> String:
 	var theme := str(DataRegistry.get_skill(skill_id).get("theme", ""))
 	return {"code": "编码", "tune": "思维", "arch": "架构", "parry": "招架", "knowledge": "灵感"}.get(theme, "其他")
 
+# 处理categories相关逻辑，并保持调用方状态一致。
 func rebuild_categories() -> void:
 	game.learn_categories.assign(CATEGORY_ORDER)
 	game.learn_category_index = clampi(game.learn_category_index, 0, game.learn_categories.size() - 1)
 	game.learn_focus_category = true
 	refresh_items()
 
+# 刷新items相关逻辑，并保持调用方状态一致。
 func refresh_items() -> void:
 	game.learn_items.clear()
 	var selected: String = game.learn_categories[game.learn_category_index] if not game.learn_categories.is_empty() else "其他"

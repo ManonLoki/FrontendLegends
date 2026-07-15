@@ -3,14 +3,13 @@ extends RefCounted
 
 var game: Node2D
 
+# 处理init相关逻辑，并保持调用方状态一致。
 func _init(owner: Node2D) -> void:
 	game = owner
 
+# 处理process相关逻辑，并保持调用方状态一致。
 func _process(delta: float) -> void:
-	# Re-sync HUD panel geometry every frame instead of relying solely on the
-	# viewport size_changed signal, which can miss web/mobile resizes that happen
-	# after game._ready() (e.g. fullscreen-on-gesture in mobile_orientation.gd) and
-	# leave panels frozen at a stale size/position from an earlier viewport reading.
+	# 每帧核对 HUD 几何，弥补网页或移动端在 ready 之后全屏导致尺寸信号遗漏的问题。
 	# 只在真实尺寸变化时重新布局。菜单节点不能每帧销毁重建，否则 Web
 	# 渲染时会出现旧帧/新帧交替的闪烁。
 	var viewport_size := game.get_viewport_rect().size
@@ -20,8 +19,7 @@ func _process(delta: float) -> void:
 	# 学习依赖这条基础时间轴，练功/冥想另有动作快进。
 	GameState.advance_time(delta)
 	_update_continuous_skill_actions(delta)
-	# HUDs are modal: freeze world simulation, including the player's held direction,
-	# while menus, dialogue, battle, or detail panels are visible.
+	# HUD 为模态界面；菜单、对话、战斗或详情面板显示时暂停世界模拟并清空持续方向输入。
 	if _has_modal_input():
 		game.player_moving = false
 		game.virtual_direction = Vector2.ZERO
@@ -39,9 +37,7 @@ func _process(delta: float) -> void:
 		game._position_npc_menu()
 	var direction: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down") + game.virtual_direction
 	var requested_step := _apply_facing_input(direction)
-	# A held direction alternates a planted idle pose with the two opposing stride
-	# poses. Starting each new walk from frame 0 gives immediate visual feedback
-	# without beginning halfway through a step.
+	# 持续移动在站立帧与两张相反迈步帧之间循环；每次起步从第零帧开始，避免半步切入。
 	if direction.length() > 0.0:
 		if not game.player_moving:
 			game.animation_frame = 0
@@ -64,7 +60,7 @@ func _process(delta: float) -> void:
 				return
 			game.player_tile = next_tile
 			game._refresh_nearby_npc()
-			game._try_map_transition()
+			game.map_transition_controller.try_map_transition()
 			game.move_cooldown = game.MOVE_STEP_SECONDS
 			game.message = "当前位置: %s" % game.player_tile
 			game._update_camera()
@@ -85,6 +81,7 @@ func _process(delta: float) -> void:
 		else:
 			game._toggle_menu()
 
+# 应用facing、input相关逻辑，并保持调用方状态一致。
 func _apply_facing_input(direction: Vector2) -> Vector2i:
 	if direction.length() <= 0.0:
 		return Vector2i.ZERO
@@ -99,10 +96,8 @@ func _apply_facing_input(direction: Vector2) -> Vector2i:
 		game.queue_redraw()
 	return requested_step
 
-## Learning/practice/meditation each run on their own fixed-size tick (accumulated
-## via a `while accumulator >= TICK_SECONDS` catch-up loop) instead of scaling by
-## `delta` directly, so their progression rate is identical regardless of frame rate
-## and multiple ticks fire correctly after a long frame stall.
+## 学习、练功和冥想分别使用固定时间片，通过累加器循环补算，不直接按帧间隔缩放，
+## 从而保持不同帧率下速度一致，并在长帧后完整补齐多个时间片。
 func _update_continuous_skill_actions(delta: float) -> void:
 	if game.learn_open and not game.learning_skill_id.is_empty():
 		game.learning_tick_accumulator += maxf(0.0, delta)
@@ -147,6 +142,7 @@ func _update_continuous_skill_actions(delta: float) -> void:
 		if meditation_changed and game.meditation_open:
 			game._render_meditation_progress()
 
+# 接收输入input相关逻辑，并保持调用方状态一致。
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		game.MOBILE_ORIENTATION.request_from_user_gesture()
@@ -159,7 +155,7 @@ func _input(event: InputEvent) -> void:
 			if event.keycode == KEY_SPACE:
 				if Time.get_ticks_msec() < game.dialogue_locked_until_msec:
 					return
-				game._advance_dialogue()
+				game.dialogue_controller.advance()
 			return
 		if game.trade_open:
 			game._handle_trade_key(event.keycode)
@@ -203,12 +199,14 @@ func _input(event: InputEvent) -> void:
 		elif event.keycode == KEY_ESCAPE:
 			game.cancel_requested = true
 
+# 处理virtual、controls相关逻辑，并保持调用方状态一致。
 func _install_virtual_controls() -> void:
 	var controls = game.VIRTUAL_CONTROLS.new()
 	game.add_child(controls)
 	controls.key_down.connect(_on_virtual_key_down)
 	controls.key_up.connect(_on_virtual_key_up)
 
+# 处理virtual、key、down相关逻辑，并保持调用方状态一致。
 func _on_virtual_key_down(keycode: int) -> void:
 	if keycode in [KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT] and not _has_modal_input():
 		if keycode == KEY_UP: game.virtual_direction.y = -1.0
@@ -218,15 +216,18 @@ func _on_virtual_key_down(keycode: int) -> void:
 		return
 	_dispatch_virtual_key(keycode)
 
+# 处理virtual、key、up相关逻辑，并保持调用方状态一致。
 func _on_virtual_key_up(keycode: int) -> void:
 	if keycode == KEY_UP or keycode == KEY_DOWN:
 		game.virtual_direction.y = 0.0
 	elif keycode == KEY_LEFT or keycode == KEY_RIGHT:
 		game.virtual_direction.x = 0.0
 
+# 判断是否具备modal、input相关逻辑，并保持调用方状态一致。
 func _has_modal_input() -> bool:
 	return game.delete_confirm_open or game.dialogue_open or game.trade_open or game.inventory_open or game.learn_open or game.meditation_open or game.practice_open or game.skill_book_open or game.cyber_open or game.npc_menu_open or game.battle_ui.active or game.menu_open or game.details_panel.visible or game.dialogue_panel.visible
 
+# 处理virtual、key相关逻辑，并保持调用方状态一致。
 func _dispatch_virtual_key(keycode: int) -> void:
 	var event := InputEventKey.new()
 	event.keycode = keycode

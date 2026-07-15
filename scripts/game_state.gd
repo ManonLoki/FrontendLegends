@@ -1,13 +1,14 @@
 extends Node
 
 const SAVE_PATH := "user://frontend_legends_save_v2.json"
-const SAVE_VERSION := 2
+const SAVE_VERSION := 3
+const COMPATIBLE_SAVE_VERSIONS: Array[int] = [2, SAVE_VERSION]
 
 const SURVIVAL_TICK_SEC := 15.0
 const AGE_TICK_SEC := 28800.0
 const MIN_HIT_RATE := 0.28
 const MAX_HIT_RATE := 0.95
-## Each cultivation level increases the maximum current energy by this amount.
+## 每点精力修为增加的精力上限。
 const MP_PER_CULTIVATION := 1
 
 var profile: Dictionary = {}
@@ -17,18 +18,23 @@ var inventory: Dictionary = {}
 var equipment := _default_equipment()
 var item_cooldowns: Dictionary = {}
 
+## 自动加载单例就绪时尝试读取现有存档。
 func _ready() -> void:
 	load_game()
 
+## 创建体力、精力和伤势的默认战斗状态。
 func _default_combat_state(hp: int = 1) -> Dictionary:
 	return {"hp": hp, "mp": 0, "injury": 0}
 
+## 创建五个装备槽位均为空的本局装备状态。
 func _default_equipment() -> Dictionary:
 	return {"weapon": "", "armor": "", "shoe": "", "accessory1": "", "accessory2": ""}
 
+## 判断当前资料是否已经包含有效角色姓名。
 func has_profile() -> bool:
 	return not str(profile.get("name", "")).strip_edges().is_empty()
 
+## 按创角输入建立完整角色资料并立即写入存档。
 func create_profile(player_name: String, custom_attributes: Dictionary = {}, gender := "male") -> void:
 	var clean_name := player_name.strip_edges()
 	var attributes: Dictionary = custom_attributes if not custom_attributes.is_empty() else {"strength": 25, "agility": 25, "constitution": 25, "wisdom": 25}
@@ -76,6 +82,7 @@ func advance_time(seconds: float) -> void:
 	vitals.age = int(vitals.get("age", 18)) + current_age_tick - previous_age_tick
 	profile.vitals = vitals
 
+## 剥离运行时派生属性和本局装备后写出 v3 存档。
 func save_game() -> void:
 	if not has_profile():
 		return
@@ -89,12 +96,13 @@ func save_game() -> void:
 	if file:
 		file.store_string(JSON.stringify(data))
 
+## 读取兼容版本存档，迁移字段并重建派生状态。
 func load_game() -> bool:
 	if not FileAccess.file_exists(SAVE_PATH):
 		return false
 	var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
 	var parsed = JSON.parse_string(file.get_as_text()) if file else null
-	if typeof(parsed) != TYPE_DICTIONARY or int(parsed.get("version", 0)) != SAVE_VERSION:
+	if typeof(parsed) != TYPE_DICTIONARY or not COMPATIBLE_SAVE_VERSIONS.has(int(parsed.get("version", 0))):
 		return false
 	profile = parsed.get("profile", {})
 	game_time_sec = float(parsed.get("game_time_sec", 0.0))
@@ -111,6 +119,7 @@ func load_game() -> bool:
 	normalize_combat_state()
 	return has_profile()
 
+## 裁剪角色资料、钳制资源并清理未知物品记录。
 func _normalize_loaded_profile() -> void:
 	profile.name = str(profile.get("name", "")).strip_edges().substr(0, 10)
 	var attributes: Dictionary = profile.get("attributes", {"strength": 25, "agility": 25, "constitution": 25, "wisdom": 25})
@@ -127,6 +136,7 @@ func _normalize_loaded_profile() -> void:
 	inventory = _normalize_item_map(inventory, item_catalog, true)
 	item_cooldowns = _normalize_item_map(item_cooldowns, item_catalog, false)
 
+## 由旧档当前属性扣除技能反哺，重建基础四维。
 func _normalize_base_attributes() -> void:
 	var current: Dictionary = profile.get("attributes", {})
 	var base: Dictionary = profile.get("base_attributes", {})
@@ -144,6 +154,7 @@ func _normalize_base_attributes() -> void:
 		base[key] = maxi(5, int(floor(float(base.get(key, fallback)))))
 	profile.base_attributes = base
 
+## 清理物品数量或冷却映射中的未知、空值和负数项。
 func _normalize_item_map(raw: Dictionary, known_items: Dictionary, counts: bool) -> Dictionary:
 	var result: Dictionary = {}
 	for raw_id in raw:
@@ -158,6 +169,7 @@ func _normalize_item_map(raw: Dictionary, known_items: Dictionary, counts: bool)
 			result[item_id] = maxf(0.0, float(raw[raw_id]))
 	return result
 
+## 从教学上限最低的人物中推断旧档缺失的入门师父。
 func _entry_master_for_sect(sect_name: String) -> String:
 	var npc_catalog: Dictionary = _load_data_document("npcs.json").get("npcs", {})
 	var teach_stock: Dictionary = _load_data_document("skills.json").get("teachStock", {})
@@ -176,11 +188,13 @@ func _entry_master_for_sect(sect_name: String) -> String:
 			best_cap = cap
 	return best_id
 
+## 读取一份静态 JSON 数据文档，失败时返回空字典。
 func _load_data_document(file_name: String) -> Dictionary:
 	var file := FileAccess.open("res://assets/Data/" + file_name, FileAccess.READ)
 	var parsed = JSON.parse_string(file.get_as_text()) if file else null
 	return parsed if parsed is Dictionary else {}
 
+## 清空全部本局状态并删除正式存档文件。
 func delete_save() -> void:
 	QuestSystem.reset_runtime()
 	profile = {}
@@ -195,6 +209,7 @@ func delete_save() -> void:
 ## 四维以 25 为中性点的统一软修正（对齐参考项目 AttributeFormulas.ts）。
 const ATTRIBUTE_NEUTRAL := 25.0
 
+## 以 25 为中性点计算带上下界的属性软修正。
 func centered_scale(value: float, per_point: float, lo: float, hi: float) -> float:
 	return clampf(1.0 + (maxf(0.0, floor(value)) - ATTRIBUTE_NEUTRAL) * per_point, lo, hi)
 
@@ -212,6 +227,7 @@ func defense_base(constitution: float) -> float:
 func meditation_modifier(constitution: float) -> float:
 	return centered_scale(constitution, 0.02, 0.60, 1.60)
 
+## 仅按架构属性计算不含精力反哺的基础体力上限。
 func base_hp_max(constitution: float) -> int:
 	return maxi(1, int(floor(140.0 * (1.0 + maxf(0.0, constitution) * 0.025))))
 
@@ -223,33 +239,41 @@ func hp_max_with_mp_boost(constitution: float, mp_max: int) -> int:
 func player_mp_max() -> int:
 	return maxi(0, int(profile.get("vitals", {}).get("cultivation", 0)))
 
+## 返回包含精力反哺的玩家真实体力上限。
 func player_hp_max() -> int:
 	var attributes: Dictionary = profile.get("attributes", {})
 	return hp_max_with_mp_boost(float(attributes.get("constitution", 0)), player_mp_max())
 
+## 从真实体力上限扣除伤势，得到当前有效上限。
 func player_effective_hp_max() -> int:
 	var true_max := player_hp_max()
 	var injury := clampi(int(combat_state.get("injury", 0)), 0, true_max - 1)
 	return maxi(1, true_max - injury)
 
+## 返回有效体力上限占真实上限的整数百分比。
 func player_effective_hp_percent() -> int:
 	return clampi(int(round(float(player_effective_hp_max()) / float(maxi(1, player_hp_max())) * 100.0)), 1, 100)
 
+## 按最新属性、修为和伤势钳制当前战斗资源。
 func normalize_combat_state() -> void:
 	var true_max := player_hp_max()
 	combat_state.injury = clampi(int(combat_state.get("injury", 0)), 0, true_max - 1)
 	combat_state.hp = clampi(int(combat_state.get("hp", player_effective_hp_max())), 0, player_effective_hp_max())
 	combat_state.mp = clampi(int(combat_state.get("mp", player_mp_max())), 0, player_mp_max())
 
+## 为旧调用方保留真实体力上限兼容入口。
 func _true_hp_max() -> int:
 	return player_hp_max()
 
+## 为旧调用方保留有效体力上限兼容入口。
 func _effective_hp_max() -> int:
 	return player_effective_hp_max()
 
+## 按双方思维差计算并钳制基础命中率。
 func combat_hit_rate(attacker: Dictionary, defender: Dictionary) -> float:
 	return clampf(0.72 + (float(attacker.get("agility", 0)) - float(defender.get("agility", 0))) * 0.02, MIN_HIT_RATE, MAX_HIT_RATE)
 
+## 将非负防御转换为递减收益的伤害减免率。
 func mitigation(defense: float) -> float:
 	var value := maxf(0.0, defense)
 	return value / (value + 80.0)

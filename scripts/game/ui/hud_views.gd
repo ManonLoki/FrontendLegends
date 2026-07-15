@@ -5,9 +5,11 @@ const SKILL_RATING := preload("res://scripts/skills/skill_rating.gd")
 
 var game: Node
 
+# 处理init相关逻辑，并保持调用方状态一致。
 func _init(owner: Node) -> void:
 	game = owner
 
+# 处理box相关逻辑，并保持调用方状态一致。
 func _ui_box(fill: Color, border: Color = Color(0.25, 0.25, 0.25, 1.0), border_width: int = 1) -> StyleBoxFlat:
 	var box := StyleBoxFlat.new()
 	box.bg_color = fill
@@ -25,9 +27,9 @@ func _ui_box(fill: Color, border: Color = Color(0.25, 0.25, 0.25, 1.0), border_w
 	box.shadow_offset = Vector2(0, 2)
 	return box
 
+# 应用hud、theme相关逻辑，并保持调用方状态一致。
 func _apply_hud_theme() -> void:
-	# Keep the docs' white-paper / grey-ink language, but give every modal a
-	# shared card treatment so dynamically-created panels do not look detached.
+	# 延续白纸灰墨的文档视觉语言，并为所有动态模态面板统一卡片样式。
 	var paper := Color("f8f6ee")
 	var ink := Color("4b4943")
 	var warm_paper := Color("fcfbf6")
@@ -55,6 +57,7 @@ func _apply_hud_theme() -> void:
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	game.dialogue_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
+# 清理menu、widgets相关逻辑，并保持调用方状态一致。
 func _clear_menu_widgets() -> void:
 	# 菜单仅在打开、切换选项或真实窗口尺寸变化时重建。同步删除保证同一次
 	# 状态刷新中不会短暂叠放旧节点和新节点。
@@ -65,6 +68,7 @@ func _clear_menu_widgets() -> void:
 	game.skill_menu_panel.visible = false
 	game.system_menu_panel.visible = false
 
+# 清理details、widgets相关逻辑，并保持调用方状态一致。
 func _clear_details_widgets() -> void:
 	game.profile_panel_open = false
 	game.npc_view_panel_open = false
@@ -74,6 +78,7 @@ func _clear_details_widgets() -> void:
 			widget.free()
 	game.details_widgets.clear()
 
+# 处理label相关逻辑，并保持调用方状态一致。
 func _detail_label(text: String, rect: Rect2, size: int = 13, alignment: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT, color: Color = Color(0.18, 0.18, 0.18, 1.0)) -> Label:
 	var label := Label.new()
 	label.text = text
@@ -89,6 +94,7 @@ func _detail_label(text: String, rect: Rect2, size: int = 13, alignment: Horizon
 	game.details_widgets.append(label)
 	return label
 
+# 处理rule相关逻辑，并保持调用方状态一致。
 func _detail_rule(from: Vector2, to: Vector2, color: Color = Color(0.35, 0.35, 0.35, 1.0)) -> void:
 	var rule := ColorRect.new()
 	rule.color = color
@@ -98,6 +104,7 @@ func _detail_rule(from: Vector2, to: Vector2, color: Color = Color(0.35, 0.35, 0
 	game.details_content.add_child(rule)
 	game.details_widgets.append(rule)
 
+# 处理selection相关逻辑，并保持调用方状态一致。
 func _detail_selection(rect: Rect2) -> void:
 	var selection := Panel.new()
 	selection.position = rect.position
@@ -107,12 +114,13 @@ func _detail_selection(rect: Rect2) -> void:
 	game.details_content.add_child(selection)
 	game.details_widgets.append(selection)
 
+# 显示profile、panel相关逻辑，并保持调用方状态一致。
 func _show_profile_panel() -> void:
 	game._use_detail_hud("profile")
 	var vitals: Dictionary = GameState.profile.get("vitals", {})
 	var attrs: Dictionary = GameState.profile.get("attributes", {})
 	var base: Dictionary = GameState.profile.get("base_attributes", attrs)
-	var hp_max: int = game._npc_hp(GameState.profile, true) - int(GameState.combat_state.get("injury", 0))
+	var hp_max: int = GameState.player_effective_hp_max()
 	var mp_max: int = GameState.player_mp_max()
 	var capacity: int = game.VITALS_BASE_CAPACITY + int(attrs.get("strength", 25)) * game.VITALS_CAPACITY_PER_STRENGTH
 	var appearance := int(vitals.get("appearance", 0))
@@ -124,7 +132,8 @@ func _show_profile_panel() -> void:
 	_layout_profile_panel()
 	var scale: float = game._display_scale()
 	var hp := int(GameState.combat_state.get("hp", 0))
-	var hp_percent := int(round(float(hp) / float(maxi(1, hp_max)) * 100.0))
+	# 括号百分比表示伤势压低上限的程度，不表示当前剩余体力比例。
+	var hp_percent := GameState.player_effective_hp_percent()
 	var left_lines := [str(GameState.profile.get("name", "")), "年龄：%d" % int(vitals.get("age", 18)), str(GameState.profile.get("sect", "未拜师")) if not str(GameState.profile.get("sect", "")).is_empty() else "未拜师", "", "食物：%d / %d" % [vitals.get("food", 0), capacity], "体力：%d / %d（%d%%）" % [hp, hp_max, hp_percent], "编码：%d/%d" % [attrs.get("strength", 0), base.get("strength", 0)], "架构：%d/%d" % [attrs.get("constitution", 0), base.get("constitution", 0)], "", "Token：%d" % int(vitals.get("money", 0)), "经验：%d" % int(vitals.get("experience", 0))]
 	var right_lines := [game._gender_label(str(GameState.profile.get("gender", ""))), game._appearance_title(appearance, str(GameState.profile.get("gender", "male"))), game._skill_rating(), "", "饮水：%d / %d" % [vitals.get("water", 0), capacity], "精力：%d / %d" % [GameState.combat_state.get("mp", 0), mp_max], "思维：%d/%d" % [attrs.get("agility", 0), base.get("agility", 0)], "灵感：%d/%d" % [attrs.get("wisdom", 0), base.get("wisdom", 0)], "", "潜能：%d" % int(vitals.get("potential", 0))]
 	var left_label := _detail_label("\n".join(left_lines), Rect2(Vector2(30.0, 30.0) * scale, Vector2(132.0, 240.0) * scale), 12)
@@ -132,6 +141,7 @@ func _show_profile_panel() -> void:
 	left_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	right_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 
+# 处理profile、panel相关逻辑，并保持调用方状态一致。
 func _layout_profile_panel() -> void:
 	var scale: float = game._display_scale()
 	var panel_size: Vector2 = Vector2(330.0, 300.0) * scale
@@ -140,6 +150,7 @@ func _layout_profile_panel() -> void:
 	game.details_panel.position = (game.DESIGN_SIZE - panel_size) * 0.5
 	game.details_panel.size = panel_size
 
+# 显示npc、view、panel相关逻辑，并保持调用方状态一致。
 func _show_npc_view_panel(npc: Dictionary) -> void:
 	game._use_detail_hud("npc_view")
 	var atlas := AtlasTexture.new()
@@ -172,6 +183,7 @@ func _show_npc_view_panel(npc: Dictionary) -> void:
 	description.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
+# 处理npc、view、panel相关逻辑，并保持调用方状态一致。
 func _layout_npc_view_panel() -> void:
 	var scale: float = game._display_scale()
 	var panel_size: Vector2 = Vector2(330.0, 220.0) * scale
@@ -180,18 +192,19 @@ func _layout_npc_view_panel() -> void:
 	game.details_panel.position = (game.DESIGN_SIZE - panel_size) * 0.5
 	game.details_panel.size = panel_size
 
+# 处理skill、rating相关逻辑，并保持调用方状态一致。
 func _npc_skill_rating(npc: Dictionary) -> String:
 	var levels: Dictionary = npc.get("skillLevels", {})
 	var equipped: Array = npc.get("equippedSkillIds", [])
 	return SKILL_RATING.title(SKILL_RATING.equipped_average(levels, equipped))
 
+# 渲染inventory、widgets相关逻辑，并保持调用方状态一致。
 func _render_inventory_widgets() -> void:
 	game._use_detail_hud("inventory")
 	game.details_content.visible = true
 	game.details_content.text = ""
 	_clear_details_widgets()
-	# PanelContainer updates its child rect during the next layout pass. Use the
-	# already-synchronous panel size so the very first visible frame is full-size.
+	# PanelContainer 下一次布局才更新子节点矩形；首帧直接采用已同步的面板尺寸，避免内容缩小。
 	var area: Vector2 = game.details_panel.size
 	var scale: float = game._display_scale()
 	var pad: float = 20.0 * scale
@@ -229,6 +242,7 @@ func _render_inventory_widgets() -> void:
 	footer_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	footer_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP if not game.inventory_focus_category else VERTICAL_ALIGNMENT_CENTER
 
+# 处理label相关逻辑，并保持调用方状态一致。
 func _menu_label(text: String, rect: Rect2, selected: bool, host: Control) -> Label:
 	var label := Label.new()
 	label.text = text
@@ -253,6 +267,7 @@ func _menu_label(text: String, rect: Rect2, selected: bool, host: Control) -> La
 	game.menu_widgets.append(label)
 	return label
 
+# 渲染menu、widgets相关逻辑，并保持调用方状态一致。
 func _render_menu_widgets() -> void:
 	_clear_menu_widgets()
 	if not game.menu_open:

@@ -3,11 +3,13 @@ extends SceneTree
 
 var failures: Array[String] = []
 
+# 断言验证true相关逻辑，并保持调用方状态一致。
 func _assert_true(condition: bool, message: String) -> void:
 	if not condition:
 		failures.append(message)
 		push_error(message)
 
+# 执行domain、suite相关逻辑，并保持调用方状态一致。
 func _run_domain_suite() -> void:
 	var game_state = root.get_node("GameState")
 	var skill_system = root.get_node("SkillSystem")
@@ -48,6 +50,12 @@ func _run_domain_suite() -> void:
 	legacy_profile.erase("base_attributes")
 	var legacy_skills: Dictionary = legacy_profile.skills
 	legacy_skills["levels"] = {"basicAgility": 20}
+	legacy_skills["learnProgress"] = {"basicAgility": 12}
+	legacy_skills["practiceProgress"] = {"basicAgility": 34}
+	legacy_skills["forcePower"] = 7
+	legacy_skills.erase("learn_progress")
+	legacy_skills.erase("practice_progress")
+	legacy_skills.erase("force_power")
 	legacy_profile["skills"] = legacy_skills
 	var legacy_attributes: Dictionary = legacy_profile.attributes
 	legacy_attributes["agility"] = 27
@@ -58,13 +66,15 @@ func _run_domain_suite() -> void:
 	legacy_vitals["potential"] = -3
 	legacy_profile["vitals"] = legacy_vitals
 	var legacy_file := FileAccess.open(game_state.SAVE_PATH, FileAccess.WRITE)
-	legacy_file.store_string(JSON.stringify({"version": game_state.SAVE_VERSION, "profile": legacy_profile, "game_time_sec": 0, "combat_state": {"hp": 1, "mp": 0, "injury": 0}, "inventory": {"fagun": 2, "removed_item": 9}, "item_cooldowns": {"fagun": 12.0, "removed_item": 99.0}}))
+	legacy_file.store_string(JSON.stringify({"version": 2, "profile": legacy_profile, "game_time_sec": 0, "combat_state": {"hp": 1, "mp": 0, "injury": 0}, "inventory": {"fagun": 2, "removed_item": 9}, "item_cooldowns": {"fagun": 12.0, "removed_item": 99.0}}))
 	legacy_file = null
 	_assert_true(game_state.load_game(), "归一化测试存档应可读取")
 	_assert_true(str(game_state.profile.name) == "1234567890" and int(game_state.profile.vitals.food) == 450, "读档应裁剪姓名并按派生编码钳制食物上限（实际 %s / %d）" % [game_state.profile.name, game_state.profile.vitals.food])
 	_assert_true(int(game_state.profile.vitals.money) == 0 and int(game_state.profile.vitals.potential) == 0, "读档应将资源钳为非负整数")
 	_assert_true(str(game_state.profile.master) == "da_mo_qiong_qiu", "旧档缺师父时应迁移到本门入门师父")
 	_assert_true(int(game_state.profile.base_attributes.agility) == 25 and int(game_state.profile.attributes.agility) == 27, "旧档缺基础四维时应扣除技能反哺后重建并重算派生值（实际 %d / %d）" % [game_state.profile.base_attributes.agility, game_state.profile.attributes.agility])
+	_assert_true(int(game_state.profile.skills.learn_progress.basicAgility) == 12 and int(game_state.profile.skills.practice_progress.basicAgility) == 34 and int(game_state.profile.skills.force_power) == 7, "第二版技能存档的驼峰字段应迁移为蛇形字段")
+	_assert_true(not game_state.profile.skills.has("learnProgress") and not game_state.profile.skills.has("practiceProgress") and not game_state.profile.skills.has("forcePower"), "迁移后应删除旧技能字段，避免双数据源")
 	_assert_true(game_state.inventory == {"fagun": 2} and game_state.item_cooldowns == {"fagun": 12.0}, "读档应清除未知物品和冷却记录")
 	game_state.create_profile("alignment-test", {"strength": 25, "agility": 25, "constitution": 25, "wisdom": 25})
 	game_state.profile.vitals.potential = 100000
@@ -102,12 +112,12 @@ func _run_domain_suite() -> void:
 	# 全地图 NPC 目标注册：读取 TMX property npcId，并保留地图显示名。
 	var placed_targets: Array[Dictionary] = data_registry.list_placed_npc_targets()
 	_assert_true(not placed_targets.is_empty(), "全地图 NPC 任务目标池不应为空")
-	var found_darkxue_tutor := false
+	var found_training_tutor := false
 	for placed_target in placed_targets:
 		_assert_true(not data_registry.get_npc(str(placed_target.get("npc_id", ""))).is_empty(), "任务目标池不应包含未注册 NPC")
 		if str(placed_target.get("npc_id", "")) == "dao_shi" and str(placed_target.get("map_id", "")) == "DarkXue":
-			found_darkxue_tutor = str(placed_target.get("map_name", "")) == "DARK学"
-	_assert_true(found_darkxue_tutor, "应从 DarkXue.tmx 收集导师及 DARK学地图名")
+			found_training_tutor = str(placed_target.get("map_name", "")) == "DARK学"
+	_assert_true(found_training_tutor, "应从 DarkXue.tmx 收集导师及 DARK学地图名")
 	for excluded_target in data_registry.list_placed_npc_targets(["jiu_ri"]):
 		_assert_true(str(excluded_target.get("npc_id", "")) != "jiu_ri", "任务发布者应能从目标池排除")
 	quest_system.reset_runtime()
@@ -135,14 +145,14 @@ func _run_domain_suite() -> void:
 	_assert_true(str(bounty.get("map_name", "")) == "开源镇", "室内悬赏地点应播报父级大地图名称")
 	var runtime_bounty: Dictionary = root.get_node("NpcSystem").build_instance(str(bounty.get("target_id", "")))
 	_assert_true(runtime_bounty.get("skillLevels", {}).keys().size() == 5 and runtime_bounty.get("equippedSkillIds", []).size() == 5, "悬赏目标应缩放并装备五项基础技能")
-	var darkxue_map := TiledMapLoader.new()
-	_assert_true(darkxue_map.load_file("res://assets/Map/maps/LoreWorld/KaiyuanTown/DarkXue.tmx"), "应能加载 DARK学室内地图")
+	var dark_study_map := TiledMapLoader.new()
+	_assert_true(dark_study_map.load_file("res://assets/Map/maps/LoreWorld/KaiyuanTown/DarkXue.tmx"), "应能加载 DARK学室内地图")
 	_assert_true(data_registry.map_type("DarkXue") == "inDoor" and data_registry.map_type("KaiyuanTown") == "outDoor", "地图注册阶段应缓存室内/室外类型，传送菜单不得临时重读 TMX")
-	_assert_true(not darkxue_map.npc_object_at_tile(7, 6).is_empty(), "NPC point 对象应命中脚下单格")
-	_assert_true(darkxue_map.npc_object_at_tile(8, 6).is_empty(), "NPC point 对象不得扩张命中相邻格")
-	var bounty_tile: Vector2i = darkxue_map.pick_dynamic_npc_tile()
-	_assert_true(bounty_tile.x >= 0 and darkxue_map.is_walkable(bounty_tile.x, bounty_tile.y) and darkxue_map.is_walkable(bounty_tile.x, bounty_tile.y - 1), "室内悬赏 NPC 应落在身前无墙的可行走格")
-	_assert_true(darkxue_map.npc_object_at_tile(bounty_tile.x, bounty_tile.y).is_empty(), "动态悬赏 NPC 不应与固定 NPC 重叠")
+	_assert_true(not dark_study_map.npc_object_at_tile(7, 6).is_empty(), "NPC point 对象应命中脚下单格")
+	_assert_true(dark_study_map.npc_object_at_tile(8, 6).is_empty(), "NPC point 对象不得扩张命中相邻格")
+	var bounty_tile: Vector2i = dark_study_map.pick_dynamic_npc_tile()
+	_assert_true(bounty_tile.x >= 0 and dark_study_map.is_walkable(bounty_tile.x, bounty_tile.y) and dark_study_map.is_walkable(bounty_tile.x, bounty_tile.y - 1), "室内悬赏 NPC 应落在身前无墙的可行走格")
+	_assert_true(dark_study_map.npc_object_at_tile(bounty_tile.x, bounty_tile.y).is_empty(), "动态悬赏 NPC 不应与固定 NPC 重叠")
 	var fixed_reward_definition := bounty_definition.duplicate(true)
 	fixed_reward_definition.fluctuationMin = 0.0
 	fixed_reward_definition.fluctuationMax = 0.0

@@ -1,9 +1,11 @@
 extends "res://tests/alignment/menu_suite.gd"
 ## 综合回归入口；具体断言按领域职责拆分到 tests/alignment/。
 
+# 处理initialize相关逻辑，并保持调用方状态一致。
 func _initialize() -> void:
 	call_deferred("_run")
 
+# 执行run相关逻辑，并保持调用方状态一致。
 func _run() -> void:
 	_run_domain_suite()
 	var game: Node = await _run_hud_suite()

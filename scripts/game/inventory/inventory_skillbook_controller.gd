@@ -5,15 +5,18 @@ const SKILL_RATING := preload("res://scripts/skills/skill_rating.gd")
 
 var game: Node
 
+# 处理init相关逻辑，并保持调用方状态一致。
 func _init(owner: Node) -> void:
 	game = owner
 
+# 处理hp相关逻辑，并保持调用方状态一致。
 func _npc_hp(npc: Dictionary, is_player := false) -> int:
 	if is_player:
 		return GameState.player_hp_max()
 	var attributes: Dictionary = npc.get("attributes", {})
 	return GameState.hp_max_with_mp_boost(float(attributes.get("constitution", 0)), int(npc.get("mp", 0)))
 
+# 显示inventory相关逻辑，并保持调用方状态一致。
 func _show_inventory() -> void:
 	game.inventory_open = true
 	game.inventory_category_index = 0
@@ -22,11 +25,13 @@ func _show_inventory() -> void:
 	_refresh_inventory_panel()
 	game.message = "背包已打开"
 
+# 处理inventory、key相关逻辑，并保持调用方状态一致。
 func _handle_inventory_key(key: Key) -> void:
 	if key == KEY_ESCAPE:
 		if game.inventory_focus_category:
 			game.inventory_open = false
-			game.details_panel.visible = false
+			game.menu_controller.return_to_main_menu(1)
+			return
 		else:
 			game.inventory_focus_category = true
 			game.inventory_feedback = ""
@@ -53,6 +58,7 @@ func _handle_inventory_key(key: Key) -> void:
 		_activate_inventory_item()
 	_refresh_inventory_panel()
 
+# 处理inventory、item相关逻辑，并保持调用方状态一致。
 func _activate_inventory_item() -> void:
 	if game.inventory_items.is_empty():
 		return
@@ -68,6 +74,7 @@ func _activate_inventory_item() -> void:
 	game.message = str(result.get("message", ""))
 	game.inventory_feedback = game.message
 
+# 刷新inventory、panel相关逻辑，并保持调用方状态一致。
 func _refresh_inventory_panel() -> void:
 	var selected: String = game.inventory_categories[game.inventory_category_index]
 	game.inventory_items.clear()
@@ -81,12 +88,14 @@ func _refresh_inventory_panel() -> void:
 	game.inventory_index = clampi(game.inventory_index, 0, maxi(0, game.inventory_items.size() - 1))
 	game._render_inventory_widgets()
 
+# 打开skill、book相关逻辑，并保持调用方状态一致。
 func _open_skill_book() -> void:
 	game.skill_book_open = true
 	game.skill_book_category_index = 0
 	game.skill_book_focus_category = true
 	_refresh_skill_book_panel()
 
+# 处理skill、book、key相关逻辑，并保持调用方状态一致。
 func _handle_skill_book_key(key: Key) -> void:
 	if key == KEY_ESCAPE:
 		if game.skill_book_focus_category:
@@ -117,6 +126,7 @@ func _handle_skill_book_key(key: Key) -> void:
 		game.message = str(result.get("message", ""))
 	_refresh_skill_book_panel()
 
+# 刷新skill、book、panel相关逻辑，并保持调用方状态一致。
 func _refresh_skill_book_panel() -> void:
 	var theme: String = game.SKILL_BOOK_THEMES[game.skill_book_category_index]
 	var sect := str(GameState.profile.get("sect", ""))
@@ -132,6 +142,7 @@ func _refresh_skill_book_panel() -> void:
 	game.skill_book_index = clampi(game.skill_book_index, 0, maxi(0, game.skill_book_items.size() - 1))
 	_render_skill_book_widgets()
 
+# 渲染skill、book、widgets相关逻辑，并保持调用方状态一致。
 func _render_skill_book_widgets() -> void:
 	game._use_detail_hud("skill_book")
 	game.details_content.visible = true
@@ -164,13 +175,16 @@ func _render_skill_book_widgets() -> void:
 				game._detail_selection(Rect2(Vector2(split + pad * 0.5, y), Vector2(area.x - split - pad * 1.5, row)))
 	game._detail_label("↑↓ 选分类　·　空格/→ 查看　·　空格 装备/卸下　·　ESC 返回", Rect2(Vector2(pad, area.y - 37.0 * scale), Vector2(area.x - pad * 2.0, 28.0 * scale)), 11, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
 
+# 处理label相关逻辑，并保持调用方状态一致。
 func _gender_label(gender: String) -> String:
 	return "女" if gender.to_lower() == "female" else "男" if gender.to_lower() == "male" else "未知"
 
+# 处理rating相关逻辑，并保持调用方状态一致。
 func _skill_rating() -> String:
 	var skills: Dictionary = SkillSystem.ensure_skills()
 	return SKILL_RATING.title(SKILL_RATING.equipped_average(skills.get("levels", {}), SKILL_RATING.player_equipped_ids(skills)))
 
+# 处理title相关逻辑，并保持调用方状态一致。
 func _appearance_title(score: int, gender: String) -> String:
 	var male := [["惨不忍睹", "面目狰狞"], ["相貌平平", "浓眉大眼"], ["五官端正", "气宇轩昂"], ["英俊潇洒", "风流倜傥"], ["玉树临风", "潘安再生"]]
 	var female := [["惨不忍睹", "容貌丑陋"], ["姿色平平", "略有姿色"], ["亭亭玉立", "明眸皓齿"], ["楚楚动人", "沉鱼落雁", "闭月羞花"], ["国色天香", "倾国倾城"]]
@@ -178,6 +192,7 @@ func _appearance_title(score: int, gender: String) -> String:
 	var options: Array = female[tier] if gender == "female" else male[tier]
 	return str(options[posmod(score, options.size())])
 
+# 显示details相关逻辑，并保持调用方状态一致。
 func _show_details(text: String) -> void:
 	game._use_detail_hud("generic")
 	game._clear_details_widgets()

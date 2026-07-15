@@ -1,14 +1,15 @@
 extends "res://tests/alignment/domain_suite.gd"
 ## 场景坐标、图集、详情 HUD、交易与交互回归。
 
+# 执行hud、suite相关逻辑，并保持调用方状态一致。
 func _run_hud_suite() -> Node:
 	var game_state = root.get_node("GameState")
 	var skill_system = root.get_node("SkillSystem")
 	var inventory_system = root.get_node("InventorySystem")
 	var data_registry = root.get_node("DataRegistry")
 	var npc_system = root.get_node("NpcSystem")
-	var darkxue_map := TiledMapLoader.new()
-	_assert_true(darkxue_map.load_file("res://assets/Map/maps/LoreWorld/KaiyuanTown/DarkXue.tmx"), "HUD 测试应能加载 DARK学地图")
+	var dark_study_map := TiledMapLoader.new()
+	_assert_true(dark_study_map.load_file("res://assets/Map/maps/LoreWorld/KaiyuanTown/DarkXue.tmx"), "HUD 测试应能加载 DARK学地图")
 	# 三个主场景统一直接使用 640×480 设计坐标，窗口缩放只交给 Godot stretch。
 	var splash = load("res://scenes/splash.tscn").instantiate()
 	root.add_child(splash)
@@ -45,6 +46,8 @@ func _run_hud_suite() -> Node:
 	for player_region_value in game.player_sprite_regions.values():
 		var player_region: Rect2 = player_region_value
 		_assert_true(Rect2(Vector2.ZERO, game.player_texture.get_size()).encloses(player_region), "Player 帧区域不得越出新 320×116 图集")
+	var male_up_layout: Dictionary = game.player_sprite_layouts.get("player_male_up_idle_0", {})
+	_assert_true(Vector2(male_up_layout.get("visual_offset", Vector2.ZERO)).x == 4.0, "男性朝上帧应按脚部支点向右补偿 4 个源像素，避免人物视觉偏斜")
 	for npc_region_value in npc_system.sprite_regions.values():
 		var npc_region: Rect2 = npc_region_value
 		_assert_true(Rect2(Vector2.ZERO, game.npc_texture.get_size()).encloses(npc_region), "NPC 帧区域不得越出新 128×244 图集")
@@ -75,8 +78,8 @@ func _run_hud_suite() -> Node:
 	# UI 统一使用 640×480 逻辑坐标；窗口缩放只交给 Godot stretch，避免二次放大。
 	_assert_true(is_equal_approx(game._display_scale(), 1.0), "游戏 UI 不应再按物理窗口执行第二次缩放")
 	_assert_true(game._game_view_rect() == Rect2(0.0, 0.0, 640.0, 480.0), "地图相机应覆盖完整 640×480 设计画布")
-	game.map_context = darkxue_map
-	var covered_map_size: Vector2 = Vector2(darkxue_map.width * darkxue_map.tile_width, darkxue_map.height * darkxue_map.tile_height) * game._map_zoom()
+	game.map_context = dark_study_map
+	var covered_map_size: Vector2 = Vector2(dark_study_map.width * dark_study_map.tile_width, dark_study_map.height * dark_study_map.tile_height) * game.world_renderer.map_zoom()
 	_assert_true(covered_map_size.x >= 640.0 and covered_map_size.y >= 480.0, "小地图应等比 cover 相机，不得产生黑边")
 	game._layout_game_view()
 	game._toggle_menu()
@@ -90,6 +93,22 @@ func _run_hud_suite() -> Node:
 	var design_rect := Rect2(Vector2.ZERO, Vector2(640.0, 480.0))
 	for panel in [game.map_badge_panel, game.menu_panel, game.dialogue_panel, game.details_panel, game.tree_confirm_panel, game.battle_panel]:
 		_assert_true(design_rect.encloses(Rect2(panel.position, panel.size)), "%s 必须完整位于设计画布内" % panel.name)
+	# 人物面板括号百分比只反映伤势造成的上限折损，与当前剩余体力无关。
+	var true_hp_max: int = game_state.player_hp_max()
+	var previous_injury := int(game_state.combat_state.get("injury", 0))
+	var previous_hp := int(game_state.combat_state.get("hp", 0))
+	game_state.combat_state.injury = int(round(float(true_hp_max) * 0.5))
+	var effective_hp_max: int = game_state.player_effective_hp_max()
+	game_state.combat_state.hp = maxi(1, int(floor(float(effective_hp_max) * 0.25)))
+	game._show_profile_panel()
+	var profile_text := ""
+	for profile_widget in game.details_widgets:
+		if profile_widget is Label and str(profile_widget.text).contains("体力："):
+			profile_text = str(profile_widget.text)
+	var injury_percent: int = game_state.player_effective_hp_percent()
+	_assert_true(profile_text.contains("体力：%d / %d（%d%%）" % [game_state.combat_state.hp, effective_hp_max, injury_percent]), "人物面板体力百分比应按有效上限/真实上限显示，不得按当前体力/有效上限计算")
+	game_state.combat_state.injury = previous_injury
+	game_state.combat_state.hp = previous_hp
 	game._show_inventory()
 	var inventory_has_title := false
 	var first_inventory_category_y := INF
@@ -191,7 +210,7 @@ func _run_hud_suite() -> Node:
 	_assert_true(game.tree_confirm_panel.visible and not game.tree_confirm_content.text.is_empty(), "歪脖树独立确认 HUD 不应显示为空白面板")
 	_assert_true(not game.npc_menu_content.visible and not game.npc_menu_panel.visible, "歪脖树 HUD 不应复用或改变 NPC 菜单")
 	game._close_delete_confirm()
-	game.map_context = darkxue_map
+	game.map_context = dark_study_map
 	_assert_true(game._npc_occupies_tile(Vector2i(7, 6)), "室内固定 NPC 所在格应阻挡玩家移动")
 	_assert_true(not game._npc_occupies_tile(Vector2i(8, 6)), "NPC 碰撞只应占脚下格，不应误挡相邻格")
 	game.player_tile = Vector2i(7, 7)
@@ -212,7 +231,7 @@ func _run_hud_suite() -> Node:
 	_assert_true(game._has_front_interactable(), "玩家正面紧邻 Props 时应允许交互")
 	game.facing = Vector2i.LEFT
 	_assert_true(not game._has_front_interactable(), "Props 位于玩家侧面时不得触发交互")
-	var pages: Array[String] = game._paginate_dialogue("第一行\n第二行")
+	var pages: Array[String] = game.dialogue_controller.paginate("第一行\n第二行")
 	_assert_true(pages.size() == 2 and pages[0] == "第一行" and pages[1] == "第二行", "对话正文每个逻辑行应独占一页")
 	game._show_dialogue("测试", "单页")
 	_assert_true(game.dialogue_auto_close_at_msec > 0, "普通单页对话应启用 5 秒自动关闭")
@@ -222,7 +241,7 @@ func _run_hud_suite() -> Node:
 	game._input(escape_event)
 	_assert_true(game.dialogue_open, "ESC 不应关闭原设定中的对话框")
 	game.dialogue_auto_close_at_msec = 1
-	game._update_dialogue_auto_close()
+	game.dialogue_controller.update_auto_close()
 	_assert_true(not game.dialogue_open, "单页对话到期后应自动关闭")
 	game.learning_skill_id = "basicStrength"
 	game._render_learning_progress()

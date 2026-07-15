@@ -3,9 +3,11 @@ extends RefCounted
 
 var game: Node2D
 
+# 处理init相关逻辑，并保持调用方状态一致。
 func _init(owner: Node2D) -> void:
 	game = owner
 
+# 绘制draw相关逻辑，并保持调用方状态一致。
 func draw() -> void:
 	var grid_origin := map_draw_origin()
 	var cell := float(TiledMapLoader.DEFAULT_TILE_SIZE) * render_scale()
@@ -18,9 +20,11 @@ func draw() -> void:
 	var source := player_frame_region()
 	game.draw_texture_rect_region(game.player_texture, player_frame_draw_rect(player_pos, source), source)
 
+# 加载player、sprite、regions相关逻辑，并保持调用方状态一致。
 func load_player_sprite_regions() -> void:
 	game.player_sprite_regions.clear()
 	game.player_sprite_layouts.clear()
+	var player_image: Image = game.player_texture.get_image()
 	var file := FileAccess.open("res://assets/Texture/player.tpsheet", FileAccess.READ)
 	if not file:
 		return
@@ -43,14 +47,43 @@ func load_player_sprite_regions() -> void:
 		var trim_offset := Vector2(float(margin.get("x", 0)), float(margin.get("y", 0)))
 		var source_canvas_size := trim_offset + packed_size + Vector2(float(margin.get("w", 0)), float(margin.get("h", 0)))
 		maximum_canvas_size = maximum_canvas_size.max(source_canvas_size)
-		game.player_sprite_layouts[key] = {"offset": trim_offset, "source_canvas_size": source_canvas_size}
+		var foot_center_x := _opaque_foot_center_x(player_image, Rect2i(int(region.get("x", 0)), int(region.get("y", 0)), int(packed_size.x), int(packed_size.y)))
+		game.player_sprite_layouts[key] = {"offset": trim_offset, "source_canvas_size": source_canvas_size, "foot_center_x": trim_offset.x + foot_center_x}
 	for key in game.player_sprite_layouts:
 		var layout: Dictionary = game.player_sprite_layouts[key]
 		var source_canvas_size: Vector2 = layout.source_canvas_size
-		layout.offset = (maximum_canvas_size - source_canvas_size) * 0.5 + Vector2(layout.offset)
+		var canvas_padding := (maximum_canvas_size - source_canvas_size) * 0.5
+		layout.offset = canvas_padding + Vector2(layout.offset)
+		# 贴图内部的脚部支点不一定位于透明画布中心；只修正绘制位置，不影响逻辑格与碰撞。
+		var normalized_foot_x := canvas_padding.x + float(layout.foot_center_x)
+		layout.visual_offset = Vector2(round(maximum_canvas_size.x * 0.5 - normalized_foot_x), 0.0)
 		layout.canvas_size = maximum_canvas_size
 		game.player_sprite_layouts[key] = layout
 
+# 以帧底部三行不透明像素的平均横坐标估算角色双脚支点。
+func _opaque_foot_center_x(image: Image, region: Rect2i) -> float:
+	if image == null or image.is_empty() or region.size.x <= 0 or region.size.y <= 0:
+		return float(region.size.x) * 0.5
+	var bottom_y := -1
+	for local_y in range(region.size.y - 1, -1, -1):
+		for local_x in region.size.x:
+			if image.get_pixel(region.position.x + local_x, region.position.y + local_y).a > 0.05:
+				bottom_y = local_y
+				break
+		if bottom_y >= 0:
+			break
+	if bottom_y < 0:
+		return float(region.size.x) * 0.5
+	var x_total := 0.0
+	var pixel_count := 0
+	for local_y in range(maxi(0, bottom_y - 2), bottom_y + 1):
+		for local_x in region.size.x:
+			if image.get_pixel(region.position.x + local_x, region.position.y + local_y).a > 0.05:
+				x_total += local_x
+				pixel_count += 1
+	return x_total / float(pixel_count) if pixel_count > 0 else float(region.size.x) * 0.5
+
+# 处理frame、key相关逻辑，并保持调用方状态一致。
 func player_frame_key() -> String:
 	var gender := "female" if str(GameState.profile.get("gender", "male")).to_lower() == "female" else "male"
 	var direction := "down"
@@ -65,39 +98,49 @@ func player_frame_key() -> String:
 		return "player_%s_%s_idle_0" % [gender, direction]
 	return "player_%s_%s_run_%d" % [gender, direction, 1 if frame == 1 else 3]
 
+# 处理frame、region相关逻辑，并保持调用方状态一致。
 func player_frame_region() -> Rect2:
 	return game.player_sprite_regions.get(player_frame_key(), game.player_sprite_regions.get("player_male_down_idle_0", Rect2(0, 0, 1, 1)))
 
+# 处理battle、portrait、region相关逻辑，并保持调用方状态一致。
 func player_battle_portrait_region() -> Rect2:
 	var gender := "female" if str(GameState.profile.get("gender", "male")).to_lower() == "female" else "male"
 	var key := "player_%s_down_idle_0" % gender
 	return game.player_sprite_regions.get(key, game.player_sprite_regions.get("player_male_down_idle_0", Rect2(0, 0, 1, 1)))
 
+# 处理frame、draw、rect相关逻辑，并保持调用方状态一致。
 func player_frame_draw_rect(player_pos: Vector2, source: Rect2) -> Rect2:
 	var layout: Dictionary = game.player_sprite_layouts.get(player_frame_key(), {})
 	var canvas_size: Vector2 = layout.get("canvas_size", source.size)
 	var trim_offset: Vector2 = layout.get("offset", Vector2.ZERO)
+	var visual_offset: Vector2 = layout.get("visual_offset", Vector2.ZERO)
 	var canvas_origin := player_pos + Vector2((TiledMapLoader.DEFAULT_TILE_SIZE - canvas_size.x) * 0.5, TiledMapLoader.DEFAULT_TILE_SIZE - canvas_size.y) * render_scale()
-	return Rect2(canvas_origin + trim_offset * render_scale(), source.size * render_scale())
+	return Rect2(canvas_origin + (trim_offset + visual_offset) * render_scale(), source.size * render_scale())
 
+# 处理view、rect相关逻辑，并保持调用方状态一致。
 func game_view_rect() -> Rect2:
 	return Rect2((game.DESIGN_SIZE - game.CAMERA_SIZE) * 0.5, game.CAMERA_SIZE)
 
+# 处理scale相关逻辑，并保持调用方状态一致。
 func display_scale() -> float:
 	return 1.0
 
+# 处理zoom相关逻辑，并保持调用方状态一致。
 func map_zoom() -> float:
 	if not game.map_context:
 		return 1.0
 	var map_size := Vector2(game.map_context.width * game.map_context.tile_width, game.map_context.height * game.map_context.tile_height)
 	return maxf(1.0, maxf(game.CAMERA_SIZE.x / map_size.x, game.CAMERA_SIZE.y / map_size.y))
 
+# 处理world、size相关逻辑，并保持调用方状态一致。
 func camera_world_size() -> Vector2:
 	return game.CAMERA_SIZE / map_zoom()
 
+# 渲染scale相关逻辑，并保持调用方状态一致。
 func render_scale() -> float:
 	return map_zoom() * display_scale()
 
+# 处理world、top、left相关逻辑，并保持调用方状态一致。
 func camera_world_top_left() -> Vector2:
 	if not game.map_context:
 		return Vector2.ZERO
@@ -109,12 +152,14 @@ func camera_world_top_left() -> Vector2:
 		0.0 if map_size.y <= world_size.y else clampf(player_center.y - world_size.y * 0.5, 0.0, map_size.y - world_size.y),
 	)
 
+# 判断world、tile、visible相关逻辑，并保持调用方状态一致。
 func is_world_tile_visible(tile: Vector2) -> bool:
 	if not game.map_context:
 		return false
 	var tile_size := Vector2(game.map_context.tile_width, game.map_context.tile_height)
 	return Rect2(tile * tile_size, tile_size).intersects(Rect2(camera_world_top_left(), camera_world_size()))
 
+# 处理draw、origin相关逻辑，并保持调用方状态一致。
 func map_draw_origin() -> Vector2:
 	var view_rect := game_view_rect()
 	if not game.map_context:
@@ -129,9 +174,11 @@ func map_draw_origin() -> Vector2:
 		origin.y += (view_rect.size.y - scaled_map_size.y) * 0.5
 	return origin
 
+# 处理to、screen相关逻辑，并保持调用方状态一致。
 func world_to_screen(world_position: Vector2) -> Vector2:
 	return map_draw_origin() + world_position * render_scale()
 
+# 更新camera相关逻辑，并保持调用方状态一致。
 func update_camera() -> void:
 	if not game.map_context:
 		return

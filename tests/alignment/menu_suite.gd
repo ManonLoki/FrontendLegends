@@ -1,11 +1,21 @@
 extends "res://tests/alignment/hud_suite.gd"
 ## 练功、学习、菜单、加力、冥想与传送回归。
 
+# 执行menu、suite相关逻辑，并保持调用方状态一致。
 func _run_menu_suite(game: Node) -> void:
 	var game_state = root.get_node("GameState")
 	var skill_system = root.get_node("SkillSystem")
 	var data_registry = root.get_node("DataRegistry")
 	var combat_system = root.get_node("CombatSystem")
+	# 背包是主菜单的子页面：分类栏第一次 ESC 返回主菜单，第二次才关闭菜单。
+	game.menu_open = false
+	game.menu_panel.visible = false
+	game._show_inventory()
+	game._handle_inventory_key(KEY_ESCAPE)
+	_assert_true(not game.inventory_open and not game.details_panel.visible, "背包分类栏按 ESC 应先关闭背包详情页")
+	_assert_true(game.menu_open and game.menu_panel.visible and game.menu_index == 1, "背包分类栏按 ESC 应返回主菜单并保留在背包项")
+	game._handle_menu_key(KEY_ESCAPE)
+	_assert_true(not game.menu_open and not game.menu_panel.visible, "返回主菜单后再次按 ESC 才应完全退出菜单")
 	# 练功必须先选左栏分类，再进入右栏选择具体功法。
 	game_state.profile.sect = "NG神教"
 	game_state.profile.attributes.wisdom = 25
@@ -16,15 +26,15 @@ func _run_menu_suite(game: Node) -> void:
 	skill_system.ensure_skills().levels["ng_code_decorator"] = 40
 	skill_system.ensure_skills().levels["ng_tune_rx_step"] = 40
 	skill_system.ensure_skills().levels["ng_parry_interceptor"] = 40
-	skill_system.ensure_skills().practiceProgress["ng_code_decorator"] = 365
-	skill_system.ensure_skills().learnProgress["ng_code_decorator"] = 365
+	skill_system.ensure_skills().practice_progress["ng_code_decorator"] = 365
+	skill_system.ensure_skills().learn_progress["ng_code_decorator"] = 365
 	var ng_definition: Dictionary = data_registry.get_skill("ng_code_decorator")
 	_assert_true(skill_system._learn_required(ng_definition, 41, 1.0) == 492 and skill_system.skill_exp_required("ng_code_decorator", 41) == 492, "40→41 级经验应严格采用参考项目 skillExpRequiredOf 曲线，不得使用指数成本")
 	_assert_true(skill_system.practice_progress("ng_code_decorator").total == 492 and skill_system.learning_progress("ng_code_decorator").total == 492, "学艺与练功必须共用同一经验需求")
 	var practice_hp_before: int = game_state.combat_state.hp
 	var practice_mp_before: int = game_state.combat_state.mp
 	var aligned_practice_tick: Dictionary = skill_system.practice_tick("ng_code_decorator")
-	_assert_true(bool(aligned_practice_tick.get("ok", false)) and int(skill_system.ensure_skills().practiceProgress["ng_code_decorator"]) == 370, "灵感 25 时练功每秒应推进 floor(25/5)=5 点经验")
+	_assert_true(bool(aligned_practice_tick.get("ok", false)) and int(skill_system.ensure_skills().practice_progress["ng_code_decorator"]) == 370, "灵感 25 时练功每秒应推进 floor(25/5)=5 点经验")
 	_assert_true(game_state.combat_state.mp == practice_mp_before - 2 and game_state.combat_state.hp == practice_hp_before - 4, "练功每 tick 应固定消耗 2 精力，并按经验增量分摊 80% 体力成本")
 	game._open_practice()
 	_assert_true(game.practice_focus_category and game.practice_categories.size() == 3, "练功打开后应先聚焦编码、思维、招架分类栏")
@@ -56,14 +66,14 @@ func _run_menu_suite(game: Node) -> void:
 	game.practice_items.assign(["ng_code_decorator"])
 	game.practice_index = 0
 	game.practicing_skill_id = "ng_code_decorator"
-	skill_system.ensure_skills().practiceProgress["ng_code_decorator"] = 3
+	skill_system.ensure_skills().practice_progress["ng_code_decorator"] = 3
 	game._refresh_practice()
 	_assert_true(game.practice_progress_widgets.size() == 1, "开始练功后应显示独立进度条")
 	var practice_meter = game.practice_progress_widgets[0]
 	var expected_practice_progress: Dictionary = skill_system.practice_progress("ng_code_decorator")
 	_assert_true(practice_meter.current == int(expected_practice_progress.current) and practice_meter.total == int(expected_practice_progress.total), "练功进度条应显示当前等级内的真实进度")
 	_assert_true(not Rect2(game.map_badge_panel.position, game.map_badge_panel.size).intersects(Rect2(practice_meter.position, practice_meter.size)), "房间名 HUD 不得与练功进度条重叠")
-	skill_system.ensure_skills().practiceProgress["ng_code_decorator"] = 4
+	skill_system.ensure_skills().practice_progress["ng_code_decorator"] = 4
 	game._refresh_practice()
 	_assert_true(game.practice_progress_widgets[0] == practice_meter and practice_meter.current == 4, "练功 tick 刷新时应复用并更新同一进度条，避免闪烁")
 	game.practicing_skill_id = ""
@@ -82,7 +92,7 @@ func _run_menu_suite(game: Node) -> void:
 	game_state.profile.vitals.cultivation = 10
 	game_state.combat_state.mp = 0
 	game_state.combat_state.hp = 100
-	skill_system.ensure_skills().practiceProgress["ng_code_decorator"] = 0
+	skill_system.ensure_skills().practice_progress["ng_code_decorator"] = 0
 	game.practicing_skill_id = "ng_code_decorator"
 	game.practice_tick_accumulator = 0.0
 	game._update_continuous_skill_actions(skill_system.PRACTICE_TICK_SECONDS)
@@ -129,7 +139,7 @@ func _run_menu_suite(game: Node) -> void:
 	var selected_level: int = skill_system.level(selected_skill)
 	var selected_rate: float = clampf(1.0 - (float(game_state.profile.attributes.wisdom) - 25.0) * 0.02, 0.65, 1.25)
 	var selected_required: int = skill_system._learn_required(selected_definition, selected_level + 1, selected_rate)
-	skill_system.ensure_skills().learnProgress[selected_skill] = selected_required - 1
+	skill_system.ensure_skills().learn_progress[selected_skill] = selected_required - 1
 	game_state.profile.vitals.potential = 1
 	game_state.profile.vitals.money = 100000
 	var money_before := int(game_state.profile.vitals.money)
@@ -162,7 +172,7 @@ func _run_menu_suite(game: Node) -> void:
 	skill_system.ensure_skills().levels["ng_arch_zone"] = 40
 	skill_system.ensure_skills().equipped_basic["arch"] = "basicConstitution"
 	skill_system.ensure_skills().equipped_special["arch"] = "ng_arch_zone"
-	skill_system.ensure_skills().forcePower = 0
+	skill_system.ensure_skills().force_power = 0
 	game.skill_index = 2
 	game._select_skill_menu()
 	_assert_true(game.force_power_open and game.force_power_limit == 120 and game.dialogue_content.text.contains("加力 0 / 120"), "选择加力后应按图示进入菜单内调整态，并显示当前值与内功上限")
@@ -206,7 +216,7 @@ func _run_menu_suite(game: Node) -> void:
 	game_state.combat_state.mp = 9
 	game.system_index = 0
 	game._select_system_menu()
-	_assert_true(skill_system.meditation_cap() == 3000 and skill_system.meditation_max_mp_cap() == 3000 and game._cyber_teleport_cost() == 10, "理论修为终点应与最大当前精力 1:1，传送按当前人物精力上限的 1/3")
+	_assert_true(skill_system.meditation_cap() == 3000 and skill_system.meditation_max_mp_cap() == 3000 and game.cyber_teleport_controller.cost() == 10, "理论修为终点应与最大当前精力 1:1，传送按当前人物精力上限的 1/3")
 	# 3000 必须是公式结果而非特判：综合内功 40+40×2=120，每级贡献25，
 	# 初始根骨25修正为1.0，因此 floor(120×25×1.0)=3000。
 	_assert_true(is_equal_approx(game_state.meditation_modifier(25), 1.0), "初始根骨25的冥想修正应处于中性值1.0")

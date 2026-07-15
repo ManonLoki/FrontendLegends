@@ -5,9 +5,11 @@ const UI_PROGRESS_METER := preload("res://scripts/ui_progress_meter.gd")
 
 var game: Node
 
+# 处理init相关逻辑，并保持调用方状态一致。
 func _init(owner: Node) -> void:
 	game = owner
 
+# 打开open相关逻辑，并保持调用方状态一致。
 func open() -> void:
 	game.practice_all_items.clear()
 	var sect := str(GameState.profile.get("sect", ""))
@@ -23,6 +25,7 @@ func open() -> void:
 	game.menu_panel.visible = false
 	refresh_items()
 
+# 刷新items相关逻辑，并保持调用方状态一致。
 func refresh_items() -> void:
 	game.practice_items.clear()
 	var selected_theme: String = game.practice_themes[game.practice_category_index]
@@ -32,6 +35,7 @@ func refresh_items() -> void:
 	game.practice_index = clampi(game.practice_index, 0, maxi(0, game.practice_items.size() - 1))
 	render()
 
+# 处理key相关逻辑，并保持调用方状态一致。
 func handle_key(key: Key) -> void:
 	if not game.practicing_skill_id.is_empty():
 		if key in [KEY_ESCAPE, KEY_SPACE]:
@@ -72,6 +76,7 @@ func handle_key(key: Key) -> void:
 		game.message = "开始练习【%s】。" % DataRegistry.get_skill(game.practicing_skill_id).get("name", game.practicing_skill_id)
 	render()
 
+# 渲染render相关逻辑，并保持调用方状态一致。
 func render() -> void:
 	game._use_detail_hud("practice")
 	game.details_content.visible = true
@@ -105,6 +110,7 @@ func render() -> void:
 	game._detail_label(footer, Rect2(Vector2(pad, area.y - 40.0 * scale), Vector2(area.x - pad * 2.0, 28.0 * scale)), 11, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
 	render_progress()
 
+# 渲染progress相关逻辑，并保持调用方状态一致。
 func render_progress() -> void:
 	if game.practicing_skill_id.is_empty():
 		clear_progress()
@@ -121,6 +127,7 @@ func render_progress() -> void:
 		meter = game.practice_progress_widgets[0]
 	meter.set_progress(int(progress.get("current", 0)), int(progress.get("total", 1)))
 
+# 清理progress相关逻辑，并保持调用方状态一致。
 func clear_progress() -> void:
 	for widget in game.practice_progress_widgets:
 		if is_instance_valid(widget):

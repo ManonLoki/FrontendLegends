@@ -14,6 +14,7 @@ var layers: Dictionary = {}
 var objects: Array[Dictionary] = []
 var tilesets: Array[Dictionary] = []
 
+# 加载file相关逻辑，并保持调用方状态一致。
 func load_file(path: String) -> bool:
 	var file := FileAccess.open(path, FileAccess.READ)
 	if not file:
@@ -46,12 +47,14 @@ func load_file(path: String) -> bool:
 		objects.append(object)
 	return width > 0 and height > 0
 
+# 判断walkable相关逻辑，并保持调用方状态一致。
 func is_walkable(col: int, row: int) -> bool:
 	if col < 0 or row < 0 or col >= width or row >= height:
 		return false
 	var road: PackedInt32Array = layers.get("Road", PackedInt32Array())
 	return road.size() > row * width + col and road[row * width + col] != 0
 
+# 处理objects相关逻辑，并保持调用方状态一致。
 func npc_objects() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for object in objects:
@@ -59,6 +62,7 @@ func npc_objects() -> Array[Dictionary]:
 			result.append(object)
 	return result
 
+# 处理objects相关逻辑，并保持调用方状态一致。
 func transaction_objects() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for object in objects:
@@ -67,6 +71,7 @@ func transaction_objects() -> Array[Dictionary]:
 			result.append(object)
 	return result
 
+# 处理point相关逻辑，并保持调用方状态一致。
 func spawn_point() -> Dictionary:
 	for object in objects:
 		var object_name := str(object.get("name", ""))
@@ -77,6 +82,7 @@ func spawn_point() -> Dictionary:
 			return object
 	return {}
 
+# 处理at、tile相关逻辑，并保持调用方状态一致。
 func object_at_tile(col: int, row: int) -> Dictionary:
 	var tile_rect := Rect2(float(col * tile_width), float(row * tile_height), float(tile_width), float(tile_height))
 	for object in objects:
@@ -84,6 +90,7 @@ func object_at_tile(col: int, row: int) -> Dictionary:
 			return object
 	return {}
 
+# 处理object、at、tile相关逻辑，并保持调用方状态一致。
 func interactable_object_at_tile(col: int, row: int) -> Dictionary:
 	var tile_rect := Rect2(float(col * tile_width), float(row * tile_height), float(tile_width), float(tile_height))
 	for object in objects:
@@ -94,6 +101,7 @@ func interactable_object_at_tile(col: int, row: int) -> Dictionary:
 			return object
 	return {}
 
+# 处理object、at、tile相关逻辑，并保持调用方状态一致。
 func npc_object_at_tile(col: int, row: int) -> Dictionary:
 	var tile_rect := Rect2(float(col * tile_width), float(row * tile_height), float(tile_width), float(tile_height))
 	for object in objects:
@@ -103,6 +111,7 @@ func npc_object_at_tile(col: int, row: int) -> Dictionary:
 			return object
 	return {}
 
+# 处理dynamic、npc、tile相关逻辑，并保持调用方状态一致。
 func pick_dynamic_npc_tile() -> Vector2i:
 	var indoor := str(properties.get("cameraAutoFit", "false")).to_lower() == "true" or properties.has("parentMap")
 	var candidates: Array[Vector2i] = []
@@ -133,6 +142,7 @@ func pick_dynamic_npc_tile() -> Vector2i:
 				fallback.append(Vector2i(col, row))
 	return fallback[randi() % fallback.size()] if not fallback.is_empty() else Vector2i(-1, -1)
 
+# 处理dynamic、npc、tile相关逻辑，并保持调用方状态一致。
 func _valid_dynamic_npc_tile(col: int, row: int) -> bool:
 	if col < 0 or row < 0 or col >= width or row >= height or _transaction_at_tile(col, row):
 		return false
@@ -145,6 +155,7 @@ func _valid_dynamic_npc_tile(col: int, row: int) -> bool:
 			return false
 	return true
 
+# 处理at、tile相关逻辑，并保持调用方状态一致。
 func _transaction_at_tile(col: int, row: int) -> bool:
 	var tile_rect := Rect2(float(col * tile_width), float(row * tile_height), float(tile_width), float(tile_height))
 	for object in transaction_objects():
@@ -152,6 +163,7 @@ func _transaction_at_tile(col: int, row: int) -> bool:
 			return true
 	return false
 
+# 处理occupies、tile相关逻辑，并保持调用方状态一致。
 func _object_occupies_tile(object: Dictionary, tile_rect: Rect2) -> bool:
 	var raw_width := float(object.get("width", 0.0))
 	var raw_height := float(object.get("height", 0.0))
@@ -173,6 +185,7 @@ func _object_occupies_tile(object: Dictionary, tile_rect: Rect2) -> bool:
 	var object_rect := Rect2(object_position, object_size)
 	return object_rect.intersects(tile_rect)
 
+# 处理for、arrival相关逻辑，并保持调用方状态一致。
 func transaction_for_arrival(from_map: String, to_map: String, cyber := false) -> Dictionary:
 	var candidates: Array[Dictionary] = []
 	for object in transaction_objects():
@@ -186,6 +199,7 @@ func transaction_for_arrival(from_map: String, to_map: String, cyber := false) -
 		return {}
 	return candidates[randi() % candidates.size()] if cyber else candidates[0]
 
+# 处理region相关逻辑，并保持调用方状态一致。
 func tile_region(gid: int) -> Dictionary:
 	var selected: Dictionary = {}
 	for tileset in tilesets:
@@ -208,6 +222,7 @@ func tile_region(gid: int) -> Dictionary:
 	var source := Rect2(margin + (local_id % columns) * (tile_w + spacing), margin + (local_id / columns) * (tile_h + spacing), tile_w, tile_h)
 	return {"texture": selected.texture, "source": source}
 
+# 加载tileset相关逻辑，并保持调用方状态一致。
 func _load_tileset(map_path: String, attrs: Dictionary, body: String) -> void:
 	var first_gid := int(attrs.get("firstgid", 1))
 	var source_path := str(attrs.get("source", ""))
@@ -220,9 +235,7 @@ func _load_tileset(map_path: String, attrs: Dictionary, body: String) -> void:
 		tsx_xml = tsx_file.get_as_text()
 	var tsx_attrs := _attrs(_first_match(tsx_xml, "<tileset\\b([^>]*)>"))
 	var image_source := _first_match(tsx_xml, "<image\\b[^>]*source=\\\"([^\\\"]+)\\\"")
-	# Image-collection tilesets have columns=0 and one <image> per <tile>.
-	# A broad image search finds their first child image, so distinguish them
-	# using the tileset metadata before taking the atlas path.
+	# 图片集合型图块集的列数为零，每个 tile 自带一张 image；读取图集路径前须先按元数据区分。
 	if image_source.is_empty() or int(tsx_attrs.get("columns", 0)) == 0:
 		var individual_tiles: Dictionary = {}
 		for tile_match in _all_matches(tsx_xml, "<tile\\b([^>]*)>(.*?)</tile>", true):
@@ -251,17 +264,19 @@ func _load_tileset(map_path: String, attrs: Dictionary, body: String) -> void:
 		"texture": texture,
 	})
 
+# 处理layer相关逻辑，并保持调用方状态一致。
 func _decode_layer(encoded: String) -> PackedInt32Array:
 	var result := PackedInt32Array()
 	if encoded.is_empty():
 		return result
 	var compressed := Marshalls.base64_to_raw(encoded.strip_edges())
-	# Godot's DEFLATE mode is the zlib stream used by Tiled's base64 data.
+	# Godot 的 DEFLATE 模式对应 Tiled 的 Base64 数据所使用的 zlib 数据流。
 	var raw: PackedByteArray = compressed.decompress_dynamic(maxi(4, width * height * 4), 1)
 	for offset in range(0, raw.size() - 3, 4):
 		result.append(raw[offset] | (raw[offset + 1] << 8) | (raw[offset + 2] << 16) | (raw[offset + 3] << 24))
 	return result
 
+# 处理properties相关逻辑，并保持调用方状态一致。
 func _properties(xml: String) -> Dictionary:
 	var result: Dictionary = {}
 	for match in _all_matches(xml, "<property\\b([^>]*)/>"):
@@ -269,24 +284,29 @@ func _properties(xml: String) -> Dictionary:
 		result[attrs.get("name", "")] = attrs.get("value", "")
 	return result
 
+# 处理attrs相关逻辑，并保持调用方状态一致。
 func _attrs(text: String) -> Dictionary:
 	var result: Dictionary = {}
 	for match in _all_matches(text, "([A-Za-z_][A-Za-z0-9_]*)=\\\"([^\\\"]*)\\\""):
 		result[match.get_string(1)] = match.get_string(2)
 	return result
 
+# 处理xml、text相关逻辑，并保持调用方状态一致。
 func _decode_xml_text(text: String) -> String:
 	return text.replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"").replace("&apos;", "'").replace("&amp;", "&")
 
+# 处理match相关逻辑，并保持调用方状态一致。
 func _match(text: String, pattern: String, dotall := false) -> RegExMatch:
 	var regex := RegEx.new()
 	regex.compile(("(?s)" if dotall else "") + pattern)
 	return regex.search(text)
 
+# 处理match相关逻辑，并保持调用方状态一致。
 func _first_match(text: String, pattern: String, dotall := false) -> String:
 	var match := _match(text, pattern, dotall)
 	return match.get_string(1) if match else ""
 
+# 处理matches相关逻辑，并保持调用方状态一致。
 func _all_matches(text: String, pattern: String, dotall := false) -> Array[RegExMatch]:
 	var regex := RegEx.new()
 	regex.compile(("(?s)" if dotall else "") + pattern)

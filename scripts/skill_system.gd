@@ -1,12 +1,13 @@
 extends Node
-
 const SKILL_TRAINING := preload("res://scripts/skills/skill_training.gd")
-
+const SKILL_LOADOUT := preload("res://scripts/skills/skill_loadout.gd")
+const SKILL_MEMBERSHIP := preload("res://scripts/skills/skill_membership.gd")
+const SKILL_LEARNING := preload("res://scripts/skills/skill_learning.gd")
+## 学习、冥想和练功分别采用独立的固定推进间隔。
 const LEARNING_TICK_SECONDS := 1.0 / 30.0
 const MEDITATION_TICK_SECONDS := 1.0 / 30.0
 const PRACTICE_TICK_SECONDS := 1.0 / 5.0
 const MEDITATION_INNER_POWER_UNIT := 25.0
-
 const THEMES := ["code", "tune", "arch", "parry", "knowledge"]
 const BASIC_SKILL_IDS: Array[String] = ["basicStrength", "basicAgility", "basicConstitution", "basicParry", "literacy"]
 
@@ -21,11 +22,16 @@ const ULT_TIER1_ARCH_LEVEL := 30
 const ULT_TIER2_ARCH_LEVEL := 80
 
 @onready var training := SKILL_TRAINING.new(self)
+@onready var loadout := SKILL_LOADOUT.new(self)
+@onready var membership := SKILL_MEMBERSHIP.new(self)
+@onready var learning := SKILL_LEARNING.new(self)
 
+## 创建新角色的空技能、装备槽、进度和加力状态。
 func create_default_skills() -> Dictionary:
 	# 对齐参考项目：新角色不会任何技能，也不会自动装备基础功法。
 	# 基础功法须经师父或秘籍学会，再由玩家在功法菜单中主动装备。
-	return {"levels": {}, "equipped_basic": {}, "equipped_special": {}, "progress": {}, "learnProgress": {}, "practiceProgress": {}, "forcePower": 0}
+	## 持久化字段统一使用蛇形命名，避免存档同时出现两套命名风格。
+	return {"levels": {}, "equipped_basic": {}, "equipped_special": {}, "progress": {}, "learn_progress": {}, "practice_progress": {}, "force_power": 0}
 
 ## 兼容旧存档：早期版本用单一 "equipped" 槽位混存基础/门派功法，这里一次性
 ## 迁移拆分为 equipped_basic/equipped_special 两个独立槽位后即删除旧字段。
@@ -33,6 +39,10 @@ func ensure_skills() -> Dictionary:
 	if not GameState.profile.has("skills") or GameState.profile.skills.is_empty():
 		GameState.profile.skills = create_default_skills()
 	var skills: Dictionary = GameState.profile.skills
+	## 第二版存档使用驼峰字段；读取后一次性迁移到标准字段。
+	_migrate_saved_key(skills, "learnProgress", "learn_progress", {})
+	_migrate_saved_key(skills, "practiceProgress", "practice_progress", {})
+	_migrate_saved_key(skills, "forcePower", "force_power", 0)
 	if not skills.has("levels"): skills.levels = {}
 	if not skills.has("equipped_basic"):
 		skills.equipped_basic = {}
@@ -50,6 +60,13 @@ func ensure_skills() -> Dictionary:
 	if not skills.has("progress"): skills.progress = {}
 	return skills
 
+## 新字段优先于旧字段，迁移不会覆盖已经写入的标准数据。
+func _migrate_saved_key(skills: Dictionary, old_key: String, new_key: String, fallback: Variant) -> void:
+	if not skills.has(new_key):
+		skills[new_key] = skills.get(old_key, fallback)
+	skills.erase(old_key)
+
+## 返回指定技能当前等级，未学习时为零。
 func level(skill_id: String) -> int:
 	return int(ensure_skills().levels.get(skill_id, 0))
 
@@ -69,146 +86,31 @@ func learn_from_book(skill_id: String, max_learn_level: int = -1) -> Dictionary:
 		return {"ok": false, "message": "此书只能将【%s】读到 %d 级。" % [definition.get("name", skill_id), book_cap]}
 	var before_attrs: Dictionary = GameState.profile.get("attributes", {}).duplicate()
 	ensure_skills().levels[skill_id] = current + 1
-	ensure_skills().get("learnProgress", {}).erase(skill_id)
+	ensure_skills().get("learn_progress", {}).erase(skill_id)
 	_refresh_derived_attributes()
 	return {"ok": true, "message": "读罢秘籍，领悟【%s】至 %d 级%s。" % [definition.get("name", skill_id), current + 1, _attribute_growth_suffix(before_attrs)], "level": current + 1}
 
+## 返回当前师承允许向指定人物学习的技能列表。
 func learn_options_for_npc(npc_id: String) -> Array[String]:
-	var result: Array[String] = []
-	var npc := NpcSystem.build_instance(npc_id)
-	var entries := DataRegistry.get_teach_entries(npc_id)
-	if entries.is_empty():
-		return result
-	if not DataRegistry.is_independent_tutor(npc_id) and str(GameState.profile.get("master", "")) != npc_id:
-		return result
-	for entry in entries:
-		var skill_id := str(entry.get("skillId", ""))
-		var definition := DataRegistry.get_skill(skill_id)
-		if definition.is_empty():
-			continue
-		if DataRegistry.is_independent_tutor(npc_id) or str(definition.get("sect", "")) == str(npc.get("sect", "")) or str(definition.get("category", "")) == "basic":
-			var basic_id := str(THEME_BASIC_SKILL.get(str(definition.get("theme", "")), ""))
-			if not basic_id.is_empty() and basic_id not in result:
-				result.append(basic_id)
-			if skill_id not in result:
-				result.append(skill_id)
-	return result
-
-const JOIN_ATTR_LABELS := {"strength": "编码", "agility": "思维", "constitution": "架构", "wisdom": "灵感"}
+	return membership.learn_options_for_npc(npc_id)
 
 ## 师父高低只按其教学表中显式 maxTeachLevel 的最高值比较；字符串旧格式
 ## 没有上限字段，按参照项目视为 0，而不是由拜师门槛推断造诣。
 func _master_teach_cap(npc_id: String) -> int:
-	var cap := 0
-	for entry in DataRegistry.get_teach_entries(npc_id):
-		cap = maxi(cap, int(entry.get("maxTeachLevel", 0)))
-	return cap
+	return membership.master_teach_cap(npc_id)
 
 ## 菜单显隐用：未拜入该门派，或已拜入但此人造诣高于当前师父（可改投深造）。
 func can_join(npc_id: String) -> bool:
-	var npc := NpcSystem.build_instance(npc_id)
-	var sect := str(npc.get("sect", ""))
-	if sect.is_empty() or npc.get("joinSect", {}).is_empty():
-		return false
-	var current_sect := str(GameState.profile.get("sect", ""))
-	var current_master := str(GameState.profile.get("master", ""))
-	if current_sect.is_empty() or current_sect != sect:
-		return true
-	if current_master == npc_id:
-		return false
-	return _master_teach_cap(npc_id) > _master_teach_cap(current_master)
+	return membership.can_join(npc_id)
 
+## 验证资格并尝试拜指定人物为师。
 func join_npc(npc_id: String) -> Dictionary:
-	var npc := NpcSystem.build_instance(npc_id)
-	var sect := str(npc.get("sect", ""))
-	var join_gate: Dictionary = npc.get("joinSect", {})
-	if sect.is_empty() or join_gate.is_empty():
-		return {"ok": false, "message": "此人不收徒。"}
-	var current_sect := str(GameState.profile.get("sect", ""))
-	var current_master := str(GameState.profile.get("master", ""))
-	if not current_sect.is_empty() and current_sect != sect:
-		return {"ok": false, "message": "你已拜入%s，不便改投他门。" % current_sect}
-	var display_name := str(npc.get("display_name", npc_id))
-	var upgrading := current_sect == sect and not current_master.is_empty()
-	if upgrading:
-		if current_master == npc_id:
-			return {"ok": false, "message": "你已师从此人。"}
-		# 改投须严格造诣更高，同门同档或更低造诣的师父不允许平替/降级拜师。
-		if _master_teach_cap(npc_id) <= _master_teach_cap(current_master):
-			return {"ok": false, "message": "%s的造诣不及你现在的师父，无须改投。" % display_name}
-	var attributes: Dictionary = GameState.profile.get("attributes", {})
-	var missing_attrs: Array[String] = []
-	for key in join_gate:
-		if int(attributes.get(key, 0)) < int(join_gate[key]):
-			missing_attrs.append("%s ≥ %d" % [JOIN_ATTR_LABELS.get(str(key), str(key)), int(join_gate[key])])
-	if not missing_attrs.is_empty():
-		return {"ok": false, "message": "拜入%s门下需：%s。你资质未足，再来。" % [sect, "、".join(missing_attrs)]}
-	var requirements: Dictionary = npc.get("joinSkillRequirements", {})
-	var missing_skills: Array[String] = []
-	for required_id in requirements:
-		if level(str(required_id)) < int(requirements[required_id]):
-			missing_skills.append("%s ≥ %d" % [DataRegistry.get_skill(str(required_id)).get("name", required_id), int(requirements[required_id])])
-	if not missing_skills.is_empty():
-		return {"ok": false, "message": "拜入%s门下需：%s。你功夫未足，再来。" % [sect, "、".join(missing_skills)]}
-	GameState.profile.sect = sect
-	GameState.profile.master = npc_id
-	if upgrading:
-		return {"ok": true, "message": "你已成功改拜%s为师，你恭恭敬敬的磕了几个响头，可学更高深的功夫了。" % display_name}
-	return {"ok": true, "message": "你已成功拜%s为师，你恭恭敬敬的磕了几个响头。" % display_name}
+	return membership.join_npc(npc_id)
 
 ## 研习为两阶段消耗：先按 tick 花潜能推进进度条到 required，进度满后一次性
 ## 支付 Token 学费（80% 曲线成本）才真正升级——潜能只买“进度”，Token 买“结果”。
 func learn_tick(npc_id: String, skill_id: String) -> Dictionary:
-	if skill_id not in learn_options_for_npc(npc_id):
-		return {"ok": false, "message": "此人不传授这门功法", "reason": "requires"}
-	var definition: Dictionary = DataRegistry.get_skill(skill_id)
-	var current := level(skill_id)
-	var cap := teach_cap(npc_id, skill_id)
-	if current >= cap:
-		return {"ok": false, "message": "【%s】已至此师父可授上限 %d 级。" % [definition.get("name", skill_id), cap], "reason": "maxLevel"}
-	var requires: Dictionary = definition.get("requires", {})
-	if not str(requires.get("sect", "")).is_empty() and str(GameState.profile.get("sect", "")) != str(requires.get("sect", "")):
-		return {"ok": false, "message": "未拜入%s，学不得【%s】。" % [requires.get("sect", ""), definition.get("name", skill_id)], "reason": "requires"}
-	var attributes: Dictionary = GameState.profile.get("attributes", {})
-	for key in requires.get("attrs", {}):
-		if int(attributes.get(key, 0)) < int(requires.attrs[key]):
-			return {"ok": false, "message": "你%s资质不足，学不得【%s】。" % [JOIN_ATTR_LABELS.get(str(key), str(key)), definition.get("name", skill_id)], "reason": "requires"}
-	if requires.has("minSkillPower") and _skill_power() < int(requires.get("minSkillPower", 0)):
-		return {"ok": false, "message": "你综合火候未到（需综合等级 %d），先精进再来。" % int(requires.get("minSkillPower", 0)), "reason": "requires"}
-	if requires.has("minAvgSkill") and _average_skill_level() < float(requires.get("minAvgSkill", 0)):
-		return {"ok": false, "message": "你各科尚不均衡（需均值 %d），先补齐短板。" % int(requires.get("minAvgSkill", 0)), "reason": "requires"}
-	var prereq: Dictionary = requires.get("prereq", {})
-	if not prereq.is_empty() and level(str(prereq.get("skillId", ""))) < int(prereq.get("level", 0)):
-		var prereq_id := str(prereq.get("skillId", ""))
-		return {"ok": false, "message": "须先将【%s】练到 %d 级。" % [DataRegistry.get_skill(prereq_id).get("name", prereq_id), int(prereq.get("level", 0))], "reason": "requires"}
-	var progress: Dictionary = ensure_skills().get("learnProgress", {})
-	var next_level := current + 1
-	var required := _learn_required(definition, next_level, _learning_cost_rate())
-	var current_progress := mini(required, int(progress.get(skill_id, 0)))
-	var vitals: Dictionary = GameState.profile.get("vitals", {})
-	var spent_potential := 0
-	if current_progress < required:
-		if int(vitals.get("potential", 0)) <= 0:
-			return {"ok": false, "message": "潜能不足，学习进度 %d/%d。" % [current_progress, required], "reason": "potential"}
-		vitals.potential = int(vitals.get("potential", 0)) - 1
-		spent_potential = 1
-		current_progress += 1
-		progress[skill_id] = current_progress
-		ensure_skills().learnProgress = progress
-		GameState.profile.vitals = vitals
-		if current_progress < required:
-			return {"ok": false, "message": "研习【%s】，进度 %d/%d。" % [definition.get("name", skill_id), current_progress, required], "progress": current_progress, "required": required}
-	var tuition := int(ceil(float(required) * 0.8))
-	if int(vitals.get("money", 0)) < tuition:
-		return {"ok": false, "message": "学习进度已满，Token 不足，学费 %d。" % tuition, "reason": "token"}
-	vitals.money = int(vitals.get("money", 0)) - tuition
-	progress[skill_id] = 0
-	ensure_skills().learnProgress = progress
-	ensure_skills().levels[skill_id] = next_level
-	GameState.profile.vitals = vitals
-	var before_attrs: Dictionary = attributes.duplicate()
-	_refresh_derived_attributes()
-	return {"ok": true, "message": "研习【%s】至 %d 级（耗潜能 %d、Token %d）%s。" % [definition.get("name", skill_id), next_level, spent_potential, tuition, _attribute_growth_suffix(before_attrs)], "level": next_level}
+	return learning.learn_tick(npc_id, skill_id)
 
 ## 综合火候门槛用：门派功法按 2 倍计入，鼓励深耕本门而非只堆基础功法。
 func _skill_power() -> int:
@@ -236,6 +138,7 @@ func _average_skill_level() -> float:
 		total += value
 	return float(total) / float(maxi(1, values.size()))
 
+## 返回人物对指定技能或同主题基础技能的教学上限。
 func teach_cap(npc_id: String, skill_id: String) -> int:
 	var definition := DataRegistry.get_skill(skill_id)
 	var cap := int(definition.get("maxLevel", 100))
@@ -248,6 +151,7 @@ func teach_cap(npc_id: String, skill_id: String) -> int:
 			cap = mini(cap, int(entry.get("maxTeachLevel", cap)))
 	return cap
 
+## 返回指定技能当前学习进度与下一级所需总量。
 func learning_progress(skill_id: String) -> Dictionary:
 	var definition := DataRegistry.get_skill(skill_id)
 	if definition.is_empty():
@@ -255,7 +159,7 @@ func learning_progress(skill_id: String) -> Dictionary:
 	var next_level := level(skill_id) + 1
 	var required := _learn_required(definition, next_level, _learning_cost_rate())
 	return {
-		"current": mini(required, int(ensure_skills().get("learnProgress", {}).get(skill_id, 0))),
+		"current": mini(required, int(ensure_skills().get("learn_progress", {}).get(skill_id, 0))),
 		"total": required,
 	}
 
@@ -267,6 +171,7 @@ func _attribute_growth_suffix(before: Dictionary) -> String:
 			return "，四维亦有精进"
 	return ""
 
+## 按技能曲线、目标等级和灵感倍率计算学习需求。
 func _learn_required(definition: Dictionary, level_to_reach: int, rate: float) -> int:
 	if level_to_reach <= 1:
 		return 1
@@ -279,6 +184,7 @@ func _learn_required(definition: Dictionary, level_to_reach: int, rate: float) -
 	var normalized_rate := clampf(rate, 0.65, 1.25)
 	return maxi(2, int(ceil(float(base_required) * normalized_rate / 2.0)) * 2)
 
+## 将角色灵感转换为学习成本倍率。
 func _learning_cost_rate() -> float:
 	var wisdom := float(GameState.profile.get("attributes", {}).get("wisdom", 25))
 	return clampf(1.0 - (wisdom - WISDOM_BASELINE) * WISDOM_LEARN_RATE_PER_POINT, LEARN_RATE_MIN, LEARN_RATE_MAX)
@@ -303,6 +209,7 @@ func _refresh_derived_attributes() -> void:
 		attributes[key] = mini(50, int(base.get(key, 0)) + int(nudges[key]))
 	GameState.profile.attributes = attributes
 
+## 公开重算基础功法反哺四维的稳定入口。
 func refresh_derived_attributes() -> void:
 	_refresh_derived_attributes()
 
@@ -312,182 +219,111 @@ const THEME_BASIC_SKILL := {"code": "basicStrength", "tune": "basicAgility", "ar
 ## 对齐参考项目 SaveManager.ts：其余状态（生存 tick、消耗品、商贩交易）只改内存缓存，
 ## 须玩家 ESC→保存才落盘；唯独功法装备立即写盘，避免退出菜单后丢失当前选择。
 func equip(skill_id: String) -> Dictionary:
-	var definition := DataRegistry.get_skill(skill_id)
-	if definition.is_empty():
-		return {"ok": false, "message": "没有这门功法。"}
-	if str(definition.get("category", "")) == "sect" and str(definition.get("sect", "")) != str(GameState.profile.get("sect", "")):
-		return {"ok": false, "message": "非本门功法，不能装备。"}
-	if level(skill_id) <= 0:
-		return {"ok": false, "message": "尚未学会【%s】。" % definition.get("name", skill_id)}
-	var theme := str(definition.get("theme", ""))
-	if theme not in THEMES:
-		return {"ok": false, "message": "无法装备。"}
-	var slot := "equipped_basic" if str(definition.get("category", "")) == "basic" else "equipped_special"
-	ensure_skills()[slot][theme] = skill_id
-	GameState.save_game()
-	return {"ok": true, "message": "已装备【%s】。" % definition.get("name", skill_id)}
+	return loadout.equip(skill_id)
 
 ## 基础与特殊功法使用独立槽，卸下其中一类不会影响另一类。同 equip() 立即落盘。
 func unequip(skill_id: String) -> Dictionary:
-	var definition := DataRegistry.get_skill(skill_id)
-	if definition.is_empty():
-		return {"ok": false, "message": "未知功法"}
-	var theme := str(definition.get("theme", ""))
-	var slot := "equipped_basic" if str(definition.get("category", "")) == "basic" else "equipped_special"
-	if str(ensure_skills()[slot].get(theme, "")) != skill_id:
-		return {"ok": false, "message": "此功法尚未装备"}
-	ensure_skills()[slot].erase(theme)
-	GameState.save_game()
-	return {"ok": true, "message": "已卸下【%s】" % definition.get("name", skill_id)}
+	return loadout.unequip(skill_id)
 
+## 查询指定主题和类别当前装备的功法 ID。
 func equipped_id(theme: String, category: String) -> String:
-	var slot := "equipped_basic" if category == "basic" else "equipped_special"
-	return str(ensure_skills().get(slot, {}).get(theme, ""))
+	return loadout.equipped_id(theme, category)
 
+## 返回去重后的全部已装备功法 ID。
 func equipped_skill_ids() -> Array[String]:
-	var result: Array[String] = []
-	for slot in ["equipped_basic", "equipped_special"]:
-		for skill_id in ensure_skills().get(slot, {}).values():
-			if not str(skill_id).is_empty() and str(skill_id) not in result:
-				result.append(str(skill_id))
-	return result
+	return loadout.equipped_skill_ids()
 
 ## 装备招架功法的伤势减免（战后伤害转伤势的折扣，封顶 75%）。
 func injury_reduce() -> float:
-	var total := 0.0
-	for skill_id in equipped_skill_ids():
-		var definition := DataRegistry.get_skill(str(skill_id))
-		var reduce_per_lv := float(definition.get("combat", {}).get("injuryReducePerLv", 0.0))
-		if reduce_per_lv > 0.0:
-			total += level(str(skill_id)) * reduce_per_lv * 0.01
-	return minf(0.75, total)
+	return loadout.injury_reduce()
 
 ## 本门架构（内力）功法等级合计（用于疗伤门槛）：装备与否均计入所有已学门派架构功法。
 func _arch_sect_level_sum() -> int:
-	var sum := 0
-	for skill_id in ensure_skills().get("levels", {}):
-		var definition := DataRegistry.get_skill(str(skill_id))
-		if str(definition.get("category", "")) == "sect" and str(definition.get("theme", "")) == "arch":
-			sum += level(str(skill_id))
-	return sum
+	return loadout.arch_sect_level_sum()
 
+## 返回所有已学本门架构功法的等级合计。
 func arch_sect_level_sum() -> int:
 	return _arch_sect_level_sum()
 
+## 汇总已装备功法提供的全部战斗加成。
 func combat_bonus() -> Dictionary:
-	var result := {"attack": 0.0, "defense": 0.0, "hit": 0.0, "dodge": 0.0, "parry": 0.0, "mp_max": 0}
-	for skill_id in equipped_skill_ids():
-		var definition := DataRegistry.get_skill(skill_id)
-		var combat: Dictionary = definition.get("combat", {})
-		var lv := level(skill_id)
-		result.attack += float(combat.get("atkPerLv", 0.0)) * lv
-		result.defense += float(combat.get("defPerLv", 0.0)) * lv
-		result.hit += float(combat.get("hitPerLv", 0.0)) * lv
-		result.dodge += float(combat.get("dodgePerLv", 0.0)) * lv
-		result.parry += float(combat.get("parryPerLv", 0.0)) * lv
-		result.mp_max += int(combat.get("mpMaxPerLv", 0)) * lv
-	return result
+	return loadout.combat_bonus()
 
 ## BattleController._bestSkillBonus 的 Godot 对应：防御/闪避只取当前已装备
 ## 门派高级功法中最高的一项，不把不同功法被动相加。
 func best_combat_bonus(key: String) -> float:
-	var best := 0.0
-	for skill_id in equipped_skill_ids():
-		var definition := DataRegistry.get_skill(skill_id)
-		if str(definition.get("category", "")) != "sect": continue
-		best = maxf(best, float(definition.get("combat", {}).get(key, 0.0)) * level(skill_id))
-	return best
+	return loadout.best_combat_bonus(key)
 
 ## “加力”是玩家可调节的精力换伤害挡位（见 combat_system.player_attack）：
 ## 设得越高，攻击时消耗的精力越多、伤害加成越高，上限由架构功法等级决定。
 func force_power_cap() -> int:
-	return maxi(0, level("basicConstitution") + equipped_sect_skill_level("arch") * 2)
+	return loadout.force_power_cap()
 
+## 返回按当前内功上限钳制后的加力档位。
 func force_power() -> int:
-	var skills := ensure_skills()
-	var value := mini(force_power_cap(), maxi(0, int(skills.get("forcePower", 0))))
-	skills.forcePower = value
-	return value
+	return loadout.force_power()
 
+## 设置并返回新的玩家加力档位。
 func set_force_power(value: int) -> Dictionary:
-	var cap := force_power_cap()
-	var next := clampi(value, 0, cap)
-	ensure_skills().forcePower = next
-	return {"ok": true, "value": next, "cap": cap, "message": "加力设为 %d / %d" % [next, cap]}
+	return loadout.set_force_power(value)
 
+## 返回已装备功法当前解锁的攻击、闪避和招架招式。
 func unlocked_moves() -> Array:
-	var result: Array = []
-	var skills := ensure_skills()
-	for skill_id in equipped_skill_ids():
-		var definition: Dictionary = DataRegistry.get_skill(str(skill_id))
-		if str(definition.get("category", "")) != "sect":
-			continue
-		var kind: String = str({"code": "attack", "tune": "dodge", "parry": "parry"}.get(str(definition.get("theme", "")), ""))
-		if str(kind).is_empty():
-			continue
-		var current := level(str(skill_id))
-		for move in definition.get("moves", []):
-			var unlock := int(move.get("unlockLevel", 0))
-			if current >= unlock:
-				result.append({"skill_id": str(skill_id), "name": move.get("name", "招式"), "kind": kind, "unlock": unlock, "level": current})
-	return result
+	return loadout.unlocked_moves()
 
+## 返回当前架构功法已经解锁的门派绝招。
 func unlocked_ults() -> Array:
-	var result: Array = []
-	var arch_id := equipped_id("arch", "sect")
-	var definition: Dictionary = DataRegistry.get_skill(arch_id)
-	var ult: Dictionary = definition.get("ult", {})
-	if ult.is_empty():
-		return result
-	var arch_level := level(arch_id)
-	var inner_power := level("basicConstitution") + arch_level * 2
-	if arch_level >= ULT_TIER1_ARCH_LEVEL:
-		result.append(_make_ult(ult, 1, inner_power))
-	if arch_level >= ULT_TIER2_ARCH_LEVEL:
-		result.append(_make_ult(ult, 2, inner_power))
-	return result
+	return loadout.unlocked_ults()
 
+## 为旧测试和调用方保留绝招字典构建入口。
 func _make_ult(config: Dictionary, tier: int, inner_power: int) -> Dictionary:
-	var costs := {"multi": [25, 45], "abnormal": [30, 50], "reduceMax": [35, 60], "hugeDamage": [40, 70]}
-	var kind := str(config.get("kind", "hugeDamage"))
-	return {"id": "ult:%s:%d" % [config.get("key", "sect"), ULT_TIER1_ARCH_LEVEL if tier == 1 else ULT_TIER2_ARCH_LEVEL], "name": config.get("names", ["绝招", "绝招"])[tier - 1], "kind": kind, "tier": tier, "inner_power": inner_power, "mp_cost": costs.get(kind, [40, 70])[tier - 1]}
+	return loadout._make_ult(config, tier, inner_power)
 
-## Meditation has two phases: current energy (mp) fills a buffer to its cap, then
-## becomes one cultivation level and resets. MP is a conversion resource, not cultivation.
-## The theoretical cap depends only on equipped architecture skills and constitution;
-## current cultivation does not affect it. Cyber teleport uses this cap as well.
+## 冥想先填充当前精力，满值后转化为一点精力修为并清空当前精力。
+## 理论上限只由已装备的架构功法和架构属性决定，赛博空间传送也使用该上限。
 func meditation_cap() -> int:
 	return training.meditation_cap()
 
+## 按明确输入计算冥想修为上限，供测试与预览使用。
 func meditation_cap_from_values(constitution: float, basic_arch_level: int, advanced_arch_level: int) -> int:
 	return training.meditation_cap_from_values(constitution, basic_arch_level, advanced_arch_level)
 
+## 返回理论修为终点对应的最大精力上限。
 func meditation_max_mp_cap() -> int:
 	return training.meditation_max_mp_cap()
 
+## 推进一次固定时间片的冥想。
 func meditate_tick() -> Dictionary:
 	return training.meditate_tick()
 
+## 返回当前精力填充阶段的冥想进度。
 func meditation_progress() -> Dictionary:
 	return training.meditation_progress()
 
+## 返回指定主题已装备本门功法的有效等级。
 func equipped_sect_skill_level(theme: String) -> int:
 	return training.equipped_sect_skill_level(theme)
 
+## 判断基础与门派架构功法是否满足冥想条件。
 func can_meditate() -> bool:
 	return training.can_meditate()
 
+## 返回指定门派功法当前练功等级上限。
 func practice_cap(skill_id: String) -> int:
 	return training.practice_cap(skill_id)
 
+## 推进一次固定时间片的自主练功。
 func practice_tick(skill_id: String) -> Dictionary:
 	return training.practice_tick(skill_id)
 
+## 返回指定功法当前练功进度和等级。
 func practice_progress(skill_id: String) -> Dictionary:
 	return training.practice_progress(skill_id)
 
+## 在非战斗训练入口以精力换取等量体力。
 func channel_hp() -> Dictionary:
 	return training.channel_hp()
 
+## 消耗精力按本门架构功法门槛治疗伤势。
 func heal_injury() -> Dictionary:
 	return training.heal_injury()

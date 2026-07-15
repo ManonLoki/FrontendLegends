@@ -2,14 +2,17 @@ extends SceneTree
 
 var failures: Array[String] = []
 
+# 断言验证true相关逻辑，并保持调用方状态一致。
 func _assert_true(condition: bool, message: String) -> void:
 	if not condition:
 		failures.append(message)
 		push_error(message)
 
+# 处理initialize相关逻辑，并保持调用方状态一致。
 func _initialize() -> void:
 	call_deferred("_run")
 
+# 执行run相关逻辑，并保持调用方状态一致。
 func _run() -> void:
 	var state = root.get_node("GameState")
 	var combat = root.get_node("CombatSystem")

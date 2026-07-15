@@ -1,12 +1,13 @@
 extends Node
 
-## Sell price is a flat fraction of an item's buy price rather than a per-item field,
-## so vendor buy/sell spreads stay consistent without hand-tuning every item entry.
+## 售价统一按买价乘固定比例计算，不为每件物品单设字段，以保证所有商店差价一致。
 const SELL_PRICE_RATE := 0.25
 
+# 处理count相关逻辑，并保持调用方状态一致。
 func count(item_id: String) -> int:
 	return int(GameState.inventory.get(item_id, 0))
 
+# 添加item相关逻辑，并保持调用方状态一致。
 func add_item(item_id: String, amount: int = 1) -> bool:
 	var definition: Dictionary = DataRegistry.get_item(item_id)
 	if definition.is_empty() or amount <= 0:
@@ -18,6 +19,7 @@ func add_item(item_id: String, amount: int = 1) -> bool:
 	GameState.inventory[item_id] = current + amount
 	return true
 
+# 移除item相关逻辑，并保持调用方状态一致。
 func remove_item(item_id: String, amount: int = 1) -> bool:
 	if amount <= 0 or count(item_id) < amount:
 		return false
@@ -26,10 +28,8 @@ func remove_item(item_id: String, amount: int = 1) -> bool:
 		GameState.inventory.erase(item_id)
 	return true
 
-## Consumes the item speculatively up front so the per-kind branches below can just
-## compute their effect; any branch that finds nothing useful to apply (e.g. HP already
-## full) refunds the item via add_item() further down instead of pre-checking every
-## kind's "would this even do anything" condition before removing it.
+## 使用物品时先暂扣数量，让后续类型分支只负责计算效果；若没有可生效内容
+## （例如体力已满），再通过 add_item() 退回，避免为每种物品重复预判。
 func use_item(item_id: String) -> Dictionary:
 	var definition: Dictionary = DataRegistry.get_item(item_id)
 	if not _can_use(item_id, definition):
@@ -94,9 +94,7 @@ func use_item(item_id: String) -> Dictionary:
 	if not bool(result.get("ok", false)):
 		add_item(item_id)
 		return result
-	# Reusable items (consumeOnUse=false, e.g. a bound trinket) still go through the
-	# same remove-then-readd path above so cooldown/effect logic doesn't need a
-	# separate branch for consumable vs. non-consumable items.
+	# 不消耗的可重复物品也走相同的“暂扣后退回”路径，使冷却和效果逻辑无需另设分支。
 	if definition.get("consumeOnUse", true) == false:
 		add_item(item_id)
 	var interval := float(definition.get("useIntervalSec", 0.0))
@@ -105,6 +103,7 @@ func use_item(item_id: String) -> Dictionary:
 	GameState.profile.vitals = vitals
 	return result
 
+# 处理item相关逻辑，并保持调用方状态一致。
 func equip_item(item_id: String) -> Dictionary:
 	var definition: Dictionary = DataRegistry.get_item(item_id)
 	var slot := str(definition.get("slot", ""))
@@ -130,8 +129,7 @@ func equip_item(item_id: String) -> Dictionary:
 		elif str(GameState.equipment.get("accessory2", "")).is_empty():
 			actual_slot = "accessory2"
 		else:
-			# Both accessory slots taken: replace accessory2 rather than accessory1,
-			# so the first-equipped accessory sticks around longer by default.
+			# 两个饰品槽都占用时默认替换第二槽，优先保留最早装备的第一件饰品。
 			actual_slot = "accessory2"
 		previous = str(GameState.equipment.get(actual_slot, ""))
 	else:
@@ -141,6 +139,7 @@ func equip_item(item_id: String) -> Dictionary:
 		return {"ok": true, "message": "换下%s，穿上了%s。" % [DataRegistry.get_item(previous).get("name", previous), definition.get("name", item_id)], "previous": previous, "slot": actual_slot}
 	return {"ok": true, "message": "穿上了%s。" % definition.get("name", item_id), "previous": previous, "slot": actual_slot}
 
+# 处理unequip相关逻辑，并保持调用方状态一致。
 func unequip(slot: String) -> Dictionary:
 	var previous := str(GameState.equipment.get(slot, ""))
 	if previous.is_empty():
@@ -148,6 +147,7 @@ func unequip(slot: String) -> Dictionary:
 	GameState.equipment[slot] = ""
 	return {"ok": true, "message": "卸下了%s。" % DataRegistry.get_item(previous).get("name", previous)}
 
+# 处理slot相关逻辑，并保持调用方状态一致。
 func equipped_slot(item_id: String) -> String:
 	_normalize_equipment()
 	for slot in GameState.equipment:
@@ -155,6 +155,7 @@ func equipped_slot(item_id: String) -> String:
 			return str(slot)
 	return ""
 
+# 处理item相关逻辑，并保持调用方状态一致。
 func unequip_item(item_id: String) -> Dictionary:
 	var slot := equipped_slot(item_id)
 	if slot.is_empty():
@@ -162,6 +163,7 @@ func unequip_item(item_id: String) -> Dictionary:
 		return {"ok": false, "message": "%s 未曾穿戴。" % definition.get("name", item_id)}
 	return unequip(slot)
 
+# 处理bonus相关逻辑，并保持调用方状态一致。
 func equipment_bonus() -> Dictionary:
 	_normalize_equipment()
 	var total := {"attack": 0, "defense": 0, "hit": 0, "dodge": 0, "crit": 0, "woundInflict": 0, "parry": 0}
@@ -171,6 +173,7 @@ func equipment_bonus() -> Dictionary:
 			total[key] = int(total[key]) + int(bonus.get(key, 0))
 	return total
 
+# 处理attribute、bonus相关逻辑，并保持调用方状态一致。
 func equipment_attribute_bonus() -> Dictionary:
 	_normalize_equipment()
 	var total := {"strength": 0, "agility": 0, "constitution": 0, "wisdom": 0}
@@ -180,14 +183,14 @@ func equipment_attribute_bonus() -> Dictionary:
 			total[key] = int(total[key]) + maxi(0, int(bonus.get(key, 0)))
 	return total
 
-## Safety net for equipment referencing an item no longer in the inventory (e.g. the
-## backing item was discarded/sold through a path that doesn't call unequip_item first).
+## 清理已经不在背包中的装备引用，防止绕过卸下流程的出售或丢弃留下悬空状态。
 func _normalize_equipment() -> void:
 	for slot in GameState.equipment:
 		var item_id := str(GameState.equipment[slot])
 		if not item_id.is_empty() and count(item_id) <= 0:
 			GameState.equipment[slot] = ""
 
+# 处理item相关逻辑，并保持调用方状态一致。
 func buy_item(npc_id: String, item_id: String) -> Dictionary:
 	if item_id not in DataRegistry.list_vendor_stock(npc_id):
 		return {"ok": false, "message": "此处不售此物。"}
@@ -204,6 +207,7 @@ func buy_item(npc_id: String, item_id: String) -> Dictionary:
 	GameState.profile.vitals = vitals
 	return {"ok": true, "message": "买下%s，花费 %d Token。" % [definition.get("name", item_id), price]}
 
+# 处理item相关逻辑，并保持调用方状态一致。
 func sell_item(item_id: String) -> Dictionary:
 	var definition: Dictionary = DataRegistry.get_item(item_id)
 	if definition.is_empty():
@@ -218,6 +222,7 @@ func sell_item(item_id: String) -> Dictionary:
 	GameState.profile.vitals = vitals
 	return {"ok": true, "message": "卖出%s，得 %d Token。" % [definition.get("name", item_id), gain]}
 
+# 处理item相关逻辑，并保持调用方状态一致。
 func discard_item(item_id: String) -> Dictionary:
 	var definition: Dictionary = DataRegistry.get_item(item_id)
 	if definition.is_empty() or str(definition.get("kind", "")) == "quest" or definition.get("discardable", true) == false:
@@ -229,8 +234,7 @@ func discard_item(item_id: String) -> Dictionary:
 		return {"ok": false, "message": "你没有%s。" % definition.get("name", item_id)}
 	return {"ok": true, "message": "丢弃了%s。" % definition.get("name", item_id)}
 
-## Mirrors use_item()'s effect-kind whitelist and cooldown/gender checks so the menu
-## can gray out an item (via _use_failure below) before the player even attempts to use it.
+## 复用 use_item() 的效果白名单、冷却和性别检查，让菜单能在玩家确认前禁用无效物品。
 func _can_use(item_id: String, definition: Dictionary) -> bool:
 	if count(item_id) <= 0 or definition.is_empty():
 		return false
@@ -243,6 +247,7 @@ func _can_use(item_id: String, definition: Dictionary) -> bool:
 		return false
 	return true
 
+# 处理failure相关逻辑，并保持调用方状态一致。
 func _use_failure(item_id: String, definition: Dictionary) -> String:
 	if definition.is_empty(): return "未知物品。"
 	if definition.get("forbiddenGender", "") == GameState.profile.get("gender", ""): return str(definition.get("blockedLine", "这件东西不适合你使用。"))
@@ -251,6 +256,7 @@ func _use_failure(item_id: String, definition: Dictionary) -> String:
 	if count(item_id) <= 0: return "%s 数量不足。" % definition.get("name", item_id)
 	return "%s 不能直接使用。" % definition.get("name", item_id)
 
+# 处理entries相关逻辑，并保持调用方状态一致。
 func list_entries(kind: String = "") -> Array:
 	var result: Array = []
 	var item_ids: Array = GameState.inventory.keys()

@@ -1,10 +1,10 @@
 # CLAUDE.md
 
-See `AGENTS.md` for the current Godot project architecture, commands, and repository rules.
+当前 Godot 项目架构、命令和仓库规则见 `AGENTS.md`。
 
-## Mandatory Frozen-Scene Rule
+## 强制冻结场景规则
 
-Do not modify any of these protected files without a separate, explicit second confirmation from the user:
+未获得用户单独且明确的二次确认前，不得修改下列受保护文件：
 
 - `scenes/splash.tscn`
 - `scripts/splash.gd`
@@ -12,16 +12,16 @@ Do not modify any of these protected files without a separate, explicit second c
 - `scripts/character_creation.gd`
 - `scripts/game_battle_ui.gd`
 - `scripts/ui_progress_meter.gd`
-- HUD panel/layout code in `scripts/game.gd`: the `@onready` HUD node references and any function whose name starts with `_layout_`, plus `_build_detail_huds` and `_use_detail_hud`. This does not cover the world/player rendering `_draw()` function or any other non-HUD logic in `scripts/game.gd` (movement, combat resolution, save/load, survival ticking, animation, etc.).
+- `scripts/game.gd` 中的 HUD 面板与布局代码：HUD 的 `@onready` 节点引用、所有名称以 `_layout_` 开头的函数、`_build_detail_huds` 和 `_use_detail_hud`。此范围不包括世界或玩家绘制函数 `_draw()`，也不包括移动、战斗结算、存读档、生存时间、动画等其他非 HUD 逻辑。
 
-The user's initial request to modify a protected file is not confirmation. Before editing, stop, identify the exact protected files and intended changes, and ask the user to confirm unlocking them for that one change. Only an affirmative response in a subsequent user message authorizes the edit. Confirmation is one-time and applies only to the files and changes listed; every later protected-file change requires a new second confirmation. Read-only inspection and testing are allowed.
+用户首次要求修改受保护文件不算确认。编辑前必须停止操作，指出准确的受保护文件和拟修改内容，再请求用户为该次修改解锁。只有用户在后续消息中明确同意才授权编辑。确认只生效一次，并仅适用于已列出的文件和改动；以后每次修改受保护内容都需要新的二次确认。允许只读检查和测试。
 
-## Source File Size And Modularity
+## 源码规模与模块化
 
-- Project-authored source files should target 300 physical lines or fewer and must not exceed 500 physical lines.
-- Split growing features into cohesive folders and clearly named modules before they cross the hard limit.
-- Do not satisfy the limit by compressing formatting, placing multiple statements on one line, adding generated indirection, or moving unrelated code into a generic dumping-ground utility.
-- Prefer narrow, stable module interfaces, high cohesion within a feature, and low coupling between features. Avoid shared mutable state where practical.
-- Tests are subject to the same 500-line hard limit and should be split by subsystem or behavior.
-- Generated/vendor paths `.godot/`, `android/build/`, `dist/`, and `web/` are excluded.
-- Run `tools/check_file_size.sh` as the authoritative repository size gate.
+- 项目自有源码应以不超过 300 个物理行为目标，绝对不得超过 500 行。
+- 功能增长时应在达到硬限制前按内聚职责拆分到清晰命名的目录和模块。
+- 不得通过压缩格式、一行多语句、生成式间接层或把无关代码搬进通用工具文件来满足限制。
+- 优先采用狭窄稳定的模块接口、模块内高内聚和模块间低耦合，并尽量避免共享可变状态。
+- 测试同样受 500 行硬限制，应按子系统或行为拆分。
+- 生成或第三方目录 `.godot/`、`android/build/`、`dist/`、`web/` 不计入。
+- `tools/check_file_size.sh` 是仓库文件规模的权威检查命令。

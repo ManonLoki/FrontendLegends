@@ -1,6 +1,5 @@
-## Loads the game's static content tables (items/npcs/quests/skills, all plain JSON under
-## assets/Data/) plus a one-time scan of every .tmx map for names/types/NPC placement, so
-## the rest of the game can query this instead of re-reading files at runtime.
+## 加载物品、人物、任务和技能 JSON，并一次扫描全部 TMX 地图的名称、类型和人物摆放，
+## 让其他系统通过注册表查询，不在运行中重复读取文件。
 extends Node
 
 var items: Dictionary = {}
@@ -16,6 +15,7 @@ var map_types: Dictionary = {}
 var placed_npc_targets: Array[Dictionary] = []
 var _placed_npc_keys: Dictionary = {}
 
+# 初始化ready相关逻辑，并保持调用方状态一致。
 func _ready() -> void:
 	var item_catalog := _load_document("items.json")
 	items = item_catalog.get("items", {})
@@ -27,9 +27,11 @@ func _ready() -> void:
 	skills = _load_table("skills.json", "skills")
 	_scan_maps("res://assets/Map/maps")
 
+# 加载table相关逻辑，并保持调用方状态一致。
 func _load_table(file_name: String, key: String) -> Dictionary:
 	return _load_document(file_name).get(key, {})
 
+# 加载document相关逻辑，并保持调用方状态一致。
 func _load_document(file_name: String) -> Dictionary:
 	var file := FileAccess.open("res://assets/Data/" + file_name, FileAccess.READ)
 	if not file:
@@ -38,20 +40,23 @@ func _load_document(file_name: String) -> Dictionary:
 	var parsed = JSON.parse_string(file.get_as_text())
 	return parsed if parsed is Dictionary else {}
 
+# 返回item相关逻辑，并保持调用方状态一致。
 func get_item(item_id: String) -> Dictionary:
 	return items.get(item_id, {})
 
+# 返回npc相关逻辑，并保持调用方状态一致。
 func get_npc(npc_id: String) -> Dictionary:
 	return npcs.get(npc_id, {})
 
+# 返回quest相关逻辑，并保持调用方状态一致。
 func get_quest(quest_id: String) -> Dictionary:
 	return quests.get(quest_id, {})
 
+# 返回skill相关逻辑，并保持调用方状态一致。
 func get_skill(skill_id: String) -> Dictionary:
 	return skills.get(skill_id, {})
 
-## Re-reads skills.json instead of reusing the cached `skills` table because teachStock
-## is a separate top-level key in the same document that _ready() never extracts.
+## 教学表是 skills.json 的独立顶层字段，不在技能缓存中，因此此处单独读取原文档。
 func get_teach_entries(npc_id: String) -> Array:
 	var catalog: Dictionary = _load_document("skills.json")
 	var stock: Dictionary = catalog.get("teachStock", {})
@@ -63,15 +68,15 @@ func get_teach_entries(npc_id: String) -> Array:
 			result.append(entry.duplicate(true))
 	return result
 
+# 判断independent、tutor相关逻辑，并保持调用方状态一致。
 func is_independent_tutor(npc_id: String) -> bool:
 	return not get_teach_entries(npc_id).is_empty() and get_npc(npc_id).get("joinSect", {}).is_empty()
 
+# 处理vendor、stock相关逻辑，并保持调用方状态一致。
 func list_vendor_stock(npc_id: String) -> Array:
 	return vendor_stock.get(npc_id, [])
 
-## Recursively walks the map folder and regex-scrapes each .tmx for the handful of
-## <property> tags we care about, rather than pulling in a full Tiled/XML importer
-## for a one-time startup scan of a few known fields.
+## 递归遍历地图目录并提取 TMX 中需要的少量 property 标签；启动期扫描无需引入完整 XML 导入器。
 func _scan_maps(path: String) -> void:
 	var dir := DirAccess.open(path)
 	if not dir:
@@ -108,9 +113,8 @@ func _scan_maps(path: String) -> void:
 			_collect_placed_npcs(xml, map_id, map_name)
 	dir.list_dir_end()
 
-## Registers every NPC object placed on a map as a valid quest target, deduped by
-## npc_id+map_id since the same NPC template can be placed on multiple maps and each
-## placement is a distinct target.
+## 把地图上的每个人物对象注册为任务目标；以人物 ID 与地图 ID 组合去重，
+## 同一人物模板出现在不同地图时仍视为不同目标位置。
 func _collect_placed_npcs(xml: String, map_id: String, map_name: String) -> void:
 	var object_matcher := RegEx.new()
 	object_matcher.compile("<object\\b([^>]*?)>([\\s\\S]*?)</object>")
@@ -135,6 +139,7 @@ func _collect_placed_npcs(xml: String, map_id: String, map_name: String) -> void
 		_placed_npc_keys[key] = true
 		placed_npc_targets.append({"npc_id": npc_id, "map_id": map_id, "map_name": map_name})
 
+# 处理placed、npc、targets相关逻辑，并保持调用方状态一致。
 func list_placed_npc_targets(exclude_ids: Array = []) -> Array[Dictionary]:
 	var excluded: Dictionary = {}
 	for npc_id in exclude_ids:
@@ -147,15 +152,16 @@ func list_placed_npc_targets(exclude_ids: Array = []) -> Array[Dictionary]:
 			result.append(copy)
 	return result
 
+# 处理display、name相关逻辑，并保持调用方状态一致。
 func map_display_name(map_id: String) -> String:
 	var value := str(map_display_names.get(map_id, map_id))
 	return value.replace("{playerName}", str(GameState.profile.get("name", "玩家")))
 
+# 处理type相关逻辑，并保持调用方状态一致。
 func map_type(map_id: String) -> String:
 	return str(map_types.get(map_id, "outDoor"))
 
-## Sub-areas (e.g. a building interior) declare a parentMap property so their HUD/quest
-## text can show the enclosing region's name instead of the interior's own map name.
+## 建筑内部等子区域通过 parentMap 指向所属大地图，使 HUD 与任务显示外部区域名称。
 func region_display_name(map_id: String) -> String:
 	var parent_id := str(map_parent_ids.get(map_id, ""))
 	return map_display_name(parent_id if not parent_id.is_empty() else map_id)

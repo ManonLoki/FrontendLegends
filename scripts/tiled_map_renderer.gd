@@ -9,16 +9,19 @@ var map_origin := Vector2.ZERO
 var camera_rect := Rect2()
 var zoom := 1.0
 
+# 设置context相关逻辑，并保持调用方状态一致。
 func set_context(value: TiledMapLoader) -> void:
 	context = value
 	queue_redraw()
 
+# 设置camera相关逻辑，并保持调用方状态一致。
 func set_camera(world_top_left: Vector2, draw_origin: Vector2, world_view_size: Vector2, scale: float) -> void:
 	camera_rect = Rect2(world_top_left, world_view_size)
 	map_origin = draw_origin
 	zoom = scale
 	queue_redraw()
 
+# 绘制draw相关逻辑，并保持调用方状态一致。
 func _draw() -> void:
 	if not context:
 		return
@@ -37,21 +40,21 @@ func _draw() -> void:
 				var tile := context.tile_region(gids[index] & 0x1fffffff)
 				if tile.is_empty():
 					continue
-				# Tile layers use the tileset tile's native dimensions. Orthogonal
-				# Tiled maps anchor oversized tiles at the cell's bottom-left.
+				# 图块层采用图块集原始尺寸；正交地图中的超大图块以单元格左下角为锚点。
 				var draw_size: Vector2 = tile.source.size
 				var draw_position := world_position + Vector2(0.0, context.tile_height - draw_size.y)
 				draw_texture_rect_region(tile.texture, Rect2(map_origin + draw_position * zoom, draw_size * zoom), tile.source)
 	_draw_tile_objects()
 	_draw_text_objects()
 
+# 绘制tile、objects相关逻辑，并保持调用方状态一致。
 func _draw_tile_objects() -> void:
 	for object in context.objects:
 		var gid := int(object.get("gid", 0))
 		if gid == 0:
 			continue
 		var object_size := Vector2(float(object.get("width", context.tile_width)), float(object.get("height", context.tile_height)))
-		# Tiled stores tile-object coordinates at the bottom-left corner.
+		# Tiled 的图块对象坐标以左下角为基准。
 		var world_position := Vector2(float(object.get("x", 0.0)), float(object.get("y", 0.0)) - object_size.y)
 		var world_rect := Rect2(world_position, object_size)
 		if camera_rect.size.x > 0.0 and camera_rect.size.y > 0.0 and not world_rect.intersects(camera_rect):
@@ -59,10 +62,10 @@ func _draw_tile_objects() -> void:
 		var tile := context.tile_region(gid & 0x1fffffff)
 		if tile.is_empty():
 			continue
-		# Tile objects honor the explicit object width/height stored in TMX,
-		# independently of the source PNG's native dimensions.
+		# 图块对象使用 TMX 明确记录的宽高，不受源图片原始尺寸限制。
 		draw_texture_rect_region(tile.texture, Rect2(map_origin + world_position * zoom, object_size * zoom), tile.source)
 
+# 绘制text、objects相关逻辑，并保持调用方状态一致。
 func _draw_text_objects() -> void:
 	for object in context.objects:
 		var text := str(object.get("text", ""))
@@ -76,8 +79,7 @@ func _draw_text_objects() -> void:
 		var options: Dictionary = object.get("text_options", {})
 		var pixel_size := maxi(1, int(options.get("pixelsize", 16)))
 		var draw_position := map_origin + world_position * zoom
-		# Canvas text positions use the first baseline, while Tiled stores the
-		# object's top-left corner.
+		# 画布文字以首行基线定位，而 Tiled 对象记录的是左上角坐标。
 		draw_position.y += float(pixel_size) * zoom
 		var wrap_width := world_size.x * zoom if int(options.get("wrap", 0)) != 0 and world_size.x > 0.0 else -1.0
 		draw_multiline_string(MAP_TEXT_FONT, draw_position, text, HORIZONTAL_ALIGNMENT_LEFT, wrap_width, int(round(float(pixel_size) * zoom)), -1, Color.BLACK)

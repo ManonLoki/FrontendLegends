@@ -1,53 +1,53 @@
 # AGENTS.md
 
-## Project
+## 项目
 
-FrontendLegends is a Godot 4.7 2D top-down tile RPG written in GDScript.
+FrontendLegends 是一款使用 GDScript 编写的 Godot 4.7 2D 俯视角格子角色扮演游戏。
 
-- Main project: `project.godot`
-- Scenes: `scenes/splash.tscn`, `scenes/character_creation.tscn`, `scenes/game.tscn`
-- Runtime code: `scripts/*.gd`
-- Data: `assets/Data/*.json`
-- Maps: Tiled TMX files under `assets/Map/maps/LoreWorld/`
-- Tilesets: Tiled TSX XML files under `assets/Map/tilesets/`
-- Design resolution: 640 x 480; tile size: 16 x 16 px
+- 主项目：`project.godot`
+- 场景：`scenes/splash.tscn`、`scenes/character_creation.tscn`、`scenes/game.tscn`
+- 运行时代码：`scripts/*.gd`
+- 数据：`assets/Data/*.json`
+- 地图：`assets/Map/maps/LoreWorld/` 下的 Tiled TMX 文件
+- 图块集：`assets/Map/tilesets/` 下的 Tiled TSX XML 文件
+- 设计分辨率：640×480；图块尺寸：16×16 像素
 
-`.tsx` files in this repository are required Tiled XML tileset definitions.
+仓库中的 `.tsx` 文件是运行时必需的 Tiled XML 图块集定义。
 
-## Run And Test
+## 运行与测试
 
-Open the repository root in Godot 4.7, or run:
+使用 Godot 4.7 打开仓库根目录，或执行：
 
 ```sh
 /Applications/Godot.app/Contents/MacOS/Godot --path . --editor
 ```
 
-## Architecture
+## 架构
 
-- `scripts/game.gd`: main scene coordinator, movement, interaction, HUD state, map transitions, and battle presentation
-- `scripts/game_state.gd`: profile, save data, survival state, and game clock
-- `scripts/data_registry.gd`: JSON registries and map discovery
-- `scripts/tiled_map_loader.gd`: runtime TMX/TSX parsing and map queries
-- `scripts/tiled_map_renderer.gd`: runtime tile rendering
-- `scripts/inventory_system.gd`: inventory, equipment, consumables, and trade
-- `scripts/skill_system.gd`: skills, training, sect membership, and learning
-- `scripts/quest_system.gd`: quest runtime and generated targets
-- `scripts/npc_system.gd`: NPC registry merge, sprites, defeated state, and drops
-- `scripts/combat_system.gd`: combat sessions and formulas
-- `scripts/battle_resolve.gd`: battle settlement
-- `scripts/game_battle_ui.gd`: battle HUD presentation layer, owned by `game.gd`
-- `scripts/ui_progress_meter.gd`: shared progress-bar widget used by learn/practice/meditation HUDs
-- `scripts/virtual_controls.gd`: mobile on-screen D-pad and confirm/cancel buttons
-- `scripts/mobile_orientation.gd`: forces/requests landscape orientation on mobile OS and mobile web
+- `scripts/game.gd`：主场景协调、移动、交互、HUD 状态、地图切换和战斗展示
+- `scripts/game_state.gd`：角色资料、存档、生存状态和游戏时钟
+- `scripts/data_registry.gd`：JSON 注册表与地图发现
+- `scripts/tiled_map_loader.gd`：运行时 TMX/TSX 解析与地图查询
+- `scripts/tiled_map_renderer.gd`：运行时地图绘制
+- `scripts/inventory_system.gd`：背包、装备、消耗品和交易
+- `scripts/skill_system.gd`：技能、训练、门派和学习
+- `scripts/quest_system.gd`：任务运行状态与动态目标
+- `scripts/npc_system.gd`：人物注册表合并、精灵、击败状态和掉落
+- `scripts/combat_system.gd`：战斗会话与公式
+- `scripts/battle_resolve.gd`：战斗结算
+- `scripts/game_battle_ui.gd`：由 `game.gd` 持有的战斗 HUD 展示层
+- `scripts/ui_progress_meter.gd`：学习、练功和冥想 HUD 共用的进度条
+- `scripts/virtual_controls.gd`：移动端屏幕方向键以及确认、取消按钮
+- `scripts/mobile_orientation.gd`：原生移动端与移动网页横屏请求
 
-Autoload registrations are defined in `project.godot`.
+自动加载单例在 `project.godot` 中注册。
 
-## Rules
+## 规则
 
-1. Treat the Godot scenes and GDScript runtime as the only implementation source of truth.
-2. Preserve TMX/TSX files and their relative paths; maps load them directly at runtime.
-3. Keep runtime behavior compatible with Godot 4.7 headless execution. Tests must never share the production `user://` save path.
-4. Do not commit `.godot/`; it is generated and ignored.
-5. Node scripts under `tools/` are standalone data/version utilities, not part of the game runtime.
-6. **Frozen Splash/CharacterCreation/HUD code:** Do not modify `scenes/splash.tscn`, `scripts/splash.gd`, `scenes/character_creation.tscn`, `scripts/character_creation.gd`, `scripts/game_battle_ui.gd`, `scripts/ui_progress_meter.gd`, or the HUD panel/layout code in `scripts/game.gd` (the `@onready` HUD node references and any function whose name starts with `_layout_`, plus `_build_detail_huds` and `_use_detail_hud`) without a separate, explicit second confirmation from the user. The user's initial request to change any of these files does **not** count as confirmation. Before editing, stop and list the exact protected files and intended changes, then ask the user to confirm unlocking them for that one change. Only an affirmative reply in a subsequent user message authorizes the edit. That authorization is one-time and limited to the files and changes listed; all later changes require confirmation again. Reading, inspecting, and testing these files without modifying them remains allowed. Non-HUD logic in `scripts/game.gd` (movement, combat resolution, save/load, survival ticking, animation, etc.) is not covered by this rule. See `CLAUDE.md`'s Mandatory Frozen-Scene Rule for the canonical copy of this list.
-7. **Source file size and modularity:** Project-authored source files should target at most 300 lines and must never exceed 500 physical lines. When a file approaches 300 lines, split it by cohesive responsibility into a feature folder and multiple clearly named files; do not evade the limit with compressed formatting, multiple statements per line, generated indirection, or unrelated utility dumping. Dependencies must point toward narrow, stable interfaces: keep each module highly cohesive, avoid shared mutable state where practical, and keep coupling between features low. Tests follow the same 500-line hard limit and should be split by behavior or subsystem. Generated/vendor files under `.godot/`, `android/build/`, `dist/`, and `web/` are excluded. Run `tools/check_file_size.sh` before considering a refactor complete.
+1. Godot 场景和 GDScript 运行时是实现行为的唯一事实来源。
+2. 保留 TMX/TSX 文件及其相对路径；地图会在运行时直接加载它们。
+3. 运行行为必须兼容 Godot 4.7 无界面模式。测试不得与正式游戏共用 `user://` 存档路径。
+4. 不提交 `.godot/`；它是已忽略的生成目录。
+5. `tools/` 下的 Node 脚本是独立数据与版本工具，不属于游戏运行时。
+6. **冻结的启动、角色创建与 HUD 代码：** 未获得用户单独且明确的二次确认前，不得修改 `scenes/splash.tscn`、`scripts/splash.gd`、`scenes/character_creation.tscn`、`scripts/character_creation.gd`、`scripts/game_battle_ui.gd`、`scripts/ui_progress_meter.gd`，以及 `scripts/game.gd` 中的 HUD 面板与布局代码，即 HUD 的 `@onready` 节点引用、所有名称以 `_layout_` 开头的函数、`_build_detail_huds` 和 `_use_detail_hud`。用户首次提出修改这些文件不算确认。编辑前必须停止操作，列出准确的受保护文件和拟修改内容，再请求用户为该次修改解锁。只有用户在后续消息中明确同意才授权编辑。授权仅限所列文件和所列改动，且只生效一次；以后再次修改仍需重新确认。允许只读检查和测试这些文件。`scripts/game.gd` 中移动、战斗结算、存读档、生存时间、动画等非 HUD 逻辑不受此规则保护。规范副本见 `CLAUDE.md`。
+7. **源码规模与模块化：** 项目自有源码应以不超过 300 个物理行为目标，绝对不得超过 500 行。文件接近 300 行时，应按内聚职责拆分到功能目录和多个命名明确的文件。不得通过压缩格式、一行多语句、生成式间接层或无关工具堆积规避限制。依赖应指向狭窄稳定的接口；模块内部保持高内聚，模块之间保持低耦合，并尽量避免共享可变状态。测试同样受 500 行硬限制，应按行为或子系统拆分。生成或第三方目录 `.godot/`、`android/build/`、`dist/`、`web/` 不计入。重构完成前必须运行 `tools/check_file_size.sh`。

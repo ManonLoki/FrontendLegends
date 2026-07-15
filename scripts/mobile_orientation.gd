@@ -1,8 +1,7 @@
 extends RefCounted
 
-## Native mobile export can force orientation directly via DisplayServer;
-## mobile web browsers ignore that API, so orientation there has to be coaxed
-## through the DOM/Fullscreen APIs instead (see _apply_web_orientation).
+## 原生移动端可通过 DisplayServer 强制横屏；移动网页会忽略该接口，
+## 因此网页端改用 DOM 与全屏接口请求方向锁定。
 const LANDSCAPE_ORIENTATION := DisplayServer.SCREEN_SENSOR_LANDSCAPE
 
 static func apply() -> void:
@@ -11,16 +10,13 @@ static func apply() -> void:
 	if OS.has_feature("web"):
 		_apply_web_orientation(false)
 
-## screen.orientation.lock() only works inside a Fullscreen Element, and browsers only grant
-## fullscreen from a real user gesture (click/tap) — so this must be re-invoked from an
-## input handler rather than relying on the passive apply() call above.
+## 网页方向锁定只在全屏元素中生效，而浏览器仅允许真实点击或触摸进入全屏，
+## 因此输入处理器必须再次调用此函数，不能只依赖启动时的被动设置。
 static func request_from_user_gesture() -> void:
 	if OS.has_feature("web"):
 		_apply_web_orientation(true)
 
-## Injects a small inline stylesheet/attribute pair so a portrait-mode phone shows a
-## "rotate your device" overlay and hides the canvas, since orientation lock can silently
-## fail (unsupported browser, user gesture missing) and we still need a visible fallback.
+## 注入少量样式和属性：横屏锁定失败时，竖屏手机隐藏画布并显示旋转设备提示。
 static func _apply_web_orientation(from_user_gesture: bool) -> void:
 	if not _is_mobile_browser():
 		return
@@ -69,8 +65,7 @@ static func _apply_web_orientation(from_user_gesture: bool) -> void:
 """ % gesture_flag
 	JavaScriptBridge.eval(script)
 
-## Desktop browsers also match some of the CSS media queries above; gate on the UA
-## string so desktop players never see the "rotate your device" overlay.
+## 桌面浏览器也可能命中上述媒体查询，因此再按用户代理过滤，避免桌面端显示旋转提示。
 static func _is_mobile_browser() -> bool:
 	var user_agent := str(JavaScriptBridge.eval("navigator.userAgent || ''"))
 	return user_agent.contains("Android") or user_agent.contains("iPhone") \

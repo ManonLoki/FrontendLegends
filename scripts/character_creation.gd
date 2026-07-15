@@ -1,5 +1,6 @@
 extends Control
 
+## 角色创建界面的设计尺寸、排版常量、字段定义和跨平台组件。
 const FONT := preload("res://assets/Font/fusion-pixel-12px-proportional-zh_hans.ttf")
 const DESIGN_SIZE := Vector2(640.0, 480.0)
 const CONTENT_SIZE := Vector2(640.0, 400.0)
@@ -14,13 +15,17 @@ const COLOR_WHITE := Color("#ffffff")
 const COLOR_FIELD := Color("#f5f5f5")
 const VIRTUAL_CONTROLS := preload("res://scripts/virtual_controls.gd")
 const MOBILE_ORIENTATION := preload("res://scripts/mobile_orientation.gd")
+const CREATION_INTRO := preload("res://scripts/character_creation/creation_intro.gd")
+const CREATION_WIDGETS := preload("res://scripts/character_creation/creation_widgets.gd")
 
+## 设计舞台、开场字幕与角色表单的节点引用。
 var stage: Control
 var form: Control
 var intro_root: Control
 var intro_content: Control
 var intro_total_height := 0.0
 var intro_playing := true
+## 表单光标、数值标签和姓名输入框的运行状态。
 var cursor_labels: Dictionary = {}
 var value_labels: Dictionary = {}
 var name_edit: LineEdit
@@ -32,6 +37,7 @@ var mobile_runtime := false
 var name_editing := false
 var saved_name := ""
 
+## 初始化平台能力、设计舞台、虚拟控制器和开场字幕。
 func _ready() -> void:
 	mobile_runtime = VIRTUAL_CONTROLS.is_mobile_runtime()
 	MOBILE_ORIENTATION.apply()
@@ -41,6 +47,7 @@ func _ready() -> void:
 	_layout_stage()
 	_build_intro()
 
+## 按固定速度向上滚动开场字幕，完全离场后切换到角色表单。
 func _process(delta: float) -> void:
 	if not intro_playing:
 		return
@@ -48,6 +55,7 @@ func _process(delta: float) -> void:
 	if intro_content.position.y + intro_total_height < -28.0:
 		_finish_intro()
 
+## 处理桌面键盘输入；姓名编辑状态优先于表单导航。
 func _input(event: InputEvent) -> void:
 	if not event is InputEventKey:
 		return
@@ -70,17 +78,20 @@ func _input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 	_handle_key(event.keycode)
 
+## 安装移动端虚拟方向键和确认、取消按钮。
 func _install_virtual_controls() -> void:
 	var controls = VIRTUAL_CONTROLS.new()
 	add_child(controls)
 	controls.key_down.connect(_on_virtual_key_down)
 
+## 将虚拟按键转入与实体键盘相同的处理入口。
 func _on_virtual_key_down(keycode: int) -> void:
 	MOBILE_ORIENTATION.request_from_user_gesture()
 	if intro_playing:
 		return
 	_handle_key(keycode)
 
+## 根据当前编辑状态和表单焦点分发导航、调整或确认操作。
 func _handle_key(keycode: int) -> void:
 	if name_editing:
 		if keycode == KEY_ESCAPE:
@@ -104,6 +115,7 @@ func _handle_key(keycode: int) -> void:
 	elif keycode == KEY_SPACE:
 		_activate()
 
+## 创建固定 640×480 的角色创建设计舞台。
 func _build_stage() -> void:
 	stage = Control.new()
 	stage.name = "DesignStage"
@@ -111,66 +123,12 @@ func _build_stage() -> void:
 	stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(stage)
 
+## 通过独立构建器创建开场字幕，并预先创建隐藏的角色表单。
 func _build_intro() -> void:
-	intro_root = Control.new()
-	intro_root.name = "OpeningText"
-	intro_root.size = CONTENT_SIZE
-	intro_root.position = Vector2(0.0, (DESIGN_SIZE.y - CONTENT_SIZE.y) * 0.5)
-	intro_root.clip_contents = true
-	intro_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	stage.add_child(intro_root)
-	var background := ColorRect.new()
-	background.color = Color("#080a0e")
-	background.size = CONTENT_SIZE
-	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	intro_root.add_child(background)
-
-	intro_content = Control.new()
-	intro_content.name = "ScrollingContent"
-	intro_content.size = CONTENT_SIZE
-	intro_root.add_child(intro_content)
-
-	var lines := [
-		["18岁那年，高考结束", 17, COLOR_WHITE, 6],
-		["你没有收到任何一所大学的录取通知书", 17, COLOR_WHITE, 18],
-		["你试过外出打工，想靠双手把日子撑起来", 17, COLOR_WHITE, 6],
-		["可简历石沉大海，面试屡屡碰壁，", 17, COLOR_WHITE, 6],
-		["连最普通的岗位都像隔着一扇看不见的门", 17, COLOR_WHITE, 18],
-		["后来，你不再投简历，也很少和家里说话", 17, COLOR_WHITE, 6],
-		["白天昏睡，夜里醒来，", 17, COLOR_WHITE, 6],
-		["把时间耗在网吧的泡面、游戏和通宵里", 17, COLOR_WHITE, 18],
-		["直到今天清晨", 17, COLOR_GRAY, 18],
-		["你刚从网吧出来，阳光刺得眼睛发疼", 17, COLOR_WHITE, 6],
-		["一张皱巴巴的传单被风卷着，啪地拍在了你的脸上", 17, COLOR_WHITE, 18],
-		["传单正中写着四个醒目的大字：", 17, COLOR_GRAY, 12],
-		["码界招工", 24, COLOR_YELLOW, 18],
-		["下方还有一行小字：", 17, COLOR_GRAY, 6],
-		["诚招异界开发者，包吃包住，前途未知，风险自负", 17, COLOR_WHITE, 18],
-		["也许是通宵后的脑子还不清醒，", 17, COLOR_WHITE, 6],
-		["也许是你对原来的生活已经没什么留恋", 17, COLOR_WHITE, 6],
-		["你拿起笔，在“乙方”那一栏填下了自己的名字", 17, COLOR_WHITE, 18],
-		["下一秒，白光骤然亮起", 17, COLOR_YELLOW, 18],
-		["等你再次睁开眼时，", 17, COLOR_WHITE, 6],
-		["破旧的网吧、灰白的街道、催促你长大的世界，", 17, COLOR_WHITE, 6],
-		["全都消失不见", 17, COLOR_WHITE, 18],
-		["取而代之的，是一座陌生的小镇", 17, COLOR_WHITE, 6],
-		["镇口的木牌上写着三个字：", 17, COLOR_GRAY, 12],
-		["开源镇", 24, COLOR_YELLOW, 18],
-		["而你的异界生活，也从这里正式开始", 17, COLOR_WHITE, 18],
-		["若干年后", 17, COLOR_GRAY, 18],
-		["也许你会站在顶峰，大喊我命由我不由天", 17, COLOR_WHITE, 18],
-		["也许沉沦谷底，万般皆是命，半点不由人", 17, COLOR_WHITE, 18],
-		["是非善恶，全凭一心", 17, COLOR_WHITE, 6],
-	]
-	for line in lines:
-		var label := _label(str(line[0]), int(line[1]), line[2])
-		var height := float(line[1]) + 8.0
-		label.position = Vector2(40, intro_total_height)
-		label.size = Vector2(560, height)
-		intro_content.add_child(label)
-		intro_total_height += height + float(line[3])
-
-	intro_content.position = Vector2(0, CONTENT_SIZE.y + 34.0)
+	var intro: Dictionary = CREATION_INTRO.build(stage, FONT)
+	intro_root = intro.root
+	intro_content = intro.content
+	intro_total_height = float(intro.total_height)
 	form = Control.new()
 	form.name = "CreationForm"
 	form.size = CONTENT_SIZE
@@ -179,6 +137,7 @@ func _build_intro() -> void:
 	stage.add_child(form)
 	_build_form()
 
+## 结束开场字幕并激活角色表单的首个字段。
 func _finish_intro() -> void:
 	if not intro_playing:
 		return
@@ -187,16 +146,17 @@ func _finish_intro() -> void:
 	form.visible = true
 	_activate()
 
+## 按字段定义构建姓名、性别、四维属性和确认行。
 func _build_form() -> void:
 	for index in ROWS.size():
 		var row: String = ROWS[index]
 		var y := 25.0 + index * ROW_H
-		cursor_labels[row] = _label("", 16, COLOR_YELLOW)
+		cursor_labels[row] = CREATION_WIDGETS.label("", 16, COLOR_YELLOW, FONT)
 		cursor_labels[row].position = Vector2(72, y)
 		cursor_labels[row].size = Vector2(24, 30)
 		form.add_child(cursor_labels[row])
 		var caption: String = "姓名" if row == "name" else "性别" if row == "gender" else "确认" if row == "confirm" else String(ATTR_LABELS[row])
-		var caption_label := _label(caption, 16, COLOR_GRAY)
+		var caption_label := CREATION_WIDGETS.label(caption, 16, COLOR_GRAY, FONT)
 		caption_label.position = Vector2(100, y)
 		caption_label.size = Vector2(60, 30)
 		form.add_child(caption_label)
@@ -209,22 +169,23 @@ func _build_form() -> void:
 			name_edit.add_theme_font_size_override("font_size", 16)
 			name_edit.add_theme_color_override("font_color", Color("#222222"))
 			name_edit.add_theme_color_override("font_placeholder_color", COLOR_YELLOW)
-			name_edit.add_theme_stylebox_override("normal", _field_style(COLOR_FIELD, COLOR_YELLOW, 2))
-			name_edit.add_theme_stylebox_override("focus", _field_style(COLOR_FIELD, COLOR_YELLOW, 2))
+			name_edit.add_theme_stylebox_override("normal", CREATION_WIDGETS.field_style(COLOR_FIELD, COLOR_YELLOW, 2))
+			name_edit.add_theme_stylebox_override("focus", CREATION_WIDGETS.field_style(COLOR_FIELD, COLOR_YELLOW, 2))
 			name_edit.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			form.add_child(name_edit)
 		else:
-			value_labels[row] = _label("", 16, COLOR_WHITE)
+			value_labels[row] = CREATION_WIDGETS.label("", 16, COLOR_WHITE, FONT)
 			value_labels[row].position = Vector2(174, y)
 			value_labels[row].size = Vector2(300, 30)
 			form.add_child(value_labels[row])
 
-	message = _label("可分配点数：0", 16, COLOR_WHITE)
+	message = CREATION_WIDGETS.label("可分配点数：0", 16, COLOR_WHITE, FONT)
 	message.position = Vector2(330, 290)
 	message.size = Vector2(260, 30)
 	form.add_child(message)
 	_refresh_values()
 
+## 激活当前字段：姓名进入编辑状态，确认行尝试创建角色。
 func _activate() -> void:
 	var row: String = ROWS[focus_index]
 	if row == "name":
@@ -236,10 +197,12 @@ func _activate() -> void:
 	elif row == "confirm":
 		_start_game()
 
+## 循环移动表单焦点并刷新高亮。
 func _move_focus(delta: int) -> void:
 	focus_index = posmod(focus_index + delta, ROWS.size())
 	_refresh_focus()
 
+## 调整性别或当前属性；单项属性限制在 5～50。
 func _adjust(delta: int) -> void:
 	var row: String = ROWS[focus_index]
 	if row == "gender":
@@ -249,6 +212,7 @@ func _adjust(delta: int) -> void:
 		attributes[row] = clampi(int(attributes[row]) + delta, 5, 50)
 		_refresh_values()
 
+## 同步光标、标签颜色和姓名输入框焦点。
 func _refresh_focus() -> void:
 	if not is_instance_valid(form):
 		return
@@ -264,6 +228,7 @@ func _refresh_focus() -> void:
 	else:
 		name_edit.release_focus()
 
+## 把角色状态格式化到表单标签，并显示剩余可分配点数。
 func _refresh_values() -> void:
 	value_labels["gender"].text = "【男】    女" if gender == "male" else "男    【女】"
 	for key in ATTR_KEYS:
@@ -271,12 +236,14 @@ func _refresh_values() -> void:
 	value_labels["confirm"].text = "开始游戏"
 	message.text = "可分配点数：%d" % _unallocated_points()
 
+## 四项属性总额固定为 100，返回尚未分配的差值。
 func _unallocated_points() -> int:
 	var total := 0
 	for key in ATTR_KEYS:
 		total += int(attributes[key])
 	return 100 - total
 
+## 验证姓名和属性总额，通过后创建角色并进入主游戏。
 func _start_game() -> void:
 	if name_editing:
 		_save_name_edit()
@@ -292,6 +259,7 @@ func _start_game() -> void:
 	GameState.create_profile(player_name, attributes, gender)
 	get_tree().change_scene_to_file("res://scenes/game.tscn")
 
+## 确认姓名输入，保存裁剪空白后的文本并退出编辑状态。
 func _save_name_edit() -> void:
 	if not name_editing:
 		return
@@ -301,6 +269,7 @@ func _save_name_edit() -> void:
 	name_edit.release_focus()
 	_refresh_focus()
 
+## 放弃本次姓名编辑，恢复进入编辑前保存的文本。
 func _cancel_name_edit() -> void:
 	if not name_editing:
 		return
@@ -309,23 +278,7 @@ func _cancel_name_edit() -> void:
 	name_edit.release_focus()
 	_refresh_focus()
 
-func _label(text: String, font_size: int, color: Color) -> Label:
-	var label := Label.new()
-	label.text = text
-	label.add_theme_font_override("font", FONT)
-	label.add_theme_font_size_override("font_size", font_size)
-	label.add_theme_color_override("font_color", color)
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	return label
-
-func _field_style(fill: Color, border: Color, width: int) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = fill
-	style.border_color = border
-	style.set_border_width_all(width)
-	return style
-
+## 设计舞台保持原始尺寸和原点，窗口缩放交由项目拉伸设置。
 func _layout_stage() -> void:
 	if not is_instance_valid(stage):
 		return

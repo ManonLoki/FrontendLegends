@@ -9,30 +9,29 @@ const GAP := 6.0
 
 var controls_root: Control
 
-## Also checks DisplayServer touch support so a touchscreen laptop/desktop still gets
-## the on-screen D-pad even when none of the mobile OS/browser feature tags apply.
+## 同时检查显示服务的触摸能力，使触屏电脑即使没有移动平台标签也能显示虚拟方向键。
 static func is_mobile_runtime() -> bool:
 	return OS.has_feature("mobile") \
 		or OS.has_feature("web_android") \
 		or OS.has_feature("web_ios") \
 		or DisplayServer.is_touchscreen_available()
 
+# 初始化ready相关逻辑，并保持调用方状态一致。
 func _ready() -> void:
-	# Non-mobile runtimes never need the overlay; free the whole layer immediately
-	# instead of just hiding it, so desktop players don't pay for idle button nodes.
+	# 非移动运行环境直接释放覆盖层，避免桌面端保留无用按钮节点。
 	if not is_mobile_runtime():
 		queue_free()
 		return
 	controls_root = Control.new()
 	controls_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	# PASS (not IGNORE) lets touches fall through empty space to the game view below
-	# while still letting the buttons themselves catch input.
+	# 使用 PASS 让空白区域触摸继续传给游戏视图，同时保留按钮自身的输入捕获。
 	controls_root.mouse_filter = Control.MOUSE_FILTER_PASS
 	add_child(controls_root)
 	_build_buttons()
 	get_viewport().size_changed.connect(_layout_buttons)
 	_layout_buttons()
 
+# 构建buttons相关逻辑，并保持调用方状态一致。
 func _build_buttons() -> void:
 	_add_button("↑", KEY_UP, "up")
 	_add_button("←", KEY_LEFT, "left")
@@ -41,10 +40,8 @@ func _build_buttons() -> void:
 	_add_button("确认键", KEY_SPACE, "confirm")
 	_add_button("取消键", KEY_ESCAPE, "cancel")
 
-## Buttons emit key_down/key_up (consumed by game.gd's _on_virtual_key_down/_up, which
-## either drive virtual_direction directly for the D-pad or forward to
-## _dispatch_virtual_key for confirm/cancel) instead of posting real InputEventKeys,
-## so touch presses reuse the same handling path as a physical keyboard.
+## 按钮发送 key_down 与 key_up 信号，不伪造真实键盘事件；方向键直接驱动虚拟方向，
+## 确认与取消键转入统一分发入口，从而复用实体键盘的处理路径。
 func _add_button(text: String, keycode: int, action_name: String) -> void:
 	var button := Button.new()
 	button.name = "Virtual_" + action_name
@@ -62,6 +59,7 @@ func _add_button(text: String, keycode: int, action_name: String) -> void:
 	button.button_up.connect(func() -> void: key_up.emit(keycode))
 	controls_root.add_child(button)
 
+# 处理style相关逻辑，并保持调用方状态一致。
 func _style(fill: Color, border: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = fill
@@ -70,18 +68,18 @@ func _style(fill: Color, border: Color) -> StyleBoxFlat:
 	style.set_corner_radius_all(6)
 	return style
 
+# 处理buttons相关逻辑，并保持调用方状态一致。
 func _layout_buttons() -> void:
 	if not is_instance_valid(controls_root):
 		return
 	var size := get_viewport().get_visible_rect().size
 	var buttons := controls_root.get_children()
-	# Guards against a resize signal firing mid-_build_buttons(), before all 6 children exist.
+	# 防止六个按钮尚未全部创建时收到窗口尺寸变化信号。
 	if buttons.size() < 6:
 		return
 	var left := 24.0
 	var bottom := size.y - 24.0 - BUTTON_SIZE.y
-	# D-pad: up sits centered above the left/down/right row; confirm/cancel anchor to
-	# the opposite (right) corner so both thumbs have a cluster in easy reach.
+	# 方向键位于左下，确认与取消位于右下，让双手拇指都能自然触及各自按钮组。
 	buttons[0].position = Vector2(left + BUTTON_SIZE.x + GAP, bottom - BUTTON_SIZE.y - GAP)
 	buttons[1].position = Vector2(left, bottom)
 	buttons[2].position = Vector2(left + BUTTON_SIZE.x + GAP, bottom)

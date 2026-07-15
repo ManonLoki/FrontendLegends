@@ -3,6 +3,7 @@ extends Node
 const DEFEAT_LOSS_RATE_MIN := 0.05
 const DEFEAT_LOSS_RATE_MAX := 0.15
 
+# 结算victory相关逻辑，并保持调用方状态一致。
 func resolve_victory(session: Dictionary, lethal: bool = true) -> String:
 	var enemy_id := str(session.get("enemy_id", ""))
 	var enemy: Dictionary = session.get("enemy", {})
@@ -71,6 +72,7 @@ func resolve_defeat(session: Dictionary, lethal: bool = true) -> String:
 	var disfigure_text := str(session.get("disfigurement_text", ""))
 	return result + (" " + disfigure_text if not disfigure_text.is_empty() else "")
 
+# 结算flee相关逻辑，并保持调用方状态一致。
 func resolve_flee(session: Dictionary, lethal: bool = true) -> String:
 	if not lethal:
 		return "你收招退了下来。"
@@ -99,6 +101,7 @@ func _apply_lethal_wounds(session: Dictionary) -> void:
 		session.disfigurement_text = "你在生死边缘挣扎，容貌大损！" if appearance_drops > 1 else "你在这场恶战中破了相。"
 	GameState.combat_state.hp = mini(_effective_hp_max(), int(GameState.combat_state.hp))
 
+# 处理hp、max相关逻辑，并保持调用方状态一致。
 func _effective_hp_max() -> int:
 	return GameState.player_effective_hp_max()
 

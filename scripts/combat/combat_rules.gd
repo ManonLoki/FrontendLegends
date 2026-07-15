@@ -11,6 +11,7 @@ const ATTACK_MOVE_STATUS_TABLE := {
 	70: "paralysis", 80: "weakness", 90: "poison",
 }
 
+# 创建session相关逻辑，并保持调用方状态一致。
 func create_session(enemy_id: String, lethal: bool = true) -> Dictionary:
 	var enemy: Dictionary = NpcSystem.build_instance(enemy_id)
 	var player_attributes := player_combat_attributes()
@@ -41,6 +42,7 @@ func create_session(enemy_id: String, lethal: bool = true) -> Dictionary:
 		"log": [],
 	}
 
+# 处理mp、max相关逻辑，并保持调用方状态一致。
 func npc_mp_max(npc: Dictionary) -> int:
 	var levels: Dictionary = npc.get("skillLevels", {})
 	var inner_level := int(levels.get("basicConstitution", 0))
@@ -51,6 +53,7 @@ func npc_mp_max(npc: Dictionary) -> int:
 			inner_level += int(levels.get(str(skill_id), 0)) * 2
 	return maxi(0, int(floor(float(inner_level) * 25.0 * GameState.meditation_modifier(float(attributes.get("constitution", 0))))))
 
+# 处理apply、in、battle、injury相关逻辑，并保持调用方状态一致。
 func maybe_apply_in_battle_injury(session: Dictionary, result: Dictionary) -> String:
 	if not bool(session.get("lethal", true)):
 		return ""
@@ -69,9 +72,11 @@ func maybe_apply_in_battle_injury(session: Dictionary, result: Dictionary) -> St
 	GameState.combat_state.hp = mini(int(GameState.combat_state.hp), int(session.player_max_hp))
 	return "（你受了伤，体力上限 −%d）" % injury_delta
 
+# 处理of相关逻辑，并保持调用方状态一致。
 func weight_of(move: Dictionary) -> int:
 	return maxi(1, int(move.get("level", 0)) - int(move.get("unlock", 0)) + 1)
 
+# 处理pick相关逻辑，并保持调用方状态一致。
 func weighted_pick(moves: Array) -> Dictionary:
 	var total := 0
 	for move in moves:
@@ -83,6 +88,7 @@ func weighted_pick(moves: Array) -> Dictionary:
 			return move
 	return moves[moves.size() - 1]
 
+# 处理attack、move、status相关逻辑，并保持调用方状态一致。
 func roll_attack_move_status(move: Dictionary) -> Dictionary:
 	var unlock := int(move.get("unlock", 0))
 	if not ATTACK_MOVE_STATUS_TABLE.has(unlock):
@@ -90,9 +96,11 @@ func roll_attack_move_status(move: Dictionary) -> Dictionary:
 	var chance := 0.10 + float(maxi(0, unlock - 10)) / 90.0 * 0.20
 	return {} if randf() >= chance else {"kind": ATTACK_MOVE_STATUS_TABLE[unlock]}
 
+# 处理name相关逻辑，并保持调用方状态一致。
 func status_name(kind: String) -> String:
 	return str({"paralysis": "麻痹", "weakness": "虚弱", "poison": "中毒"}.get(kind, kind))
 
+# 处理move相关逻辑，并保持调用方状态一致。
 func npc_move(npc: Dictionary, kind: String) -> Dictionary:
 	var moves: Array = []
 	var skill_levels: Dictionary = npc.get("skillLevels", {})
@@ -109,6 +117,7 @@ func npc_move(npc: Dictionary, kind: String) -> Dictionary:
 		return {}
 	return weighted_pick(moves)
 
+# 处理initiative相关逻辑，并保持调用方状态一致。
 func initiative(player: Dictionary, enemy: Dictionary) -> bool:
 	if int(player.get("agility", 0)) != int(enemy.get("agility", 0)):
 		return int(player.get("agility", 0)) > int(enemy.get("agility", 0))
@@ -116,21 +125,26 @@ func initiative(player: Dictionary, enemy: Dictionary) -> bool:
 	var enemy_roll := float(enemy.get("agility", 0)) * randf_range(0.9, 1.1)
 	return player_roll >= enemy_roll
 
+# 处理max相关逻辑，并保持调用方状态一致。
 func hp_max(attributes: Dictionary, mp_max: int) -> int:
 	return GameState.hp_max_with_mp_boost(float(attributes.get("constitution", 0)), mp_max)
 
+# 处理hp、max相关逻辑，并保持调用方状态一致。
 func player_hp_max() -> int:
 	return maxi(1, hp_max(player_combat_attributes(), GameState.player_mp_max()) - int(GameState.combat_state.get("injury", 0)))
 
+# 处理with、bonus相关逻辑，并保持调用方状态一致。
 func _attributes_with_bonus(base: Dictionary, bonus: Dictionary) -> Dictionary:
 	var result := base.duplicate(true)
 	for key in ["strength", "agility", "constitution", "wisdom"]:
 		result[key] = maxi(0, int(base.get(key, 0)) + int(bonus.get(key, 0)))
 	return result
 
+# 处理combat、attributes相关逻辑，并保持调用方状态一致。
 func player_combat_attributes() -> Dictionary:
 	return _attributes_with_bonus(GameState.profile.get("attributes", {}), InventorySystem.equipment_attribute_bonus())
 
+# 处理combat、attributes相关逻辑，并保持调用方状态一致。
 func npc_combat_attributes(npc: Dictionary) -> Dictionary:
 	var bonus := {"strength": 0, "agility": 0, "constitution": 0, "wisdom": 0}
 	for item_id in npc.get("equipment", []):
@@ -139,20 +153,25 @@ func npc_combat_attributes(npc: Dictionary) -> Dictionary:
 			bonus[key] = int(bonus[key]) + maxi(0, int(item_bonus.get(key, 0)))
 	return _attributes_with_bonus(npc.get("attributes", {}), bonus)
 
+# 处理attack、power相关逻辑，并保持调用方状态一致。
 func player_attack_power() -> float:
 	var attributes := player_combat_attributes()
 	return maxf(1.0, GameState.attack_base(float(attributes.get("strength", 0))) + float(InventorySystem.equipment_bonus().get("attack", 0)))
 
+# 处理name相关逻辑，并保持调用方状态一致。
 func player_name() -> String:
 	return str(GameState.profile.get("name", "玩家"))
 
+# 处理defense相关逻辑，并保持调用方状态一致。
 func player_defense() -> float:
 	var attributes := player_combat_attributes()
 	return GameState.defense_base(float(attributes.get("constitution", 0))) + SkillSystem.best_combat_bonus("defPerLv") + float(InventorySystem.equipment_bonus().get("defense", 0))
 
+# 处理attack、power相关逻辑，并保持调用方状态一致。
 func enemy_attack_power(enemy: Dictionary) -> float:
 	return maxf(1.0, GameState.attack_base(float(npc_combat_attributes(enemy).get("strength", 1))) + float(npc_equipment_bonus(enemy).get("attack", 0)))
 
+# 处理best、combat、bonus相关逻辑，并保持调用方状态一致。
 func npc_best_combat_bonus(npc: Dictionary, key: String) -> float:
 	var best := 0.0
 	var levels: Dictionary = npc.get("skillLevels", {})
@@ -163,6 +182,7 @@ func npc_best_combat_bonus(npc: Dictionary, key: String) -> float:
 		best = maxf(best, float(definition.get("combat", {}).get(key, 0.0)) * int(levels.get(str(skill_id), 0)))
 	return best
 
+# 处理passive、parry相关逻辑，并保持调用方状态一致。
 func npc_passive_parry(npc: Dictionary) -> float:
 	var total := 0.0
 	var levels: Dictionary = npc.get("skillLevels", {})
@@ -171,6 +191,7 @@ func npc_passive_parry(npc: Dictionary) -> float:
 		total += float(definition.get("combat", {}).get("parryPerLv", 0.0)) * int(levels.get(str(skill_id), 0))
 	return total
 
+# 处理inner、power相关逻辑，并保持调用方状态一致。
 func npc_inner_power(npc: Dictionary) -> int:
 	var levels: Dictionary = npc.get("skillLevels", {})
 	var total := int(levels.get("basicConstitution", 0))
@@ -180,6 +201,7 @@ func npc_inner_power(npc: Dictionary) -> int:
 			total += int(levels.get(str(skill_id), 0)) * 2
 	return maxi(0, total)
 
+# 处理equipment、bonus相关逻辑，并保持调用方状态一致。
 func npc_equipment_bonus(npc: Dictionary) -> Dictionary:
 	var total := {"attack": 0, "defense": 0, "hit": 0, "dodge": 0, "crit": 0, "woundInflict": 0, "parry": 0}
 	for item_id in npc.get("equipment", []):
