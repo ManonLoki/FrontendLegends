@@ -107,14 +107,20 @@
     const mobileNameInput = document.getElementById('mobile-name-input');
     const canvas = document.getElementById('canvas');
     const loadingTips = [
-      '正在召唤前端大神', '外包团队已就位', '实习牲准备完毕',
-      '产品经理正在偷偷溜进来', '客户老板天团潜入完成',
+      '正在召唤前端大神', '实习牲已进场', '前端牛马已就位', '外包团队随时待命',
+      '产品经理悄悄潜入', '客户正在骂骂咧咧', '老板随时准备入场', 'AI完成世界构建',
     ];
+    const FAST_LOAD_THRESHOLD_MS = 2000;
+    const FAST_LOAD_SHOWCASE_MS = 8000;
     const mobileBrowser = /Android|iPhone|iPad|Mobile|MicroMessenger/i.test(navigator.userAgent);
     const forceCssLandscape = new URLSearchParams(location.search).has('css-landscape-preview');
     let nameSubmission = 0;
     let cssLandscape = false;
     let canvasLayoutSignature = '';
+    let actualLoadPercent = 0;
+    let fastLoadPlayback = false;
+    let loadingTicker = 0;
+    const loadingStartedAt = performance.now();
 
     window.FrontendNameInput = {
       open(value) {
@@ -212,6 +218,7 @@
     refreshOrientation();
 
     function fail(error) {
+      clearInterval(loadingTicker);
       console.error(error);
       progressRow.style.display = 'none';
       notice.style.display = 'block';
@@ -227,21 +234,44 @@
       fail(`当前浏览器缺少以下功能：\n${missing.join('\n')}`);
     } else {
       progressRow.style.display = 'flex';
+      function showLoadingPercent(percent) {
+        const boundedPercent = Math.max(0, Math.min(100, percent));
+        progress.value = boundedPercent;
+        progress.max = 100;
+        progressLabel.textContent = `${Math.round(boundedPercent)}%`;
+        const tipIndex = Math.min(loadingTips.length - 1,
+          Math.floor(boundedPercent / (100 / loadingTips.length)));
+        loadingTitle.textContent = loadingTips[tipIndex];
+      }
+      function refreshLoadingShowcase() {
+        const elapsed = performance.now() - loadingStartedAt;
+        if (fastLoadPlayback || elapsed < FAST_LOAD_THRESHOLD_MS) {
+          showLoadingPercent(Math.min(actualLoadPercent, elapsed / FAST_LOAD_SHOWCASE_MS * 100));
+        } else {
+          showLoadingPercent(actualLoadPercent);
+        }
+      }
+      loadingTicker = setInterval(refreshLoadingShowcase, 100);
       engine.startGame({
         onProgress(current, total) {
           if (current > 0 && total > 0) {
-            const percent = Math.min(100, Math.round(current / total * 100));
-            progress.value = current;
-            progress.max = total;
-            progressLabel.textContent = `${percent}%`;
-            loadingTitle.textContent = loadingTips[Math.min(loadingTips.length - 1, Math.floor(percent / 20))];
+            actualLoadPercent = Math.min(100, current / total * 100);
+            refreshLoadingShowcase();
           } else {
             progress.removeAttribute('value');
             progress.removeAttribute('max');
             progressLabel.textContent = '…';
           }
         },
-      }).then(() => {
+      }).then(async () => {
+        actualLoadPercent = 100;
+        const elapsed = performance.now() - loadingStartedAt;
+        if (elapsed < FAST_LOAD_THRESHOLD_MS) {
+          fastLoadPlayback = true;
+          await new Promise(resolve => setTimeout(resolve, FAST_LOAD_SHOWCASE_MS - elapsed));
+        }
+        showLoadingPercent(100);
+        clearInterval(loadingTicker);
         overlay.remove();
         refreshOrientation();
       }, fail);
