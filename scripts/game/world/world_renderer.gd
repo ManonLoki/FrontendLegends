@@ -147,6 +147,9 @@ func display_scale() -> float:
 func map_zoom() -> float:
 	if not game.map_context:
 		return 1.0
+	# 室内地图保持 Tiled 的原始像素尺寸，避免小房间被自动拉伸。
+	if game.map_context.properties.has("parentMap"):
+		return 1.0
 	var map_size := Vector2(game.map_context.width * game.map_context.tile_width, game.map_context.height * game.map_context.tile_height)
 	return maxf(1.0, maxf(game.CAMERA_SIZE.x / map_size.x, game.CAMERA_SIZE.y / map_size.y))
 

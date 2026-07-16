@@ -118,10 +118,10 @@ func _run_hud_suite() -> Node:
 	game.animation_frame = 0
 	# UI 统一使用 640×480 逻辑坐标；窗口缩放只交给 Godot stretch，避免二次放大。
 	_assert_true(is_equal_approx(game._display_scale(), 1.0), "游戏 UI 不应再按物理窗口执行第二次缩放")
-	_assert_true(game._game_view_rect() == Rect2(0.0, 0.0, 640.0, 480.0), "地图相机应覆盖完整 640×480 设计画布")
+	_assert_true(game._game_view_rect() == Rect2(80.0, 80.0, 480.0, 320.0), "地图相机应在设计画布中央使用 480×320 视口")
 	game.map_context = dark_study_map
 	var covered_map_size: Vector2 = Vector2(dark_study_map.width * dark_study_map.tile_width, dark_study_map.height * dark_study_map.tile_height) * game.world_renderer.map_zoom()
-	_assert_true(covered_map_size.x >= 640.0 and covered_map_size.y >= 480.0, "小地图应等比 cover 相机，不得产生黑边")
+	_assert_true(covered_map_size == Vector2(320.0, 240.0), "室内地图应按原始像素尺寸显示，不得自动放大")
 	game._layout_game_view()
 	game._toggle_menu()
 	var stable_menu_widgets: Array = game.menu_widgets.duplicate()
