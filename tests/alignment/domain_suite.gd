@@ -120,7 +120,7 @@ func _run_domain_suite() -> void:
 	game_state.profile.sect = ""
 	game_state.profile.master = ""
 	_assert_true(int(ProjectSettings.get_setting("display/window/size/viewport_width")) == 640 and int(ProjectSettings.get_setting("display/window/size/viewport_height")) == 480, "设计分辨率应为 640×480")
-	_assert_true(str(ProjectSettings.get_setting("display/window/stretch/aspect")) == "keep", "运行窗口放大时应保持宽高比等量缩放")
+	_assert_true(str(ProjectSettings.get_setting("display/window/stretch/aspect")) == "expand", "横屏窗口应保持设计高度并扩展横向设计区域")
 
 	# 全地图 NPC 目标注册：读取 TMX property npcId，并保留地图显示名。
 	var placed_targets: Array[Dictionary] = data_registry.list_placed_npc_targets()

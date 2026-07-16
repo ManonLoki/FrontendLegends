@@ -117,8 +117,12 @@ func _run_hud_suite() -> Node:
 	game.player_moving = false
 	game.animation_frame = 0
 	# UI 统一使用 640×480 逻辑坐标；窗口缩放只交给 Godot stretch，避免二次放大。
-	_assert_true(is_equal_approx(game._display_scale(), 1.0), "游戏 UI 不应再按物理窗口执行第二次缩放")
-	_assert_true(game._game_view_rect() == Rect2(80.0, 80.0, 480.0, 320.0), "地图相机应在设计画布中央使用 480×320 视口")
+	_assert_true(is_equal_approx(game._display_scale(), 1.0), "游戏 UI 不应按物理窗口执行第二次缩放")
+	var runtime_viewport_size: Vector2 = game.get_viewport_rect().size
+	var runtime_game_view: Rect2 = game._game_view_rect()
+	_assert_true(is_equal_approx(runtime_game_view.size.aspect(), game.CAMERA_SIZE.aspect()), "地图相机运行时应保持 480×320 的设计比例")
+	_assert_true(is_equal_approx(runtime_game_view.size.y, runtime_viewport_size.y) and is_equal_approx(runtime_game_view.position.y, 0.0), "地图相机运行时应等比放大并占满逻辑窗口高度")
+	_assert_true(runtime_game_view.get_center().is_equal_approx(runtime_viewport_size * 0.5), "地图相机应在实际逻辑视口中居中")
 	game.map_context = dark_study_map
 	var covered_map_size: Vector2 = Vector2(dark_study_map.width * dark_study_map.tile_width, dark_study_map.height * dark_study_map.tile_height) * game.world_renderer.map_zoom()
 	_assert_true(covered_map_size == Vector2(320.0, 240.0), "室内地图应按原始像素尺寸显示，不得自动放大")
@@ -132,8 +136,10 @@ func _run_hud_suite() -> Node:
 		_assert_true(game.menu_widgets[index] == stable_menu_widgets[index], "菜单连续帧应复用同一批控件，避免闪烁")
 	game._toggle_menu()
 	var design_rect := Rect2(Vector2.ZERO, Vector2(640.0, 480.0))
-	for panel in [game.map_badge_panel, game.menu_panel, game.dialogue_panel, game.details_panel, game.tree_confirm_panel, game.battle_panel]:
+	for panel in [game.map_badge_panel, game.menu_panel, game.details_panel, game.tree_confirm_panel, game.battle_panel]:
 		_assert_true(design_rect.encloses(Rect2(panel.position, panel.size)), "%s 必须完整位于设计画布内" % panel.name)
+	var runtime_rect := Rect2(Vector2.ZERO, game.get_viewport_rect().size)
+	_assert_true(runtime_rect.encloses(Rect2(game.dialogue_panel.position, game.dialogue_panel.size)), "Dialogue 必须完整位于扩展后的运行时逻辑视口内")
 	# 人物面板括号百分比只反映伤势造成的上限折损，与当前剩余体力无关。
 	var true_hp_max: int = game_state.player_hp_max()
 	var previous_injury := int(game_state.combat_state.get("injury", 0))

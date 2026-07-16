@@ -137,11 +137,17 @@ func player_frame_draw_rect(player_pos: Vector2, source: Rect2) -> Rect2:
 
 # 处理view、rect相关逻辑，并保持调用方状态一致。
 func game_view_rect() -> Rect2:
-	return Rect2((game.DESIGN_SIZE - game.CAMERA_SIZE) * 0.5, game.CAMERA_SIZE)
+	var viewport_size: Vector2 = game.get_viewport_rect().size
+	var view_size: Vector2 = game.CAMERA_SIZE * view_scale()
+	return Rect2((viewport_size - view_size) * 0.5, view_size)
 
 # 处理scale相关逻辑，并保持调用方状态一致。
 func display_scale() -> float:
 	return 1.0
+
+# 480×320 是地图的设计视口；运行时保持比例并将其放大到逻辑视口全高。
+func view_scale() -> float:
+	return game.get_viewport_rect().size.y / game.CAMERA_SIZE.y
 
 # 处理zoom相关逻辑，并保持调用方状态一致。
 func map_zoom() -> float:
@@ -159,7 +165,7 @@ func camera_world_size() -> Vector2:
 
 # 渲染scale相关逻辑，并保持调用方状态一致。
 func render_scale() -> float:
-	return map_zoom() * display_scale()
+	return map_zoom() * view_scale()
 
 # 处理world、top、left相关逻辑，并保持调用方状态一致。
 func camera_world_top_left() -> Vector2:
