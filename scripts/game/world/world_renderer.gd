@@ -145,7 +145,7 @@ func game_view_rect() -> Rect2:
 func display_scale() -> float:
 	return 1.0
 
-# 480×320 是地图的设计视口；运行时保持比例并将其放大到逻辑视口全高。
+# 地图相机与 480×320 逻辑视口一致；窗口缩放只由 Godot stretch 负责。
 func view_scale() -> float:
 	return game.get_viewport_rect().size.y / game.CAMERA_SIZE.y
 

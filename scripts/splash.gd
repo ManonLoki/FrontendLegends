@@ -2,7 +2,7 @@ extends Control
 
 ## 启动画面使用的固定设计尺寸、字体和跨平台输入组件。
 const FONT := preload("res://assets/Font/fusion-pixel-12px-proportional-zh_hans.ttf")
-const DESIGN_SIZE := Vector2(640.0, 480.0)
+const DESIGN_SIZE := Vector2(480.0, 320.0)
 const BLINK_TIME := 0.5
 const VIRTUAL_CONTROLS := preload("res://scripts/virtual_controls.gd")
 const MOBILE_ORIENTATION := preload("res://scripts/mobile_orientation.gd")
@@ -60,7 +60,7 @@ func _continue_from_splash() -> void:
 	var next_scene := "res://scenes/game.tscn" if GameState.has_profile() else "res://scenes/character_creation.tscn"
 	get_tree().change_scene_to_file(next_scene)
 
-## 在 640×480 设计舞台中动态构建纯黑启动画面。
+## 在 480×320 设计舞台中动态构建纯黑启动画面。
 func _build_stage() -> void:
 	stage = Control.new()
 	stage.name = "DesignStage"
@@ -74,11 +74,11 @@ func _build_stage() -> void:
 	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	stage.add_child(background)
 
-	_add_label("前端群侠传", Rect2(0, 92, DESIGN_SIZE.x, 62), 42, Color.WHITE)
+	_add_label("前端群侠传", Rect2(0, 54, DESIGN_SIZE.x, 54), 36, Color.WHITE)
 	var version := str(ProjectSettings.get_setting("application/config/version", "0.0.0"))
-	_add_label("v%s" % version, Rect2(0, 166, DESIGN_SIZE.x, 30), 16, Color.WHITE)
+	_add_label("v%s" % version, Rect2(0, 112, DESIGN_SIZE.x, 26), 15, Color.WHITE)
 	var continue_text := "按确认键继续" if mobile_runtime else "按空格继续"
-	prompt = _add_label(continue_text, Rect2(0, 330, DESIGN_SIZE.x, 40), 18, Color.WHITE)
+	prompt = _add_label(continue_text, Rect2(0, 232, DESIGN_SIZE.x, 34), 17, Color.WHITE)
 
 ## 创建并挂载一个采用统一字体、居中显示且不拦截输入的标签。
 func _add_label(text: String, rect: Rect2, font_size: int, color: Color) -> Label:
@@ -95,9 +95,9 @@ func _add_label(text: String, rect: Rect2, font_size: int, color: Color) -> Labe
 	stage.add_child(label)
 	return label
 
-## 舞台始终保持设计尺寸与原点，视口缩放由项目拉伸设置负责。
+## 舞台保持设计尺寸，并在 expand 模式扩展出的逻辑视口中居中。
 func _layout_stage() -> void:
 	if not is_instance_valid(stage):
 		return
 	stage.scale = Vector2.ONE
-	stage.position = Vector2.ZERO
+	stage.position = ((get_viewport_rect().size - DESIGN_SIZE) * 0.5).round()

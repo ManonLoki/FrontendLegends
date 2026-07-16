@@ -2,8 +2,8 @@ extends Control
 
 ## 角色创建界面的设计尺寸、排版常量、字段定义和跨平台组件。
 const FONT := preload("res://assets/Font/fusion-pixel-12px-proportional-zh_hans.ttf")
-const DESIGN_SIZE := Vector2(640.0, 480.0)
-const CONTENT_SIZE := Vector2(640.0, 400.0)
+const DESIGN_SIZE := Vector2(480.0, 320.0)
+const CONTENT_SIZE := Vector2(480.0, 320.0)
 const INTRO_SPEED := 58.0
 const ROW_H := 35.0
 const NAME_MAX_LENGTH := 10
@@ -130,7 +130,7 @@ func _handle_key(keycode: int) -> void:
 	elif keycode == KEY_SPACE:
 		_activate()
 
-## 创建固定 640×480 的角色创建设计舞台。
+## 创建固定 480×320 的角色创建设计舞台。
 func _build_stage() -> void:
 	stage = Control.new()
 	stage.name = "DesignStage"
@@ -168,21 +168,21 @@ func _finish_intro() -> void:
 func _build_form() -> void:
 	for index in ROWS.size():
 		var row: String = ROWS[index]
-		var y := 25.0 + index * ROW_H
+		var y := 8.0 + index * ROW_H
 		cursor_labels[row] = CREATION_WIDGETS.label("", 16, COLOR_YELLOW, FONT)
-		cursor_labels[row].position = Vector2(72, y)
+		cursor_labels[row].position = Vector2(24, y)
 		cursor_labels[row].size = Vector2(24, 30)
 		form.add_child(cursor_labels[row])
 		var caption: String = "姓名" if row == "name" else "性别" if row == "gender" else "确认" if row == "confirm" else String(ATTR_LABELS[row])
 		var caption_label := CREATION_WIDGETS.label(caption, 16, COLOR_GRAY, FONT)
-		caption_label.position = Vector2(100, y)
+		caption_label.position = Vector2(52, y)
 		caption_label.size = Vector2(60, 30)
 		form.add_child(caption_label)
 		if row == "name":
 			name_edit = LineEdit.new()
 			name_edit.max_length = NAME_MAX_LENGTH
-			name_edit.position = Vector2(169, y)
-			name_edit.size = Vector2(285, 30)
+			name_edit.position = Vector2(120, y)
+			name_edit.size = Vector2(320, 30)
 			name_edit.placeholder_text = "（直接输入姓名）"
 			name_edit.add_theme_font_override("font", FONT)
 			name_edit.add_theme_font_size_override("font_size", 16)
@@ -196,13 +196,13 @@ func _build_form() -> void:
 			form.add_child(name_edit)
 		else:
 			value_labels[row] = CREATION_WIDGETS.label("", 16, COLOR_WHITE, FONT)
-			value_labels[row].position = Vector2(174, y)
-			value_labels[row].size = Vector2(300, 30)
+			value_labels[row].position = Vector2(124, y)
+			value_labels[row].size = Vector2(320, 30)
 			form.add_child(value_labels[row])
 
 	message = CREATION_WIDGETS.label("可分配点数：0", 16, COLOR_WHITE, FONT)
-	message.position = Vector2(330, 290)
-	message.size = Vector2(260, 30)
+	message.position = Vector2(220, 280)
+	message.size = Vector2(240, 30)
 	form.add_child(message)
 	_refresh_values()
 
@@ -325,9 +325,9 @@ func _cancel_name_edit() -> void:
 	name_edit.release_focus()
 	_refresh_focus()
 
-## 设计舞台保持原始尺寸和原点，窗口缩放交由项目拉伸设置。
+## 设计舞台保持原始尺寸，并在 expand 模式扩展出的逻辑视口中居中。
 func _layout_stage() -> void:
 	if not is_instance_valid(stage):
 		return
 	stage.scale = Vector2.ONE
-	stage.position = Vector2.ZERO
+	stage.position = ((get_viewport_rect().size - DESIGN_SIZE) * 0.5).round()

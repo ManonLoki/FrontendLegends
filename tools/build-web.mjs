@@ -13,7 +13,7 @@ const macGodot = "/Applications/Godot.app/Contents/MacOS/Godot";
 const godot = process.env.GODOT_BIN || (existsSync(macGodot) ? macGodot : "godot");
 
 // 移动 Chrome 证明 Project 策略仍会采用启动时的竖屏尺寸。构建期间强制 None，
-// 让 HTML 的 640×480 Canvas 属性成为内部尺寸的唯一事实来源。
+// 让 HTML 的 480×320 Canvas 属性成为内部尺寸的唯一事实来源。
 const originalPresets = await readFile(exportPresets, "utf8");
 const fixedCanvasPresets = originalPresets.replace(
   /html\/canvas_resize_policy=\d+/,

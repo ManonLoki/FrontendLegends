@@ -203,7 +203,7 @@ func _layout_meditation_widgets() -> void:
 # 处理top、progress、meter相关逻辑，并保持调用方状态一致。
 func _layout_top_progress_meter(meter: Control) -> void:
 	var scale: float = game._display_scale()
-	meter.size = Vector2(330.0, 28.0) * scale
+	meter.size = Vector2(200.0, 28.0) * scale
 	var view_rect: Rect2 = game._game_view_rect()
 	# 学习与冥想共用：相对摄像机可见区域顶部 16px，水平居中。
 	meter.position = Vector2(view_rect.position.x + (view_rect.size.x - meter.size.x) * 0.5, view_rect.position.y + 16.0 * scale)

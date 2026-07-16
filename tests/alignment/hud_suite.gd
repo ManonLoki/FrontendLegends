@@ -15,7 +15,7 @@ func _run_hud_suite() -> Node:
 	_assert_true(web_script.contains("FrontendMobileOrientation.request()"), "移动 Web 横屏必须通过 HTML 用户手势桥请求")
 	var web_shell := FileAccess.get_file_as_string("res://web/index_shell.html")
 	_assert_true(web_shell.contains("id=\"game-frame\"") and web_shell.contains("remapRotatedTouch"), "微信 CSS 横屏必须在 Godot Canvas 外层旋转并重映射触摸坐标")
-	_assert_true(web_shell.contains("width=\"640\" height=\"480\""), "Web Canvas 必须在 HTML 层声明固定 640×480 内部尺寸")
+	_assert_true(web_shell.contains("width=\"480\" height=\"320\""), "Web Canvas 必须在 HTML 层声明固定 480×320 内部尺寸")
 	_assert_true(web_shell.contains("gameFrame.style.left") and web_shell.contains("matrix(0, ${uniformScale}"), "旋转容器必须按实时可视区使用像素矩阵居中")
 	_assert_true(web_shell.contains("availableHeight / naturalHeight") and web_shell.contains("naturalWidth * uniformScale"), "微信 WebGL 必须按高度生成唯一倍率并等比缩放宽度")
 	_assert_true(web_shell.contains("window.visualViewport") and web_shell.contains("maximum-scale=1"), "微信缩放必须锁定页面级缩放并使用真实可视视口")
@@ -25,20 +25,22 @@ func _run_hud_suite() -> Node:
 	_assert_true(export_presets.contains("export_path=\"dist/web-preview/index.html\"") and export_presets.contains("html/canvas_resize_policy=0"), "编辑器 Web 预览不得覆盖正式构建，且必须保持固定 Canvas")
 	var dark_study_map := TiledMapLoader.new()
 	_assert_true(dark_study_map.load_file("res://assets/Map/maps/LoreWorld/KaiyuanTown/DarkXue.tmx"), "HUD 测试应能加载 DARK学地图")
-	# 三个主场景统一直接使用 640×480 设计坐标，窗口缩放只交给 Godot stretch。
+	# 启动、角色创建、地图相机与逻辑视口统一为 480×320。
 	var splash = load("res://scenes/splash.tscn").instantiate()
 	root.add_child(splash)
 	await process_frame
-	_assert_true(splash.stage.size == Vector2(640.0, 480.0) and splash.stage.scale == Vector2.ONE and splash.stage.position == Vector2.ZERO, "Splash 应与 Game 共用 640×480 原点设计画布")
-	_assert_true(splash.prompt.size.x == 640.0 and is_equal_approx(splash.prompt.position.x, 0.0), "Splash 提示文字应在完整设计画布上居中，不得缩在左上角")
+	var splash_view_center: Vector2 = splash.get_viewport_rect().size * 0.5
+	_assert_true(splash.stage.size == Vector2(480.0, 320.0) and splash.stage.scale == Vector2.ONE and splash.stage.get_rect().get_center().is_equal_approx(splash_view_center), "Splash 的 480×320 设计舞台应与逻辑视口重合")
+	_assert_true(splash.prompt.size.x == 480.0 and is_equal_approx(splash.prompt.position.x, 0.0), "Splash 提示文字应在完整设计画布上居中")
 	splash.queue_free()
 	await process_frame
 	var character_creation = load("res://scenes/character_creation.tscn").instantiate()
 	root.add_child(character_creation)
 	await process_frame
-	_assert_true(character_creation.stage.size == Vector2(640.0, 480.0) and character_creation.stage.scale == Vector2.ONE and character_creation.stage.position == Vector2.ZERO, "CharacterCreation 应与 Game 共用 640×480 原点设计画布")
-	_assert_true(character_creation.intro_root.scale == Vector2.ONE and character_creation.intro_root.position == Vector2(0.0, 40.0), "CharacterCreation 开场内容应以原始尺寸在设计画布中居中")
-	_assert_true(character_creation.form.scale == Vector2.ONE and character_creation.form.position == Vector2(0.0, 40.0), "CharacterCreation 表单应以原始尺寸在设计画布中居中")
+	var creation_view_center: Vector2 = character_creation.get_viewport_rect().size * 0.5
+	_assert_true(character_creation.stage.size == Vector2(480.0, 320.0) and character_creation.stage.scale == Vector2.ONE and character_creation.stage.get_rect().get_center().is_equal_approx(creation_view_center), "CharacterCreation 的 480×320 设计舞台应与逻辑视口重合")
+	_assert_true(character_creation.intro_root.scale == Vector2.ONE and character_creation.intro_root.position == Vector2.ZERO, "CharacterCreation 开场内容应占满设计画布")
+	_assert_true(character_creation.form.scale == Vector2.ONE and character_creation.form.position == Vector2.ZERO, "CharacterCreation 表单应占满设计画布")
 	var name_style: StyleBoxFlat = character_creation.name_edit.get_theme_stylebox("normal")
 	_assert_true(is_zero_approx(name_style.bg_color.a), "角色姓名输入框普通状态不得保留黄色或其他实色背景")
 	_assert_true(name_style.content_margin_left == 4.0 and name_style.content_margin_top == 4.0 and name_style.content_margin_right == 4.0 and name_style.content_margin_bottom == 4.0, "角色姓名输入框文字应与四边保持 4px 内边距")
@@ -116,7 +118,7 @@ func _run_hud_suite() -> Node:
 	game.facing = Vector2i.DOWN
 	game.player_moving = false
 	game.animation_frame = 0
-	# UI 统一使用 640×480 逻辑坐标；窗口缩放只交给 Godot stretch，避免二次放大。
+	# UI 与地图相机统一使用 480×320 逻辑坐标；窗口缩放只交给 Godot stretch。
 	_assert_true(is_equal_approx(game._display_scale(), 1.0), "游戏 UI 不应按物理窗口执行第二次缩放")
 	var runtime_viewport_size: Vector2 = game.get_viewport_rect().size
 	var runtime_game_view: Rect2 = game._game_view_rect()
@@ -135,7 +137,7 @@ func _run_hud_suite() -> Node:
 	for index in stable_menu_widgets.size():
 		_assert_true(game.menu_widgets[index] == stable_menu_widgets[index], "菜单连续帧应复用同一批控件，避免闪烁")
 	game._toggle_menu()
-	var design_rect := Rect2(Vector2.ZERO, Vector2(640.0, 480.0))
+	var design_rect := Rect2(Vector2.ZERO, Vector2(480.0, 320.0))
 	for panel in [game.map_badge_panel, game.menu_panel, game.details_panel, game.tree_confirm_panel, game.battle_panel]:
 		_assert_true(design_rect.encloses(Rect2(panel.position, panel.size)), "%s 必须完整位于设计画布内" % panel.name)
 	var runtime_rect := Rect2(Vector2.ZERO, game.get_viewport_rect().size)

@@ -1,7 +1,7 @@
 extends RefCounted
 ## 角色创建开场字幕构建器；只负责静态节点和中文叙事文本，不持有输入状态。
 
-const CONTENT_SIZE := Vector2(640.0, 400.0)
+const CONTENT_SIZE := Vector2(480.0, 320.0)
 const COLOR_YELLOW := Color("#ffe678")
 const COLOR_GRAY := Color("#b8b8b8")
 const COLOR_WHITE := Color("#ffffff")
@@ -11,7 +11,7 @@ static func build(stage: Control, font: Font) -> Dictionary:
 	var root := Control.new()
 	root.name = "OpeningText"
 	root.size = CONTENT_SIZE
-	root.position = Vector2(0.0, 40.0)
+	root.position = Vector2.ZERO
 	root.clip_contents = true
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	stage.add_child(root)
@@ -35,8 +35,8 @@ static func _append_lines(content: Control, font: Font) -> float:
 		var font_size := int(line[1])
 		var label := _label(str(line[0]), font_size, line[2], font)
 		var height := float(font_size) + 8.0
-		label.position = Vector2(40.0, total_height)
-		label.size = Vector2(560.0, height)
+		label.position = Vector2(24.0, total_height)
+		label.size = Vector2(432.0, height)
 		content.add_child(label)
 		total_height += height + float(line[3])
 	return total_height

@@ -119,8 +119,9 @@ func _run_domain_suite() -> void:
 	_assert_true(skill_system.equip("ng_code_decorator").message == "已装备【模版语法】。", "本门功法装备成功文案应与参照项目一致")
 	game_state.profile.sect = ""
 	game_state.profile.master = ""
-	_assert_true(int(ProjectSettings.get_setting("display/window/size/viewport_width")) == 640 and int(ProjectSettings.get_setting("display/window/size/viewport_height")) == 480, "设计分辨率应为 640×480")
-	_assert_true(str(ProjectSettings.get_setting("display/window/stretch/aspect")) == "expand", "横屏窗口应保持设计高度并扩展横向设计区域")
+	_assert_true(int(ProjectSettings.get_setting("display/window/size/viewport_width")) == 480 and int(ProjectSettings.get_setting("display/window/size/viewport_height")) == 320, "逻辑视口应为 480×320")
+	_assert_true(int(ProjectSettings.get_setting("display/window/size/window_width_override")) == 1280 and int(ProjectSettings.get_setting("display/window/size/window_height_override")) == 960, "Windows 与 macOS 默认窗口应为 1280×960")
+	_assert_true(str(ProjectSettings.get_setting("display/window/stretch/aspect")) == "keep", "窗口应保持 480×320 设计比例，不得扩展逻辑坐标系")
 
 	# 全地图 NPC 目标注册：读取 TMX property npcId，并保留地图显示名。
 	var placed_targets: Array[Dictionary] = data_registry.list_placed_npc_targets()
