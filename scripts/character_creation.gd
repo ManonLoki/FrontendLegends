@@ -6,6 +6,7 @@ const DESIGN_SIZE := Vector2(640.0, 480.0)
 const CONTENT_SIZE := Vector2(640.0, 400.0)
 const INTRO_SPEED := 58.0
 const ROW_H := 35.0
+const NAME_MAX_LENGTH := 10
 const ROWS := ["name", "gender", "strength", "agility", "constitution", "wisdom", "confirm"]
 const ATTR_KEYS := ["strength", "agility", "constitution", "wisdom"]
 const ATTR_LABELS := {"strength": "编码", "agility": "思维", "constitution": "架构", "wisdom": "灵感"}
@@ -179,6 +180,7 @@ func _build_form() -> void:
 		form.add_child(caption_label)
 		if row == "name":
 			name_edit = LineEdit.new()
+			name_edit.max_length = NAME_MAX_LENGTH
 			name_edit.position = Vector2(169, y)
 			name_edit.size = Vector2(285, 30)
 			name_edit.placeholder_text = "（直接输入姓名）"
@@ -219,7 +221,7 @@ func _on_name_focus_entered() -> void:
 func _sync_web_name_input() -> void:
 	if not name_editing or not WEB_NAME_INPUT.available():
 		return
-	name_edit.text = WEB_NAME_INPUT.value()
+	name_edit.text = WEB_NAME_INPUT.value().left(NAME_MAX_LENGTH)
 	if WEB_NAME_INPUT.submission() != web_name_submission:
 		_save_name_edit()
 
@@ -250,6 +252,8 @@ func _adjust(delta: int) -> void:
 		gender = "female" if delta > 0 else "male"
 		_refresh_values()
 	elif row in ATTR_KEYS:
+		if delta > 0 and _unallocated_points() <= 0:
+			return
 		attributes[row] = clampi(int(attributes[row]) + delta, 5, 50)
 		_refresh_values()
 
