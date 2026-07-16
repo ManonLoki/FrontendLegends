@@ -20,9 +20,10 @@ func _run_hud_suite() -> Node:
 	_assert_true(web_shell.contains("availableHeight / naturalHeight") and web_shell.contains("naturalWidth * uniformScale"), "微信 WebGL 必须按高度生成唯一倍率并等比缩放宽度")
 	_assert_true(web_shell.contains("window.visualViewport") and web_shell.contains("maximum-scale=1"), "微信缩放必须锁定页面级缩放并使用真实可视视口")
 	var web_builder := FileAccess.get_file_as_string("res://tools/build-web.mjs")
-	_assert_true(web_builder.contains("html/canvas_resize_policy=0") and web_builder.contains("originalPresets"), "Web 构建必须禁止引擎调整 Canvas，并在 Godot 导出后恢复预设")
+	_assert_true(not web_builder.contains("writeFile(exportPresets"), "Web 构建不得临时改写导出预设")
 	var export_presets := FileAccess.get_file_as_string("res://export_presets.cfg")
 	_assert_true(export_presets.contains("export_path=\"dist/web-preview/index.html\"") and export_presets.contains("html/canvas_resize_policy=0"), "编辑器 Web 预览不得覆盖正式构建，且必须保持固定 Canvas")
+	_assert_true(export_presets.count("include_filter=\"*.tmx,*.tsx,*.tpsheet\"") == 4, "Web、macOS、Windows 与 Android 导出都必须包含运行时地图和图集定义")
 	var dark_study_map := TiledMapLoader.new()
 	_assert_true(dark_study_map.load_file("res://assets/Map/maps/LoreWorld/KaiyuanTown/DarkXue.tmx"), "HUD 测试应能加载 DARK学地图")
 	# 启动、角色创建、地图相机与逻辑视口统一为 480×320。
