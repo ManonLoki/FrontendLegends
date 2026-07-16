@@ -174,12 +174,7 @@ func complete(quest_id: String) -> Dictionary:
 		return {"ok": false, "message": "没有进行中的任务"}
 	var definition: Dictionary = DataRegistry.get_quest(quest_id)
 	var reward: Dictionary = definition.get("reward", {})
-	var vitals: Dictionary = GameState.profile.get("vitals", {})
-	for key in ["experience", "potential"]:
-		vitals[key] = int(vitals.get(key, 0)) + int(reward.get(key, 0))
-	GameState.profile.vitals = vitals
-	vitals.money = int(vitals.get("money", 0)) + int(reward.get("money", 0))
-	GameState.profile.vitals = vitals
+	_grant_reward(reward)
 	active.erase(quest_id)
 	return {"ok": true, "message": "任务完成：%s" % definition.get("title", quest_id), "reward": reward}
 

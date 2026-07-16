@@ -1,7 +1,8 @@
 extends RefCounted
 ## 师父研习领域服务；负责资格检查、逐步消耗潜能和完成时支付 Token。
 
-const ATTRIBUTE_LABELS := {"strength": "编码", "agility": "思维", "constitution": "架构", "wisdom": "灵感"}
+const SKILL_MAPS := preload("res://scripts/skills/skill_maps.gd")
+const ATTRIBUTE_LABELS := SKILL_MAPS.ATTRIBUTE_LABELS
 
 var skills: Node
 

@@ -3,11 +3,9 @@ extends RefCounted
 
 var game: Node
 
-# 处理init相关逻辑，并保持调用方状态一致。
 func _init(owner: Node) -> void:
 	game = owner
 
-# 尝试执行open相关逻辑，并保持调用方状态一致。
 func try_open() -> void:
 	var basic_tune_id := SkillSystem.equipped_id("tune", "basic")
 	if SkillSystem.level(basic_tune_id) < game.CYBER_TELEPORT_SKILL_REQUIREMENT or SkillSystem.equipped_sect_skill_level("tune") < game.CYBER_TELEPORT_SKILL_REQUIREMENT:
@@ -38,7 +36,6 @@ func try_open() -> void:
 	game._refresh_menu()
 	refresh_menu(teleport_cost)
 
-# 处理key相关逻辑，并保持调用方状态一致。
 func handle_key(key: Key) -> void:
 	var teleport_cost := cost()
 	if key == KEY_ESCAPE:
@@ -71,12 +68,10 @@ func handle_key(key: Key) -> void:
 	if game.cyber_open:
 		refresh_menu(teleport_cost)
 
-# 处理cost相关逻辑，并保持调用方状态一致。
 func cost() -> int:
 	var maximum := GameState.player_mp_max()
 	return maxi(1, int(ceil(float(maximum) / 3.0))) if maximum > 0 else 0
 
-# 刷新menu相关逻辑，并保持调用方状态一致。
 func refresh_menu(teleport_cost: int) -> void:
 	if game.active_detail_hud != "cyber" or not game.detail_huds.cyber.panel.visible:
 		game._use_detail_hud("cyber")
@@ -87,7 +82,6 @@ func refresh_menu(teleport_cost: int) -> void:
 	game.message = "↑↓选择目的地　空格确认　ESC返回　消耗 %d 精力" % teleport_cost
 	game._set_menu_hint("赛博传送", game.message)
 
-# 构建menu相关逻辑，并保持调用方状态一致。
 func build_menu() -> void:
 	game.details_content.visible = true
 	game.details_content.text = ""

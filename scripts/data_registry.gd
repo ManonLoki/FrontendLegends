@@ -8,6 +8,7 @@ var npcs: Dictionary = {}
 var quests: Dictionary = {}
 var quest_generators: Dictionary = {}
 var skills: Dictionary = {}
+var teach_stock: Dictionary = {}
 var map_files: Array[String] = []
 var map_display_names: Dictionary = {}
 var map_parent_ids: Dictionary = {}
@@ -15,7 +16,6 @@ var map_types: Dictionary = {}
 var placed_npc_targets: Array[Dictionary] = []
 var _placed_npc_keys: Dictionary = {}
 
-# 初始化ready相关逻辑，并保持调用方状态一致。
 func _ready() -> void:
 	var item_catalog := _load_document("items.json")
 	items = item_catalog.get("items", {})
@@ -24,14 +24,14 @@ func _ready() -> void:
 	var quest_catalog := _load_document("quests.json")
 	quests = quest_catalog.get("quests", {})
 	quest_generators = quest_catalog.get("generators", {})
-	skills = _load_table("skills.json", "skills")
+	var skill_catalog := _load_document("skills.json")
+	skills = skill_catalog.get("skills", {})
+	teach_stock = skill_catalog.get("teachStock", {})
 	_scan_maps("res://assets/Map/maps")
 
-# 加载table相关逻辑，并保持调用方状态一致。
 func _load_table(file_name: String, key: String) -> Dictionary:
 	return _load_document(file_name).get(key, {})
 
-# 加载document相关逻辑，并保持调用方状态一致。
 func _load_document(file_name: String) -> Dictionary:
 	var file := FileAccess.open("res://assets/Data/" + file_name, FileAccess.READ)
 	if not file:
@@ -40,39 +40,31 @@ func _load_document(file_name: String) -> Dictionary:
 	var parsed = JSON.parse_string(file.get_as_text())
 	return parsed if parsed is Dictionary else {}
 
-# 返回item相关逻辑，并保持调用方状态一致。
 func get_item(item_id: String) -> Dictionary:
 	return items.get(item_id, {})
 
-# 返回npc相关逻辑，并保持调用方状态一致。
 func get_npc(npc_id: String) -> Dictionary:
 	return npcs.get(npc_id, {})
 
-# 返回quest相关逻辑，并保持调用方状态一致。
 func get_quest(quest_id: String) -> Dictionary:
 	return quests.get(quest_id, {})
 
-# 返回skill相关逻辑，并保持调用方状态一致。
 func get_skill(skill_id: String) -> Dictionary:
 	return skills.get(skill_id, {})
 
-## 教学表是 skills.json 的独立顶层字段，不在技能缓存中，因此此处单独读取原文档。
+## 教学表随其余数据在 _ready 缓存；旧字符串条目在此统一升格为字典格式。
 func get_teach_entries(npc_id: String) -> Array:
-	var catalog: Dictionary = _load_document("skills.json")
-	var stock: Dictionary = catalog.get("teachStock", {})
 	var result: Array = []
-	for entry in stock.get(npc_id, []):
+	for entry in teach_stock.get(npc_id, []):
 		if entry is String:
 			result.append({"skillId": entry})
 		elif entry is Dictionary and not str(entry.get("skillId", "")).is_empty():
 			result.append(entry.duplicate(true))
 	return result
 
-# 判断independent、tutor相关逻辑，并保持调用方状态一致。
 func is_independent_tutor(npc_id: String) -> bool:
 	return not get_teach_entries(npc_id).is_empty() and get_npc(npc_id).get("joinSect", {}).is_empty()
 
-# 处理vendor、stock相关逻辑，并保持调用方状态一致。
 func list_vendor_stock(npc_id: String) -> Array:
 	return vendor_stock.get(npc_id, [])
 
@@ -139,7 +131,6 @@ func _collect_placed_npcs(xml: String, map_id: String, map_name: String) -> void
 		_placed_npc_keys[key] = true
 		placed_npc_targets.append({"npc_id": npc_id, "map_id": map_id, "map_name": map_name})
 
-# 处理placed、npc、targets相关逻辑，并保持调用方状态一致。
 func list_placed_npc_targets(exclude_ids: Array = []) -> Array[Dictionary]:
 	var excluded: Dictionary = {}
 	for npc_id in exclude_ids:
@@ -152,12 +143,10 @@ func list_placed_npc_targets(exclude_ids: Array = []) -> Array[Dictionary]:
 			result.append(copy)
 	return result
 
-# 处理display、name相关逻辑，并保持调用方状态一致。
 func map_display_name(map_id: String) -> String:
 	var value := str(map_display_names.get(map_id, map_id))
 	return value.replace("{playerName}", str(GameState.profile.get("name", "玩家")))
 
-# 处理type相关逻辑，并保持调用方状态一致。
 func map_type(map_id: String) -> String:
 	return str(map_types.get(map_id, "outDoor"))
 

@@ -2,15 +2,16 @@ extends RefCounted
 ## 师门学习的分类、焦点、进度条与详情内容。
 
 const UI_PROGRESS_METER := preload("res://scripts/ui_progress_meter.gd")
+const UI_WIDGETS := preload("res://scripts/game/ui/ui_widgets.gd")
 const CATEGORY_ORDER: Array[String] = ["编码", "思维", "架构", "招架", "灵感"]
 
 var game: Node
+## 页脚标签在整页渲染时创建；研习 tick 只改它的文本，不重建整个列表。
+var footer_label: Label
 
-# 处理init相关逻辑，并保持调用方状态一致。
 func _init(owner: Node) -> void:
 	game = owner
 
-# 处理key相关逻辑，并保持调用方状态一致。
 func handle_key(key: Key) -> void:
 	if not game.learning_skill_id.is_empty():
 		if key in [KEY_ESCAPE, KEY_SPACE]:
@@ -57,7 +58,6 @@ func handle_key(key: Key) -> void:
 		render_progress()
 	render()
 
-# 渲染render相关逻辑，并保持调用方状态一致。
 func render() -> void:
 	game._use_detail_hud("learn")
 	game.details_content.visible = true
@@ -89,50 +89,54 @@ func render() -> void:
 			game._detail_label("%d/%d" % [SkillSystem.level(skill_id), teach_cap(skill_id)], Rect2(Vector2(area.x - 105.0 * scale, y), Vector2(80.0 * scale, row)), 12, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.35, 0.35, 0.35, 1))
 			if not game.learn_focus_category and index == game.learn_index:
 				game._detail_selection(item_rect)
-	var footer := "↑↓ 选分类　·　空格/→ 查看　·　ESC 返回"
-	if not game.learn_focus_category and not game.learn_items.is_empty():
-		var focused_id: String = game.learn_items[game.learn_index]
-		var focused_progress: Dictionary = SkillSystem.learning_progress(focused_id)
-		footer = "研习【%s】，进度 %d/%d。　%s" % [DataRegistry.get_skill(focused_id).get("name", focused_id), focused_progress.get("current", 0), focused_progress.get("total", 1), "研习中 · 空格/ESC 停止" if game.learning_skill_id == focused_id else "空格 开始研习 · ←/ESC 返回"]
-	game._detail_label(footer, Rect2(Vector2(pad, area.y - 42.0 * scale), Vector2(area.x - pad * 2.0, 30.0 * scale)), 11, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
+	footer_label = game._detail_label(_footer_text(), Rect2(Vector2(pad, area.y - 42.0 * scale), Vector2(area.x - pad * 2.0, 30.0 * scale)), 11, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
 
-# 处理cap相关逻辑，并保持调用方状态一致。
+func _footer_text() -> String:
+	if game.learn_focus_category or game.learn_items.is_empty():
+		return "↑↓ 选分类　·　空格/→ 查看　·　ESC 返回"
+	var focused_id: String = game.learn_items[game.learn_index]
+	var focused_progress: Dictionary = SkillSystem.learning_progress(focused_id)
+	return "研习【%s】，进度 %d/%d。　%s" % [DataRegistry.get_skill(focused_id).get("name", focused_id), focused_progress.get("current", 0), focused_progress.get("total", 1), "研习中 · 空格/ESC 停止" if game.learning_skill_id == focused_id else "空格 开始研习 · ←/ESC 返回"]
+
+## 研习 tick 的轻量刷新：列表等级只在升级（同时停止研习）时变化，
+## 平时只需更新页脚进度文本，避免每秒 30 次重建全部标签。
+func update_tick_feedback() -> void:
+	if is_instance_valid(footer_label):
+		footer_label.text = _footer_text()
+
 func teach_cap(skill_id: String) -> int:
 	return SkillSystem.teach_cap(game.nearby_npc_id, skill_id)
 
-# 渲染progress相关逻辑，并保持调用方状态一致。
+## 每个研习 tick 都会调用；复用现有进度条节点，只更新数值（同 practice_controller）。
 func render_progress() -> void:
-	clear_progress()
 	if game.learning_skill_id.is_empty():
+		clear_progress()
 		return
 	var progress: Dictionary = SkillSystem.learning_progress(game.learning_skill_id)
-	var meter := UI_PROGRESS_METER.new()
-	game.hud.add_child(meter)
-	game.learning_progress_widgets.append(meter)
-	game._layout_top_progress_meter(meter)
-	meter.set_font_size(maxi(11, int(round(12.0 * game._display_scale()))))
+	var meter: Control
+	if game.learning_progress_widgets.is_empty():
+		meter = UI_PROGRESS_METER.new()
+		game.hud.add_child(meter)
+		game.learning_progress_widgets.append(meter)
+		game._layout_top_progress_meter(meter)
+		meter.set_font_size(maxi(11, int(round(12.0 * game._display_scale()))))
+	else:
+		meter = game.learning_progress_widgets[0]
 	meter.set_progress(int(progress.get("current", 0)), int(progress.get("total", 1)))
 
-# 清理progress相关逻辑，并保持调用方状态一致。
 func clear_progress() -> void:
-	for widget in game.learning_progress_widgets:
-		if is_instance_valid(widget):
-			widget.free()
-	game.learning_progress_widgets.clear()
+	UI_WIDGETS.free_all(game.learning_progress_widgets)
 
-# 处理category相关逻辑，并保持调用方状态一致。
 func skill_category(skill_id: String) -> String:
 	var theme := str(DataRegistry.get_skill(skill_id).get("theme", ""))
 	return {"code": "编码", "tune": "思维", "arch": "架构", "parry": "招架", "knowledge": "灵感"}.get(theme, "其他")
 
-# 处理categories相关逻辑，并保持调用方状态一致。
 func rebuild_categories() -> void:
 	game.learn_categories.assign(CATEGORY_ORDER)
 	game.learn_category_index = clampi(game.learn_category_index, 0, game.learn_categories.size() - 1)
 	game.learn_focus_category = true
 	refresh_items()
 
-# 刷新items相关逻辑，并保持调用方状态一致。
 func refresh_items() -> void:
 	game.learn_items.clear()
 	var selected: String = game.learn_categories[game.learn_category_index] if not game.learn_categories.is_empty() else "其他"

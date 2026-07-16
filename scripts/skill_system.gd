@@ -8,10 +8,11 @@ const LEARNING_TICK_SECONDS := 1.0 / 30.0
 const MEDITATION_TICK_SECONDS := 1.0 / 30.0
 const PRACTICE_TICK_SECONDS := 1.0 / 5.0
 const MEDITATION_INNER_POWER_UNIT := 25.0
-const THEMES := ["code", "tune", "arch", "parry", "knowledge"]
-const BASIC_SKILL_IDS: Array[String] = ["basicStrength", "basicAgility", "basicConstitution", "basicParry", "literacy"]
+const SKILL_MAPS := preload("res://scripts/skills/skill_maps.gd")
+const THEMES := SKILL_MAPS.THEMES
+const BASIC_SKILL_IDS := SKILL_MAPS.BASIC_SKILL_IDS
 
-## 悟性（wisdom）对学习速率的软修正：以 25 为中性点，越高悟性研习越快。
+## 灵感（wisdom）对学习速率的软修正：以 25 为中性点，灵感越高研习越快。
 const WISDOM_BASELINE := 25.0
 const WISDOM_LEARN_RATE_PER_POINT := 0.02
 const LEARN_RATE_MIN := 0.65
@@ -93,11 +94,6 @@ func learn_from_book(skill_id: String, max_learn_level: int = -1) -> Dictionary:
 ## 返回当前师承允许向指定人物学习的技能列表。
 func learn_options_for_npc(npc_id: String) -> Array[String]:
 	return membership.learn_options_for_npc(npc_id)
-
-## 师父高低只按其教学表中显式 maxTeachLevel 的最高值比较；字符串旧格式
-## 没有上限字段，按参照项目视为 0，而不是由拜师门槛推断造诣。
-func _master_teach_cap(npc_id: String) -> int:
-	return membership.master_teach_cap(npc_id)
 
 ## 菜单显隐用：未拜入该门派，或已拜入但此人造诣高于当前师父（可改投深造）。
 func can_join(npc_id: String) -> bool:
@@ -194,15 +190,15 @@ func skill_exp_required(skill_id: String, level_to_reach: int) -> int:
 	var definition := DataRegistry.get_skill(skill_id)
 	return 1 if definition.is_empty() else _learn_required(definition, level_to_reach, _learning_cost_rate())
 
-## 基础功法练至每 10 级为对应属性 +1（封顶 50），按参考项目设定 basicParry
-## 反哺“strength”而非“agility”——招架练的是身法根基，故意与其他映射不对称。
+## 基础功法练至每 10 级为对应属性 +1（封顶 50），映射表见 skill_maps.gd，
+## 与存档规范化（GameState._normalize_base_attributes）互为逆运算。
 func _refresh_derived_attributes() -> void:
 	var base: Dictionary = GameState.profile.get("base_attributes", GameState.profile.get("attributes", {}))
 	var levels: Dictionary = ensure_skills().get("levels", {})
 	var attributes := base.duplicate(true)
 	var nudges := {"strength": 0, "agility": 0, "constitution": 0, "wisdom": 0}
 	for skill_id in BASIC_SKILL_IDS:
-		var key: String = str({"basicStrength": "strength", "basicAgility": "agility", "basicConstitution": "constitution", "basicParry": "strength", "literacy": "wisdom"}.get(skill_id, ""))
+		var key: String = str(SKILL_MAPS.BASIC_SKILL_ATTRIBUTE.get(skill_id, ""))
 		if not str(key).is_empty():
 			nudges[key] = int(nudges.get(key, 0)) + int(floor(float(levels.get(skill_id, 0)) / 10.0))
 	for key in nudges:
@@ -213,7 +209,7 @@ func _refresh_derived_attributes() -> void:
 func refresh_derived_attributes() -> void:
 	_refresh_derived_attributes()
 
-const THEME_BASIC_SKILL := {"code": "basicStrength", "tune": "basicAgility", "arch": "basicConstitution", "parry": "basicParry", "knowledge": "literacy"}
+const THEME_BASIC_SKILL := SKILL_MAPS.THEME_BASIC_SKILL
 
 ## 基础与特殊功法使用独立槽（见 unequip），装备时按 category 分流到对应槽位。
 ## 对齐参考项目 SaveManager.ts：其余状态（生存 tick、消耗品、商贩交易）只改内存缓存，

@@ -1,6 +1,7 @@
 extends RefCounted
 ## 敌方战斗决策服务；按优先级选择摸鱼、药品、绝招或普通攻击。
 
+const SKILL_LOADOUT := preload("res://scripts/skills/skill_loadout.gd")
 const ULT_USE_RATE := 0.35
 const ITEM_USE_RATE := 0.55
 const REST_USE_RATE := 0.30
@@ -67,7 +68,7 @@ func _try_item(session: Dictionary, ai: Dictionary, hp: int, hp_max: int, hp_rat
 	session.log.append("%s 服下一颗丹药，体力 +%d" % [session.enemy.get("displayName", "敌人"), healed])
 	return {"ok": true, "item": true, "damage": 0, "message": "敌方服药回复 %d 体力" % healed}
 
-## 按 NPC 已装备架构功法等级构建 30 级和 80 级绝招列表。
+## 按 NPC 已装备架构功法等级构建两档绝招列表；档位门槛与消耗表复用玩家侧定义。
 func npc_ults(npc: Dictionary) -> Array:
 	var result: Array = []
 	var skill_levels: Dictionary = npc.get("skillLevels", {})
@@ -79,10 +80,9 @@ func npc_ults(npc: Dictionary) -> Array:
 		var inner_power := int(skill_levels.get("basicConstitution", 0)) + level * 2
 		var config: Dictionary = definition.get("ult", {})
 		var kind := str(config.get("kind", "hugeDamage"))
-		var costs := {"multi": [25, 45], "abnormal": [30, 50], "reduceMax": [35, 60], "hugeDamage": [40, 70]}
 		var names: Array = config.get("names", ["绝招", "绝招"])
-		if level >= 30:
-			result.append({"name": names[0], "kind": kind, "tier": 1, "inner_power": inner_power, "mp_cost": costs.get(kind, [40, 70])[0]})
-		if level >= 80:
-			result.append({"name": names[1], "kind": kind, "tier": 2, "inner_power": inner_power, "mp_cost": costs.get(kind, [40, 70])[1]})
+		if level >= SKILL_LOADOUT.ULT_TIER1_ARCH_LEVEL:
+			result.append({"name": names[0], "kind": kind, "tier": 1, "inner_power": inner_power, "mp_cost": SKILL_LOADOUT.ULT_MP_COSTS.get(kind, [40, 70])[0]})
+		if level >= SKILL_LOADOUT.ULT_TIER2_ARCH_LEVEL:
+			result.append({"name": names[1], "kind": kind, "tier": 2, "inner_power": inner_power, "mp_cost": SKILL_LOADOUT.ULT_MP_COSTS.get(kind, [40, 70])[1]})
 	return result

@@ -3,11 +3,9 @@ extends RefCounted
 
 var combat: Node
 
-# 处理init相关逻辑，并保持调用方状态一致。
 func _init(combat_system: Node) -> void:
 	combat = combat_system
 
-# 开始turn相关逻辑，并保持调用方状态一致。
 func start_turn(session: Dictionary, side: String) -> Dictionary:
 	var status_key := "player_status" if side == "player" else "enemy_status"
 	var statuses: Dictionary = session.get(status_key, {})
@@ -41,14 +39,12 @@ func start_turn(session: Dictionary, side: String) -> Dictionary:
 		session.log.append(message)
 	return {"can_act": true, "message": message}
 
-# 添加status相关逻辑，并保持调用方状态一致。
 func add_status(session: Dictionary, side: String, status: String, turns: int) -> void:
 	var key := "player_status" if side == "player" else "enemy_status"
 	var statuses: Dictionary = session.get(key, {})
 	statuses[status] = maxi(int(statuses.get(status, 0)), turns)
 	session[key] = statuses
 
-# 处理player、state相关逻辑，并保持调用方状态一致。
 func track_player_state(session: Dictionary) -> void:
 	var hp := int(GameState.combat_state.hp)
 	var maximum := maxi(1, int(session.get("player_max_hp", combat._player_hp_max())))

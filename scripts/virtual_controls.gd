@@ -19,7 +19,6 @@ static func is_mobile_runtime() -> bool:
 		or OS.has_feature("web_ios") \
 		or DisplayServer.is_touchscreen_available()
 
-# 初始化ready相关逻辑，并保持调用方状态一致。
 func _ready() -> void:
 	# 非移动运行环境直接释放覆盖层，避免桌面端保留无用按钮节点。
 	if not is_mobile_runtime():
@@ -34,7 +33,6 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_layout_buttons)
 	_layout_buttons()
 
-# 构建buttons相关逻辑，并保持调用方状态一致。
 func _build_buttons() -> void:
 	_add_button("↑", KEY_UP, "up")
 	_add_button("←", KEY_LEFT, "left")
@@ -68,7 +66,6 @@ func _add_button(
 	button.button_up.connect(func() -> void: key_up.emit(keycode))
 	controls_root.add_child(button)
 
-# 处理style相关逻辑，并保持调用方状态一致。
 func _style(fill: Color, border: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = fill
@@ -78,7 +75,6 @@ func _style(fill: Color, border: Color) -> StyleBoxFlat:
 	style.anti_aliasing = true
 	return style
 
-# 处理buttons相关逻辑，并保持调用方状态一致。
 func _layout_buttons() -> void:
 	if not is_instance_valid(controls_root):
 		return

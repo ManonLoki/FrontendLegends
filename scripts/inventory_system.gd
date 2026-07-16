@@ -1,13 +1,13 @@
 extends Node
 
+const SKILL_MAPS := preload("res://scripts/skills/skill_maps.gd")
+const EQUIPMENT_MATH := preload("res://scripts/equipment_math.gd")
 ## 售价统一按买价乘固定比例计算，不为每件物品单设字段，以保证所有商店差价一致。
 const SELL_PRICE_RATE := 0.25
 
-# 处理count相关逻辑，并保持调用方状态一致。
 func count(item_id: String) -> int:
 	return int(GameState.inventory.get(item_id, 0))
 
-# 添加item相关逻辑，并保持调用方状态一致。
 func add_item(item_id: String, amount: int = 1) -> bool:
 	var definition: Dictionary = DataRegistry.get_item(item_id)
 	if definition.is_empty() or amount <= 0:
@@ -19,7 +19,6 @@ func add_item(item_id: String, amount: int = 1) -> bool:
 	GameState.inventory[item_id] = current + amount
 	return true
 
-# 移除item相关逻辑，并保持调用方状态一致。
 func remove_item(item_id: String, amount: int = 1) -> bool:
 	if amount <= 0 or count(item_id) < amount:
 		return false
@@ -39,7 +38,7 @@ func use_item(item_id: String) -> Dictionary:
 	var effects: Dictionary = definition.get("effects", {})
 	var vitals: Dictionary = GameState.profile.get("vitals", {})
 	var attributes: Dictionary = GameState.profile.get("attributes", {})
-	var capacity := 200 + int(attributes.get("strength", 25)) * 10
+	var capacity := GameState.vitals_capacity(attributes)
 	var kind := str(definition.get("kind", ""))
 	var result := {"ok": false, "message": "%s 不能直接使用。" % definition.get("name", item_id)}
 	if kind in ["food", "water"]:
@@ -103,7 +102,6 @@ func use_item(item_id: String) -> Dictionary:
 	GameState.profile.vitals = vitals
 	return result
 
-# 处理item相关逻辑，并保持调用方状态一致。
 func equip_item(item_id: String) -> Dictionary:
 	var definition: Dictionary = DataRegistry.get_item(item_id)
 	var slot := str(definition.get("slot", ""))
@@ -112,10 +110,9 @@ func equip_item(item_id: String) -> Dictionary:
 	if count(item_id) <= 0:
 		return {"ok": false, "message": "你没有%s。" % definition.get("name", item_id)}
 	var missing: Array[String] = []
-	var labels := {"strength": "编码", "agility": "思维", "constitution": "架构", "wisdom": "灵感"}
 	for key in definition.get("requires", {}):
 		if int(GameState.profile.get("attributes", {}).get(key, 0)) < int(definition.requires[key]):
-			missing.append("%s ≥ %d" % [labels.get(str(key), str(key)), int(definition.requires[key])])
+			missing.append("%s ≥ %d" % [SKILL_MAPS.ATTRIBUTE_LABELS.get(str(key), str(key)), int(definition.requires[key])])
 	if not missing.is_empty():
 		return {"ok": false, "message": "穿戴%s需：%s。你资质未足，先练练再来。" % [definition.get("name", item_id), "、".join(missing)]}
 	_normalize_equipment()
@@ -139,7 +136,6 @@ func equip_item(item_id: String) -> Dictionary:
 		return {"ok": true, "message": "换下%s，穿上了%s。" % [DataRegistry.get_item(previous).get("name", previous), definition.get("name", item_id)], "previous": previous, "slot": actual_slot}
 	return {"ok": true, "message": "穿上了%s。" % definition.get("name", item_id), "previous": previous, "slot": actual_slot}
 
-# 处理unequip相关逻辑，并保持调用方状态一致。
 func unequip(slot: String) -> Dictionary:
 	var previous := str(GameState.equipment.get(slot, ""))
 	if previous.is_empty():
@@ -147,7 +143,6 @@ func unequip(slot: String) -> Dictionary:
 	GameState.equipment[slot] = ""
 	return {"ok": true, "message": "卸下了%s。" % DataRegistry.get_item(previous).get("name", previous)}
 
-# 处理slot相关逻辑，并保持调用方状态一致。
 func equipped_slot(item_id: String) -> String:
 	_normalize_equipment()
 	for slot in GameState.equipment:
@@ -155,7 +150,6 @@ func equipped_slot(item_id: String) -> String:
 			return str(slot)
 	return ""
 
-# 处理item相关逻辑，并保持调用方状态一致。
 func unequip_item(item_id: String) -> Dictionary:
 	var slot := equipped_slot(item_id)
 	if slot.is_empty():
@@ -163,25 +157,13 @@ func unequip_item(item_id: String) -> Dictionary:
 		return {"ok": false, "message": "%s 未曾穿戴。" % definition.get("name", item_id)}
 	return unequip(slot)
 
-# 处理bonus相关逻辑，并保持调用方状态一致。
 func equipment_bonus() -> Dictionary:
 	_normalize_equipment()
-	var total := {"attack": 0, "defense": 0, "hit": 0, "dodge": 0, "crit": 0, "woundInflict": 0, "parry": 0}
-	for item_id in GameState.equipment.values():
-		var bonus: Dictionary = DataRegistry.get_item(str(item_id)).get("equipmentBonus", {})
-		for key in total:
-			total[key] = int(total[key]) + int(bonus.get(key, 0))
-	return total
+	return EQUIPMENT_MATH.sum_equipment_bonus(GameState.equipment.values())
 
-# 处理attribute、bonus相关逻辑，并保持调用方状态一致。
 func equipment_attribute_bonus() -> Dictionary:
 	_normalize_equipment()
-	var total := {"strength": 0, "agility": 0, "constitution": 0, "wisdom": 0}
-	for item_id in GameState.equipment.values():
-		var bonus: Dictionary = DataRegistry.get_item(str(item_id)).get("attributes", {})
-		for key in total:
-			total[key] = int(total[key]) + maxi(0, int(bonus.get(key, 0)))
-	return total
+	return EQUIPMENT_MATH.sum_attribute_bonus(GameState.equipment.values())
 
 ## 清理已经不在背包中的装备引用，防止绕过卸下流程的出售或丢弃留下悬空状态。
 func _normalize_equipment() -> void:
@@ -190,7 +172,6 @@ func _normalize_equipment() -> void:
 		if not item_id.is_empty() and count(item_id) <= 0:
 			GameState.equipment[slot] = ""
 
-# 处理item相关逻辑，并保持调用方状态一致。
 func buy_item(npc_id: String, item_id: String) -> Dictionary:
 	if item_id not in DataRegistry.list_vendor_stock(npc_id):
 		return {"ok": false, "message": "此处不售此物。"}
@@ -207,7 +188,6 @@ func buy_item(npc_id: String, item_id: String) -> Dictionary:
 	GameState.profile.vitals = vitals
 	return {"ok": true, "message": "买下%s，花费 %d Token。" % [definition.get("name", item_id), price]}
 
-# 处理item相关逻辑，并保持调用方状态一致。
 func sell_item(item_id: String) -> Dictionary:
 	var definition: Dictionary = DataRegistry.get_item(item_id)
 	if definition.is_empty():
@@ -222,7 +202,6 @@ func sell_item(item_id: String) -> Dictionary:
 	GameState.profile.vitals = vitals
 	return {"ok": true, "message": "卖出%s，得 %d Token。" % [definition.get("name", item_id), gain]}
 
-# 处理item相关逻辑，并保持调用方状态一致。
 func discard_item(item_id: String) -> Dictionary:
 	var definition: Dictionary = DataRegistry.get_item(item_id)
 	if definition.is_empty() or str(definition.get("kind", "")) == "quest" or definition.get("discardable", true) == false:
@@ -247,7 +226,6 @@ func _can_use(item_id: String, definition: Dictionary) -> bool:
 		return false
 	return true
 
-# 处理failure相关逻辑，并保持调用方状态一致。
 func _use_failure(item_id: String, definition: Dictionary) -> String:
 	if definition.is_empty(): return "未知物品。"
 	if definition.get("forbiddenGender", "") == GameState.profile.get("gender", ""): return str(definition.get("blockedLine", "这件东西不适合你使用。"))
@@ -256,7 +234,6 @@ func _use_failure(item_id: String, definition: Dictionary) -> String:
 	if count(item_id) <= 0: return "%s 数量不足。" % definition.get("name", item_id)
 	return "%s 不能直接使用。" % definition.get("name", item_id)
 
-# 处理entries相关逻辑，并保持调用方状态一致。
 func list_entries(kind: String = "") -> Array:
 	var result: Array = []
 	var item_ids: Array = GameState.inventory.keys()

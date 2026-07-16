@@ -1,7 +1,6 @@
 extends "res://tests/alignment/domain_suite.gd"
 ## 场景坐标、图集、详情 HUD、交易与交互回归。
 
-# 执行hud、suite相关逻辑，并保持调用方状态一致。
 func _run_hud_suite() -> Node:
 	var game_state = root.get_node("GameState")
 	var skill_system = root.get_node("SkillSystem")

@@ -3,11 +3,9 @@ extends RefCounted
 
 var game: Node
 
-# 处理init相关逻辑，并保持调用方状态一致。
 func _init(owner: Node) -> void:
 	game = owner
 
-# 加载initial、map相关逻辑，并保持调用方状态一致。
 func load_initial_map() -> void:
 	if DataRegistry.map_files.is_empty():
 		return
@@ -18,7 +16,6 @@ func load_initial_map() -> void:
 			return
 	load_map(0)
 
-# 加载map相关逻辑，并保持调用方状态一致。
 func load_map(index: int, arrival_from := "", cyber := false) -> void:
 	if DataRegistry.map_files.is_empty() or game.map_transitioning:
 		return
@@ -42,15 +39,15 @@ func load_map(index: int, arrival_from := "", cyber := false) -> void:
 	if not arrival_from.is_empty():
 		var arrival: Dictionary = game.map_context.transaction_for_arrival(arrival_from, game.map_context.map_id, cyber)
 		if not arrival.is_empty():
-			game.player_tile = _object_tile(arrival)
+			game.player_tile = game.map_context.object_tile(arrival)
 		elif cyber:
 			var fallback_spawn: Dictionary = game.map_context.spawn_point()
 			if not fallback_spawn.is_empty():
-				game.player_tile = _object_tile(fallback_spawn)
+				game.player_tile = game.map_context.object_tile(fallback_spawn)
 	else:
 		var spawn: Dictionary = game.map_context.spawn_point()
 		if not spawn.is_empty():
-			game.player_tile = _object_tile(spawn)
+			game.player_tile = game.map_context.object_tile(spawn)
 			_apply_spawn_facing(spawn)
 	game.nearby_npc_id = ""
 	game._refresh_nearby_npc()
@@ -63,14 +60,6 @@ func load_map(index: int, arrival_from := "", cyber := false) -> void:
 	await fade_out.finished
 	game.map_transitioning = false
 
-# 处理tile相关逻辑，并保持调用方状态一致。
-func _object_tile(object: Dictionary) -> Vector2i:
-	return Vector2i(
-		int(floor(float(object.get("x", 0)) / game.map_context.tile_width)),
-		int(floor(float(object.get("y", 0)) / game.map_context.tile_height)),
-	)
-
-# 应用spawn、facing相关逻辑，并保持调用方状态一致。
 func _apply_spawn_facing(spawn: Dictionary) -> void:
 	match str(spawn.get("properties", {}).get("faceDir", "")).to_lower():
 		"up": game.facing = Vector2i.UP
@@ -78,7 +67,6 @@ func _apply_spawn_facing(spawn: Dictionary) -> void:
 		"left": game.facing = Vector2i.LEFT
 		"right": game.facing = Vector2i.RIGHT
 
-# 尝试执行map、transition相关逻辑，并保持调用方状态一致。
 func try_map_transition() -> void:
 	if not game.map_context:
 		return
@@ -95,7 +83,6 @@ func try_map_transition() -> void:
 	if target_index >= 0:
 		load_map(target_index, game.map_context.map_id, false)
 
-# 处理index、by、id相关逻辑，并保持调用方状态一致。
 func map_index_by_id(target: String) -> int:
 	var normalized_target := target.strip_edges().to_lower()
 	for index in DataRegistry.map_files.size():

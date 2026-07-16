@@ -3,11 +3,9 @@ extends RefCounted
 
 var game: Node
 
-# 处理init相关逻辑，并保持调用方状态一致。
 func _init(owner: Node) -> void:
 	game = owner
 
-# 处理interact相关逻辑，并保持调用方状态一致。
 func _interact() -> void:
 	# 不信任跨帧缓存；打开任何交互 HUD 前按玩家当前朝向重新解析目标。
 	game._refresh_nearby_npc()
@@ -21,7 +19,6 @@ func _interact() -> void:
 		_position_npc_menu()
 		_refresh_npc_menu()
 
-# 处理prop相关逻辑，并保持调用方状态一致。
 func _interact_prop() -> bool:
 	if not game.map_context:
 		return false
@@ -32,7 +29,7 @@ func _interact_prop() -> bool:
 	var event := str(properties.get("event", ""))
 	if event == "drink":
 		var vitals: Dictionary = GameState.profile.get("vitals", {})
-		var capacity: int = game.VITALS_BASE_CAPACITY + int(GameState.profile.get("attributes", {}).get("strength", 25)) * game.VITALS_CAPACITY_PER_STRENGTH
+		var capacity: int = GameState.vitals_capacity()
 		var gain := mini(20, maxi(0, capacity - int(vitals.get("water", 0))))
 		vitals.water = int(vitals.get("water", 0)) + gain
 		GameState.profile.vitals = vitals
@@ -61,7 +58,6 @@ func _interact_prop() -> bool:
 		game._show_details(game.message)
 	return true
 
-# 处理display、name相关逻辑，并保持调用方状态一致。
 func _prop_display_name(object: Dictionary) -> String:
 	var properties: Dictionary = object.get("properties", {})
 	var display_name := str(properties.get("displayName", "")).strip_edges()
@@ -69,7 +65,6 @@ func _prop_display_name(object: Dictionary) -> String:
 		display_name = str(object.get("name", "")).strip_edges()
 	return display_name if not display_name.is_empty() else "告示"
 
-# 显示delete、confirm相关逻辑，并保持调用方状态一致。
 func _show_delete_confirm() -> void:
 	game.delete_confirm_open = true
 	game.delete_confirm_index = 1
@@ -79,7 +74,6 @@ func _show_delete_confirm() -> void:
 	_layout_delete_confirm()
 	_refresh_delete_confirm()
 
-# 处理delete、confirm相关逻辑，并保持调用方状态一致。
 func _layout_delete_confirm() -> void:
 	var scale: float = game._display_scale()
 	var panel_size: Vector2 = Vector2(360.0, 118.0) * scale
@@ -87,11 +81,9 @@ func _layout_delete_confirm() -> void:
 	game.tree_confirm_panel.size = panel_size
 	game.tree_confirm_content.add_theme_font_size_override("font_size", maxi(12, int(round(13.0 * scale))))
 
-# 刷新delete、confirm相关逻辑，并保持调用方状态一致。
 func _refresh_delete_confirm() -> void:
 	game.tree_confirm_content.text = "这棵歪脖树正合上吊。真要吊死吗？（存档将被删除）\n\n%s    %s" % [game._cursor("吊死", game.delete_confirm_index == 0), game._cursor("再想想", game.delete_confirm_index == 1)]
 
-# 处理delete、confirm、key相关逻辑，并保持调用方状态一致。
 func _handle_delete_confirm_key(key: Key) -> void:
 	if key == KEY_ESCAPE:
 		_close_delete_confirm()
@@ -108,12 +100,10 @@ func _handle_delete_confirm_key(key: Key) -> void:
 		else:
 			_close_delete_confirm()
 
-# 关闭delete、confirm相关逻辑，并保持调用方状态一致。
 func _close_delete_confirm() -> void:
 	game.delete_confirm_open = false
 	game.tree_confirm_panel.visible = false
 
-# 判断是否具备front、interactable相关逻辑，并保持调用方状态一致。
 func _has_front_interactable() -> bool:
 	if not game.map_context:
 		return false
@@ -123,7 +113,6 @@ func _has_front_interactable() -> bool:
 	var properties: Dictionary = object.get("properties", {})
 	return not str(properties.get("event", "")).is_empty() or not str(properties.get("text", "")).is_empty() or not str(properties.get("questGiver", "")).is_empty()
 
-# 处理npc、menu、key相关逻辑，并保持调用方状态一致。
 func _handle_npc_menu_key(key: Key) -> void:
 	if key == KEY_ESCAPE:
 		game.npc_menu_open = false
@@ -142,7 +131,6 @@ func _handle_npc_menu_key(key: Key) -> void:
 			_refresh_npc_menu()
 	return
 
-# 刷新npc、menu相关逻辑，并保持调用方状态一致。
 func _refresh_npc_menu() -> void:
 	game.npc_menu_panel.visible = true
 	var npc: Dictionary = NpcSystem.build_instance(game.nearby_npc_id)
@@ -171,20 +159,17 @@ func _refresh_npc_menu() -> void:
 	_render_npc_menu_widgets()
 	_position_npc_menu()
 
-# 清理npc、menu、widgets相关逻辑，并保持调用方状态一致。
 func _clear_npc_menu_widgets() -> void:
 	for widget in game.npc_menu_widgets:
 		if is_instance_valid(widget):
 			widget.free()
 	game.npc_menu_widgets.clear()
 
-# 关闭npc、menu相关逻辑，并保持调用方状态一致。
 func _close_npc_menu() -> void:
 	game.npc_menu_open = false
 	game.npc_menu_panel.visible = false
 	_clear_npc_menu_widgets()
 
-# 渲染npc、menu、widgets相关逻辑，并保持调用方状态一致。
 func _render_npc_menu_widgets() -> void:
 	# 浮动菜单保持紧凑，由 _position_npc_menu() 根据人物可见精灵矩形选择摆放位置。
 	_clear_npc_menu_widgets()
@@ -219,7 +204,6 @@ func _render_npc_menu_widgets() -> void:
 		game.hud.add_child(label)
 		game.npc_menu_widgets.append(label)
 
-# 处理npc、menu相关逻辑，并保持调用方状态一致。
 func _position_npc_menu() -> void:
 	if not game.npc_menu_panel or not game.map_context or game.nearby_npc_id.is_empty():
 		return
@@ -261,7 +245,6 @@ func _position_npc_menu() -> void:
 	)
 	_sync_npc_menu_widgets()
 
-# 同步npc、menu、widgets相关逻辑，并保持调用方状态一致。
 func _sync_npc_menu_widgets() -> void:
 	if game.npc_menu_widgets.is_empty():
 		return

@@ -30,13 +30,6 @@ func set_font_size(value: int) -> void:
 	meter_font_size = maxi(10, value)
 	queue_redraw()
 
-## 一次设置完整配色，避免调用方分别改写绘制状态。
-func set_colors(fill: Color, track: Color = Color("faf9f5"), border: Color = Color("55524c")) -> void:
-	fill_color = fill
-	track_color = track
-	border_color = border
-	queue_redraw()
-
 ## 按控件当前尺寸依次绘制轨道、边框、填充区域和数值文字。
 func _draw() -> void:
 	## 右侧预留随高度缩放的文字区域。

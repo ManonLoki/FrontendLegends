@@ -3,11 +3,9 @@ extends RefCounted
 
 var game: Node
 
-# 处理init相关逻辑，并保持调用方状态一致。
 func _init(owner: Node) -> void:
 	game = owner
 
-# 显示show相关逻辑，并保持调用方状态一致。
 func show(speaker: String, text: String, lock_seconds: float = 0.0, after_last: Callable = Callable()) -> void:
 	var clean_speaker := speaker.strip_edges()
 	var clean_text := text.strip_edges()
@@ -26,7 +24,6 @@ func show(speaker: String, text: String, lock_seconds: float = 0.0, after_last: 
 	game.dialogue_open = true
 	game.dialogue_panel.visible = true
 
-# 分页整理paginate相关逻辑，并保持调用方状态一致。
 func paginate(text: String) -> Array[String]:
 	var normalized := text.replace("\\r\\n", "\n").replace("\\n", "\n").replace("\\r", "\n").replace("\r", "")
 	var visual_lines: Array[String] = []
@@ -41,12 +38,10 @@ func paginate(text: String) -> Array[String]:
 		visual_lines.append(line)
 	return visual_lines if not visual_lines.is_empty() else [""]
 
-# 渲染render相关逻辑，并保持调用方状态一致。
 func render(speaker: String) -> void:
 	var page: String = game.dialogue_pages[clampi(game.dialogue_page_index, 0, maxi(0, game.dialogue_pages.size() - 1))]
 	game.dialogue_content.text = "%s:\n%s" % [speaker, page] if not speaker.is_empty() else page
 
-# 推进advance相关逻辑，并保持调用方状态一致。
 func advance() -> void:
 	if game.dialogue_page_index < game.dialogue_pages.size() - 1:
 		game.dialogue_page_index += 1
@@ -67,7 +62,6 @@ func advance() -> void:
 	else:
 		close()
 
-# 关闭close相关逻辑，并保持调用方状态一致。
 func close() -> void:
 	game.dialogue_open = false
 	game.dialogue_speaker = ""
@@ -78,7 +72,6 @@ func close() -> void:
 	game.dialogue_page_index = 0
 	game.dialogue_panel.visible = false
 
-# 更新auto、close相关逻辑，并保持调用方状态一致。
 func update_auto_close() -> void:
 	if game.dialogue_open and game.dialogue_auto_close_at_msec > 0 and Time.get_ticks_msec() >= game.dialogue_auto_close_at_msec:
 		close()

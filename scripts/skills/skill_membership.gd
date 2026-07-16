@@ -1,8 +1,9 @@
 extends RefCounted
 ## 师承与门派领域服务；负责教学列表、拜师资格和同门改投规则。
 
-const THEME_BASIC_SKILL := {"code": "basicStrength", "tune": "basicAgility", "arch": "basicConstitution", "parry": "basicParry", "knowledge": "literacy"}
-const ATTRIBUTE_LABELS := {"strength": "编码", "agility": "思维", "constitution": "架构", "wisdom": "灵感"}
+const SKILL_MAPS := preload("res://scripts/skills/skill_maps.gd")
+const THEME_BASIC_SKILL := SKILL_MAPS.THEME_BASIC_SKILL
+const ATTRIBUTE_LABELS := SKILL_MAPS.ATTRIBUTE_LABELS
 
 var skills: Node
 
@@ -17,8 +18,9 @@ func learn_options_for_npc(npc_id: String) -> Array[String]:
 	var entries := DataRegistry.get_teach_entries(npc_id)
 	if entries.is_empty():
 		return result
+	var independent_tutor := DataRegistry.is_independent_tutor(npc_id)
 	## 独立导师无需拜师，门派导师只教授自己的正式弟子。
-	if not DataRegistry.is_independent_tutor(npc_id) and str(GameState.profile.get("master", "")) != npc_id:
+	if not independent_tutor and str(GameState.profile.get("master", "")) != npc_id:
 		return result
 	for entry in entries:
 		var skill_id := str(entry.get("skillId", ""))
@@ -27,7 +29,7 @@ func learn_options_for_npc(npc_id: String) -> Array[String]:
 			continue
 		var belongs_to_teacher := str(definition.get("sect", "")) == str(npc.get("sect", ""))
 		var is_basic := str(definition.get("category", "")) == "basic"
-		if DataRegistry.is_independent_tutor(npc_id) or belongs_to_teacher or is_basic:
+		if independent_tutor or belongs_to_teacher or is_basic:
 			var basic_id := str(THEME_BASIC_SKILL.get(str(definition.get("theme", "")), ""))
 			if not basic_id.is_empty() and basic_id not in result:
 				result.append(basic_id)

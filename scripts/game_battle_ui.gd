@@ -200,7 +200,6 @@ func handle_submenu_key(key: Key) -> void:
 			if not active: return
 	refresh()
 
-# 刷新refresh相关逻辑，并保持调用方状态一致。
 func refresh() -> void:
 	## 展示细节由独立渲染器负责，状态机只发起刷新。
 	## 渲染器按刷新临时创建，避免与本 RefCounted 状态机形成循环引用。

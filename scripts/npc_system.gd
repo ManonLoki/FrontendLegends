@@ -7,7 +7,6 @@ var defeated_until: Dictionary = {}
 var runtime_npcs: Dictionary = {}
 var sprite_regions: Dictionary = {}
 
-# 初始化ready相关逻辑，并保持调用方状态一致。
 func _ready() -> void:
 	_load_sprite_regions()
 
@@ -33,9 +32,9 @@ func _load_sprite_regions() -> void:
 				float(region.get("w", 0)), float(region.get("h", 0)),
 			)
 
-# 处理region相关逻辑，并保持调用方状态一致。
+## 每帧绘制的热路径：只读定义中的 sprite 字段，不经过 build_instance 的深复制。
 func sprite_region(npc_id: String) -> Rect2:
-	return sprite_region_for_instance(build_instance(npc_id))
+	return sprite_region_for_instance(runtime_npcs.get(npc_id, DataRegistry.get_npc(npc_id)))
 
 ## 直接按人物快照解析形象，使动态任务人物和运行时覆盖不会退回临时 ID 的默认头像。
 func sprite_region_for_instance(npc: Dictionary) -> Rect2:
@@ -53,28 +52,22 @@ func build_instance(npc_id: String, overrides: Dictionary = {}) -> Dictionary:
 	definition["display_name"] = definition.get("displayName", npc_id)
 	return definition
 
-# 处理dialogue相关逻辑，并保持调用方状态一致。
 func dialogue(npc_id: String) -> String:
 	var npc: Dictionary = build_instance(npc_id)
 	return str(npc.get("defaultLine", "……"))
 
-# 判断是否允许interact相关逻辑，并保持调用方状态一致。
 func can_interact(npc_id: String) -> bool:
 	return (runtime_npcs.has(npc_id) or not DataRegistry.get_npc(npc_id).is_empty()) and not is_defeated(npc_id)
 
-# 注册runtime相关逻辑，并保持调用方状态一致。
 func register_runtime(npc_id: String, definition: Dictionary) -> void:
 	runtime_npcs[npc_id] = definition.duplicate(true)
 
-# 处理runtime相关逻辑，并保持调用方状态一致。
 func unregister_runtime(npc_id: String) -> void:
 	runtime_npcs.erase(npc_id)
 
-# 处理defeated相关逻辑，并保持调用方状态一致。
 func mark_defeated(npc_id: String, duration_sec: float = 300.0) -> void:
 	defeated_until[npc_id] = GameState.game_time_sec + duration_sec
 
-# 清理defeated相关逻辑，并保持调用方状态一致。
 func clear_defeated() -> void:
 	defeated_until.clear()
 
@@ -87,8 +80,9 @@ func is_defeated(npc_id: String) -> bool:
 		return false
 	return true
 
-# 处理defeated相关逻辑，并保持调用方状态一致。
 func sweep_defeated() -> void:
+	if defeated_until.is_empty():
+		return
 	for npc_id in defeated_until.keys():
 		is_defeated(npc_id)
 

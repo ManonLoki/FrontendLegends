@@ -3,11 +3,9 @@ extends RefCounted
 
 var game: Node
 
-# 处理init相关逻辑，并保持调用方状态一致。
 func _init(owner: Node) -> void:
 	game = owner
 
-# 构建detail、huds相关逻辑，并保持调用方状态一致。
 func _build_detail_huds() -> void:
 	game.detail_huds["npc_view"] = {"panel": game.details_panel, "content": game.details_content}
 	game.detail_widget_sets["npc_view"] = game.details_widgets
@@ -30,7 +28,6 @@ func _build_detail_huds() -> void:
 		game.detail_widget_sets[kind] = widget_set
 	_use_detail_hud("generic", false)
 
-# 处理detail、hud相关逻辑，并保持调用方状态一致。
 func _use_detail_hud(kind: String, show := true) -> void:
 	if not game.detail_huds.has(kind):
 		return
@@ -44,7 +41,6 @@ func _use_detail_hud(kind: String, show := true) -> void:
 	_layout_active_detail_hud()
 	game.details_panel.visible = show
 
-# 处理active、detail、hud相关逻辑，并保持调用方状态一致。
 func _layout_active_detail_hud() -> void:
 	if game.active_detail_hud == "profile":
 		game._layout_profile_panel()
@@ -56,7 +52,6 @@ func _layout_active_detail_hud() -> void:
 		_layout_details_overlay()
 
 
-# 处理game、view相关逻辑，并保持调用方状态一致。
 func _layout_game_view() -> void:
 	game.last_layout_viewport_size = game.get_viewport_rect().size
 	var view_rect: Rect2 = game._game_view_rect()
@@ -102,7 +97,6 @@ func _layout_game_view() -> void:
 		game._layout_top_progress_meter(game.practice_progress_widgets[0])
 	game._update_camera()
 
-# 处理details、overlay相关逻辑，并保持调用方状态一致。
 func _layout_details_overlay() -> void:
 	var scale: float = game._display_scale()
 	var overlay_size: Vector2 = Vector2(464.0, 304.0) * scale
@@ -111,7 +105,6 @@ func _layout_details_overlay() -> void:
 	game.details_panel.position = (game.DESIGN_SIZE - overlay_size) * 0.5
 	game.details_panel.size = overlay_size
 
-# 处理cyber、panel相关逻辑，并保持调用方状态一致。
 func _layout_cyber_panel() -> void:
 	var scale: float = game._display_scale()
 	var tab_width: float = 80.0 * scale
@@ -125,7 +118,6 @@ func _layout_cyber_panel() -> void:
 	game.details_panel.position = Vector2(panel_x, game.menu_panel.position.y + game.menu_panel.size.y)
 	game.details_panel.size = Vector2(panel_width, row_height * maxi(1, game.cyber_maps.size()))
 
-# 处理battle、panel相关逻辑，并保持调用方状态一致。
 func _layout_battle_panel() -> void:
 	var scale: float = game._display_scale()
 	var inset: Vector2 = Vector2(8.0, 8.0) * scale

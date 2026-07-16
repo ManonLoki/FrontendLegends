@@ -16,13 +16,10 @@ const CRIT_PER_CONSTITUTION := 0.0035
 const FLEE_BASE := 0.40
 const FLEE_PER_AGILITY := 0.03
 
-## 攻击招式附带异常状态表：10 个招式槽位中 6 个携带状态（见参考项目 SectMoves.ts）。
-const ATTACK_MOVE_STATUS_TABLE := {20: "paralysis", 40: "weakness", 50: "poison", 70: "paralysis", 80: "weakness", 90: "poison"}
-
-## 己方/敌方共用的招式触发概率曲线：基础 25% + 每个已解锁招式 4%，封顶 55%。
-const MOVE_TRIGGER_BASE := 0.25
-const MOVE_TRIGGER_PER_MOVE := 0.04
-const MOVE_TRIGGER_CAP := 0.55
+## 己方/敌方共用的招式触发概率曲线，权威定义在 combat_rules.gd。
+const MOVE_TRIGGER_BASE := COMBAT_RULES.MOVE_TRIGGER_BASE
+const MOVE_TRIGGER_PER_MOVE := COMBAT_RULES.MOVE_TRIGGER_PER_MOVE
+const MOVE_TRIGGER_CAP := COMBAT_RULES.MOVE_TRIGGER_CAP
 
 ## 招架伤害减免：基础 15% + 每高出敌方 1 级 1%，封顶 35%。
 const PARRY_REDUCE_BASE := 0.15
@@ -35,10 +32,6 @@ const WEAKNESS_DAMAGE_MULT := 1.30
 ## （伤势 = 战斗中实际损失的体力，与体力上限变动无关）。
 func create_session(enemy_id: String, lethal: bool = true) -> Dictionary:
 	return rules.create_session(enemy_id, lethal)
-
-## 计算 NPC 的精力上限。
-func _npc_mp_max(npc: Dictionary) -> int:
-	return rules.npc_mp_max(npc)
 
 ## 执行玩家攻击并依次结算招式、加力、装备、状态和战报。
 func player_attack(session: Dictionary, turn_started := false, damage_scale := 1.0, hit_bonus_extra := 0.0, attack_power_bonus := 0.0, action_label := "出手", allow_attack_move := true) -> Dictionary:
@@ -193,10 +186,6 @@ func _apply_enemy_force_power(session: Dictionary, result: Dictionary) -> int:
 func _maybe_apply_in_battle_injury(session: Dictionary, result: Dictionary) -> String:
 	return rules.maybe_apply_in_battle_injury(session, result)
 
-## 返回招式用于加权随机选择的权重。
-func _weight_of(move: Dictionary) -> int:
-	return rules.weight_of(move)
-
 ## 从候选招式中按权重随机选择一项。
 func _weighted_pick(moves: Array) -> Dictionary:
 	return rules.weighted_pick(moves)
@@ -217,8 +206,7 @@ func _npc_move(npc: Dictionary, kind: String) -> Dictionary:
 func enemy_action(session: Dictionary) -> Dictionary:
 	return enemy_ai.act(session)
 
-## NPC 版“已解锁绝招”：等级门槛（30/80）与消耗表须与玩家侧
-## SkillSystem.unlocked_ults()/_make_ult() 保持一致，两处各自维护同一套数值。
+## NPC 版“已解锁绝招”：等级门槛与消耗表与玩家侧共用 skill_loadout.gd 中的定义。
 func _npc_ults(npc: Dictionary) -> Array:
 	return enemy_ai.npc_ults(npc)
 
@@ -266,14 +254,6 @@ func flee_action(session: Dictionary) -> Dictionary:
 		return {"escaped": false, "skipped": true, "message": turn_check.message}
 	var escaped := flee(session)
 	return {"escaped": escaped, "skipped": false, "message": str(session.log[-1])}
-
-## 比较双方思维属性以决定玩家是否先手。
-func _initiative(player: Dictionary, enemy: Dictionary) -> bool:
-	return rules.initiative(player, enemy)
-
-## 根据四维与精力上限计算通用体力上限。
-func _hp_max(attributes: Dictionary, mp_max: int) -> int:
-	return rules.hp_max(attributes, mp_max)
 
 ## 返回玩家当前有效战斗体力上限。
 func _player_hp_max() -> int:

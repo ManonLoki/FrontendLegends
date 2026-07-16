@@ -1,7 +1,8 @@
 extends RefCounted
 ## 动态悬赏目标与悬赏环结算服务；通过 QuestSystem 保存唯一任务状态。
 
-const BASIC_SKILL_KEYS: Array[String] = ["basicStrength", "basicAgility", "basicConstitution", "basicParry", "literacy"]
+const SKILL_MAPS := preload("res://scripts/skills/skill_maps.gd")
+const BASIC_SKILL_KEYS := SKILL_MAPS.BASIC_SKILL_IDS
 const NAME_MODIFIERS: Array[String] = ["傻X", "脑残", "白痴", "霸道", "凶狠"]
 const NAME_ROLES: Array[String] = ["老板", "客户", "领导", "同事", "朋友"]
 const NAME_SURNAMES: Array[String] = ["赵", "钱", "孙", "李", "周", "吴", "郑", "王"]

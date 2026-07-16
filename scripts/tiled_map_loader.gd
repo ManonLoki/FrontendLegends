@@ -13,8 +13,11 @@ var properties: Dictionary = {}
 var layers: Dictionary = {}
 var objects: Array[Dictionary] = []
 var tilesets: Array[Dictionary] = []
+## objects 在 load_file 之后不可变；NPC 过滤列表与 gid 贴图区域各只计算一次，
+## 供每帧绘制/寻路直接复用。
+var _npc_objects_cache: Array[Dictionary] = []
+var _tile_region_cache: Dictionary = {}
 
-# 加载file相关逻辑，并保持调用方状态一致。
 func load_file(path: String) -> bool:
 	var file := FileAccess.open(path, FileAccess.READ)
 	if not file:
@@ -45,24 +48,24 @@ func load_file(path: String) -> bool:
 			object["text"] = _decode_xml_text(text_match.get_string(2))
 			object["text_options"] = _attrs(text_match.get_string(1))
 		objects.append(object)
+	for object in objects:
+		if object.get("type", "") == "NPC" or object.get("properties", {}).has("npcId"):
+			_npc_objects_cache.append(object)
 	return width > 0 and height > 0
 
-# 判断walkable相关逻辑，并保持调用方状态一致。
 func is_walkable(col: int, row: int) -> bool:
 	if col < 0 or row < 0 or col >= width or row >= height:
 		return false
 	var road: PackedInt32Array = layers.get("Road", PackedInt32Array())
 	return road.size() > row * width + col and road[row * width + col] != 0
 
-# 处理objects相关逻辑，并保持调用方状态一致。
 func npc_objects() -> Array[Dictionary]:
-	var result: Array[Dictionary] = []
-	for object in objects:
-		if object.get("type", "") == "NPC" or object.get("properties", {}).has("npcId"):
-			result.append(object)
-	return result
+	return _npc_objects_cache
 
-# 处理objects相关逻辑，并保持调用方状态一致。
+## 对象锚点所在图块坐标（floor(x/tileW), floor(y/tileH)）；全仓统一的像素→图块换算入口。
+func object_tile(object: Dictionary) -> Vector2i:
+	return Vector2i(floori(float(object.get("x", 0.0)) / tile_width), floori(float(object.get("y", 0.0)) / tile_height))
+
 func transaction_objects() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for object in objects:
@@ -71,7 +74,6 @@ func transaction_objects() -> Array[Dictionary]:
 			result.append(object)
 	return result
 
-# 处理point相关逻辑，并保持调用方状态一致。
 func spawn_point() -> Dictionary:
 	for object in objects:
 		var object_name := str(object.get("name", ""))
@@ -82,7 +84,6 @@ func spawn_point() -> Dictionary:
 			return object
 	return {}
 
-# 处理at、tile相关逻辑，并保持调用方状态一致。
 func object_at_tile(col: int, row: int) -> Dictionary:
 	var tile_rect := Rect2(float(col * tile_width), float(row * tile_height), float(tile_width), float(tile_height))
 	for object in objects:
@@ -90,7 +91,6 @@ func object_at_tile(col: int, row: int) -> Dictionary:
 			return object
 	return {}
 
-# 处理object、at、tile相关逻辑，并保持调用方状态一致。
 func interactable_object_at_tile(col: int, row: int) -> Dictionary:
 	var tile_rect := Rect2(float(col * tile_width), float(row * tile_height), float(tile_width), float(tile_height))
 	for object in objects:
@@ -101,7 +101,6 @@ func interactable_object_at_tile(col: int, row: int) -> Dictionary:
 			return object
 	return {}
 
-# 处理object、at、tile相关逻辑，并保持调用方状态一致。
 func npc_object_at_tile(col: int, row: int) -> Dictionary:
 	var tile_rect := Rect2(float(col * tile_width), float(row * tile_height), float(tile_width), float(tile_height))
 	for object in objects:
@@ -111,7 +110,6 @@ func npc_object_at_tile(col: int, row: int) -> Dictionary:
 			return object
 	return {}
 
-# 处理dynamic、npc、tile相关逻辑，并保持调用方状态一致。
 func pick_dynamic_npc_tile() -> Vector2i:
 	var indoor := str(properties.get("cameraAutoFit", "false")).to_lower() == "true" or properties.has("parentMap")
 	var candidates: Array[Vector2i] = []
@@ -142,7 +140,6 @@ func pick_dynamic_npc_tile() -> Vector2i:
 				fallback.append(Vector2i(col, row))
 	return fallback[randi() % fallback.size()] if not fallback.is_empty() else Vector2i(-1, -1)
 
-# 处理dynamic、npc、tile相关逻辑，并保持调用方状态一致。
 func _valid_dynamic_npc_tile(col: int, row: int) -> bool:
 	if col < 0 or row < 0 or col >= width or row >= height or _transaction_at_tile(col, row):
 		return false
@@ -155,7 +152,6 @@ func _valid_dynamic_npc_tile(col: int, row: int) -> bool:
 			return false
 	return true
 
-# 处理at、tile相关逻辑，并保持调用方状态一致。
 func _transaction_at_tile(col: int, row: int) -> bool:
 	var tile_rect := Rect2(float(col * tile_width), float(row * tile_height), float(tile_width), float(tile_height))
 	for object in transaction_objects():
@@ -163,17 +159,13 @@ func _transaction_at_tile(col: int, row: int) -> bool:
 			return true
 	return false
 
-# 处理occupies、tile相关逻辑，并保持调用方状态一致。
 func _object_occupies_tile(object: Dictionary, tile_rect: Rect2) -> bool:
 	var raw_width := float(object.get("width", 0.0))
 	var raw_height := float(object.get("height", 0.0))
 	# 与原项目 TileGeometry.tileOverlapsObject 一致：无 gid 的零尺寸 point
 	# 对象（地图 NPC 的常见格式）只占 floor(x/tileW), floor(y/tileH) 单格。
 	if int(object.get("gid", 0)) == 0 and raw_width <= 0.0 and raw_height <= 0.0:
-		return Vector2i(
-			floori(float(object.get("x", 0.0)) / tile_width),
-			floori(float(object.get("y", 0.0)) / tile_height),
-		) == Vector2i(floori(tile_rect.position.x / tile_width), floori(tile_rect.position.y / tile_height))
+		return object_tile(object) == Vector2i(floori(tile_rect.position.x / tile_width), floori(tile_rect.position.y / tile_height))
 	var object_size := Vector2(raw_width if raw_width > 0.0 else tile_width, raw_height if raw_height > 0.0 else tile_height)
 	if object_size.x <= 0.0:
 		object_size.x = float(tile_width)
@@ -185,7 +177,6 @@ func _object_occupies_tile(object: Dictionary, tile_rect: Rect2) -> bool:
 	var object_rect := Rect2(object_position, object_size)
 	return object_rect.intersects(tile_rect)
 
-# 处理for、arrival相关逻辑，并保持调用方状态一致。
 func transaction_for_arrival(from_map: String, to_map: String, cyber := false) -> Dictionary:
 	var candidates: Array[Dictionary] = []
 	for object in transaction_objects():
@@ -193,14 +184,21 @@ func transaction_for_arrival(from_map: String, to_map: String, cyber := false) -
 		if str(properties.get("to", "")) != to_map:
 			continue
 		if cyber or str(properties.get("from", "")) == from_map:
-			if is_walkable(int(floor(float(object.get("x", 0)) / tile_width)), int(floor(float(object.get("y", 0)) / tile_height))):
+			var tile := object_tile(object)
+			if is_walkable(tile.x, tile.y):
 				candidates.append(object)
 	if candidates.is_empty():
 		return {}
 	return candidates[randi() % candidates.size()] if cyber else candidates[0]
 
-# 处理region相关逻辑，并保持调用方状态一致。
 func tile_region(gid: int) -> Dictionary:
+	if _tile_region_cache.has(gid):
+		return _tile_region_cache[gid]
+	var region := _resolve_tile_region(gid)
+	_tile_region_cache[gid] = region
+	return region
+
+func _resolve_tile_region(gid: int) -> Dictionary:
 	var selected: Dictionary = {}
 	for tileset in tilesets:
 		if gid >= int(tileset.first_gid):
@@ -222,7 +220,6 @@ func tile_region(gid: int) -> Dictionary:
 	var source := Rect2(margin + (local_id % columns) * (tile_w + spacing), margin + (local_id / columns) * (tile_h + spacing), tile_w, tile_h)
 	return {"texture": selected.texture, "source": source}
 
-# 加载tileset相关逻辑，并保持调用方状态一致。
 func _load_tileset(map_path: String, attrs: Dictionary, body: String) -> void:
 	var first_gid := int(attrs.get("firstgid", 1))
 	var source_path := str(attrs.get("source", ""))
@@ -264,7 +261,6 @@ func _load_tileset(map_path: String, attrs: Dictionary, body: String) -> void:
 		"texture": texture,
 	})
 
-# 处理layer相关逻辑，并保持调用方状态一致。
 func _decode_layer(encoded: String) -> PackedInt32Array:
 	var result := PackedInt32Array()
 	if encoded.is_empty():
@@ -276,7 +272,6 @@ func _decode_layer(encoded: String) -> PackedInt32Array:
 		result.append(raw[offset] | (raw[offset + 1] << 8) | (raw[offset + 2] << 16) | (raw[offset + 3] << 24))
 	return result
 
-# 处理properties相关逻辑，并保持调用方状态一致。
 func _properties(xml: String) -> Dictionary:
 	var result: Dictionary = {}
 	for match in _all_matches(xml, "<property\\b([^>]*)/>"):
@@ -284,29 +279,24 @@ func _properties(xml: String) -> Dictionary:
 		result[attrs.get("name", "")] = attrs.get("value", "")
 	return result
 
-# 处理attrs相关逻辑，并保持调用方状态一致。
 func _attrs(text: String) -> Dictionary:
 	var result: Dictionary = {}
 	for match in _all_matches(text, "([A-Za-z_][A-Za-z0-9_]*)=\\\"([^\\\"]*)\\\""):
 		result[match.get_string(1)] = match.get_string(2)
 	return result
 
-# 处理xml、text相关逻辑，并保持调用方状态一致。
 func _decode_xml_text(text: String) -> String:
 	return text.replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"").replace("&apos;", "'").replace("&amp;", "&")
 
-# 处理match相关逻辑，并保持调用方状态一致。
 func _match(text: String, pattern: String, dotall := false) -> RegExMatch:
 	var regex := RegEx.new()
 	regex.compile(("(?s)" if dotall else "") + pattern)
 	return regex.search(text)
 
-# 处理match相关逻辑，并保持调用方状态一致。
 func _first_match(text: String, pattern: String, dotall := false) -> String:
 	var match := _match(text, pattern, dotall)
 	return match.get_string(1) if match else ""
 
-# 处理matches相关逻辑，并保持调用方状态一致。
 func _all_matches(text: String, pattern: String, dotall := false) -> Array[RegExMatch]:
 	var regex := RegEx.new()
 	regex.compile(("(?s)" if dotall else "") + pattern)

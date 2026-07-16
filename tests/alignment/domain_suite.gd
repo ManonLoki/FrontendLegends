@@ -3,13 +3,11 @@ extends SceneTree
 
 var failures: Array[String] = []
 
-# 断言验证true相关逻辑，并保持调用方状态一致。
 func _assert_true(condition: bool, message: String) -> void:
 	if not condition:
 		failures.append(message)
 		push_error(message)
 
-# 执行domain、suite相关逻辑，并保持调用方状态一致。
 func _run_domain_suite() -> void:
 	var game_state = root.get_node("GameState")
 	var skill_system = root.get_node("SkillSystem")

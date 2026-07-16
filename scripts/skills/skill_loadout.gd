@@ -1,9 +1,12 @@
 extends RefCounted
 ## 功法装备与战斗能力领域服务；只通过 SkillSystem 的窄接口访问技能状态。
 
-const THEMES := ["code", "tune", "arch", "parry", "knowledge"]
+const SKILL_MAPS := preload("res://scripts/skills/skill_maps.gd")
+const THEMES := SKILL_MAPS.THEMES
 const ULT_TIER1_ARCH_LEVEL := 30
 const ULT_TIER2_ARCH_LEVEL := 80
+## 绝招精力消耗表：玩家侧（_make_ult）与 NPC 侧（enemy_ai.npc_ults）共用。
+const ULT_MP_COSTS := {"multi": [25, 45], "abnormal": [30, 50], "reduceMax": [35, 60], "hugeDamage": [40, 70]}
 
 var skills: Node
 
@@ -124,7 +127,7 @@ func unlocked_moves() -> Array:
 		var definition: Dictionary = DataRegistry.get_skill(str(skill_id))
 		if str(definition.get("category", "")) != "sect":
 			continue
-		var kind: String = str({"code": "attack", "tune": "dodge", "parry": "parry"}.get(str(definition.get("theme", "")), ""))
+		var kind: String = str(SKILL_MAPS.THEME_COMBAT_KIND.get(str(definition.get("theme", "")), ""))
 		if kind.is_empty():
 			continue
 		var current_level: int = skills.level(str(skill_id))
@@ -152,7 +155,6 @@ func unlocked_ults() -> Array:
 
 ## 把绝招配置与档位转换为战斗系统使用的标准字典。
 func _make_ult(config: Dictionary, tier: int, inner_power: int) -> Dictionary:
-	var costs := {"multi": [25, 45], "abnormal": [30, 50], "reduceMax": [35, 60], "hugeDamage": [40, 70]}
 	var kind := str(config.get("kind", "hugeDamage"))
 	var unlock_level := ULT_TIER1_ARCH_LEVEL if tier == 1 else ULT_TIER2_ARCH_LEVEL
-	return {"id": "ult:%s:%d" % [config.get("key", "sect"), unlock_level], "name": config.get("names", ["绝招", "绝招"])[tier - 1], "kind": kind, "tier": tier, "inner_power": inner_power, "mp_cost": costs.get(kind, [40, 70])[tier - 1]}
+	return {"id": "ult:%s:%d" % [config.get("key", "sect"), unlock_level], "name": config.get("names", ["绝招", "绝招"])[tier - 1], "kind": kind, "tier": tier, "inner_power": inner_power, "mp_cost": ULT_MP_COSTS.get(kind, [40, 70])[tier - 1]}

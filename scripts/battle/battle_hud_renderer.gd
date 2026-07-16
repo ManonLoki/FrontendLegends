@@ -2,6 +2,7 @@ extends RefCounted
 ## 战斗 HUD 的纯展示层；读取战斗界面状态并创建临时控件，不处理回合规则。
 
 const FONT := preload("res://assets/Font/fusion-pixel-12px-proportional-zh_hans.ttf")
+const UI_WIDGETS := preload("res://scripts/game/ui/ui_widgets.gd")
 const REPORT_MAX_ENTRIES := 8
 
 var view: RefCounted
@@ -97,10 +98,7 @@ func report_text() -> String:
 
 ## 释放上次刷新创建的全部临时控件。
 func clear_widgets() -> void:
-	for widget in view.widgets:
-		if is_instance_valid(widget):
-			widget.free()
-	view.widgets.clear()
+	UI_WIDGETS.free_all(view.widgets)
 
 ## 创建战斗界面统一文本标签并登记到临时控件列表。
 func _label(text: String, rect: Rect2, font_size: int, alignment := HORIZONTAL_ALIGNMENT_LEFT, color := Color("292b26")) -> Label:

@@ -2,14 +2,13 @@ extends RefCounted
 ## 顶部菜单、技能/系统二级菜单、冥想与加力状态机。
 
 const UI_PROGRESS_METER := preload("res://scripts/ui_progress_meter.gd")
+const UI_WIDGETS := preload("res://scripts/game/ui/ui_widgets.gd")
 
 var game: Node
 
-# 处理init相关逻辑，并保持调用方状态一致。
 func _init(owner: Node) -> void:
 	game = owner
 
-# 切换menu相关逻辑，并保持调用方状态一致。
 func _toggle_menu() -> void:
 	game.menu_open = not game.menu_open
 	game.menu_panel.visible = game.menu_open
@@ -36,7 +35,6 @@ func return_to_main_menu(selected_index: int) -> void:
 	game.menu_index = clampi(selected_index, 0, game.MENU_ITEMS.size() - 1)
 	_refresh_menu()
 
-# 处理menu、key相关逻辑，并保持调用方状态一致。
 func _handle_menu_key(key: Key) -> void:
 	if game.force_power_open:
 		_handle_force_power_key(key)
@@ -73,7 +71,6 @@ func _handle_menu_key(key: Key) -> void:
 	elif key == KEY_SPACE:
 		_select_menu()
 
-# 刷新menu相关逻辑，并保持调用方状态一致。
 func _refresh_menu() -> void:
 	game._render_menu_widgets()
 	if game.skill_open:
@@ -85,7 +82,6 @@ func _refresh_menu() -> void:
 	else:
 		_clear_menu_hint()
 
-# 选择menu相关逻辑，并保持调用方状态一致。
 func _select_menu() -> void:
 	match game.menu_index:
 		0:
@@ -110,7 +106,6 @@ func _select_menu() -> void:
 			return
 	_close_menu()
 
-# 选择skill、menu相关逻辑，并保持调用方状态一致。
 func _select_skill_menu() -> void:
 	match game.skill_index:
 		0:
@@ -129,7 +124,6 @@ func _select_skill_menu() -> void:
 			game._open_skill_book()
 			return
 
-# 打开meditation相关逻辑，并保持调用方状态一致。
 func _open_meditation() -> void:
 	if not SkillSystem.can_meditate():
 		game._show_dialogue("冥想", "须装备基础架构与本门架构高级功法，方可冥想。")
@@ -138,7 +132,6 @@ func _open_meditation() -> void:
 	game.meditation_tick_accumulator = 0.0
 	_render_meditation_progress()
 
-# 打开force、power相关逻辑，并保持调用方状态一致。
 func _open_force_power() -> void:
 	game.force_power_limit = SkillSystem.force_power_cap()
 	if game.force_power_limit <= 0:
@@ -148,7 +141,6 @@ func _open_force_power() -> void:
 	game.force_power_value = SkillSystem.force_power()
 	_refresh_force_power_hint()
 
-# 处理force、power、key相关逻辑，并保持调用方状态一致。
 func _handle_force_power_key(key: Key) -> void:
 	if key in [KEY_UP, KEY_RIGHT]:
 		game.force_power_value = mini(game.force_power_limit, game.force_power_value + 1)
@@ -161,12 +153,10 @@ func _handle_force_power_key(key: Key) -> void:
 	elif key == KEY_ESCAPE:
 		_commit_force_power(false)
 
-# 刷新force、power、hint相关逻辑，并保持调用方状态一致。
 func _refresh_force_power_hint() -> void:
 	var detail := "命中耗 %d 精力，附加 0~%d 伤害" % [game.force_power_value, game.force_power_value * 2] if game.force_power_value > 0 else "当前不加力"
 	_set_menu_hint("加力", "加力 %d / %d　↑↓调整 空格确认　（%s）" % [game.force_power_value, game.force_power_limit, detail])
 
-# 处理force、power相关逻辑，并保持调用方状态一致。
 func _commit_force_power(show_confirmation: bool) -> void:
 	var result := SkillSystem.set_force_power(game.force_power_value)
 	game.force_power_open = false
@@ -177,30 +167,30 @@ func _commit_force_power(show_confirmation: bool) -> void:
 		var confirmation := "已加力 %d / %d。战斗命中时消耗 %d 精力，附加 0~%d 点伤害。" % [value, cap, value, value * 2] if value > 0 else "已取消加力（上限 %d）。" % cap
 		_set_menu_hint("加力", confirmation)
 
-# 处理meditation、key相关逻辑，并保持调用方状态一致。
 func _handle_meditation_key(key: Key) -> void:
 	if key == KEY_ESCAPE:
 		_close_meditation()
 
-# 渲染meditation、progress相关逻辑，并保持调用方状态一致。
+## 每个冥想 tick 都会调用；复用现有进度条节点，只更新数值。
 func _render_meditation_progress() -> void:
-	_clear_meditation_widgets()
 	var progress: Dictionary = SkillSystem.meditation_progress()
-	var meter: Control = UI_PROGRESS_METER.new()
-	game.hud.add_child(meter)
-	game.meditation_widgets.append(meter)
-	_layout_meditation_widgets()
-	meter.set_font_size(maxi(11, int(round(12.0 * game._display_scale()))))
+	var meter: Control
+	if game.meditation_widgets.is_empty():
+		meter = UI_PROGRESS_METER.new()
+		game.hud.add_child(meter)
+		game.meditation_widgets.append(meter)
+		_layout_meditation_widgets()
+		meter.set_font_size(maxi(11, int(round(12.0 * game._display_scale()))))
+	else:
+		meter = game.meditation_widgets[0]
 	meter.set_progress(int(progress.get("current", 0)), int(progress.get("total", 1)))
 
-# 处理meditation、widgets相关逻辑，并保持调用方状态一致。
 func _layout_meditation_widgets() -> void:
 	if game.meditation_widgets.is_empty():
 		return
 	var meter: Control = game.meditation_widgets[0]
 	_layout_top_progress_meter(meter)
 
-# 处理top、progress、meter相关逻辑，并保持调用方状态一致。
 func _layout_top_progress_meter(meter: Control) -> void:
 	var scale: float = game._display_scale()
 	meter.size = Vector2(200.0, 28.0) * scale
@@ -208,19 +198,13 @@ func _layout_top_progress_meter(meter: Control) -> void:
 	# 学习与冥想共用：相对摄像机可见区域顶部 16px，水平居中。
 	meter.position = Vector2(view_rect.position.x + (view_rect.size.x - meter.size.x) * 0.5, view_rect.position.y + 16.0 * scale)
 
-# 清理meditation、widgets相关逻辑，并保持调用方状态一致。
 func _clear_meditation_widgets() -> void:
-	for widget in game.meditation_widgets:
-		if is_instance_valid(widget):
-			widget.free()
-	game.meditation_widgets.clear()
+	UI_WIDGETS.free_all(game.meditation_widgets)
 
-# 关闭meditation相关逻辑，并保持调用方状态一致。
 func _close_meditation() -> void:
 	game.meditation_open = false
 	_clear_meditation_widgets()
 
-# 选择system、menu相关逻辑，并保持调用方状态一致。
 func _select_system_menu() -> void:
 	match game.system_index:
 		0:
@@ -247,7 +231,6 @@ func _select_system_menu() -> void:
 	if game.menu_open:
 		_refresh_menu()
 
-# 关闭menu相关逻辑，并保持调用方状态一致。
 func _close_menu() -> void:
 	game.menu_open = false
 	game.system_open = false
@@ -258,7 +241,6 @@ func _close_menu() -> void:
 	_clear_menu_hint()
 	game._clear_menu_widgets()
 
-# 设置menu、hint相关逻辑，并保持调用方状态一致。
 func _set_menu_hint(title: String, text: String) -> void:
 	if game.dialogue_open:
 		return
@@ -266,7 +248,6 @@ func _set_menu_hint(title: String, text: String) -> void:
 	game.dialogue_content.text = "%s：\n%s" % [title, text]
 	game.dialogue_content.add_theme_font_size_override("font_size", maxi(12, int(round(12.0 * game._display_scale()))))
 
-# 清理menu、hint相关逻辑，并保持调用方状态一致。
 func _clear_menu_hint() -> void:
 	if not game.dialogue_open:
 		game.dialogue_panel.visible = false

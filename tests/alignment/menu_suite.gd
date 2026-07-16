@@ -1,7 +1,6 @@
 extends "res://tests/alignment/hud_suite.gd"
 ## 练功、学习、菜单、加力、冥想与传送回归。
 
-# 执行menu、suite相关逻辑，并保持调用方状态一致。
 func _run_menu_suite(game: Node) -> void:
 	var game_state = root.get_node("GameState")
 	var skill_system = root.get_node("SkillSystem")

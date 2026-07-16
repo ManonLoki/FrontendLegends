@@ -36,12 +36,3 @@ static func equipped_average(levels: Dictionary, equipped_ids: Array) -> float:
 		total += maxi(0, int(levels.get(skill_id, 0)))
 		count += 1
 	return total / float(count) if count > 0 else 0.0
-
-static func player_equipped_ids(skills: Dictionary) -> Array:
-	var result: Array = []
-	for group_name in ["equipped_basic", "equipped_special"]:
-		var group: Dictionary = skills.get(group_name, {})
-		for skill_id in group.values():
-			if not str(skill_id).is_empty() and skill_id not in result:
-				result.append(skill_id)
-	return result

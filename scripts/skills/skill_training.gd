@@ -9,26 +9,21 @@ const HEAL_INJURY_MP_PER_POINT := 5
 
 var skills: Node
 
-# 处理init相关逻辑，并保持调用方状态一致。
 func _init(skill_system: Node) -> void:
 	skills = skill_system
 
-# 处理cap相关逻辑，并保持调用方状态一致。
 func meditation_cap() -> int:
 	var constitution := float(GameState.profile.get("attributes", {}).get("constitution", 0))
 	return meditation_cap_from_values(constitution, skills.level("basicConstitution"), equipped_sect_skill_level("arch"))
 
-# 处理cap、from、values相关逻辑，并保持调用方状态一致。
 func meditation_cap_from_values(constitution: float, basic_arch_level: int, advanced_arch_level: int) -> int:
 	var modifier := GameState.meditation_modifier(constitution)
 	var inner_power := maxi(0, basic_arch_level) + maxi(0, advanced_arch_level) * 2
 	return maxi(0, int(floor(float(inner_power) * MEDITATION_INNER_POWER_UNIT * modifier)))
 
-# 处理max、mp、cap相关逻辑，并保持调用方状态一致。
 func meditation_max_mp_cap() -> int:
 	return meditation_cap() * GameState.MP_PER_CULTIVATION
 
-# 处理tick相关逻辑，并保持调用方状态一致。
 func meditate_tick() -> Dictionary:
 	if not can_meditate():
 		return {"ok": false, "message": "须装备基础架构与本门架构高级功法，方可冥想。"}
@@ -54,14 +49,12 @@ func meditate_tick() -> Dictionary:
 	GameState.advance_time(MEDITATION_TICK_SECONDS)
 	return {"ok": true, "message": "你凝神冥想，当前精力 %d / %d。" % [GameState.combat_state.mp, maximum]}
 
-# 处理progress相关逻辑，并保持调用方状态一致。
 func meditation_progress() -> Dictionary:
 	return {
 		"current": maxi(0, int(GameState.combat_state.get("mp", 0))),
 		"total": maxi(1, GameState.player_mp_max()),
 	}
 
-# 处理sect、skill、level相关逻辑，并保持调用方状态一致。
 func equipped_sect_skill_level(theme: String) -> int:
 	var skill_id: String = skills.equipped_id(theme, "sect")
 	var definition := DataRegistry.get_skill(skill_id)
@@ -69,12 +62,10 @@ func equipped_sect_skill_level(theme: String) -> int:
 		return 0
 	return skills.level(skill_id)
 
-# 判断是否允许meditate相关逻辑，并保持调用方状态一致。
 func can_meditate() -> bool:
 	var basic_arch_id: String = skills.equipped_id("arch", "basic")
 	return basic_arch_id == "basicConstitution" and skills.level(basic_arch_id) > 0 and equipped_sect_skill_level("arch") > 0
 
-# 处理cap相关逻辑，并保持调用方状态一致。
 func practice_cap(skill_id: String) -> int:
 	var definition: Dictionary = DataRegistry.get_skill(skill_id)
 	if definition.is_empty() or str(definition.get("category", "")) != "sect" or str(definition.get("theme", "")) == "arch":
@@ -82,7 +73,6 @@ func practice_cap(skill_id: String) -> int:
 	var basic_id: String = str({"code": "basicStrength", "tune": "basicAgility", "parry": "basicParry", "knowledge": "literacy"}.get(str(definition.get("theme", "")), ""))
 	return mini(int(definition.get("maxLevel", 100)), mini(skills.level(basic_id), GameState.player_mp_max()))
 
-# 处理tick相关逻辑，并保持调用方状态一致。
 func practice_tick(skill_id: String) -> Dictionary:
 	var definition: Dictionary = DataRegistry.get_skill(skill_id)
 	if definition.is_empty() or str(definition.get("category", "")) != "sect" or str(definition.get("theme", "")) == "arch":
@@ -128,7 +118,6 @@ func practice_tick(skill_id: String) -> Dictionary:
 	var message := "你苦练【%s】，提升至 %d 级%s。" % [definition.get("name", skill_id), skills.level(skill_id), suffix] if gained_level else "你苦练【%s】%s。" % [definition.get("name", skill_id), suffix]
 	return {"ok": true, "message": message, "level": skills.level(skill_id)}
 
-# 处理progress相关逻辑，并保持调用方状态一致。
 func practice_progress(skill_id: String) -> Dictionary:
 	var definition: Dictionary = DataRegistry.get_skill(skill_id)
 	if definition.is_empty():
@@ -140,7 +129,6 @@ func practice_progress(skill_id: String) -> Dictionary:
 		"level": current_level,
 	}
 
-# 处理hp相关逻辑，并保持调用方状态一致。
 func channel_hp() -> Dictionary:
 	var effective_max := GameState.player_effective_hp_max()
 	var amount := mini(int(GameState.combat_state.mp), maxi(0, effective_max - int(GameState.combat_state.hp)))
@@ -153,7 +141,6 @@ func channel_hp() -> Dictionary:
 	GameState.advance_time(1.0)
 	return {"ok": true, "message": "你偷偷摸了会鱼，消耗 %d 精力，恢复 %d 体力。" % [amount, amount]}
 
-# 处理injury相关逻辑，并保持调用方状态一致。
 func heal_injury() -> Dictionary:
 	var arch_sum: int = skills.arch_sect_level_sum()
 	if arch_sum <= HEAL_INJURY_ARCH_LEVEL_GATE:

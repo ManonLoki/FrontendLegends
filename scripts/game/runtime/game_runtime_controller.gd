@@ -3,11 +3,9 @@ extends RefCounted
 
 var game: Node2D
 
-# 处理init相关逻辑，并保持调用方状态一致。
 func _init(owner: Node2D) -> void:
 	game = owner
 
-# 处理process相关逻辑，并保持调用方状态一致。
 func _process(delta: float) -> void:
 	# 每帧核对 HUD 几何，弥补网页或移动端在 ready 之后全屏导致尺寸信号遗漏的问题。
 	# 只在真实尺寸变化时重新布局。菜单节点不能每帧销毁重建，否则 Web
@@ -81,7 +79,6 @@ func _process(delta: float) -> void:
 		else:
 			game._toggle_menu()
 
-# 应用facing、input相关逻辑，并保持调用方状态一致。
 func _apply_facing_input(direction: Vector2) -> Vector2i:
 	if direction.length() <= 0.0:
 		return Vector2i.ZERO
@@ -111,20 +108,31 @@ func _update_continuous_skill_actions(delta: float) -> void:
 			if bool(result.get("ok", false)) or not str(result.get("reason", "")).is_empty():
 				game.learning_skill_id = ""
 		if learn_changed:
-			game._refresh_learn_list()
+			# 升级或阻断都会清空 learning_skill_id 并改变列表内容，需要整页重绘；
+			# 普通 tick 只有页脚进度文本和进度条变化。
+			if game.learning_skill_id.is_empty():
+				game._refresh_learn_list()
+			else:
+				game.learning_controller.update_tick_feedback()
 			game._render_learning_progress()
 	if game.practice_open and not game.practicing_skill_id.is_empty():
 		game.practice_tick_accumulator += maxf(0.0, delta)
 		while game.practice_tick_accumulator >= SkillSystem.PRACTICE_TICK_SECONDS and not game.practicing_skill_id.is_empty():
 			game.practice_tick_accumulator -= SkillSystem.PRACTICE_TICK_SECONDS
-			var before := SkillSystem.practice_progress(game.practicing_skill_id)
-			var result: Dictionary = SkillSystem.practice_tick(game.practicing_skill_id)
+			var skill_id: String = game.practicing_skill_id
+			var level_before := SkillSystem.level(skill_id)
+			var before := SkillSystem.practice_progress(skill_id)
+			var result: Dictionary = SkillSystem.practice_tick(skill_id)
 			game.message = str(result.get("message", ""))
-			var after := SkillSystem.practice_progress(game.practicing_skill_id)
+			var after := SkillSystem.practice_progress(skill_id)
 			var failed := not bool(result.get("ok", false))
 			if failed or (before == after and int(after.get("current", 0)) == 0):
 				game.practicing_skill_id = ""
-			game._refresh_practice()
+			# 列表里的等级只在升级或停止时变化；普通 tick 只需刷新进度条。
+			if failed or game.practicing_skill_id.is_empty() or SkillSystem.level(skill_id) != level_before:
+				game._refresh_practice()
+			else:
+				game.practice_controller.render_progress()
 			if failed:
 				game._show_dialogue("练功", str(result.get("message", "练功失败。")))
 	if game.meditation_open:
@@ -142,7 +150,6 @@ func _update_continuous_skill_actions(delta: float) -> void:
 		if meditation_changed and game.meditation_open:
 			game._render_meditation_progress()
 
-# 接收输入input相关逻辑，并保持调用方状态一致。
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		game.MOBILE_ORIENTATION.request_from_user_gesture()
@@ -199,14 +206,12 @@ func _input(event: InputEvent) -> void:
 		elif event.keycode == KEY_ESCAPE:
 			game.cancel_requested = true
 
-# 处理virtual、controls相关逻辑，并保持调用方状态一致。
 func _install_virtual_controls() -> void:
 	var controls = game.VIRTUAL_CONTROLS.new()
 	game.add_child(controls)
 	controls.key_down.connect(_on_virtual_key_down)
 	controls.key_up.connect(_on_virtual_key_up)
 
-# 处理virtual、key、down相关逻辑，并保持调用方状态一致。
 func _on_virtual_key_down(keycode: int) -> void:
 	if keycode in [KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT] and not _has_modal_input():
 		if keycode == KEY_UP: game.virtual_direction.y = -1.0
@@ -216,18 +221,15 @@ func _on_virtual_key_down(keycode: int) -> void:
 		return
 	_dispatch_virtual_key(keycode)
 
-# 处理virtual、key、up相关逻辑，并保持调用方状态一致。
 func _on_virtual_key_up(keycode: int) -> void:
 	if keycode == KEY_UP or keycode == KEY_DOWN:
 		game.virtual_direction.y = 0.0
 	elif keycode == KEY_LEFT or keycode == KEY_RIGHT:
 		game.virtual_direction.x = 0.0
 
-# 判断是否具备modal、input相关逻辑，并保持调用方状态一致。
 func _has_modal_input() -> bool:
 	return game.delete_confirm_open or game.dialogue_open or game.trade_open or game.inventory_open or game.learn_open or game.meditation_open or game.practice_open or game.skill_book_open or game.cyber_open or game.npc_menu_open or game.battle_ui.active or game.menu_open or game.details_panel.visible or game.dialogue_panel.visible
 
-# 处理virtual、key相关逻辑，并保持调用方状态一致。
 func _dispatch_virtual_key(keycode: int) -> void:
 	var event := InputEventKey.new()
 	event.keycode = keycode

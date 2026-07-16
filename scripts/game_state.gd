@@ -1,5 +1,6 @@
 extends Node
 
+const SKILL_MAPS := preload("res://scripts/skills/skill_maps.gd")
 const PRODUCTION_SAVE_PATH := "user://frontend_legends_save_v2.json"
 const SAVE_VERSION := 3
 const COMPATIBLE_SAVE_VERSIONS: Array[int] = [2, SAVE_VERSION]
@@ -50,7 +51,7 @@ func has_profile() -> bool:
 func create_profile(player_name: String, custom_attributes: Dictionary = {}, gender := "male") -> void:
 	var clean_name := player_name.strip_edges()
 	var attributes: Dictionary = custom_attributes if not custom_attributes.is_empty() else {"strength": 25, "agility": 25, "constitution": 25, "wisdom": 25}
-	var capacity := 200 + int(attributes.get("strength", 25)) * 10
+	var capacity := vitals_capacity(attributes)
 	var appearance := clampi(int(attributes.get("constitution", 25)) * 2 - 10, 0, 100)
 	var peak := 0
 	for value in attributes.values(): peak = maxi(peak, int(value))
@@ -67,7 +68,7 @@ func create_profile(player_name: String, custom_attributes: Dictionary = {}, gen
 		"skills": SkillSystem.create_default_skills(),
 		"money": 0
 	}
-	combat_state = _default_combat_state(_true_hp_max())
+	combat_state = _default_combat_state(player_hp_max())
 	game_time_sec = 0.0
 	inventory = {}
 	equipment = _default_equipment()
@@ -88,7 +89,7 @@ func advance_time(seconds: float) -> void:
 		vitals.food = int(vitals.get("food", 0)) - pairs
 		vitals.water = int(vitals.get("water", 0)) - pairs
 		combat_state.injury = maxi(0, int(combat_state.get("injury", 0)) - pairs * 2)
-		combat_state.hp = mini(_effective_hp_max(), int(combat_state.get("hp", 0)) + pairs * 3)
+		combat_state.hp = mini(player_effective_hp_max(), int(combat_state.get("hp", 0)) + pairs * 3)
 	var previous_age_tick := int(floor(previous / AGE_TICK_SEC))
 	var current_age_tick := int(floor(game_time_sec / AGE_TICK_SEC))
 	vitals.age = int(vitals.get("age", 18)) + current_age_tick - previous_age_tick
@@ -233,7 +234,7 @@ func _normalize_loaded_profile() -> void:
 	profile.name = str(profile.get("name", "")).strip_edges().substr(0, 10)
 	var attributes: Dictionary = profile.get("attributes", {"strength": 25, "agility": 25, "constitution": 25, "wisdom": 25})
 	var vitals: Dictionary = profile.get("vitals", {})
-	var capacity := 200 + int(attributes.get("strength", 25)) * 10
+	var capacity := vitals_capacity(attributes)
 	vitals.food = clampi(int(vitals.get("food", 0)), 0, capacity)
 	vitals.water = clampi(int(vitals.get("water", 0)), 0, capacity)
 	for key in ["money", "potential", "experience", "cultivation"]:
@@ -245,18 +246,14 @@ func _normalize_loaded_profile() -> void:
 	inventory = _normalize_item_map(inventory, item_catalog, true)
 	item_cooldowns = _normalize_item_map(item_cooldowns, item_catalog, false)
 
-## 由旧档当前属性扣除技能反哺，重建基础四维。
+## 由旧档当前属性扣除技能反哺，重建基础四维；映射表与 SkillSystem 反哺共用 skill_maps.gd。
 func _normalize_base_attributes() -> void:
 	var current: Dictionary = profile.get("attributes", {})
 	var base: Dictionary = profile.get("base_attributes", {})
 	var levels: Dictionary = profile.get("skills", {}).get("levels", {})
 	var nudges := {"strength": 0, "agility": 0, "constitution": 0, "wisdom": 0}
-	var mapping := {
-		"basicStrength": "strength", "basicAgility": "agility",
-		"basicConstitution": "constitution", "basicParry": "strength", "literacy": "wisdom",
-	}
-	for skill_id in mapping:
-		var key: String = mapping[skill_id]
+	for skill_id in SKILL_MAPS.BASIC_SKILL_ATTRIBUTE:
+		var key: String = SKILL_MAPS.BASIC_SKILL_ATTRIBUTE[skill_id]
 		nudges[key] = int(nudges[key]) + int(floor(float(levels.get(skill_id, 0)) / 10.0))
 	for key in nudges:
 		var fallback := int(current.get(key, 25)) - int(nudges[key])
@@ -346,6 +343,14 @@ func base_hp_max(constitution: float) -> int:
 func hp_max_with_mp_boost(constitution: float, mp_max: int) -> int:
 	return base_hp_max(constitution) + int(floor(maxf(0.0, float(mp_max)) * 0.2))
 
+## 食物/饮水携带上限 = 基础 200 + 每点编码（strength）10，全仓唯一公式来源。
+const VITALS_BASE_CAPACITY := 200
+const VITALS_CAPACITY_PER_STRENGTH := 10
+
+func vitals_capacity(attributes: Dictionary = {}) -> int:
+	var source: Dictionary = attributes if not attributes.is_empty() else profile.get("attributes", {})
+	return VITALS_BASE_CAPACITY + int(source.get("strength", 25)) * VITALS_CAPACITY_PER_STRENGTH
+
 ## 精力上限与精力修为 1:1，对齐参照项目 PlayerCombatState.getMpMax。
 func player_mp_max() -> int:
 	return maxi(0, int(profile.get("vitals", {}).get("cultivation", 0)))
@@ -371,14 +376,6 @@ func normalize_combat_state() -> void:
 	combat_state.injury = clampi(int(combat_state.get("injury", 0)), 0, true_max - 1)
 	combat_state.hp = clampi(int(combat_state.get("hp", player_effective_hp_max())), 0, player_effective_hp_max())
 	combat_state.mp = clampi(int(combat_state.get("mp", player_mp_max())), 0, player_mp_max())
-
-## 为旧调用方保留真实体力上限兼容入口。
-func _true_hp_max() -> int:
-	return player_hp_max()
-
-## 为旧调用方保留有效体力上限兼容入口。
-func _effective_hp_max() -> int:
-	return player_effective_hp_max()
 
 ## 按双方思维差计算并钳制基础命中率。
 func combat_hit_rate(attacker: Dictionary, defender: Dictionary) -> float:
