@@ -1,5 +1,5 @@
 extends RefCounted
-## 动态悬赏目标与悬赏环结算服务；通过 QuestSystem 保存唯一任务状态。
+## 动态悬赏目标与悬赏环结算服务；通过 QuestSystem 保存对应 runtime_id 的本局状态。
 
 const SKILL_MAPS := preload("res://scripts/skills/skill_maps.gd")
 const BASIC_SKILL_KEYS := SKILL_MAPS.BASIC_SKILL_IDS
@@ -35,7 +35,7 @@ func offer(generator_id: String = "bountyring_xiaobuer") -> Dictionary:
 	var target_sprite := str(definition.get("targetSprite", "npc-30")).strip_edges()
 	if target_sprite.is_empty():
 		target_sprite = "npc-30"
-	NpcSystem.register_runtime(target_id, {"displayName": target_name, "sprite": target_sprite, "roles": ["civilian"], "description": "小不二悬赏缉拿的对象，据说与你有些渊源。", "defaultLine": "你……找我有事？", "attributes": scaled_attributes, "skillLevels": scaled_skills, "equippedSkillIds": BASIC_SKILL_KEYS.duplicate()})
+	NpcSystem.register_runtime(target_id, {"displayName": target_name, "sprite": target_sprite, "roles": ["civilian"], "combatRank": "trained", "combatRole": "balanced", "description": "小不二悬赏缉拿的对象，据说与你有些渊源。", "defaultLine": "你……找我有事？", "attributes": scaled_attributes, "skillLevels": scaled_skills, "equippedSkillIds": BASIC_SKILL_KEYS.duplicate()})
 	quests.bounty_target = {"target_id": target_id, "target_name": target_name, "target_sprite": target_sprite, "map_id": target_map, "map_name": DataRegistry.region_display_name(target_map), "generator_id": generator_id}
 	if not quests.bounty_money_base.has(generator_id):
 		quests.bounty_money_base[generator_id] = float(definition.get("rewardBase", 0))
@@ -94,8 +94,11 @@ func settle_ring(runtime_id: String, runtime: Dictionary, definition: Dictionary
 		quests.bounty_stat_base[generator_id] = float(definition.get("rewardBase", 0))
 	else:
 		quests.ring_progress[generator_id] = kills_done
-		quests.bounty_money_base[generator_id] = money_base * (1.0 + randf_range(float(definition.get("rewardGrowthMin", 0.0)), float(definition.get("rewardGrowthMax", 0.0))))
-		quests.bounty_stat_base[generator_id] = stat_base * (1.0 + randf_range(float(definition.get("statGrowthMin", definition.get("rewardGrowthMin", 0.0))), float(definition.get("statGrowthMax", definition.get("rewardGrowthMax", 0.0)))))
+		var base := float(definition.get("rewardBase", 0))
+		var money_rate := randf_range(float(definition.get("rewardGrowthMin", 0.0)), float(definition.get("rewardGrowthMax", 0.0)))
+		var stat_rate := randf_range(float(definition.get("statGrowthMin", definition.get("rewardGrowthMin", 0.0))), float(definition.get("statGrowthMax", definition.get("rewardGrowthMax", 0.0))))
+		quests.bounty_money_base[generator_id] = base * (1.0 + money_rate * kills_done)
+		quests.bounty_stat_base[generator_id] = base * (1.0 + stat_rate * kills_done)
 	quests.active.erase(runtime_id)
 	quests.cooldown_until[generator_id] = GameState.game_time_sec + float(definition.get("cooldownSec", 0))
 	return {"reward": reward, "complete": ring_done, "target": runtime.get("target", {})}

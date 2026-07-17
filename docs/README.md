@@ -5,8 +5,9 @@ FrontendLegends 是一款使用 Godot 4.7 与 GDScript 开发的 2D 俯视角格
 ## 文档导航
 
 - [世界与玩法设定集](lore_bible.md)：世界观、角色、门派、成长、战斗、任务、交易与时间规则。
-- [代码与存档规范](code_and_save_standards.md)：中文注释、英文标识符、文件职责、存档 v3 与旧档迁移规则。
-- [参照项目对齐审计](reference_alignment_audit.md)：当前项目与参照项目逐项核对后的结论及保留差异。
+- [v4 数值设计](balance_design.md)：数值目标、公式、人物分层、经济约束、模拟结果与设计依据。
+- [代码与存档规范](code_and_save_standards.md)：中文注释、英文标识符、文件职责、存档 v4 与旧档迁移规则。
+- [参照项目差异审计](reference_alignment_audit.md)：当前实现从参照项目保留的语义与有意改变的数值。
 - 仓库根目录的 `AGENTS.md`：开发、测试、冻结文件和文件规模规则。
 - 仓库根目录的 `CLAUDE.md`：与自动化开发工具共享的强制维护约束。
 
@@ -18,6 +19,7 @@ FrontendLegends 是一款使用 Godot 4.7 与 GDScript 开发的 2D 俯视角格
 | `scenes/` | 启动画面、角色创建和主游戏场景 |
 | `scripts/` | 游戏运行时、领域系统、界面与地图加载代码 |
 | `assets/Data/` | 人物、物品、技能和任务的 JSON 数据 |
+| `docs/data/FrontendLegendsData.xlsx` | 四份 JSON、v4 平衡规则和维护说明的表格设定集 |
 | `assets/Map/maps/LoreWorld/` | Tiled 制作的 TMX 世界地图 |
 | `assets/Map/tilesets/` | 地图直接依赖的 TSX 瓦片集定义 |
 | `tests/` | 领域、界面、菜单和战斗对齐测试 |
@@ -33,16 +35,16 @@ FrontendLegends 是一款使用 Godot 4.7 与 GDScript 开发的 2D 俯视角格
 /Applications/Godot.app/Contents/MacOS/Godot --path . --editor
 ```
 
-游戏逻辑视口与地图相机统一为 480×320，地图瓦片尺寸为 16×16。Windows 与 macOS 默认窗口为 1280×960，并保持画面比例；桌面端使用键盘操作，移动端会安装虚拟方向键和确认、取消按钮，并请求横屏显示。
+游戏逻辑视口与地图相机统一为 480×320，地图瓦片尺寸为 16×16。Windows 与 macOS 默认窗口为 1280×960；桌面端使用键盘操作，移动端会安装虚拟方向键和确认、取消按钮，并请求横屏显示。
 
 ## 自动加载单例
 
 | 单例 | 主要职责 |
 | --- | --- |
-| `GameState` | 角色资料、存档、全局时钟、生存资源与战斗状态 |
 | `DataRegistry` | JSON 数据注册、查询和地图发现 |
-| `InventorySystem` | 背包、装备、消耗品和交易 |
 | `SkillSystem` | 技能等级、学习、练功、冥想、装备与门派 |
+| `GameState` | 角色资料、存档、全局时钟、生存资源与战斗状态 |
+| `InventorySystem` | 背包、装备、消耗品和交易 |
 | `QuestSystem` | 固定任务、环任务和动态目标 |
 | `NpcSystem` | 人物数据合并、掉落和击败状态 |
 | `CombatSystem` | 战斗会话、回合行为、状态和伤害公式 |
@@ -57,7 +59,7 @@ FrontendLegends 是一款使用 Godot 4.7 与 GDScript 开发的 2D 俯视角格
 
 ## 存档
 
-当前结构版本为 v3，仍沿用历史文件名 `user://frontend_legends_save_v2.json`，以便已有玩家无感升级。游戏可以读取 v2 存档，并把旧技能字段迁移为蛇形英文键；再次保存后写出 v3。装备状态按当前设计只存在于本局内存，不写入存档。
+当前结构版本为 v4，仍沿用历史文件名 `user://frontend_legends_save_v2.json`，以便已有玩家无感升级。游戏可以读取 v2/v3 存档，把旧技能字段迁移为蛇形英文键，并按比例迁移旧生命资源；再次保存后写出 v4。装备状态按当前设计只存在于本局内存，不写入存档。
 
 ## 验证
 
@@ -67,6 +69,7 @@ FrontendLegends 是一款使用 Godot 4.7 与 GDScript 开发的 2D 俯视角格
 ./tools/check_file_size.sh
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script tests/alignment_test.gd
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script tests/combat_alignment_test.gd
+/Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script tests/combat_balance_test.gd
 ```
 
-测试必须使用隔离的 `user://` 路径，不能污染正式存档。
+测试必须使用隔离的 `user://` 路径，不能污染正式存档。数据表变更还必须执行 XLSX 往返校验，确保导出后四份 JSON 内容不变。

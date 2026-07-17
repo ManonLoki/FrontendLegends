@@ -13,9 +13,10 @@ func _process(delta: float) -> void:
 	var viewport_size := game.get_viewport_rect().size
 	if not viewport_size.is_equal_approx(game.last_layout_viewport_size):
 		game._layout_game_view()
-	# 原项目的 PlayerSurvivalController 无论 HUD 是否打开都持续推进唯一游戏时钟；
-	# 学习依赖这条基础时间轴，练功/冥想另有动作快进。
-	GameState.advance_time(delta)
+	# 战斗中暂停生存时钟，避免玩家停在战斗 HUD 上等待每 15 秒的被动回血与疗伤。
+	# 其他菜单仍沿用统一世界时钟；学习、练功、冥想另有各自动作快进。
+	if not game.battle_ui.active:
+		GameState.advance_time(delta)
 	_update_continuous_skill_actions(delta)
 	# HUD 为模态界面；菜单、对话、战斗或详情面板显示时暂停世界模拟并清空持续方向输入。
 	if _has_modal_input():

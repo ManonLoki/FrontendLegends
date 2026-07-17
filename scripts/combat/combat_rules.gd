@@ -4,10 +4,42 @@ extends RefCounted
 const SKILL_MAPS := preload("res://scripts/skills/skill_maps.gd")
 const EQUIPMENT_MATH := preload("res://scripts/equipment_math.gd")
 
-## 与参照项目 SectMoves.ts 共用：25% 基础率，每个已解锁招式 +4%，封顶 55%。
-const MOVE_TRIGGER_BASE := 0.25
-const MOVE_TRIGGER_PER_MOVE := 0.04
-const MOVE_TRIGGER_CAP := 0.55
+## 未标注 combatRank 的人物一律按 veteran 结算生命与奖励缩放。
+const DEFAULT_COMBAT_RANK := "veteran"
+const RANK_NONCOMBATANT := "noncombatant"
+## 普通战斗奖励 = 武学评级 ×（经验/潜能系数、Token 按 sqrt(评级)）× 阶位系数。
+const COMBAT_REWARD_EXP_COEF := 0.45
+const COMBAT_REWARD_POT_COEF := 0.15
+const COMBAT_REWARD_MONEY_COEF := 1.60
+## 加力增伤上限比例与递减软化常数（force/(force+softening)）。
+const FORCE_DAMAGE_CAP := 0.75
+const FORCE_SOFTENING := 100.0
+const INNER_POWER_ATK_COEF := 4.0
+
+## 进攻、闪避和招架招式使用不同触发曲线，避免命中后再次高概率完全落空。
+const MOVE_TRIGGER_RULES := {
+	"attack": {"base": 0.22, "per_move": 0.025, "cap": 0.45},
+	"dodge": {"base": 0.12, "per_move": 0.015, "cap": 0.27},
+	"parry": {"base": 0.18, "per_move": 0.020, "cap": 0.35},
+}
+const NPC_RANK_HP_SCALE := {
+	"noncombatant": 0.24,
+	"novice": 0.78,
+	"trained": 0.92,
+	"veteran": 1.00,
+	"elite": 1.10,
+	"master": 1.20,
+	"legendary": 1.30,
+}
+const NPC_RANK_REWARD_SCALE := {
+	"noncombatant": 0.15,
+	"novice": 0.50,
+	"trained": 0.75,
+	"veteran": 1.00,
+	"elite": 1.20,
+	"master": 1.50,
+	"legendary": 2.00,
+}
 ## 十个招式档位中六个可附带异常；10/30/60/100 保持为纯伤害招式。
 const ATTACK_MOVE_STATUS_TABLE := {
 	20: "paralysis", 40: "weakness", 50: "poison",
@@ -19,6 +51,7 @@ func create_session(enemy_id: String, lethal: bool = true) -> Dictionary:
 	var player_attributes := player_combat_attributes()
 	var enemy_attributes := npc_combat_attributes(enemy)
 	var enemy_mp_max := npc_mp_max(enemy)
+	var enemy_hp_max := npc_hp_max(enemy, enemy_attributes, enemy_mp_max)
 	var player_true_max_hp := hp_max(player_attributes, GameState.player_mp_max())
 	var player_effective_max_hp := maxi(1, player_true_max_hp - int(GameState.combat_state.get("injury", 0)))
 	return {
@@ -30,15 +63,14 @@ func create_session(enemy_id: String, lethal: bool = true) -> Dictionary:
 		"player_max_hp": player_effective_max_hp,
 		"initial_player_hp": int(GameState.combat_state.get("hp", 1)),
 		"player_mp": int(GameState.combat_state.get("mp", 0)),
-		"enemy_hp": hp_max(enemy_attributes, enemy_mp_max),
-		"enemy_max_hp": hp_max(enemy_attributes, enemy_mp_max),
+		"enemy_hp": enemy_hp_max,
+		"enemy_max_hp": enemy_hp_max,
 		"enemy_mp": enemy_mp_max,
 		"enemy_mp_max": enemy_mp_max,
 		"player_status": {},
 		"enemy_status": {},
 		"player_reached_zero": false,
 		"player_near_death": false,
-		"player_damage_taken": 0,
 		"player_in_battle_injury": 0,
 		"turn": "player" if initiative(player_attributes, enemy_attributes) else "enemy",
 		"log": [],
@@ -46,7 +78,16 @@ func create_session(enemy_id: String, lethal: bool = true) -> Dictionary:
 
 func npc_mp_max(npc: Dictionary) -> int:
 	var attributes := npc_combat_attributes(npc)
-	return maxi(0, int(floor(float(npc_inner_power(npc)) * 25.0 * GameState.meditation_modifier(float(attributes.get("constitution", 0))))))
+	var trained_mp := int(floor(float(npc_inner_power(npc)) * SkillSystem.MEDITATION_INNER_POWER_UNIT * GameState.meditation_modifier(float(attributes.get("constitution", 0)))))
+	return maxi(0, trained_mp + int(npc_combat_bonus(npc).get("mp_max", 0)))
+
+## NPC 等阶只缩放生命池，攻击、防御与命中仍由显式四维、功法和装备决定。
+func npc_hp_max(npc: Dictionary, attributes: Dictionary = {}, mp_max := -1) -> int:
+	var combat_attributes := attributes if not attributes.is_empty() else npc_combat_attributes(npc)
+	var resolved_mp := npc_mp_max(npc) if mp_max < 0 else mp_max
+	var rank := str(npc.get("combatRank", DEFAULT_COMBAT_RANK))
+	var scale := float(NPC_RANK_HP_SCALE.get(rank, NPC_RANK_HP_SCALE[DEFAULT_COMBAT_RANK]))
+	return maxi(1, int(round(float(hp_max(combat_attributes, resolved_mp)) * scale)))
 
 func maybe_apply_in_battle_injury(session: Dictionary, result: Dictionary) -> String:
 	if not bool(session.get("lethal", true)):
@@ -80,6 +121,11 @@ func weighted_pick(moves: Array) -> Dictionary:
 			return move
 	return moves[moves.size() - 1]
 
+## 返回指定招式类型和已解锁数量对应的触发概率。
+func move_trigger_rate(kind: String, move_count: int) -> float:
+	var rule: Dictionary = MOVE_TRIGGER_RULES.get(kind, MOVE_TRIGGER_RULES.attack)
+	return minf(float(rule.cap), float(rule.base) + maxi(0, move_count) * float(rule.per_move))
+
 func roll_attack_move_status(move: Dictionary) -> Dictionary:
 	var unlock := int(move.get("unlock", 0))
 	if not ATTACK_MOVE_STATUS_TABLE.has(unlock):
@@ -102,7 +148,7 @@ func npc_move(npc: Dictionary, kind: String) -> Dictionary:
 		for move in definition.get("moves", []):
 			if current >= int(move.get("unlockLevel", 0)):
 				moves.append({"name": move.get("name", "招式"), "level": current, "unlock": int(move.get("unlockLevel", 0))})
-	if moves.is_empty() or randf() >= minf(MOVE_TRIGGER_CAP, MOVE_TRIGGER_BASE + moves.size() * MOVE_TRIGGER_PER_MOVE):
+	if moves.is_empty() or randf() >= move_trigger_rate(kind, moves.size()):
 		return {}
 	return weighted_pick(moves)
 
@@ -133,35 +179,44 @@ func npc_combat_attributes(npc: Dictionary) -> Dictionary:
 
 func player_attack_power() -> float:
 	var attributes := player_combat_attributes()
-	return maxf(1.0, GameState.attack_base(float(attributes.get("strength", 0))) + float(InventorySystem.equipment_bonus().get("attack", 0)))
+	return maxf(1.0, GameState.attack_base(float(attributes.get("strength", 0))) + float(SkillSystem.combat_bonus().get("attack", 0)) + float(InventorySystem.equipment_bonus().get("attack", 0)))
 
 func player_name() -> String:
 	return str(GameState.profile.get("name", "玩家"))
 
 func player_defense() -> float:
 	var attributes := player_combat_attributes()
-	return GameState.defense_base(float(attributes.get("constitution", 0))) + SkillSystem.best_combat_bonus("defPerLv") + float(InventorySystem.equipment_bonus().get("defense", 0))
+	return GameState.defense_base(float(attributes.get("constitution", 0))) + float(SkillSystem.combat_bonus().get("defense", 0)) + float(InventorySystem.equipment_bonus().get("defense", 0))
 
 func enemy_attack_power(enemy: Dictionary) -> float:
-	return maxf(1.0, GameState.attack_base(float(npc_combat_attributes(enemy).get("strength", 1))) + float(npc_equipment_bonus(enemy).get("attack", 0)))
+	return maxf(1.0, GameState.attack_base(float(npc_combat_attributes(enemy).get("strength", 1))) + float(npc_combat_bonus(enemy).get("attack", 0)) + float(npc_equipment_bonus(enemy).get("attack", 0)))
 
-func npc_best_combat_bonus(npc: Dictionary, key: String) -> float:
-	var best := 0.0
+## 汇总 NPC 当前装备功法的全部战斗加成，与玩家 SkillSystem.combat_bonus 口径对称。
+func npc_combat_bonus(npc: Dictionary) -> Dictionary:
+	var result := {"attack": 0.0, "defense": 0.0, "hit": 0.0, "dodge": 0.0, "parry": 0.0, "mp_max": 0}
 	var levels: Dictionary = npc.get("skillLevels", {})
 	for skill_id in npc.get("equippedSkillIds", []):
 		var definition := DataRegistry.get_skill(str(skill_id))
-		if str(definition.get("category", "")) != "sect":
-			continue
-		best = maxf(best, float(definition.get("combat", {}).get(key, 0.0)) * int(levels.get(str(skill_id), 0)))
-	return best
+		var combat: Dictionary = definition.get("combat", {})
+		var level := int(levels.get(str(skill_id), 0))
+		result.attack += float(combat.get("atkPerLv", 0.0)) * level
+		result.defense += float(combat.get("defPerLv", 0.0)) * level
+		result.hit += float(combat.get("hitPerLv", 0.0)) * level
+		result.dodge += float(combat.get("dodgePerLv", 0.0)) * level
+		result.parry += float(combat.get("parryPerLv", 0.0)) * level
+		result.mp_max += int(combat.get("mpMaxPerLv", 0)) * level
+	return result
 
-func npc_passive_parry(npc: Dictionary) -> float:
-	var total := 0.0
-	var levels: Dictionary = npc.get("skillLevels", {})
-	for skill_id in npc.get("equippedSkillIds", []):
-		var definition := DataRegistry.get_skill(str(skill_id))
-		total += float(definition.get("combat", {}).get("parryPerLv", 0.0)) * int(levels.get(str(skill_id), 0))
-	return total
+## 加力把本次已结算伤害按递减收益放大，最高额外增加 75%，不再线性叠加数百点。
+func force_damage_bonus(damage: int, force: int) -> int:
+	if damage <= 0 or force <= 0:
+		return 0
+	var ratio := minf(FORCE_DAMAGE_CAP, float(force) / (float(force) + FORCE_SOFTENING))
+	return maxi(1, int(floor(float(damage) * ratio * randf_range(0.90, 1.10))))
+
+## 绝招把内功值转换为平方根攻击加成，保留高阶优势并抑制一击溢出。
+func inner_power_attack_bonus(inner_power: int) -> float:
+	return floor(sqrt(float(maxi(0, inner_power))) * INNER_POWER_ATK_COEF)
 
 func npc_inner_power(npc: Dictionary) -> int:
 	var levels: Dictionary = npc.get("skillLevels", {})

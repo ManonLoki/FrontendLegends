@@ -4,10 +4,12 @@ extends RefCounted
 const SKILL_LOADOUT := preload("res://scripts/skills/skill_loadout.gd")
 const ULT_USE_RATE := 0.35
 const ITEM_USE_RATE := 0.55
-const REST_USE_RATE := 0.30
+const REST_USE_RATE := 0.20
 const ITEM_HP_RATIO := 0.30
-const REST_HP_RATIO := 0.50
+const REST_HP_RATIO := 0.35
 const REST_MIN_MP := 8
+const REST_HEAL_RATIO := 0.18
+const REST_DEFAULT_CHARGES := 1
 const CONSUMABLE_HEAL_RATIO := 0.25
 
 var combat: Node
@@ -38,17 +40,22 @@ func act(session: Dictionary) -> Dictionary:
 		return combat._enemy_use_ult(session, affordable[0], true)
 	return combat.enemy_attack(session, true)
 
-## 敌方濒危且精力足够时按配置概率摸鱼恢复体力。
+## 敌方濒危且精力足够时按配置概率摸鱼恢复体力；受次数上限约束，
+## 单次封顶为最大体力的 18%（刻意低于玩家的 20%）。
 func _try_rest(session: Dictionary, ai: Dictionary, hp: int, hp_max: int, enemy_mp: int, hp_ratio: float) -> Dictionary:
 	var threshold := float(ai.get("restHpRatio", REST_HP_RATIO))
 	var use_rate := float(ai.get("restUseRate", REST_USE_RATE))
-	if hp_ratio >= threshold or enemy_mp < REST_MIN_MP or randf() >= use_rate:
+	var charges := int(ai.get("restCharges", REST_DEFAULT_CHARGES))
+	var used := int(session.get("enemy_rest_uses", 0))
+	if hp_ratio >= threshold or enemy_mp < REST_MIN_MP or used >= charges or randf() >= use_rate:
 		return {}
-	var healed := mini(enemy_mp, hp_max - hp)
+	var heal_cap := maxi(1, int(ceil(float(hp_max) * REST_HEAL_RATIO)))
+	var healed := mini(enemy_mp, mini(hp_max - hp, heal_cap))
 	if healed <= 0:
 		return {}
 	session.enemy_hp = hp + healed
 	session.enemy_mp = enemy_mp - healed
+	session.enemy_rest_uses = used + 1
 	session.log.append("%s 摸鱼恢复 %d 体力" % [session.enemy.get("displayName", "敌人"), healed])
 	return {"ok": true, "rest": true, "damage": 0, "message": "敌方摸鱼恢复 %d 体力" % healed}
 

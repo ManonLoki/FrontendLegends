@@ -13,11 +13,13 @@
             "description": "你可能不知道他，但是你一定用过JSON",
             "defaultLine": "JavaScript 是世界上最被误解的编程语言",
             "money": 16666,
+            "combatRank": "veteran",
+            "combatRole": "controller",
             "attributes": {
-                "strength": 25,
-                "agility": 25,
-                "constitution": 25,
-                "wisdom": 0
+                "strength": 14,
+                "agility": 16,
+                "constitution": 18,
+                "wisdom": 27
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -61,11 +63,13 @@
             "description": "JQuery之父，诸神黄昏的拯救者",
             "defaultLine": "写得更少，做得更多",
             "money": 28888,
+            "combatRank": "master",
+            "combatRole": "skirmisher",
             "attributes": {
-                "strength": 30,
+                "strength": 24,
                 "agility": 30,
-                "constitution": 30,
-                "wisdom": 0
+                "constitution": 20,
+                "wisdom": 16
             },
             "skillLevels": {
                 "basicStrength": 70,
@@ -113,11 +117,13 @@
             "description": "JavaScript之父，一个用了10天就创造了历史的男人",
             "defaultLine": "永远押注 JavaScript",
             "money": 66666,
+            "combatRank": "legendary",
+            "combatRole": "striker",
             "attributes": {
                 "strength": 40,
-                "agility": 40,
-                "constitution": 40,
-                "wisdom": 0
+                "agility": 28,
+                "constitution": 27,
+                "wisdom": 25
             },
             "skillLevels": {
                 "basicStrength": 90,
@@ -165,11 +171,13 @@
             "description": "香草时代的布道者",
             "defaultLine": "在依赖库之前，先去理解浏览器的底层机制。",
             "money": 3888,
+            "combatRank": "veteran",
+            "combatRole": "controller",
             "attributes": {
-                "strength": 20,
-                "agility": 20,
-                "constitution": 20,
-                "wisdom": 0
+                "strength": 12,
+                "agility": 16,
+                "constitution": 12,
+                "wisdom": 20
             },
             "skillLevels": {
                 "basicStrength": 30,
@@ -207,11 +215,13 @@
             "description": "JS游戏引擎的祖师爷",
             "defaultLine": "让无趣的世界变得有趣",
             "money": 16666,
+            "combatRank": "elite",
+            "combatRole": "skirmisher",
             "attributes": {
-                "strength": 30,
-                "agility": 30,
-                "constitution": 30,
-                "wisdom": 0
+                "strength": 20,
+                "agility": 28,
+                "constitution": 18,
+                "wisdom": 24
             },
             "skillLevels": {
                 "basicStrength": 50,
@@ -249,11 +259,13 @@
             "description": "一个不朽的灵魂，Avalon的作者",
             "defaultLine": "把复杂的框架拆开，里面全是好玩的技术",
             "money": 16666,
+            "combatRank": "elite",
+            "combatRole": "counter",
             "attributes": {
-                "strength": 15,
-                "agility": 15,
-                "constitution": 40,
-                "wisdom": 0
+                "strength": 18,
+                "agility": 10,
+                "constitution": 30,
+                "wisdom": 12
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -291,11 +303,13 @@
             "description": "一个迪拜园区的负责人，总喜欢盯着别人腰子看",
             "defaultLine": "招人，坐标迪拜，年包60起",
             "money": 6666,
+            "combatRank": "elite",
+            "combatRole": "striker",
             "attributes": {
-                "strength": 30,
-                "agility": 30,
-                "constitution": 30,
-                "wisdom": 0
+                "strength": 36,
+                "agility": 24,
+                "constitution": 18,
+                "wisdom": 12
             },
             "skillLevels": {
                 "basicStrength": 50,
@@ -333,11 +347,13 @@
             "description": "浑身布满符文的精神小妹",
             "defaultLine": "这里是东郊，东郊到家了解一下吗？",
             "money": 1888,
+            "combatRank": "novice",
+            "combatRole": "skirmisher",
             "attributes": {
-                "strength": 5,
-                "agility": 5,
-                "constitution": 5,
-                "wisdom": 0
+                "strength": 2,
+                "agility": 7,
+                "constitution": 2,
+                "wisdom": 4
             },
             "skillLevels": {
                 "basicStrength": 10,
@@ -371,11 +387,13 @@
             "sect": "鱿鱼山庄",
             "description": "看起来德高望重，实际只会压榨学生。",
             "defaultLine": "任务做完了吗？没做完就去电脑前码去。",
+            "combatRank": "veteran",
+            "combatRole": "controller",
             "attributes": {
-                "strength": 15,
-                "agility": 15,
-                "constitution": 15,
-                "wisdom": 0
+                "strength": 8,
+                "agility": 8,
+                "constitution": 9,
+                "wisdom": 20
             },
             "skillLevels": {
                 "basicStrength": 35,
@@ -411,11 +429,13 @@
             "sect": "NG神教",
             "description": "留学归来的隐形巨佬，在网络安全领域深耕，但是总有人说她是个邪修。",
             "defaultLine": "有仇报仇，有怨报怨，这一单接不接？",
+            "combatRank": "legendary",
+            "combatRole": "controller",
             "attributes": {
-                "strength": 40,
-                "agility": 40,
-                "constitution": 50,
-                "wisdom": 0
+                "strength": 28,
+                "agility": 38,
+                "constitution": 34,
+                "wisdom": 30
             },
             "skillLevels": {
                 "basicStrength": 90,
@@ -448,11 +468,13 @@
             "sect": "香草派",
             "description": "听说是个很喜欢让人来一下的家伙。",
             "defaultLine": "你，过来一下。",
+            "combatRank": "elite",
+            "combatRole": "controller",
             "attributes": {
-                "strength": 25,
-                "agility": 25,
-                "constitution": 25,
-                "wisdom": 0
+                "strength": 20,
+                "agility": 18,
+                "constitution": 17,
+                "wisdom": 20
             },
             "skillLevels": {
                 "basicStrength": 50,
@@ -487,11 +509,13 @@
             ],
             "description": "他要去了地府，阎王都得失业。",
             "defaultLine": "我掐指一算，你今日不宜久留。",
+            "combatRank": "elite",
+            "combatRole": "controller",
             "attributes": {
-                "strength": 20,
-                "agility": 20,
-                "constitution": 20,
-                "wisdom": 0
+                "strength": 10,
+                "agility": 12,
+                "constitution": 18,
+                "wisdom": 20
             },
             "skillLevels": {
                 "basicStrength": 60,
@@ -519,11 +543,13 @@
             ],
             "description": "奶茶店的小姐姐，总问你喜欢几分甜。",
             "defaultLine": "客官，你想喝点什么？",
+            "combatRank": "noncombatant",
+            "combatRole": "noncombatant",
             "attributes": {
-                "strength": 10,
-                "agility": 10,
-                "constitution": 0,
-                "wisdom": 0
+                "strength": 3,
+                "agility": 7,
+                "constitution": 4,
+                "wisdom": 6
             },
             "skillLevels": {
                 "basicStrength": 0,
@@ -551,11 +577,13 @@
             ],
             "description": "风韵犹存的少妇，时不时直播表演装机。",
             "defaultLine": "我内存是金子做的，我硬盘也是金子做的。",
+            "combatRank": "veteran",
+            "combatRole": "tank",
             "attributes": {
-                "strength": 20,
-                "agility": 20,
-                "constitution": 40,
-                "wisdom": 0
+                "strength": 22,
+                "agility": 16,
+                "constitution": 28,
+                "wisdom": 14
             },
             "skillLevels": {
                 "basicStrength": 20,
@@ -583,11 +611,13 @@
             ],
             "description": "长相十分猥琐，总给你推荐点奇怪的东西。",
             "defaultLine": "干地黄、山茱萸、山药、泽泻、茯苓、丹皮、肉桂、炮附子……哎你别走啊。",
+            "combatRank": "trained",
+            "combatRole": "controller",
             "attributes": {
-                "strength": 20,
-                "agility": 20,
-                "constitution": 40,
-                "wisdom": 0
+                "strength": 12,
+                "agility": 22,
+                "constitution": 18,
+                "wisdom": 28
             },
             "skillLevels": {
                 "basicStrength": 20,
@@ -615,11 +645,13 @@
             ],
             "description": "每天给自己挂的满满的，也不知道会不会得颈椎病，跟黄鹤关系不太一般。",
             "defaultLine": "自己看看喜欢哪个。",
+            "combatRank": "veteran",
+            "combatRole": "counter",
             "attributes": {
-                "strength": 20,
-                "agility": 20,
-                "constitution": 40,
-                "wisdom": 0
+                "strength": 18,
+                "agility": 14,
+                "constitution": 28,
+                "wisdom": 20
             },
             "skillLevels": {
                 "basicStrength": 30,
@@ -647,11 +679,13 @@
             ],
             "description": "听说是带小姨子跑到这来的。",
             "defaultLine": "话不能乱说！你这是污蔑！",
+            "combatRank": "veteran",
+            "combatRole": "skirmisher",
             "attributes": {
-                "strength": 25,
-                "agility": 25,
-                "constitution": 25,
-                "wisdom": 0
+                "strength": 20,
+                "agility": 24,
+                "constitution": 16,
+                "wisdom": 15
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -679,11 +713,13 @@
             ],
             "description": "一个售卖食物的小贩，正在紧张的环视周围的环境。",
             "defaultLine": "城管来了？去下个路口等我。",
+            "combatRank": "novice",
+            "combatRole": "skirmisher",
             "attributes": {
-                "strength": 10,
-                "agility": 10,
-                "constitution": 10,
-                "wisdom": 0
+                "strength": 5,
+                "agility": 12,
+                "constitution": 5,
+                "wisdom": 8
             },
             "skillLevels": {
                 "basicStrength": 10,
@@ -711,11 +747,13 @@
             ],
             "description": "一个风韵犹存的少妇。",
             "defaultLine": "呦~ 来试试衣服啊。",
+            "combatRank": "novice",
+            "combatRole": "tank",
             "attributes": {
-                "strength": 10,
-                "agility": 10,
-                "constitution": 10,
-                "wisdom": 0
+                "strength": 6,
+                "agility": 6,
+                "constitution": 12,
+                "wisdom": 6
             },
             "skillLevels": {
                 "basicStrength": 10,
@@ -743,11 +781,13 @@
             ],
             "description": "看起来面向憨厚，但是不一般的黑，有名的葛朗台。",
             "defaultLine": "无奸不商，时间就是金钱我的朋友。",
+            "combatRank": "novice",
+            "combatRole": "controller",
             "attributes": {
-                "strength": 10,
-                "agility": 10,
-                "constitution": 10,
-                "wisdom": 0
+                "strength": 4,
+                "agility": 8,
+                "constitution": 6,
+                "wisdom": 12
             },
             "skillLevels": {
                 "basicStrength": 10,
@@ -776,11 +816,13 @@
             "sect": "NG神教",
             "description": "一个像机器猫一样万能的男人，也是个人形ETC。",
             "defaultLine": "有个男人唯心式自我主义双标。",
+            "combatRank": "elite",
+            "combatRole": "tank",
             "attributes": {
-                "strength": 35,
-                "agility": 35,
-                "constitution": 50,
-                "wisdom": 0
+                "strength": 32,
+                "agility": 22,
+                "constitution": 42,
+                "wisdom": 24
             },
             "skillLevels": {
                 "basicStrength": 50,
@@ -817,11 +859,13 @@
             "sect": "鱿鱼山庄",
             "description": "我就是那个被丁师傅说的男人。",
             "defaultLine": "**就是个傻*。",
+            "combatRank": "elite",
+            "combatRole": "striker",
             "attributes": {
-                "strength": 30,
-                "agility": 30,
-                "constitution": 50,
-                "wisdom": 0
+                "strength": 38,
+                "agility": 20,
+                "constitution": 34,
+                "wisdom": 18
             },
             "skillLevels": {
                 "basicStrength": 60,
@@ -857,11 +901,13 @@
             ],
             "description": "谁看到都想踢一脚的小孩子，正在镇子门口拿IPAD玩我的世界。",
             "defaultLine": "来跟我玩起床战争。",
+            "combatRank": "noncombatant",
+            "combatRole": "noncombatant",
             "attributes": {
-                "strength": 5,
-                "agility": 5,
-                "constitution": 5,
-                "wisdom": 0
+                "strength": 2,
+                "agility": 6,
+                "constitution": 2,
+                "wisdom": 5
             },
             "skillLevels": {
                 "basicStrength": 0,
@@ -877,6 +923,11 @@
                 "basicParry",
                 "literacy"
             ],
+            "combatReward": {
+                "experience": 0,
+                "potential": 0,
+                "money": 0
+            },
             "money": 1888
         },
         "manon_loki": {
@@ -891,11 +942,13 @@
             "description": "神秘人的分身，在这里是个神棍",
             "defaultLine": "我看你骨骼清奇，随我入教吧",
             "money": 1000,
+            "combatRank": "elite",
+            "combatRole": "controller",
             "attributes": {
-                "strength": 20,
-                "agility": 20,
-                "constitution": 20,
-                "wisdom": 0
+                "strength": 10,
+                "agility": 14,
+                "constitution": 14,
+                "wisdom": 22
             },
             "skillLevels": {
                 "basicStrength": 60,
@@ -932,11 +985,13 @@
             "description": "他很神秘，从不暴露自己的身份，但是有人似乎察觉到了他的分身和创世神的身份",
             "defaultLine": "你！想！死！吗？",
             "money": 100000,
+            "combatRank": "legendary",
+            "combatRole": "balanced",
             "attributes": {
-                "strength": 40,
-                "agility": 40,
-                "constitution": 40,
-                "wisdom": 0
+                "strength": 32,
+                "agility": 32,
+                "constitution": 32,
+                "wisdom": 24
             },
             "skillLevels": {
                 "basicStrength": 100,
@@ -971,11 +1026,13 @@
             "description": "一个为情所困的香客，来这里似乎是为了斩断一段孽缘",
             "defaultLine": "这漫山的神佛，斩不掉我的心魔",
             "money": 5000,
+            "combatRank": "elite",
+            "combatRole": "controller",
             "attributes": {
-                "strength": 20,
-                "agility": 20,
-                "constitution": 20,
-                "wisdom": 0
+                "strength": 10,
+                "agility": 12,
+                "constitution": 16,
+                "wisdom": 22
             },
             "skillLevels": {
                 "basicStrength": 50,
@@ -1010,11 +1067,13 @@
             "description": "虽然只会嘴遁，但是带你入门没有问题",
             "defaultLine": "你说是Angular好还是Vue好",
             "money": 1500,
+            "combatRank": "veteran",
+            "combatRole": "controller",
             "attributes": {
-                "strength": 20,
-                "agility": 30,
-                "constitution": 25,
-                "wisdom": 0
+                "strength": 10,
+                "agility": 18,
+                "constitution": 17,
+                "wisdom": 30
             },
             "skillLevels": {
                 "basicStrength": 25,
@@ -1053,11 +1112,13 @@
             "description": "他战斗力极强，经常越阶战斗，是个独行侠",
             "defaultLine": "玩过懒人挂机修仙吗？",
             "money": 6666,
+            "combatRank": "elite",
+            "combatRole": "striker",
             "attributes": {
-                "strength": 25,
-                "agility": 25,
-                "constitution": 25,
-                "wisdom": 0
+                "strength": 28,
+                "agility": 24,
+                "constitution": 15,
+                "wisdom": 8
             },
             "skillLevels": {
                 "basicStrength": 45,
@@ -1093,11 +1154,13 @@
             "description": "掌教师尊，平时以扫地僧的面目示人",
             "defaultLine": "雪狼看了你一眼，并不太想说话",
             "money": 30000,
+            "combatRank": "legendary",
+            "combatRole": "counter",
             "attributes": {
-                "strength": 35,
-                "agility": 35,
+                "strength": 28,
+                "agility": 20,
                 "constitution": 40,
-                "wisdom": 0
+                "wisdom": 22
             },
             "skillLevels": {
                 "basicStrength": 80,
@@ -1143,11 +1206,13 @@
             "description": "一个吃软饭喝白酒的猛男",
             "defaultLine": "来！喝！",
             "money": 5000,
+            "combatRank": "veteran",
+            "combatRole": "striker",
             "attributes": {
-                "strength": 30,
-                "agility": 20,
-                "constitution": 30,
-                "wisdom": 0
+                "strength": 34,
+                "agility": 12,
+                "constitution": 24,
+                "wisdom": 10
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -1183,11 +1248,13 @@
             "description": "一直在孤独的前行，推动着世界的发展",
             "defaultLine": "西西弗斯看了看天，说今天天气真不错",
             "money": 12000,
+            "combatRank": "elite",
+            "combatRole": "tank",
             "attributes": {
-                "strength": 25,
-                "agility": 25,
-                "constitution": 35,
-                "wisdom": 0
+                "strength": 20,
+                "agility": 15,
+                "constitution": 32,
+                "wisdom": 18
             },
             "skillLevels": {
                 "basicStrength": 50,
@@ -1233,11 +1300,13 @@
             "description": "一个经验包，为人和善，很多新人都喜欢他",
             "defaultLine": "打我呀！来打我呀！",
             "money": 1888,
+            "combatRank": "novice",
+            "combatRole": "balanced",
             "attributes": {
-                "strength": 10,
-                "agility": 10,
-                "constitution": 10,
-                "wisdom": 0
+                "strength": 8,
+                "agility": 7,
+                "constitution": 7,
+                "wisdom": 8
             },
             "skillLevels": {
                 "basicStrength": 10,
@@ -1257,6 +1326,11 @@
                 "ng_parry_interceptor",
                 "literacy"
             ],
+            "combatReward": {
+                "experience": 60,
+                "potential": 24,
+                "money": 5
+            },
             "equipment": [
                 "dahui_polo_shan"
             ]
@@ -1273,11 +1347,13 @@
             "description": "据说是个从很远地方过来朝圣的家伙",
             "defaultLine": "嘿嘿嘿，嘿嘿嘿",
             "money": 3000,
+            "combatRank": "veteran",
+            "combatRole": "skirmisher",
             "attributes": {
-                "strength": 20,
+                "strength": 14,
                 "agility": 20,
-                "constitution": 20,
-                "wisdom": 0
+                "constitution": 18,
+                "wisdom": 8
             },
             "skillLevels": {
                 "basicStrength": 30,
@@ -1313,11 +1389,13 @@
             "description": "江湖人称轮子哥",
             "defaultLine": "我做了个新框架阁下是否愿意试试？",
             "money": 500,
+            "combatRank": "veteran",
+            "combatRole": "tank",
             "attributes": {
-                "strength": 25,
-                "agility": 25,
-                "constitution": 25,
-                "wisdom": 0
+                "strength": 18,
+                "agility": 20,
+                "constitution": 27,
+                "wisdom": 10
             },
             "skillLevels": {
                 "basicStrength": 30,
@@ -1353,11 +1431,13 @@
             "description": "教派吉祥物，她好像还有很多不为人知的地方",
             "defaultLine": "我是买台式还是买苹果呢？",
             "money": 100,
+            "combatRank": "trained",
+            "combatRole": "tank",
             "attributes": {
-                "strength": 15,
-                "agility": 15,
-                "constitution": 40,
-                "wisdom": 0
+                "strength": 8,
+                "agility": 12,
+                "constitution": 32,
+                "wisdom": 18
             },
             "skillLevels": {
                 "basicStrength": 10,
@@ -1398,11 +1478,13 @@
             },
             "description": "别看年轻，但是融会贯通各家所长。",
             "defaultLine": "你信不信老夫怼的你Vue，Vue的叫。",
+            "combatRank": "veteran",
+            "combatRole": "skirmisher",
             "attributes": {
-                "strength": 20,
-                "agility": 30,
-                "constitution": 25,
-                "wisdom": 0
+                "strength": 17,
+                "agility": 25,
+                "constitution": 15,
+                "wisdom": 18
             },
             "skillLevels": {
                 "basicStrength": 25,
@@ -1448,11 +1530,13 @@
             },
             "description": "传说中的那个男人，多处致敬，一生致力于整合。",
             "defaultLine": "你别问我对不对，我就问你快不快。",
+            "combatRank": "legendary",
+            "combatRole": "controller",
             "attributes": {
-                "strength": 30,
-                "agility": 30,
-                "constitution": 30,
-                "wisdom": 0
+                "strength": 20,
+                "agility": 22,
+                "constitution": 22,
+                "wisdom": 26
             },
             "skillLevels": {
                 "basicStrength": 75,
@@ -1488,11 +1572,13 @@
             "sect": "鱿鱼山庄",
             "description": "传说中的菠萝养殖户。",
             "defaultLine": "嘿，来口菠萝尝尝？",
+            "combatRank": "elite",
+            "combatRole": "skirmisher",
             "attributes": {
-                "strength": 20,
-                "agility": 20,
-                "constitution": 20,
-                "wisdom": 0
+                "strength": 10,
+                "agility": 22,
+                "constitution": 16,
+                "wisdom": 12
             },
             "skillLevels": {
                 "basicStrength": 50,
@@ -1528,11 +1614,13 @@
             "sect": "鱿鱼山庄",
             "description": "听说跟Nuxt有不小的渊源的双胞胎之一。",
             "defaultLine": "Nuxt了解一下？",
+            "combatRank": "veteran",
+            "combatRole": "striker",
             "attributes": {
-                "strength": 20,
-                "agility": 20,
-                "constitution": 20,
-                "wisdom": 0
+                "strength": 24,
+                "agility": 16,
+                "constitution": 12,
+                "wisdom": 8
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -1568,11 +1656,13 @@
             "sect": "鱿鱼山庄",
             "description": "听说跟Nuxt有不小的渊源的双胞胎之一。",
             "defaultLine": "Nuxt了解一下？",
+            "combatRank": "veteran",
+            "combatRole": "skirmisher",
             "attributes": {
-                "strength": 20,
-                "agility": 20,
-                "constitution": 20,
-                "wisdom": 0
+                "strength": 14,
+                "agility": 24,
+                "constitution": 12,
+                "wisdom": 10
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -1608,11 +1698,13 @@
             "sect": "鱿鱼山庄",
             "description": "三大框架护法之一。",
             "defaultLine": "你饿了么？",
+            "combatRank": "veteran",
+            "combatRole": "striker",
             "attributes": {
-                "strength": 20,
-                "agility": 20,
-                "constitution": 20,
-                "wisdom": 0
+                "strength": 24,
+                "agility": 14,
+                "constitution": 10,
+                "wisdom": 12
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -1648,11 +1740,13 @@
             "sect": "鱿鱼山庄",
             "description": "三大框架护法之一。",
             "defaultLine": "你听过Van吗？",
+            "combatRank": "veteran",
+            "combatRole": "skirmisher",
             "attributes": {
-                "strength": 20,
-                "agility": 20,
-                "constitution": 20,
-                "wisdom": 0
+                "strength": 12,
+                "agility": 24,
+                "constitution": 10,
+                "wisdom": 14
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -1688,11 +1782,13 @@
             "sect": "鱿鱼山庄",
             "description": "三大框架护法之一。",
             "defaultLine": "跟我一起来看蚂蚁。",
+            "combatRank": "veteran",
+            "combatRole": "tank",
             "attributes": {
-                "strength": 20,
-                "agility": 20,
-                "constitution": 20,
-                "wisdom": 0
+                "strength": 10,
+                "agility": 11,
+                "constitution": 25,
+                "wisdom": 14
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -1729,11 +1825,13 @@
             "description": "看到她，你是不是想到了千与千寻？",
             "defaultLine": "她看了你一眼，并不想说话",
             "money": 888,
+            "combatRank": "novice",
+            "combatRole": "controller",
             "attributes": {
-                "strength": 5,
+                "strength": 2,
                 "agility": 5,
-                "constitution": 5,
-                "wisdom": 0
+                "constitution": 2,
+                "wisdom": 6
             },
             "skillLevels": {
                 "basicStrength": 10,
@@ -1768,11 +1866,13 @@
             "description": "一个眼睛里充满星星的女子",
             "defaultLine": "她看了你一眼，并不想说话",
             "money": 1888,
+            "combatRank": "novice",
+            "combatRole": "controller",
             "attributes": {
-                "strength": 10,
-                "agility": 10,
-                "constitution": 10,
-                "wisdom": 0
+                "strength": 5,
+                "agility": 9,
+                "constitution": 6,
+                "wisdom": 10
             },
             "skillLevels": {
                 "basicStrength": 10,
@@ -1807,11 +1907,13 @@
             "description": "一个行事干练的女子，没人知道她内心的柔软",
             "defaultLine": "离我远点！你辞职去杭州吧",
             "money": 6666,
+            "combatRank": "veteran",
+            "combatRole": "counter",
             "attributes": {
-                "strength": 20,
-                "agility": 20,
-                "constitution": 20,
-                "wisdom": 0
+                "strength": 22,
+                "agility": 14,
+                "constitution": 16,
+                "wisdom": 8
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -1846,11 +1948,13 @@
             "description": "据说是空空的头号舔狗",
             "defaultLine": "空空是我的！",
             "money": 6666,
+            "combatRank": "trained",
+            "combatRole": "skirmisher",
             "attributes": {
-                "strength": 10,
-                "agility": 10,
-                "constitution": 10,
-                "wisdom": 0
+                "strength": 5,
+                "agility": 9,
+                "constitution": 8,
+                "wisdom": 8
             },
             "skillLevels": {
                 "basicStrength": 20,
@@ -1885,11 +1989,13 @@
             "description": "这个国家的祥瑞",
             "defaultLine": "古咕故！你还相信光（Ray）吗？古咕故！",
             "money": 1666,
+            "combatRank": "veteran",
+            "combatRole": "balanced",
             "attributes": {
                 "strength": 20,
-                "agility": 20,
-                "constitution": 20,
-                "wisdom": 0
+                "agility": 16,
+                "constitution": 14,
+                "wisdom": 10
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -1924,11 +2030,13 @@
             "description": "家里有一只很有意思的猫",
             "defaultLine": "Niko!Niko!",
             "money": 1888,
+            "combatRank": "trained",
+            "combatRole": "skirmisher",
             "attributes": {
-                "strength": 10,
-                "agility": 10,
-                "constitution": 10,
-                "wisdom": 0
+                "strength": 5,
+                "agility": 13,
+                "constitution": 5,
+                "wisdom": 7
             },
             "skillLevels": {
                 "basicStrength": 15,
@@ -1963,11 +2071,13 @@
             "description": "QQ的CP",
             "defaultLine": "晚睡会变笨！",
             "money": 1888,
+            "combatRank": "trained",
+            "combatRole": "controller",
             "attributes": {
-                "strength": 10,
-                "agility": 10,
-                "constitution": 10,
-                "wisdom": 0
+                "strength": 5,
+                "agility": 7,
+                "constitution": 8,
+                "wisdom": 10
             },
             "skillLevels": {
                 "basicStrength": 15,
@@ -2002,11 +2112,13 @@
             "description": "成熟稳重温柔体贴知心大姐姐",
             "defaultLine": "我要早睡",
             "money": 1666,
+            "combatRank": "trained",
+            "combatRole": "tank",
             "attributes": {
-                "strength": 20,
-                "agility": 20,
-                "constitution": 20,
-                "wisdom": 0
+                "strength": 10,
+                "agility": 12,
+                "constitution": 21,
+                "wisdom": 17
             },
             "skillLevels": {
                 "basicStrength": 20,
@@ -2041,11 +2153,13 @@
             "description": "一个疯疯癫癫的小姑娘",
             "defaultLine": "别耽误我看剧！",
             "money": 6666,
+            "combatRank": "veteran",
+            "combatRole": "skirmisher",
             "attributes": {
-                "strength": 10,
-                "agility": 10,
-                "constitution": 10,
-                "wisdom": 0
+                "strength": 6,
+                "agility": 14,
+                "constitution": 4,
+                "wisdom": 6
             },
             "skillLevels": {
                 "basicStrength": 30,
@@ -2080,11 +2194,13 @@
             "description": "格子衫，黑眼镜，永远一副知性的样子",
             "defaultLine": "书中自有黄金屋，书中自有颜如玉！",
             "money": 6666,
+            "combatRank": "veteran",
+            "combatRole": "controller",
             "attributes": {
-                "strength": 10,
-                "agility": 20,
-                "constitution": 20,
-                "wisdom": 0
+                "strength": 5,
+                "agility": 10,
+                "constitution": 10,
+                "wisdom": 25
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -2120,11 +2236,13 @@
             "description": "一生为大女主剧本而奋斗，实际上是个需要呵护的小姑娘",
             "defaultLine": "你买了奶茶？拿来吧你！",
             "money": 8888,
+            "combatRank": "master",
+            "combatRole": "striker",
             "attributes": {
-                "strength": 15,
-                "agility": 15,
-                "constitution": 15,
-                "wisdom": 0
+                "strength": 14,
+                "agility": 12,
+                "constitution": 8,
+                "wisdom": 11
             },
             "skillLevels": {
                 "basicStrength": 66,
@@ -2159,11 +2277,13 @@
             "description": "据说和狗团子差点走到一起，但是造化弄人",
             "defaultLine": "喵喵？",
             "money": 3888,
+            "combatRank": "trained",
+            "combatRole": "skirmisher",
             "attributes": {
-                "strength": 10,
-                "agility": 10,
-                "constitution": 10,
-                "wisdom": 0
+                "strength": 5,
+                "agility": 15,
+                "constitution": 4,
+                "wisdom": 6
             },
             "skillLevels": {
                 "basicStrength": 20,
@@ -2198,11 +2318,13 @@
             "description": "一个富有的家伙，但是感情道路好像不怎么顺利",
             "defaultLine": "汪汪？舔舔……汪汪！",
             "money": 13140,
+            "combatRank": "veteran",
+            "combatRole": "counter",
             "attributes": {
                 "strength": 20,
-                "agility": 20,
-                "constitution": 20,
-                "wisdom": 0
+                "agility": 12,
+                "constitution": 18,
+                "wisdom": 10
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -2237,11 +2359,13 @@
             "description": "量子仙宗布道者。",
             "defaultLine": "do you want study react?",
             "money": 6666,
+            "combatRank": "elite",
+            "combatRole": "controller",
             "attributes": {
-                "strength": 30,
-                "agility": 30,
-                "constitution": 35,
-                "wisdom": 0
+                "strength": 20,
+                "agility": 22,
+                "constitution": 18,
+                "wisdom": 35
             },
             "skillLevels": {
                 "basicStrength": 50,
@@ -2281,11 +2405,13 @@
             "description": "你没听说过他，但是你用过他的全家桶。",
             "defaultLine": "你听过Tanstack吗？",
             "money": 6888,
+            "combatRank": "elite",
+            "combatRole": "tank",
             "attributes": {
-                "strength": 20,
-                "agility": 20,
-                "constitution": 20,
-                "wisdom": 0
+                "strength": 9,
+                "agility": 12,
+                "constitution": 25,
+                "wisdom": 14
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -2319,11 +2445,13 @@
             "description": "一个东洋人，不知为何来到了此处。",
             "defaultLine": "你是用Jotai？还是像当个Hentai?",
             "money": 4888,
+            "combatRank": "veteran",
+            "combatRole": "skirmisher",
             "attributes": {
-                "strength": 20,
-                "agility": 20,
-                "constitution": 20,
-                "wisdom": 0
+                "strength": 16,
+                "agility": 22,
+                "constitution": 12,
+                "wisdom": 10
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -2357,11 +2485,13 @@
             "description": "非常低调纯粹的大牛。",
             "defaultLine": "用过我的Mantine UI吗？",
             "money": 16888,
+            "combatRank": "elite",
+            "combatRole": "controller",
             "attributes": {
-                "strength": 25,
-                "agility": 25,
-                "constitution": 25,
-                "wisdom": 0
+                "strength": 18,
+                "agility": 18,
+                "constitution": 17,
+                "wisdom": 22
             },
             "skillLevels": {
                 "basicStrength": 60,
@@ -2395,11 +2525,13 @@
             "description": "Apollo GraphQL。",
             "defaultLine": "他看了你一眼，不想说话",
             "money": 8888,
+            "combatRank": "veteran",
+            "combatRole": "striker",
             "attributes": {
                 "strength": 20,
-                "agility": 20,
-                "constitution": 20,
-                "wisdom": 0
+                "agility": 12,
+                "constitution": 10,
+                "wisdom": 18
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -2433,11 +2565,13 @@
             "description": "Apollo GraphQL。",
             "defaultLine": "他看了你一眼，不想说话",
             "money": 8888,
+            "combatRank": "veteran",
+            "combatRole": "tank",
             "attributes": {
-                "strength": 20,
-                "agility": 20,
+                "strength": 10,
+                "agility": 11,
                 "constitution": 20,
-                "wisdom": 0
+                "wisdom": 19
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -2471,11 +2605,13 @@
             "description": "元宇宙创世神。",
             "defaultLine": "来我的元宇宙里玩啊",
             "money": 66666,
+            "combatRank": "master",
+            "combatRole": "tank",
             "attributes": {
-                "strength": 30,
-                "agility": 30,
-                "constitution": 30,
-                "wisdom": 0
+                "strength": 18,
+                "agility": 20,
+                "constitution": 26,
+                "wisdom": 26
             },
             "skillLevels": {
                 "basicStrength": 70,
@@ -2509,11 +2645,13 @@
             "description": "开宗立派的祖师爷。",
             "defaultLine": "Do you prefer FP or OOP?",
             "money": 38888,
+            "combatRank": "legendary",
+            "combatRole": "controller",
             "attributes": {
-                "strength": 30,
-                "agility": 30,
-                "constitution": 30,
-                "wisdom": 0
+                "strength": 20,
+                "agility": 26,
+                "constitution": 16,
+                "wisdom": 28
             },
             "skillLevels": {
                 "basicStrength": 75,
@@ -2557,11 +2695,13 @@
             "description": "听说他也是那个人的分身,这里是Ray的好基友",
             "defaultLine": "我信！我信！",
             "money": 6666,
+            "combatRank": "elite",
+            "combatRole": "striker",
             "attributes": {
-                "strength": 20,
-                "agility": 20,
-                "constitution": 20,
-                "wisdom": 0
+                "strength": 26,
+                "agility": 14,
+                "constitution": 12,
+                "wisdom": 8
             },
             "skillLevels": {
                 "basicStrength": 60,
@@ -2596,11 +2736,13 @@
             "description": "总感觉有点人机",
             "defaultLine": "哈？",
             "money": 888,
+            "combatRank": "trained",
+            "combatRole": "controller",
             "attributes": {
-                "strength": 10,
-                "agility": 10,
-                "constitution": 10,
-                "wisdom": 0
+                "strength": 6,
+                "agility": 8,
+                "constitution": 6,
+                "wisdom": 10
             },
             "skillLevels": {
                 "basicStrength": 20,

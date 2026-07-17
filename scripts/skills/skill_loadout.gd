@@ -41,6 +41,7 @@ func unequip(skill_id: String) -> Dictionary:
 	if str(skills.ensure_skills()[slot].get(theme, "")) != skill_id:
 		return {"ok": false, "message": "此功法尚未装备"}
 	skills.ensure_skills()[slot].erase(theme)
+	GameState.normalize_combat_state()
 	GameState.save_game()
 	return {"ok": true, "message": "已卸下【%s】" % definition.get("name", skill_id)}
 
@@ -91,16 +92,6 @@ func combat_bonus() -> Dictionary:
 		result.parry += float(combat.get("parryPerLv", 0.0)) * level
 		result.mp_max += int(combat.get("mpMaxPerLv", 0)) * level
 	return result
-
-## 从已装备门派功法中取指定战斗字段的最高加成，不跨功法累加。
-func best_combat_bonus(key: String) -> float:
-	var best := 0.0
-	for skill_id in equipped_skill_ids():
-		var definition := DataRegistry.get_skill(skill_id)
-		if str(definition.get("category", "")) != "sect":
-			continue
-		best = maxf(best, float(definition.get("combat", {}).get(key, 0.0)) * skills.level(skill_id))
-	return best
 
 ## 加力上限等于基础架构等级加本门架构功法等级的两倍。
 func force_power_cap() -> int:

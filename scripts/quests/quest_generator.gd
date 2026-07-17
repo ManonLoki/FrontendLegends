@@ -16,12 +16,12 @@ func offer(generator_id: String) -> Dictionary:
 	if quests.active.has(runtime_id) or quests._on_cooldown(generator_id):
 		return {"ok": false, "message": "该环任务进行中"}
 	var generator_type := str(definition.get("type", ""))
-	var excluded_npc_id := "" if generator_type == "killRing" else str(definition.get("giverNpcId", ""))
-	var placed_target: Dictionary = quests._placed_npc_target(excluded_npc_id)
+	var excluded_npc_ids: Array[String] = quests._reserved_task_npc_ids()
+	var placed_target: Dictionary = quests._placed_npc_target(excluded_npc_ids, generator_type == "killRing")
 	if generator_type in ["ring", "killRing"] and placed_target.is_empty():
 		return {"ok": false, "message": "（环任务目标池是空的，请检查地图 Interactive 层 NPC id）"}
 	var runtime := {"generator_id": generator_id, "kind": generator_type, "giverNpcId": definition.get("giverNpcId", ""), "state": "active", "progress": 0, "round": 1}
-	var failure := _assign_target(runtime, definition, generator_type, placed_target)
+	var failure := _assign_target(runtime, definition, generator_type, placed_target, excluded_npc_ids)
 	if not failure.is_empty():
 		return failure
 	_assign_ring_item(runtime, definition, generator_type)
@@ -30,17 +30,20 @@ func offer(generator_id: String) -> Dictionary:
 	return {"ok": true, "message": _offer_message(runtime, definition, generator_id)}
 
 ## 按类型把目标写入运行状态；失败时返回可直接显示的错误字典。
-func _assign_target(runtime: Dictionary, definition: Dictionary, generator_type: String, placed_target: Dictionary) -> Dictionary:
+func _assign_target(runtime: Dictionary, definition: Dictionary, generator_type: String, placed_target: Dictionary, excluded_npc_ids: Array[String]) -> Dictionary:
 	if generator_type == "errand":
-		var candidates := _errand_candidates(definition.get("pool", {}))
+		var candidates := _errand_candidates(definition.get("pool", {}), excluded_npc_ids)
 		if candidates.is_empty():
 			return {"ok": false, "message": "（差事池是空的，先在 quests.json 配置）"}
 		runtime.target = candidates[randi() % candidates.size()]
 		runtime.met_goal = false
 	elif generator_type == "bounty":
-		var enemies: Array = definition.get("enemyPool", [])
+		var enemies: Array = definition.get("enemyPool", []).filter(func(enemy_id):
+			var id := str(enemy_id)
+			return not excluded_npc_ids.has(id) and quests._is_kill_quest_target(id)
+		)
 		if enemies.is_empty():
-			return {"ok": false, "message": "（悬赏池是空的，先在 quests.json 配置）"}
+			return {"ok": false, "message": "（悬赏池没有符合资格且未被其他任务占用的人物）"}
 		var enemy_id := str(enemies[randi() % enemies.size()])
 		var enemy: Dictionary = DataRegistry.get_npc(enemy_id)
 		var prefixes: Array = definition.get("enemyTemplate", {}).get("namePrefix", [])
@@ -54,11 +57,13 @@ func _assign_target(runtime: Dictionary, definition: Dictionary, generator_type:
 	return {}
 
 ## 把差事物品池和人物池转换为统一候选目标。
-func _errand_candidates(pool: Dictionary) -> Array[Dictionary]:
+func _errand_candidates(pool: Dictionary, excluded_npc_ids: Array[String] = []) -> Array[Dictionary]:
 	var candidates: Array[Dictionary] = []
 	for item_id in pool.get("items", []):
 		candidates.append({"target_id": str(item_id), "target_name": DataRegistry.get_item(str(item_id)).get("name", item_id), "target_kind": "item"})
 	for npc_id in pool.get("npcs", []):
+		if excluded_npc_ids.has(str(npc_id)):
+			continue
 		var npc: Dictionary = DataRegistry.get_npc(str(npc_id))
 		candidates.append({"target_id": str(npc_id), "target_name": npc.get("displayName", npc_id), "target_kind": "npc"})
 	return candidates
@@ -73,13 +78,15 @@ func _assign_ring_item(runtime: Dictionary, definition: Dictionary, generator_ty
 		runtime.item_id = item_id
 		runtime.item_name = DataRegistry.get_item(item_id).get("name", item_id)
 
-## 计算初始奖励；物品跑腿额外增加配置中的 Token。
+## 计算初始奖励；交付物成本单独记录，结算时不参与环数成长或随机浮动。
 func _assign_reward(runtime: Dictionary, definition: Dictionary, generator_type: String) -> void:
 	if generator_type == "killRing":
 		runtime.reward = quests._kill_ring_reward(definition, str(runtime.get("target", {}).get("target_id", "")))
 		return
 	runtime.reward = quests._base_reward(definition)
 	if generator_type == "ring" and not str(runtime.get("item_id", "")).is_empty():
+		var item_price := maxi(0, int(DataRegistry.get_item(str(runtime.item_id)).get("price", 0)))
+		runtime.item_refund_money = int(ceil(float(item_price) * maxf(0.0, float(definition.get("itemRefundRate", 1.0)))))
 		runtime.reward.money = int(runtime.reward.get("money", 0)) + int(definition.get("itemExtraMoney", 0))
 
 ## 按是否需要物品选择接取文案，并填充目标、地图和环数。
@@ -104,6 +111,7 @@ func advance(generator_id: String, amount: int = 1) -> Dictionary:
 	var ring_size := maxi(1, int(definition.get("ringSize", 1)))
 	var reward_round := int(floor(float(int(runtime.progress) - 1) / float(ring_size))) + 1
 	var reward: Dictionary = quests._scaled_reward(definition, runtime.get("reward", quests._base_reward(definition)), reward_round)
+	reward.money = int(reward.get("money", 0)) + maxi(0, int(runtime.get("item_refund_money", 0)))
 	quests._grant_reward(reward)
 	quests.ring_progress[generator_id] = int(runtime.progress)
 	quests.active.erase(runtime_id)

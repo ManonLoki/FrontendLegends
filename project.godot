@@ -22,12 +22,12 @@ config/icon="res://icons/frontend-legends.svg"
 
 [autoload]
 
-GameState="*res://scripts/game_state.gd"
 DataRegistry="*res://scripts/data_registry.gd"
+SkillSystem="*res://scripts/skill_system.gd"
+GameState="*res://scripts/game_state.gd"
 InventorySystem="*res://scripts/inventory_system.gd"
 QuestSystem="*res://scripts/quest_system.gd"
 NpcSystem="*res://scripts/npc_system.gd"
-SkillSystem="*res://scripts/skill_system.gd"
 CombatSystem="*res://scripts/combat_system.gd"
 BattleResolve="*res://scripts/battle_resolve.gd"
 
@@ -38,7 +38,6 @@ window/size/viewport_height=320
 window/size/window_width_override=1280
 window/size/window_height_override=960
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
 window/handheld/orientation=4
 
 [physics]

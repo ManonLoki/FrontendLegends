@@ -1,149 +1,27 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import {
+  BALANCE_RULE_ROWS,
+  DATA_DIR,
+  DATA_FILES,
+  DEFAULT_WORKBOOK,
+  HEADERS,
+  SHEETS,
+} from './workbook-schema.mjs';
+import {
+  attrsFromRow,
+  attrsToRow,
+  blankToUndefined,
+  bool,
+  cleanObject,
+  csv,
+  num,
+  parseJsonCell,
+  stableJson,
+  str,
+} from './workbook-values.mjs';
 
-export const DEFAULT_WORKBOOK = 'docs/data/FrontendLegendsData.xlsx';
-export const DATA_DIR = 'assets/Data';
-
-export const SHEETS = {
-  meta: 'Meta',
-  readme: 'README',
-  items: 'Items',
-  vendorStock: 'VendorStock',
-  skills: 'Skills',
-  teachStock: 'TeachStock',
-  npcs: 'NPCs',
-  npcSkillLevels: 'NPCSkillLevels',
-  npcEquipment: 'NPCEquipment',
-  npcLoot: 'NPCLoot',
-  quests: 'Quests',
-};
-
-export const HEADERS = {
-  [SHEETS.meta]: ['file', 'version', 'note'],
-  [SHEETS.items]: [
-    'itemId', 'name', 'kind', 'slot', 'price',
-    'rarity', 'weight', 'stackLimit', 'unique', 'discardable', 'consumeOnUse',
-    'tags', 'questId', 'source',
-    'effectFood', 'effectWater', 'effectHp', 'effectInjury', 'effectAppearance', 'effectPotential',
-    'bonusAttack', 'bonusDefense', 'bonusHit', 'bonusDodge', 'bonusCrit',
-    'skillId', 'maxLearnLevel',
-    'attrStrength', 'attrAgility', 'attrConstitution', 'attrWisdom',
-    'reqStrength', 'reqAgility', 'reqConstitution', 'reqWisdom',
-    'sellable', 'description',
-  ],
-  [SHEETS.vendorStock]: ['npcId', 'itemId', 'sort'],
-  [SHEETS.skills]: [
-    'skillId', 'name', 'category', 'sect', 'tier', 'theme', 'maxLevel',
-    'costBase', 'costFactor', 'reqSect', 'reqStrength', 'reqAgility',
-    'reqConstitution', 'reqWisdom', 'reqMinSkillPower', 'reqMinAvgSkill',
-    'prereqSkillId', 'prereqLevel', 'atkPerLv', 'defPerLv', 'hitPerLv',
-    'dodgePerLv', 'parryPerLv', 'injuryReducePerLv', 'mpMaxPerLv', 'mpCost',
-    'description', 'configJson',
-  ],
-  [SHEETS.teachStock]: ['npcId', 'skillId', 'maxTeachLevel', 'sort'],
-  [SHEETS.npcs]: [
-    'npcId', 'displayName', 'gender', 'age', 'sprite', 'roles', 'sect', 'title',
-    'description', 'defaultLine',
-    'attrStrength', 'attrAgility', 'attrConstitution', 'attrWisdom',
-    'joinStrength', 'joinAgility', 'joinConstitution', 'joinWisdom',
-    'combatHpMax', 'combatHp', 'combatMpMax', 'combatMp', 'inventory',
-  ],
-  [SHEETS.npcSkillLevels]: ['npcId', 'skillId', 'level', 'equipped'],
-  [SHEETS.npcEquipment]: ['npcId', 'itemId', 'sort'],
-  [SHEETS.npcLoot]: ['npcId', 'itemId', 'chance', 'min', 'max', 'sort'],
-  [SHEETS.quests]: ['bucket', 'questId', 'type', 'title', 'configJson'],
-};
-
-const DATA_FILES = ['items', 'skills', 'npcs', 'quests'];
-const ATTR_KEYS = ['strength', 'agility', 'constitution', 'wisdom'];
-
-function blankToUndefined(value) {
-  if (value == null) return undefined;
-  if (typeof value === 'string' && value.trim() === '') return undefined;
-  return value;
-}
-
-function str(value) {
-  const v = blankToUndefined(value);
-  return v == null ? undefined : String(v).trim();
-}
-
-function num(value) {
-  const v = blankToUndefined(value);
-  if (v == null) return undefined;
-  const n = Number(v);
-  return Number.isFinite(n) ? n : undefined;
-}
-
-function bool(value) {
-  const v = blankToUndefined(value);
-  if (v == null) return undefined;
-  if (typeof v === 'boolean') return v;
-  const s = String(v).trim().toLowerCase();
-  if (['true', '1', 'yes', 'y'].includes(s)) return true;
-  if (['false', '0', 'no', 'n'].includes(s)) return false;
-  return undefined;
-}
-
-function csv(value) {
-  return String(value ?? '')
-    .split(/[,，]/)
-    .map(s => s.trim())
-    .filter(Boolean);
-}
-
-function cleanObject(obj) {
-  for (const key of Object.keys(obj)) {
-    const value = obj[key];
-    if (Array.isArray(value)) {
-      if (value.length === 0) delete obj[key];
-    } else if (value && typeof value === 'object') {
-      cleanObject(value);
-      if (Object.keys(value).length === 0) delete obj[key];
-    } else if (value == null || value === '') {
-      delete obj[key];
-    }
-  }
-  return obj;
-}
-
-function stableJson(obj) {
-  return JSON.stringify(obj ?? {}, null, 0);
-}
-
-function parseJsonCell(value, context) {
-  const raw = str(value);
-  if (!raw) return {};
-  try {
-    return JSON.parse(raw);
-  } catch (error) {
-    throw new Error(`${context} 不是合法 JSON：${error.message}`);
-  }
-}
-
-function attrsFromRow(row, prefix = 'attr') {
-  const out = {};
-  const map = {
-    strength: `${prefix}Strength`,
-    agility: `${prefix}Agility`,
-    constitution: `${prefix}Constitution`,
-    wisdom: `${prefix}Wisdom`,
-  };
-  for (const key of ATTR_KEYS) {
-    const value = num(row[map[key]]);
-    if (value != null) out[key] = value;
-  }
-  return cleanObject(out);
-}
-
-function attrsToRow(obj, prefix = 'attr') {
-  return {
-    [`${prefix}Strength`]: obj?.strength ?? '',
-    [`${prefix}Agility`]: obj?.agility ?? '',
-    [`${prefix}Constitution`]: obj?.constitution ?? '',
-    [`${prefix}Wisdom`]: obj?.wisdom ?? '',
-  };
-}
+export { DATA_DIR, DEFAULT_WORKBOOK, HEADERS, SHEETS };
 
 export async function readJsonData(rootDir = '.') {
   const out = {};
@@ -156,45 +34,70 @@ export async function readJsonData(rootDir = '.') {
 
 export function workbookRowsFromJson(data) {
   const rows = {};
-  rows[SHEETS.meta] = DATA_FILES.map(file => ({
-    file: `${file}.json`,
-    version: data[file]?.version ?? 1,
-    note: data[file]?._note ?? '',
-  }));
+  rows[SHEETS.balanceRules] = BALANCE_RULE_ROWS.map(row => ({ ...row }));
+  const topLevelCollections = {
+    items: ['items', 'vendorStock'],
+    skills: ['skills', 'teachStock'],
+    npcs: ['npcs'],
+    quests: ['quests', 'generators'],
+  };
+  rows[SHEETS.meta] = DATA_FILES.map(file => {
+    const document = data[file] ?? {};
+    const extra = { ...document };
+    delete extra.version;
+    delete extra._note;
+    for (const key of topLevelCollections[file]) delete extra[key];
+    return {
+      file: `${file}.json`,
+      version: document.version ?? 1,
+      note: document._note ?? '',
+      configJson: Object.keys(extra).length > 0 ? stableJson(extra) : '',
+    };
+  });
 
-  rows[SHEETS.items] = Object.entries(data.items.items ?? {}).map(([itemId, def]) => ({
-    itemId,
-    name: def.name ?? '',
-    kind: def.kind ?? '',
-    slot: def.slot ?? '',
-    price: def.price ?? '',
-    rarity: def.rarity ?? '',
-    weight: def.weight ?? '',
-    stackLimit: def.stackLimit ?? '',
-    unique: def.unique == null ? '' : def.unique,
-    discardable: def.discardable == null ? '' : def.discardable,
-    consumeOnUse: def.consumeOnUse == null ? '' : def.consumeOnUse,
-    tags: (def.tags ?? []).join(','),
-    questId: def.questId ?? '',
-    source: def.source ?? '',
-    effectFood: def.effects?.food ?? '',
-    effectWater: def.effects?.water ?? '',
-    effectHp: def.effects?.hp ?? '',
-    effectInjury: def.effects?.injury ?? '',
-    effectAppearance: def.effects?.appearance ?? '',
-    effectPotential: def.effects?.potential ?? '',
-    bonusAttack: def.equipmentBonus?.attack ?? '',
-    bonusDefense: def.equipmentBonus?.defense ?? '',
-    bonusHit: def.equipmentBonus?.hit ?? '',
-    bonusDodge: def.equipmentBonus?.dodge ?? '',
-    bonusCrit: def.equipmentBonus?.crit ?? '',
-    skillId: def.skillId ?? '',
-    maxLearnLevel: def.maxLearnLevel ?? '',
-    ...attrsToRow(def.attributes, 'attr'),
-    ...attrsToRow(def.requires, 'req'),
-    sellable: def.sellable == null ? '' : def.sellable,
-    description: def.description ?? '',
-  }));
+  rows[SHEETS.items] = Object.entries(data.items.items ?? {}).map(([itemId, def]) => {
+    const {
+      name, kind, slot, price, rarity, weight, stackLimit, unique, discardable,
+      consumeOnUse, tags, questId, source, effects, equipmentBonus, skillId,
+      maxLearnLevel, attributes, requires, sellable, description, ...rest
+    } = def;
+    return {
+      itemId,
+      name: name ?? '',
+      kind: kind ?? '',
+      slot: slot ?? '',
+      price: price ?? '',
+      rarity: rarity ?? '',
+      weight: weight ?? '',
+      stackLimit: stackLimit ?? '',
+      unique: unique == null ? '' : unique,
+      discardable: discardable == null ? '' : discardable,
+      consumeOnUse: consumeOnUse == null ? '' : consumeOnUse,
+      tags: (tags ?? []).join(','),
+      questId: questId ?? '',
+      source: source ?? '',
+      effectFood: effects?.food ?? '',
+      effectWater: effects?.water ?? '',
+      effectHp: effects?.hp ?? '',
+      effectInjury: effects?.injury ?? '',
+      effectAppearance: effects?.appearance ?? '',
+      effectPotential: effects?.potential ?? '',
+      bonusAttack: equipmentBonus?.attack ?? '',
+      bonusDefense: equipmentBonus?.defense ?? '',
+      bonusHit: equipmentBonus?.hit ?? '',
+      bonusDodge: equipmentBonus?.dodge ?? '',
+      bonusCrit: equipmentBonus?.crit ?? '',
+      bonusParry: equipmentBonus?.parry ?? '',
+      bonusWoundInflict: equipmentBonus?.woundInflict ?? '',
+      skillId: skillId ?? '',
+      maxLearnLevel: maxLearnLevel ?? '',
+      ...attrsToRow(attributes, 'attr'),
+      ...attrsToRow(requires, 'req'),
+      sellable: sellable == null ? '' : sellable,
+      description: description ?? '',
+      configJson: Object.keys(rest).length > 0 ? stableJson(rest) : '',
+    };
+  });
 
   rows[SHEETS.vendorStock] = [];
   for (const [npcId, itemIds] of Object.entries(data.items.vendorStock ?? {})) {
@@ -256,37 +159,59 @@ export function workbookRowsFromJson(data) {
   rows[SHEETS.npcEquipment] = [];
   rows[SHEETS.npcLoot] = [];
   for (const [npcId, def] of Object.entries(data.npcs.npcs ?? {})) {
+    const {
+      displayName, gender, age, sprite, roles, sect, title, money,
+      combatRank, combatRole, targetableByKillQuest, description, defaultLine,
+      attributes, joinSect, combat, combatReward, inventory,
+      skillLevels, equippedSkillIds, equipment, loot, ...rest
+    } = def;
     rows[SHEETS.npcs].push({
       npcId,
-      displayName: def.displayName ?? '',
-      gender: def.gender ?? '',
-      age: def.age ?? '',
-      sprite: def.sprite ?? '',
-      roles: (def.roles ?? []).join(','),
-      sect: def.sect ?? '',
-      title: def.title ?? '',
-      description: def.description ?? '',
-      defaultLine: def.defaultLine ?? '',
-      ...attrsToRow(def.attributes, 'attr'),
-      ...attrsToRow(def.joinSect, 'join'),
-      combatHpMax: def.combat?.hpMax ?? '',
-      combatHp: def.combat?.hp ?? '',
-      combatMpMax: def.combat?.mpMax ?? '',
-      combatMp: def.combat?.mp ?? '',
-      inventory: (def.inventory ?? []).join(','),
+      displayName: displayName ?? '',
+      gender: gender ?? '',
+      age: age ?? '',
+      sprite: sprite ?? '',
+      roles: (roles ?? []).join(','),
+      sect: sect ?? '',
+      title: title ?? '',
+      money: money ?? '',
+      combatRank: combatRank ?? '',
+      combatRole: combatRole ?? '',
+      targetableByKillQuest: targetableByKillQuest == null ? '' : targetableByKillQuest,
+      description: description ?? '',
+      defaultLine: defaultLine ?? '',
+      ...attrsToRow(attributes, 'attr'),
+      ...attrsToRow(joinSect, 'join'),
+      combatHpMax: combat?.hpMax ?? '',
+      combatHp: combat?.hp ?? '',
+      combatMpMax: combat?.mpMax ?? '',
+      combatMp: combat?.mp ?? '',
+      rewardExperience: combatReward?.experience ?? '',
+      rewardPotential: combatReward?.potential ?? '',
+      rewardMoney: combatReward?.money ?? '',
+      inventory: (inventory ?? []).join(','),
+      configJson: Object.keys(rest).length > 0 ? stableJson(rest) : '',
     });
-    const skillLevels = { ...(def.skillLevels ?? {}) };
-    const equipped = new Set(def.equippedSkillIds ?? []);
-    for (const [skillId, level] of Object.entries(skillLevels)) {
-      rows[SHEETS.npcSkillLevels].push({ npcId, skillId, level, equipped: equipped.has(skillId) });
+    const levels = { ...(skillLevels ?? {}) };
+    const equippedOrder = new Map((equippedSkillIds ?? []).map((skillId, index) => [skillId, index + 1]));
+    let levelIndex = 0;
+    for (const [skillId, level] of Object.entries(levels)) {
+      levelIndex += 1;
+      rows[SHEETS.npcSkillLevels].push({
+        npcId,
+        skillId,
+        level,
+        equipped: equippedOrder.has(skillId),
+        sort: equippedOrder.get(skillId) ?? 1000 + levelIndex,
+      });
     }
-    (def.equipment ?? []).forEach((itemId, index) => rows[SHEETS.npcEquipment].push({ npcId, itemId, sort: index + 1 }));
-    (def.loot ?? []).forEach((loot, index) => rows[SHEETS.npcLoot].push({
+    (equipment ?? []).forEach((itemId, index) => rows[SHEETS.npcEquipment].push({ npcId, itemId, sort: index + 1 }));
+    (loot ?? []).forEach((entry, index) => rows[SHEETS.npcLoot].push({
       npcId,
-      itemId: loot.itemId,
-      chance: loot.chance,
-      min: loot.min ?? '',
-      max: loot.max ?? '',
+      itemId: entry.itemId,
+      chance: entry.chance,
+      min: entry.min ?? '',
+      max: entry.max ?? '',
       sort: index + 1,
     }));
   }
@@ -325,11 +250,13 @@ export function jsonFromWorkbookRows(sheetRows) {
   for (const [key, target] of Object.entries(result)) {
     const note = str(meta[`${key}.json`]?.note);
     if (note) target._note = note;
+    Object.assign(target, parseJsonCell(meta[`${key}.json`]?.configJson, `Meta.${key}.configJson`));
   }
 
   for (const row of sheetRows[SHEETS.items] ?? []) {
     const itemId = str(row.itemId);
     if (!itemId) continue;
+    const extra = parseJsonCell(row.configJson, `Items.${itemId}.configJson`);
     const def = cleanObject({
       name: str(row.name) ?? itemId,
       kind: str(row.kind),
@@ -358,12 +285,15 @@ export function jsonFromWorkbookRows(sheetRows) {
         hit: num(row.bonusHit),
         dodge: num(row.bonusDodge),
         crit: num(row.bonusCrit),
+        parry: num(row.bonusParry),
+        woundInflict: num(row.bonusWoundInflict),
       }),
       skillId: str(row.skillId),
       maxLearnLevel: num(row.maxLearnLevel),
       requires: attrsFromRow(row, 'req'),
       price: num(row.price) ?? 0,
       sellable: bool(row.sellable),
+      ...extra,
       description: str(row.description),
     });
     result.items.items[itemId] = def;
@@ -432,6 +362,7 @@ export function jsonFromWorkbookRows(sheetRows) {
   for (const row of sheetRows[SHEETS.npcs] ?? []) {
     const npcId = str(row.npcId);
     if (!npcId) continue;
+    const extra = parseJsonCell(row.configJson, `NPCs.${npcId}.configJson`);
     const def = cleanObject({
       displayName: str(row.displayName) ?? npcId,
       gender: str(row.gender),
@@ -440,6 +371,10 @@ export function jsonFromWorkbookRows(sheetRows) {
       roles: csv(row.roles),
       sect: str(row.sect),
       title: str(row.title),
+      money: num(row.money),
+      combatRank: str(row.combatRank),
+      combatRole: str(row.combatRole),
+      targetableByKillQuest: bool(row.targetableByKillQuest),
       description: str(row.description),
       defaultLine: str(row.defaultLine),
       attributes: attrsFromRow(row, 'attr'),
@@ -450,12 +385,18 @@ export function jsonFromWorkbookRows(sheetRows) {
         mpMax: num(row.combatMpMax),
         mp: num(row.combatMp),
       }),
+      combatReward: cleanObject({
+        experience: num(row.rewardExperience),
+        potential: num(row.rewardPotential),
+        money: num(row.rewardMoney),
+      }),
       inventory: csv(row.inventory),
+      ...extra,
     });
     if (!def.roles || def.roles.length === 0) def.roles = ['civilian'];
     result.npcs.npcs[npcId] = def;
   }
-  for (const row of sheetRows[SHEETS.npcSkillLevels] ?? []) {
+  for (const row of [...(sheetRows[SHEETS.npcSkillLevels] ?? [])].sort((a, b) => (num(a.sort) ?? 0) - (num(b.sort) ?? 0))) {
     const npcId = str(row.npcId);
     const skillId = str(row.skillId);
     if (!npcId || !skillId || !result.npcs.npcs[npcId]) continue;

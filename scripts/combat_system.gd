@@ -11,25 +11,22 @@ var rules := COMBAT_RULES.new()
 @onready var ultimate_actions := ULTIMATE_ACTIONS.new(self)
 @onready var player_recovery := PLAYER_RECOVERY_ACTIONS.new(self)
 
-const CRIT_BASE := 0.03
-const CRIT_PER_CONSTITUTION := 0.0035
 const FLEE_BASE := 0.40
 const FLEE_PER_AGILITY := 0.03
 
-## 己方/敌方共用的招式触发概率曲线，权威定义在 combat_rules.gd。
-const MOVE_TRIGGER_BASE := COMBAT_RULES.MOVE_TRIGGER_BASE
-const MOVE_TRIGGER_PER_MOVE := COMBAT_RULES.MOVE_TRIGGER_PER_MOVE
-const MOVE_TRIGGER_CAP := COMBAT_RULES.MOVE_TRIGGER_CAP
-
-## 招架伤害减免：基础 15% + 每高出敌方 1 级 1%，封顶 35%。
+## 招架招式减伤：基础 15%，每高出该招式解锁等级 1 级再加 1%，封顶 35%。
 const PARRY_REDUCE_BASE := 0.15
 const PARRY_REDUCE_PER_LEVEL := 0.01
 const PARRY_REDUCE_CAP := 0.35
 
 const WEAKNESS_DAMAGE_MULT := 1.30
+const NPC_FORCE_USE_RATE := 0.45
+const NPC_FORCE_INNER_POWER_RATIO := 0.25
+## 玩家与 NPC 触发进攻招式时共用的命中加成。
+const MOVE_HIT_BONUS := 0.12
 
-## initial_player_hp 记录战斗开始时的体力快照，供 battle_resolve.gd 结算战后伤势
-## （伤势 = 战斗中实际损失的体力，与体力上限变动无关）。
+## initial_player_hp 记录开战体力，结算时按净损失的 15%、功法减免和当场重伤计算伤势，
+## 再以真实体力上限的 20% 封顶，避免治疗或临时削上限重复放大惩罚。
 func create_session(enemy_id: String, lethal: bool = true) -> Dictionary:
 	return rules.create_session(enemy_id, lethal)
 
@@ -42,13 +39,16 @@ func player_attack(session: Dictionary, turn_started := false, damage_scale := 1
 	var player_attributes: Dictionary = rules.player_combat_attributes()
 	var attack_moves: Array = SkillSystem.unlocked_moves().filter(func(move): return move.get("kind", "") == "attack") if allow_attack_move else []
 	var attack_move: Dictionary = {}
-	if not attack_moves.is_empty() and randf() < minf(MOVE_TRIGGER_CAP, MOVE_TRIGGER_BASE + attack_moves.size() * MOVE_TRIGGER_PER_MOVE):
+	if not attack_moves.is_empty() and randf() < rules.move_trigger_rate("attack", attack_moves.size()):
 		attack_move = _weighted_pick(attack_moves)
-	var move_hit_bonus := 0.12 if not attack_move.is_empty() else 0.0
+	var move_hit_bonus := MOVE_HIT_BONUS if not attack_move.is_empty() else 0.0
 	var attack_verb := "使出【%s】" % attack_move.get("name", "招式") if not attack_move.is_empty() else action_label
 	var enemy_equipment := _npc_equipment_bonus(session.enemy)
-	var defense := GameState.defense_base(float(enemy_attributes.get("constitution", 0))) + _npc_best_combat_bonus(session.enemy, "defPerLv") + float(enemy_equipment.get("defense", 0))
-	var result: Dictionary = GameState.resolve_attack(_player_attack_power() + attack_power_bonus, player_attributes, enemy_attributes, defense, float(InventorySystem.equipment_bonus().get("hit", 0)) * 0.01 + move_hit_bonus + hit_bonus_extra, (_npc_best_combat_bonus(session.enemy, "dodgePerLv") + float(enemy_equipment.get("dodge", 0))) * 0.01, (_npc_passive_parry(session.enemy) + float(enemy_equipment.get("parry", 0))) * 0.01, float(InventorySystem.equipment_bonus().get("crit", 0)) * 0.01)
+	var enemy_skill_bonus := _npc_combat_bonus(session.enemy)
+	var player_skill_bonus := SkillSystem.combat_bonus()
+	var equipment := InventorySystem.equipment_bonus()
+	var defense := GameState.defense_base(float(enemy_attributes.get("constitution", 0))) + float(enemy_skill_bonus.get("defense", 0)) + float(enemy_equipment.get("defense", 0))
+	var result: Dictionary = GameState.resolve_attack(_player_attack_power() + attack_power_bonus, player_attributes, enemy_attributes, defense, (float(player_skill_bonus.get("hit", 0)) + float(equipment.get("hit", 0))) * 0.01 + move_hit_bonus + hit_bonus_extra, (float(enemy_skill_bonus.get("dodge", 0)) + float(enemy_equipment.get("dodge", 0))) * 0.01, (float(enemy_skill_bonus.get("parry", 0)) + float(enemy_equipment.get("parry", 0))) * 0.01, float(equipment.get("crit", 0)) * 0.01)
 	if not result.hit:
 		session.log.append("%s%s，%s身形一晃避开了。" % [_player_name(), attack_verb, session.enemy.get("displayName", "敌人")])
 		return result
@@ -95,19 +95,17 @@ func player_attack(session: Dictionary, turn_started := false, damage_scale := 1
 	session.log.append("%s%s，命中 %d 点%s。%s余 %d 体力。" % [_player_name(), attack_verb, result.damage, tags, session.enemy.get("displayName", "敌人"), session.enemy_hp])
 	return result
 
-## 严格对齐参考项目：只有当前精力足以支付完整加力档位时才生效，不允许用
-## 剩余精力做“部分加力”；额外伤害按加力面板口径在 0～档位×2 间取整。
+## 只有当前精力足以支付完整档位时才生效；加力按本次伤害的递减比例增伤。
 func _apply_player_force_power(result: Dictionary) -> int:
 	var force := SkillSystem.force_power()
 	if force <= 0 or int(GameState.combat_state.mp) < force:
 		return 0
 	GameState.combat_state.mp -= force
-	var extra := maxi(1, int(floor(float(force) * randf_range(0.75, 1.25))))
+	var extra := rules.force_damage_bonus(int(result.get("damage", 0)), force)
 	result.damage = int(result.get("damage", 0)) + extra
 	return extra
 
-## 与 player_attack 结构对称，但敌方没有“加力”（force_power）步骤——
-## 加力是玩家专属的精力换伤害机制，NPC 不消耗精力做等价操作。
+## 与 player_attack 结构对称；NPC 在命中后按 AI 配置尝试消耗精力加力。
 func enemy_attack(session: Dictionary, turn_started := false, damage_scale := 1.0, hit_bonus_extra := 0.0, attack_power_bonus := 0.0, action_label := "进招", allow_attack_move := true) -> Dictionary:
 	var turn_check := {"can_act": true, "message": ""} if turn_started else start_turn(session, "enemy")
 	if not turn_check.can_act:
@@ -116,21 +114,23 @@ func enemy_attack(session: Dictionary, turn_started := false, damage_scale := 1.
 	var player_attributes: Dictionary = rules.player_combat_attributes()
 	var enemy_equipment := _npc_equipment_bonus(session.enemy)
 	var equipment := InventorySystem.equipment_bonus()
+	var enemy_skill_bonus := _npc_combat_bonus(session.enemy)
+	var player_skill_bonus := SkillSystem.combat_bonus()
 	var attack_move := _npc_move(session.enemy, "attack") if allow_attack_move else {}
-	var move_hit_bonus := 0.12 if not attack_move.is_empty() else 0.0
+	var move_hit_bonus := MOVE_HIT_BONUS if not attack_move.is_empty() else 0.0
 	var attack_verb := "使出【%s】" % attack_move.get("name", "招式") if not attack_move.is_empty() else action_label
-	var result: Dictionary = GameState.resolve_attack(_enemy_attack_power(session.enemy) + attack_power_bonus, enemy_attributes, player_attributes, _player_defense(), float(enemy_equipment.get("hit", 0)) * 0.01 + move_hit_bonus + hit_bonus_extra, (SkillSystem.best_combat_bonus("dodgePerLv") + float(equipment.get("dodge", 0))) * 0.01, (float(SkillSystem.combat_bonus().get("parry", 0.0)) + float(equipment.get("parry", 0))) * 0.01, float(enemy_equipment.get("crit", 0)) * 0.01)
+	var result: Dictionary = GameState.resolve_attack(_enemy_attack_power(session.enemy) + attack_power_bonus, enemy_attributes, player_attributes, _player_defense(), (float(enemy_skill_bonus.get("hit", 0)) + float(enemy_equipment.get("hit", 0))) * 0.01 + move_hit_bonus + hit_bonus_extra, (float(player_skill_bonus.get("dodge", 0)) + float(equipment.get("dodge", 0))) * 0.01, (float(player_skill_bonus.get("parry", 0)) + float(equipment.get("parry", 0))) * 0.01, float(enemy_equipment.get("crit", 0)) * 0.01)
 	if not result.hit:
 		session.log.append("%s%s，%s身形一晃避开了。" % [session.enemy.get("displayName", "敌人"), attack_verb, _player_name()])
 		return result
 	var player_dodge_moves: Array = SkillSystem.unlocked_moves().filter(func(move): return move.get("kind", "") == "dodge")
-	if not player_dodge_moves.is_empty() and randf() < minf(MOVE_TRIGGER_CAP, MOVE_TRIGGER_BASE + player_dodge_moves.size() * MOVE_TRIGGER_PER_MOVE):
+	if not player_dodge_moves.is_empty() and randf() < rules.move_trigger_rate("dodge", player_dodge_moves.size()):
 		var dodge_move: Dictionary = _weighted_pick(player_dodge_moves)
 		session.log.append("%s出招，%s危急间使出【%s】，身形一晃避开了。" % [session.enemy.get("displayName", "敌人"), _player_name(), dodge_move.get("name", "身法")])
 		return {"hit": false, "parried": false, "crit": false, "damage": 0, "dodged": true, "message": "你成功闪避"}
 	var player_parry := SkillSystem.unlocked_moves().filter(func(move): return move.get("kind", "") == "parry")
 	var parry_move_tag := ""
-	if not player_parry.is_empty() and randf() < minf(MOVE_TRIGGER_CAP, MOVE_TRIGGER_BASE + player_parry.size() * MOVE_TRIGGER_PER_MOVE):
+	if not player_parry.is_empty() and randf() < rules.move_trigger_rate("parry", player_parry.size()):
 		var parry_move: Dictionary = _weighted_pick(player_parry)
 		var reduction := minf(PARRY_REDUCE_CAP, PARRY_REDUCE_BASE + maxi(0, int(parry_move.get("level", 0)) - int(parry_move.get("unlock", 0))) * PARRY_REDUCE_PER_LEVEL)
 		result.damage = int(floor(float(result.damage) * (1.0 - reduction)))
@@ -163,22 +163,26 @@ func enemy_attack(session: Dictionary, turn_started := false, damage_scale := 1.
 		session.player_max_hp = reduced_max
 		wound_tag = "（致伤削上限 −%d）" % wound
 	session.player_hp = GameState.combat_state.hp
-	session.player_damage_taken = int(session.get("player_damage_taken", 0)) + int(result.damage)
 	_track_player_state(session)
 	var tags := ("暴击！" if result.crit else "") + ("（被招架）" if result.parried else "")
 	tags += move_tag
-	if enemy_force_extra > 0: tags += "（加力+%d，耗精力%d）" % [enemy_force_extra, _npc_inner_power(session.enemy)]
+	if enemy_force_extra > 0: tags += "（加力+%d）" % enemy_force_extra
 	tags += injury_tag + wound_tag + status_tag + parry_move_tag
 	session.log.append("%s%s，命中 %d 点%s。%s余 %d 体力。" % [session.enemy.get("displayName", "敌人"), attack_verb, result.damage, tags, _player_name(), GameState.combat_state.hp])
 	return result
 
-## 消耗 NPC 完整内功值并把随机额外伤害写回结果。
+## NPC 默认只在部分回合使用四分之一内功加力；可由 ai.forceUseRate/forceRatio 覆盖。
+## 这样高阶人物仍有爆发，但不会每次普攻都按全部内功自动增伤。
 func _apply_enemy_force_power(session: Dictionary, result: Dictionary) -> int:
-	var force := _npc_inner_power(session.enemy)
+	var ai: Dictionary = session.enemy.get("ai", {})
+	if randf() >= clampf(float(ai.get("forceUseRate", NPC_FORCE_USE_RATE)), 0.0, 1.0):
+		return 0
+	var ratio := clampf(float(ai.get("forceRatio", NPC_FORCE_INNER_POWER_RATIO)), 0.0, 1.0)
+	var force := maxi(0, int(ceil(float(_npc_inner_power(session.enemy)) * ratio)))
 	if force <= 0 or int(session.get("enemy_mp", 0)) < force:
 		return 0
 	session.enemy_mp = int(session.enemy_mp) - force
-	var extra := maxi(1, int(floor(float(force) * randf_range(0.75, 1.25))))
+	var extra := rules.force_damage_bonus(int(result.get("damage", 0)), force)
 	result.damage = int(result.get("damage", 0)) + extra
 	return extra
 
@@ -275,13 +279,9 @@ func _player_defense() -> float:
 func _enemy_attack_power(enemy: Dictionary) -> float:
 	return rules.enemy_attack_power(enemy)
 
-## 返回 NPC 门派功法中指定字段的最高加成。
-func _npc_best_combat_bonus(npc: Dictionary, key: String) -> float:
-	return rules.npc_best_combat_bonus(npc, key)
-
-## 返回 NPC 当前最高被动招架加成。
-func _npc_passive_parry(npc: Dictionary) -> float:
-	return rules.npc_passive_parry(npc)
+## 汇总 NPC 当前装备功法的战斗加成。
+func _npc_combat_bonus(npc: Dictionary) -> Dictionary:
+	return rules.npc_combat_bonus(npc)
 
 ## 根据 NPC 架构功法计算内功值。
 func _npc_inner_power(npc: Dictionary) -> int:

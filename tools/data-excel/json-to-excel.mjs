@@ -15,10 +15,11 @@ const readme = [
   ['编辑建议：优先维护 ID 字段；多对多关系放在独立关系表。'],
   ['导出 JSON：npm run data:json'],
   ['从当前 JSON 重建 Excel：npm run data:excel'],
-  ['注意：Quests.configJson 保留复杂任务结构；Skills.configJson 保留 moves 被动招式 / ult 门派绝招——两者都必须是合法 JSON。'],
+  ['注意：Meta、Items、Skills、NPCs、Quests 的 configJson 会透传未展开字段，必须保持为合法 JSON。平衡公式详见 docs/balance_design.md。'],
   [],
   ['Sheet', '用途'],
   [SHEETS.items, 'items.json 道具主表'],
+  [SHEETS.balanceRules, 'v4 数值目标、运行时公式与约束'],
   [SHEETS.vendorStock, '商店库存：npcId → itemId'],
   [SHEETS.skills, 'skills.json 技能主表；moves/ult 等复杂字段在 configJson'],
   [SHEETS.teachStock, '师父授艺：npcId → skillId'],
@@ -30,7 +31,7 @@ const readme = [
 ];
 XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(readme), SHEETS.readme);
 
-for (const sheetName of [SHEETS.meta, SHEETS.items, SHEETS.vendorStock, SHEETS.skills, SHEETS.teachStock, SHEETS.npcs, SHEETS.npcSkillLevels, SHEETS.npcEquipment, SHEETS.npcLoot, SHEETS.quests]) {
+for (const sheetName of [SHEETS.meta, SHEETS.balanceRules, SHEETS.items, SHEETS.vendorStock, SHEETS.skills, SHEETS.teachStock, SHEETS.npcs, SHEETS.npcSkillLevels, SHEETS.npcEquipment, SHEETS.npcLoot, SHEETS.quests]) {
   const matrix = matrixFromRows(sheetName, rows[sheetName] ?? []);
   const sheet = XLSX.utils.aoa_to_sheet(matrix);
   sheet['!freeze'] = { xSplit: 0, ySplit: 1 };
@@ -41,4 +42,3 @@ for (const sheetName of [SHEETS.meta, SHEETS.items, SHEETS.vendorStock, SHEETS.s
 
 XLSX.writeFile(workbook, output);
 console.log(`Wrote ${output}`);
-

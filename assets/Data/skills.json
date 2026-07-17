@@ -1,6 +1,6 @@
 {
     "version": 3,
-    "_note": "技能目录。基础功法为所有门派/NPC/玩家共用；门派高级功法每门派按 code/tune/arch/parry 各 1 个。灵感 knowledge 只有基础读书写字：无高级功法，且门派师父不授——由独立导师（有 teachStock 但无 joinSect 收徒门槛，如书颜 shu_yan）教授，无需拜师。teachStock 支持 { skillId, maxTeachLevel }：入门师父教到 60，进阶师父教到 80，掌门教满 100。",
+    "_note": "技能目录。基础功法为所有门派/NPC/玩家共用；门派高级功法每门派按 code/tune/arch/parry 各 1 个。灵感 knowledge 只有基础读书写字：无高级功法，且门派师父不授——由独立导师（有 teachStock 但无 joinSect 收徒门槛，如书颜 shu_yan）教授，无需拜师。combat 的 atk/def/hit/dodge/parry/mpMaxPerLv 均进入 v4 战斗聚合。teachStock 支持 { skillId, maxTeachLevel }，各导师实际上限以表中 30/40/60/70/80/100 等配置为准。",
     "skills": {
         "basicStrength": {
             "name": "基础编码",

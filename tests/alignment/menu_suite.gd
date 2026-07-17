@@ -25,15 +25,15 @@ func _run_menu_suite(game: Node) -> void:
 	skill_system.ensure_skills().levels["ng_code_decorator"] = 40
 	skill_system.ensure_skills().levels["ng_tune_rx_step"] = 40
 	skill_system.ensure_skills().levels["ng_parry_interceptor"] = 40
-	skill_system.ensure_skills().practice_progress["ng_code_decorator"] = 365
-	skill_system.ensure_skills().learn_progress["ng_code_decorator"] = 365
+	skill_system.ensure_skills().practice_progress["ng_code_decorator"] = 73
+	skill_system.ensure_skills().learn_progress["ng_code_decorator"] = 73
 	var ng_definition: Dictionary = data_registry.get_skill("ng_code_decorator")
-	_assert_true(skill_system._learn_required(ng_definition, 41, 1.0) == 492 and skill_system.skill_exp_required("ng_code_decorator", 41) == 492, "40→41 级经验应严格采用参考项目 skillExpRequiredOf 曲线，不得使用指数成本")
-	_assert_true(skill_system.practice_progress("ng_code_decorator").total == 492 and skill_system.learning_progress("ng_code_decorator").total == 492, "学艺与练功必须共用同一经验需求")
+	_assert_true(skill_system._learn_required(ng_definition, 41, 1.0) == 100 and skill_system.skill_exp_required("ng_code_decorator", 41) == 100, "v4 四倍成本跨度下，门派功法 40→41 级应需要 100 点经验")
+	_assert_true(skill_system.practice_progress("ng_code_decorator").total == 100 and skill_system.learning_progress("ng_code_decorator").total == 100, "学艺与练功必须共用同一条 v4 经验曲线")
 	var practice_hp_before: int = game_state.combat_state.hp
 	var practice_mp_before: int = game_state.combat_state.mp
 	var aligned_practice_tick: Dictionary = skill_system.practice_tick("ng_code_decorator")
-	_assert_true(bool(aligned_practice_tick.get("ok", false)) and int(skill_system.ensure_skills().practice_progress["ng_code_decorator"]) == 370, "灵感 25 时练功每秒应推进 floor(25/5)=5 点经验")
+	_assert_true(bool(aligned_practice_tick.get("ok", false)) and int(skill_system.ensure_skills().practice_progress["ng_code_decorator"]) == 78, "灵感 25 时练功每 tick 应推进 floor(25/5)=5 点经验")
 	_assert_true(game_state.combat_state.mp == practice_mp_before - 2 and game_state.combat_state.hp == practice_hp_before - 4, "练功每 tick 应固定消耗 2 精力，并按经验增量分摊 80% 体力成本")
 	game._open_practice()
 	_assert_true(game.practice_focus_category and game.practice_categories.size() == 3, "练功打开后应先聚焦编码、思维、招架分类栏")
@@ -78,16 +78,16 @@ func _run_menu_suite(game: Node) -> void:
 	game.practicing_skill_id = ""
 	game._refresh_practice()
 	_assert_true(game.practice_progress_widgets.is_empty(), "停止练功后应立即清理进度条")
-	# 练功失败应按参考项目文案停止，并在底部对话框明确提示原因。
+	# 练功失败应立即停止，并在底部对话框明确提示原因。
 	skill_system.ensure_skills().levels["basicStrength"] = 10
 	skill_system.ensure_skills().levels["ng_code_decorator"] = 1
 	game_state.profile.vitals.cultivation = 3
 	game._refresh_practice()
 	var practice_level_cap_visible := false
 	for practice_widget in game.details_widgets:
-		if practice_widget is Label and str(practice_widget.text) == "1/3":
+		if practice_widget is Label and str(practice_widget.text) == "1/8":
 			practice_level_cap_visible = true
-	_assert_true(skill_system.practice_cap("ng_code_decorator") == 3 and practice_level_cap_visible, "练功 n/m 应显示当前等级与当前最大可练等级")
+	_assert_true(game_state.player_mp_max() == 8 and skill_system.practice_cap("ng_code_decorator") == 8 and practice_level_cap_visible, "练功上限应包含 3 修为与已装备架构功法的 5 点精力加成，并显示为 1/8")
 	game_state.profile.vitals.cultivation = 10
 	game_state.combat_state.mp = 0
 	game_state.combat_state.hp = 100
@@ -98,10 +98,10 @@ func _run_menu_suite(game: Node) -> void:
 	_assert_true(game.practicing_skill_id.is_empty() and game.practice_progress_widgets.is_empty(), "练功失败后应停止并清理进度条")
 	_assert_true(game.dialogue_open and game.dialogue_panel.visible and game.dialogue_content.text.contains("精力不足，练不动功。"), "精力不足时应在底部练功对话框显示参考文案")
 	game._close_dialogue()
-	skill_system.ensure_skills().levels["ng_code_decorator"] = 5
+	skill_system.ensure_skills().levels["ng_code_decorator"] = 7
 	game_state.profile.vitals.cultivation = 2
 	var practice_cap_failure: Dictionary = skill_system.practice_tick("ng_code_decorator")
-	_assert_true(str(practice_cap_failure.get("reason", "")) == "cap" and str(practice_cap_failure.get("message", "")).contains("精力修为不足，须多冥想积累内力。"), "练功达到精力上限时应使用参考项目的原因文案")
+	_assert_true(game_state.player_mp_max() == 7 and str(practice_cap_failure.get("reason", "")) == "cap" and str(practice_cap_failure.get("message", "")).contains("精力修为不足，须多冥想积累内力。"), "功法达到含装备加成的 7 点精力上限时，应明确提示继续冥想")
 	game.practice_open = true
 	game.menu_open = false
 	game.menu_panel.visible = false
@@ -188,7 +188,7 @@ func _run_menu_suite(game: Node) -> void:
 	seed(13)
 	var force_result := {"damage": 100}
 	var force_extra: int = combat_system._apply_player_force_power(force_result)
-	_assert_true(game_state.combat_state.mp == 0 and force_extra >= 7 and force_extra <= 12 and force_result.damage == 100 + force_extra, "足额加力应整档扣精力并按参照项目 0.75~1.25 倍公式追加伤害")
+	_assert_true(game_state.combat_state.mp == 0 and force_extra >= 8 and force_extra <= 10 and force_result.damage == 100 + force_extra, "10 点加力应整档扣精力，并按 10/(10+100) 的递减收益追加约 8~10 点伤害")
 	game.menu_index = 3
 	game.skill_open = false
 	game.system_open = true
@@ -205,7 +205,7 @@ func _run_menu_suite(game: Node) -> void:
 	skill_system.ensure_skills().equipped_basic["tune"] = "basicAgility"
 	skill_system.ensure_skills().equipped_special["tune"] = "ng_tune_rx_step"
 	# 基础架构 40 + NG 架构 40×2，根骨 25 时理论修为终点为 3000；
-	# 传送费用按当前人物精力上限（当前修为 30）的 1/3 收取 10。
+	# 两门已装备功法另提供 40+40×3=160 精力，传送按总上限 190 的 1/3 收取 64。
 	skill_system.ensure_skills().levels["basicConstitution"] = 40
 	skill_system.ensure_skills().levels["ng_arch_zone"] = 40
 	skill_system.ensure_skills().equipped_basic["arch"] = "basicConstitution"
@@ -215,7 +215,7 @@ func _run_menu_suite(game: Node) -> void:
 	game_state.combat_state.mp = 9
 	game.system_index = 0
 	game._select_system_menu()
-	_assert_true(skill_system.meditation_cap() == 3000 and skill_system.meditation_max_mp_cap() == 3000 and game.cyber_teleport_controller.cost() == 10, "理论修为终点应与最大当前精力 1:1，传送按当前人物精力上限的 1/3")
+	_assert_true(skill_system.meditation_cap() == 3000 and skill_system.meditation_max_mp_cap() == 3000 and int(skill_system.combat_bonus().get("mp_max", 0)) == 160 and game_state.player_mp_max() == 190 and game.cyber_teleport_controller.cost() == 64, "修为上限应为 3000，已装备功法额外提供 160 精力；传送按当前总上限的 1/3 计费")
 	# 3000 必须是公式结果而非特判：综合内功 40+40×2=120，每级贡献25，
 	# 初始根骨25修正为1.0，因此 floor(120×25×1.0)=3000。
 	_assert_true(is_equal_approx(game_state.meditation_modifier(25), 1.0), "初始根骨25的冥想修正应处于中性值1.0")
@@ -224,21 +224,21 @@ func _run_menu_suite(game: Node) -> void:
 	_assert_true(skill_system.meditation_cap_from_values(25, 39, 40) == 2975 and skill_system.meditation_cap_from_values(25, 40, 39) == 2950, "基础或高级内功等级变化时上限必须随公式变化，不得写死3000")
 	_assert_true(skill_system.meditation_cap_from_values(30, 40, 40) == 3300, "根骨变化时冥想上限必须应用根骨修正动态变化")
 	# 验证真实 tick 的终点行为：最后一层可以从2999升至3000，不越界；达到
-	# 修为上限后仍可把“当前精力”充满至修为同值3000，之后才彻底停止。
+	# 修为上限后仍可把当前精力充满至“3000 修为 + 160 功法加成”。
 	game_state.profile.vitals.cultivation = 2999
 	game_state.combat_state.mp = game_state.player_mp_max() - 1
 	var final_layer_result: Dictionary = skill_system.meditate_tick()
 	_assert_true(bool(final_layer_result.get("ok", false)) and game_state.profile.vitals.cultivation == 3000 and game_state.combat_state.mp == 0, "真实冥想 tick 应能从2999升至公式上限3000并清空当前精力")
 	game_state.combat_state.mp = game_state.player_mp_max() - 1
 	var fill_final_mp_result: Dictionary = skill_system.meditate_tick()
-	_assert_true(not bool(fill_final_mp_result.get("ok", true)) and game_state.profile.vitals.cultivation == 3000 and game_state.combat_state.mp == 3000, "修为到3000后应继续允许当前精力充至3000，并在充满时停止")
+	_assert_true(not bool(fill_final_mp_result.get("ok", true)) and game_state.profile.vitals.cultivation == 3000 and game_state.combat_state.mp == 3160, "修为到 3000 后应继续允许当前精力充至含功法加成的 3160，并在充满时停止")
 	var capped_cultivation_before := int(game_state.profile.vitals.cultivation)
 	var capped_mp_before := int(game_state.combat_state.mp)
 	var capped_result: Dictionary = skill_system.meditate_tick()
-	_assert_true(not bool(capped_result.get("ok", true)) and game_state.profile.vitals.cultivation == capped_cultivation_before and game_state.combat_state.mp == capped_mp_before, "冥想到顶后继续 tick 不得突破公式上限或3000当前精力")
+	_assert_true(not bool(capped_result.get("ok", true)) and game_state.profile.vitals.cultivation == capped_cultivation_before and game_state.combat_state.mp == capped_mp_before, "冥想到顶后继续 tick 不得突破 3000 修为或 3160 总精力上限")
 	game_state.profile.vitals.cultivation = 30
 	game_state.combat_state.mp = 9
-	_assert_true(game_state.player_mp_max() == 30 and not game.cyber_open and game.dialogue_open and game.dialogue_content.text.contains("需要 10 点精力"), "传送要求应随当前人物精力上限计算")
+	_assert_true(game_state.player_mp_max() == 190 and not game.cyber_open and game.dialogue_open and game.dialogue_content.text.contains("需要 64 点精力"), "传送要求应随修为与已装备功法共同构成的精力上限计算")
 	game._close_dialogue()
 	game_state.profile.vitals.cultivation = 600
 	game_state.combat_state.mp = 1200

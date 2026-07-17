@@ -2,13 +2,13 @@ extends RefCounted
 ## 玩家与敌方共用的绝招执行器；统一连击、异常、削上限和巨伤规则。
 
 const HIT_BONUS := {"multi": -0.05, "abnormal": 0.10, "reduceMax": 0.05, "hugeDamage": -0.15}
-const MULTI_POWER := [0.55, 0.50]
+const MULTI_POWER := [0.65, 0.55]
 const MULTI_HITS := [3, 5]
-const ABNORMAL_POWER := [0.60, 0.70]
+const ABNORMAL_POWER := [0.85, 1.00]
 const ABNORMAL_CHANCE := [0.80, 0.95]
-const REDUCE_MAX_POWER := [0.55, 0.65]
+const REDUCE_MAX_POWER := [0.80, 0.95]
 const REDUCE_MAX_RATIO := [0.08, 0.15]
-const HUGE_DAMAGE_POWER := [2.5, 4.0]
+const HUGE_DAMAGE_POWER := [1.90, 2.80]
 
 var combat: Node
 
@@ -54,7 +54,7 @@ func _execute(session: Dictionary, ult: Dictionary, player_side: bool) -> Dictio
 	var kind := str(ult.get("kind", "hugeDamage"))
 	var tier_index := clampi(int(ult.get("tier", 1)) - 1, 0, 1)
 	var label := "施展【%s】" % ult.get("name", "绝招" if player_side else "敌方绝招")
-	var power_bonus := float(ult.get("inner_power", 0))
+	var power_bonus: float = float(combat.rules.inner_power_attack_bonus(int(ult.get("inner_power", 0))))
 	if kind == "multi":
 		return _execute_multi(session, ult, player_side, tier_index, label, power_bonus)
 	return _execute_single(session, ult, player_side, kind, tier_index, label, power_bonus)

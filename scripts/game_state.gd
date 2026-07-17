@@ -1,15 +1,16 @@
 extends Node
 
 const SKILL_MAPS := preload("res://scripts/skills/skill_maps.gd")
+const COMBAT_BALANCE_MIGRATION := preload("res://scripts/state/combat_balance_migration.gd")
 const PRODUCTION_SAVE_PATH := "user://frontend_legends_save_v2.json"
-const SAVE_VERSION := 3
-const COMPATIBLE_SAVE_VERSIONS: Array[int] = [2, SAVE_VERSION]
+const SAVE_VERSION := 4
+const COMPATIBLE_SAVE_VERSIONS: Array[int] = [2, 3, SAVE_VERSION]
 
 var active_save_path := PRODUCTION_SAVE_PATH
 
 const SURVIVAL_TICK_SEC := 15.0
 const AGE_TICK_SEC := 28800.0
-const MIN_HIT_RATE := 0.28
+const MIN_HIT_RATE := 0.45
 const MAX_HIT_RATE := 0.95
 ## 每点精力修为增加的精力上限。
 const MP_PER_CULTIVATION := 1
@@ -95,7 +96,7 @@ func advance_time(seconds: float) -> void:
 	vitals.age = int(vitals.get("age", 18)) + current_age_tick - previous_age_tick
 	profile.vitals = vitals
 
-## 剥离运行时派生属性和本局装备后，以临时文件和备份轮换安全写出 v3 存档。
+## 剥离运行时派生属性和本局装备后，以临时文件和备份轮换安全写出 v4 存档。
 func save_game() -> bool:
 	if not has_profile():
 		return false
@@ -119,6 +120,7 @@ func load_game() -> bool:
 		_restore_backup(backup_path, active_save_path)
 	if not COMPATIBLE_SAVE_VERSIONS.has(int(parsed.get("version", 0))):
 		return false
+	var source_version := int(parsed.get("version", 0))
 	profile = parsed.get("profile", {})
 	game_time_sec = float(parsed.get("game_time_sec", 0.0))
 	combat_state = parsed.get("combat_state", _default_combat_state())
@@ -131,6 +133,7 @@ func load_game() -> bool:
 		_normalize_base_attributes()
 		SkillSystem.refresh_derived_attributes()
 	_normalize_loaded_profile()
+	combat_state = COMBAT_BALANCE_MIGRATION.migrate(profile, combat_state, source_version, player_hp_max())
 	normalize_combat_state()
 	return has_profile()
 
@@ -314,34 +317,34 @@ func delete_save() -> void:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 
-## 四维以 25 为中性点的统一软修正（对齐参考项目 AttributeFormulas.ts）。
+## 四维软修正共用的中性点。
 const ATTRIBUTE_NEUTRAL := 25.0
 
 ## 以 25 为中性点计算带上下界的属性软修正。
 func centered_scale(value: float, per_point: float, lo: float, hi: float) -> float:
 	return clampf(1.0 + (maxf(0.0, floor(value)) - ATTRIBUTE_NEUTRAL) * per_point, lo, hi)
 
-## 编码 → 基础攻击：编码本值 × 专精修正。
+## 编码 → 基础攻击：固定出手底值保证低编码流派仍能结束战斗，编码继续提供主要成长。
 func attack_base(strength: float) -> float:
 	var s := maxf(0.0, floor(strength))
-	return maxf(1.0, floor(s * centered_scale(s, 0.006, 0.85, 1.15)))
+	return maxf(1.0, floor(10.0 + s * 1.8 * centered_scale(s, 0.004, 0.90, 1.10)))
 
-## 架构 → 防御：原架构×2 保持中性点，再按架构做软修正。
+## 架构 → 防御：低于攻击成长，并交给递减收益公式转换为减伤，避免防御堆叠锁死战斗。
 func defense_base(constitution: float) -> float:
 	var c := maxf(0.0, floor(constitution))
-	return maxf(0.0, floor(c * 2.0 * centered_scale(c, 0.004, 0.90, 1.12)))
+	return maxf(0.0, floor(c * 1.2 * centered_scale(c, 0.003, 0.92, 1.08)))
 
 ## 架构 → 冥想速度/内力上限修正。
 func meditation_modifier(constitution: float) -> float:
 	return centered_scale(constitution, 0.02, 0.60, 1.60)
 
-## 仅按架构属性计算不含精力反哺的基础体力上限。
+## 基础体力以同配点镜像战 8–12 回合为标尺；非战斗 NPC 再由阶位系数单独压缩。
 func base_hp_max(constitution: float) -> int:
-	return maxi(1, int(floor(140.0 * (1.0 + maxf(0.0, constitution) * 0.025))))
+	return maxi(1, int(floor(186.0 + maxf(0.0, constitution) * 6.0)))
 
-## 体力上限 = 基础体力 + 精力反哺（每点精力上限 +0.2 点体力上限）。
+## 精力按平方根反哺体力；系数用于维持各功法等级的同配点镜像战在 8–12 回合。
 func hp_max_with_mp_boost(constitution: float, mp_max: int) -> int:
-	return base_hp_max(constitution) + int(floor(maxf(0.0, float(mp_max)) * 0.2))
+	return base_hp_max(constitution) + int(floor(sqrt(maxf(0.0, float(mp_max))) * 3.0))
 
 ## 食物/饮水携带上限 = 基础 200 + 每点编码（strength）10，全仓唯一公式来源。
 const VITALS_BASE_CAPACITY := 200
@@ -351,9 +354,14 @@ func vitals_capacity(attributes: Dictionary = {}) -> int:
 	var source: Dictionary = attributes if not attributes.is_empty() else profile.get("attributes", {})
 	return VITALS_BASE_CAPACITY + int(source.get("strength", 25)) * VITALS_CAPACITY_PER_STRENGTH
 
-## 精力上限与精力修为 1:1，对齐参照项目 PlayerCombatState.getMpMax。
+## 精力上限 = 精力修为 + 当前装备架构功法的上限加成；功法数据中的 mpMaxPerLv 不再是空字段。
 func player_mp_max() -> int:
-	return maxi(0, int(profile.get("vitals", {}).get("cultivation", 0)))
+	var cultivation := maxi(0, int(profile.get("vitals", {}).get("cultivation", 0)))
+	var skill_system := get_node_or_null("/root/SkillSystem")
+	var skill_bonus := 0
+	if skill_system != null and skill_system.get("loadout") != null:
+		skill_bonus = int(skill_system.combat_bonus().get("mp_max", 0))
+	return cultivation + maxi(0, skill_bonus)
 
 ## 返回包含精力反哺的玩家真实体力上限。
 func player_hp_max() -> int:
@@ -377,14 +385,47 @@ func normalize_combat_state() -> void:
 	combat_state.hp = clampi(int(combat_state.get("hp", player_effective_hp_max())), 0, player_effective_hp_max())
 	combat_state.mp = clampi(int(combat_state.get("mp", player_mp_max())), 0, player_mp_max())
 
-## 按双方思维差计算并钳制基础命中率。
+## 命中、暴击、招架与伤害结算的核心平衡系数；调参时与 docs/balance_design.md
+## 和 tests/combat/mirror_round_benchmark.gd 的 8–12 回合基准保持同步。
+const HIT_RATE_BASE := 0.78
+const HIT_RATE_PER_AGILITY := 0.012
+const CRIT_BASE := 0.03
+const CRIT_PER_AGILITY := 0.0015
+const CRIT_PER_WISDOM := 0.0015
+const CRIT_MIN := 0.02
+const CRIT_MAX := 0.30
+const PARRY_BASE := 0.04
+const PARRY_PER_STRENGTH := 0.004
+const PARRY_CAP := 0.55
+const PARRY_DAMAGE_MULT := 0.60
+const CRIT_DAMAGE_MULT := 1.5
+const DAMAGE_VARIANCE := 0.2
+
+## 按双方思维差计算并钳制基础命中率；同档命中率提高到 78%，减少连续空过回合。
 func combat_hit_rate(attacker: Dictionary, defender: Dictionary) -> float:
-	return clampf(0.72 + (float(attacker.get("agility", 0)) - float(defender.get("agility", 0))) * 0.02, MIN_HIT_RATE, MAX_HIT_RATE)
+	return clampf(HIT_RATE_BASE + (float(attacker.get("agility", 0)) - float(defender.get("agility", 0))) * HIT_RATE_PER_AGILITY, MIN_HIT_RATE, MAX_HIT_RATE)
 
 ## 将非负防御转换为递减收益的伤害减免率。
 func mitigation(defense: float) -> float:
 	var value := maxf(0.0, defense)
-	return value / (value + 80.0)
+	return value / (value + 100.0)
+
+## 暴击由思维与灵感共同决定；架构不再同时包办生命、防御、内力和暴击。
+func combat_crit_rate(attacker: Dictionary, bonus := 0.0) -> float:
+	return clampf(CRIT_BASE + float(attacker.get("agility", 0)) * CRIT_PER_AGILITY + float(attacker.get("wisdom", 0)) * CRIT_PER_WISDOM + float(bonus), CRIT_MIN, CRIT_MAX)
+
+## 基础招架由编码提供少量概率，功法与装备在此基础上叠加并统一封顶。
+func combat_parry_rate(defender: Dictionary, bonus := 0.0) -> float:
+	return clampf(PARRY_BASE + float(defender.get("strength", 0)) * PARRY_PER_STRENGTH + float(bonus), 0.0, PARRY_CAP)
+
+## 已命中的普通攻击只在此处结算招架、暴击、减伤和浮动；镜像基准复用本函数，
+## 使“忽略闪避”的校准口径不会复制一份容易漂移的伤害公式。
+func resolve_landed_attack(attack_power: float, attacker: Dictionary, defender: Dictionary, defense: float, parry_bonus := 0.0, crit_bonus := 0.0) -> Dictionary:
+	var is_parried := randf() < combat_parry_rate(defender, parry_bonus)
+	var is_crit := randf() < combat_crit_rate(attacker, crit_bonus)
+	var variance := 1.0 - DAMAGE_VARIANCE / 2.0 + randf() * DAMAGE_VARIANCE
+	var damage := maxi(1, int(floor(attack_power * (1.0 - mitigation(defense)) * (PARRY_DAMAGE_MULT if is_parried else 1.0) * (CRIT_DAMAGE_MULT if is_crit else 1.0) * variance)))
+	return {"hit": true, "parried": is_parried, "crit": is_crit, "damage": damage}
 
 ## 攻击结算顺序固定：命中判定 → 招架判定 → 暴击判定 → 伤害随机浮动，
 ## 后续步骤只在命中成立后才滚动，与参考项目的判定顺序保持一致。
@@ -392,9 +433,4 @@ func resolve_attack(attack_power: float, attacker: Dictionary, defender: Diction
 	var hit_rate := clampf(combat_hit_rate(attacker, defender) + float(hit_bonus) - float(dodge_bonus), MIN_HIT_RATE, MAX_HIT_RATE)
 	if randf() >= hit_rate:
 		return {"hit": false, "parried": false, "crit": false, "damage": 0}
-	var parry := clampf(float(defender.get("strength", 0)) * 0.01 - 0.05 + float(parry_bonus), 0.0, 0.65)
-	var is_parried := randf() < parry
-	var is_crit := randf() < clampf(CombatSystem.CRIT_BASE + float(attacker.get("constitution", 0)) * CombatSystem.CRIT_PER_CONSTITUTION + float(crit_bonus), 0.02, 0.25)
-	var variance := 0.9 + randf() * 0.2
-	var damage := maxi(1, int(floor(attack_power * (1.0 - mitigation(defense)) * (0.5 if is_parried else 1.0) * (1.5 if is_crit else 1.0) * variance)))
-	return {"hit": true, "parried": is_parried, "crit": is_crit, "damage": damage}
+	return resolve_landed_attack(attack_power, attacker, defender, defense, parry_bonus, crit_bonus)

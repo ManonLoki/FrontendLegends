@@ -16,6 +16,7 @@ func _run_domain_suite() -> void:
 	var data_registry = root.get_node("DataRegistry")
 	var combat_system = root.get_node("CombatSystem")
 	var npc_system = root.get_node("NpcSystem")
+	_assert_true(data_registry.get_index() < skill_system.get_index() and skill_system.get_index() < game_state.get_index(), "DataRegistry 与 SkillSystem 必须先于 GameState 就绪，冷启动读档才能迁移旧功法并计算完整资源上限")
 	game_state.use_test_save_path("alignment")
 	npc_system.register_runtime("__dialogue_target", {"displayName": "动态目标", "defaultLine": "你……找我有事？"})
 	_assert_true(npc_system.dialogue("__dialogue_target") == "你……找我有事？", "动态 NPC 应读取运行时 defaultLine")
@@ -45,7 +46,7 @@ func _run_domain_suite() -> void:
 	var restored_document = JSON.parse_string(FileAccess.get_file_as_string(game_state.current_save_path()))
 	_assert_true(restored_document is Dictionary and str(restored_document.get("profile", {}).get("name", "")) == "alignment-test", "备份恢复后主存档文件本身也应重新变为有效 JSON")
 	var rating_rules = load("res://scripts/skills/skill_rating.gd")
-	_assert_true(rating_rules.title(1) == "不堪一击" and rating_rules.title(60) == "略有小成" and rating_rules.title(300) == "返璞归真", "武学称号应使用参照项目的完整分段表")
+	_assert_true(rating_rules.title(1) == "不堪一击" and rating_rules.title(60) == "略有小成" and rating_rules.title(300) == "返璞归真", "武学称号应保留完整分段表")
 	var rating_levels := {"basicStrength": 60, "literacy": 100}
 	_assert_true(rating_rules.title(rating_rules.equipped_average(rating_levels, ["basicStrength", "literacy"])) == "略有小成", "武学称号平均值应只统计已装备武学并排除灵感")
 	game_state.profile.skills.levels = {"basicStrength": 20, "basicParry": 30}
@@ -87,16 +88,22 @@ func _run_domain_suite() -> void:
 	_assert_true(int(game_state.profile.skills.learn_progress.basicAgility) == 12 and int(game_state.profile.skills.practice_progress.basicAgility) == 34 and int(game_state.profile.skills.force_power) == 7, "第二版技能存档的驼峰字段应迁移为蛇形字段")
 	_assert_true(not game_state.profile.skills.has("learnProgress") and not game_state.profile.skills.has("practiceProgress") and not game_state.profile.skills.has("forcePower"), "迁移后应删除旧技能字段，避免双数据源")
 	_assert_true(game_state.inventory == {"fagun": 2} and game_state.item_cooldowns == {"fagun": 12.0}, "读档应清除未知物品和冷却记录")
+	var balance_migration = load("res://scripts/state/combat_balance_migration.gd")
+	var migration_profile := {"attributes": {"constitution": 25}, "vitals": {"cultivation": 100}}
+	var early_v2: Dictionary = balance_migration.migrate(migration_profile, {"hp": 200, "mp": 180, "injury": 0}, 2, 200)
+	var late_v2: Dictionary = balance_migration.migrate(migration_profile, {"hp": 1, "mp": 80, "injury": 0}, 2, 200)
+	_assert_true(int(early_v2.mp) == 90, "能证明来自早期双倍精力公式的 v2 存档才应把当前精力减半")
+	_assert_true(int(late_v2.mp) == 80, "后期已采用 1:1 精力公式但仍标记 v2 的存档不得被错误减半")
 	game_state.create_profile("alignment-test", {"strength": 25, "agility": 25, "constitution": 25, "wisdom": 25})
 	game_state.profile.vitals.potential = 100000
 	game_state.profile.vitals.money = 100000
 	var bought: Dictionary = inventory_system.buy_item("nai_cha_mei_mei", "linxing_kafei")
-	_assert_true(str(bought.get("message", "")) == "买下临幸咖啡，花费 99 Token。", "购买成功文案应与参照项目一致")
+	_assert_true(str(bought.get("message", "")) == "买下临幸咖啡，花费 99 Token。", "购买成功文案应准确展示物品与花费")
 	var sold: Dictionary = inventory_system.sell_item("linxing_kafei")
-	_assert_true(str(sold.get("message", "")) == "卖出临幸咖啡，得 24 Token。", "出售成功文案应与参照项目一致")
+	_assert_true(str(sold.get("message", "")) == "卖出临幸咖啡，得 24 Token。", "出售成功文案应准确展示物品与所得")
 	inventory_system.add_item("linxing_kafei")
 	var discarded: Dictionary = inventory_system.discard_item("linxing_kafei")
-	_assert_true(str(discarded.get("message", "")) == "丢弃了临幸咖啡。", "丢弃成功文案应与参照项目一致")
+	_assert_true(str(discarded.get("message", "")) == "丢弃了临幸咖啡。", "丢弃成功文案应准确展示物品")
 	# 师父高低严格取教学表显式 maxTeachLevel；鱿鱼须的字符串旧格式上限为 0。
 	game_state.profile.sect = "鱿鱼山庄"
 	game_state.profile.master = "wei_te_er"
@@ -114,7 +121,7 @@ func _run_domain_suite() -> void:
 	game_state.profile.sect = "香草派"
 	_assert_true(skill_system.equip("ng_code_decorator").message == "非本门功法，不能装备。", "异门功法必须拒绝装备")
 	game_state.profile.sect = "NG神教"
-	_assert_true(skill_system.equip("ng_code_decorator").message == "已装备【模版语法】。", "本门功法装备成功文案应与参照项目一致")
+	_assert_true(skill_system.equip("ng_code_decorator").message == "已装备【模版语法】。", "本门功法装备成功文案应稳定展示功法名")
 	game_state.profile.sect = ""
 	game_state.profile.master = ""
 	_assert_true(int(ProjectSettings.get_setting("display/window/size/viewport_width")) == 480 and int(ProjectSettings.get_setting("display/window/size/viewport_height")) == 320, "逻辑视口应为 480×320")
@@ -132,6 +139,18 @@ func _run_domain_suite() -> void:
 	_assert_true(found_training_tutor, "应从 DarkXue.tmx 收集导师及 DARK学地图名")
 	for excluded_target in data_registry.list_placed_npc_targets(["jiu_ri"]):
 		_assert_true(str(excluded_target.get("npc_id", "")) != "jiu_ri", "任务发布者应能从目标池排除")
+	var original_endpoint_targets: Array[Dictionary] = data_registry.placed_npc_targets.duplicate(true)
+	data_registry.placed_npc_targets.assign([
+		{"npc_id": "dao_shi", "map_id": "test", "map_name": "测试地图"},
+		{"npc_id": "xiao_bu_er", "map_id": "test", "map_name": "测试地图"},
+		{"npc_id": "huo_yan_wang", "map_id": "test", "map_name": "测试地图"},
+		{"npc_id": "qc", "map_id": "test", "map_name": "测试地图"},
+	])
+	quest_system.reset_runtime()
+	var endpoint_safe_offer: Dictionary = quest_system.offer_generator("ring_cunzhang")
+	_assert_true(bool(endpoint_safe_offer.get("ok", false)) and str(quest_system.active.get("generator:ring_cunzhang", {}).get("target", {}).get("target_id", "")) == "qc", "并行任务随机目标必须排除全部任务发布/交付端点")
+	quest_system.reset_runtime()
+	data_registry.placed_npc_targets.assign(original_endpoint_targets)
 	quest_system.reset_runtime()
 	seed(1)
 	var generated_ring: Dictionary = quest_system.offer_generator("ring_cunzhang")
@@ -139,7 +158,34 @@ func _run_domain_suite() -> void:
 	_assert_true(not str(generated_ring.get("message", "")).contains("【】"), "九日环文案不应缺失地图或 NPC")
 	var generated_target: Dictionary = quest_system.active.get("generator:ring_cunzhang", {}).get("target", {})
 	_assert_true(not str(generated_target.get("target_id", "")).is_empty() and not str(generated_target.get("map_name", "")).is_empty(), "九日环运行时应保存 NPC 与地图显示名")
+	var parallel_bounty: Dictionary = quest_system.offer_bounty()
+	var parallel_novice: String = quest_system.interact_npc("dao_shi")
+	_assert_true(bool(parallel_bounty.get("ok", false)) and parallel_novice.contains("【"), "普通环进行中仍应能跨类型接取悬赏环和新手任务")
+	_assert_true(quest_system.active.has("generator:ring_cunzhang") and quest_system.active.has("generator:bountyring_xiaobuer") and quest_system.active.has("novice_darkxue_project"), "普通环、悬赏环和新手任务应能同时保持 active")
+	var duplicate_ring: Dictionary = quest_system.offer_generator("ring_cunzhang")
+	var duplicate_bounty: Dictionary = quest_system.offer_bounty()
+	var active_count_before_novice_repeat: int = quest_system.active.size()
+	var repeated_novice: String = quest_system.interact_npc("dao_shi")
+	_assert_true(not bool(duplicate_ring.get("ok", true)) and not bool(duplicate_bounty.get("ok", true)), "同一 generator runtime_id 不得重复接取")
+	_assert_true(repeated_novice.contains("咋还没做完") and quest_system.active.size() == active_count_before_novice_repeat, "同一固定任务 ID 不得重复接取")
+	_assert_true(quest_system._base_reward({"rewardBase": 10}) == {"experience": 20, "potential": 30, "money": 24}, "通用 rewardBase 必须按 2:3:2.4 拆分")
+	_assert_true(quest_system.rewards.novice_reward({"reward": {"experience": 10, "potential": 8, "money": 5}}, {"rewardScale": 2.4}) == {"experience": 24, "potential": 19, "money": 12}, "新手项目 rewardScale 必须按工作量缩放并四舍五入")
 	_assert_true(quest_system._scaled_reward({"ringGrowth": 0.5, "fluctuation": 0.0}, {"experience": 1}, 2).experience == 1, "九日环增长后的小数奖励应向下取整而非四舍五入")
+	_assert_true(quest_system._scaled_reward({"ringGrowth": 1.0, "growthCap": 2.5, "fluctuation": 0.0}, {"experience": 10}, 10).experience == 25, "九日环线性增长必须受 growthCap 封顶")
+	data_registry.items["__refund_item"] = {"name": "退款测试物", "kind": "food", "price": 100, "stackLimit": 2}
+	var refund_definition := {"type": "ring", "reward": {"experience": 0, "potential": 0, "money": 10}, "ringSize": 1, "ringGrowth": 1.0, "fluctuation": 0.0, "itemRefundRate": 1.0, "itemExtraMoney": 20}
+	data_registry.quest_generators["__refund_ring"] = refund_definition
+	var refund_runtime := {"generator_id": "__refund_ring", "kind": "ring", "item_id": "__refund_item", "item_name": "退款测试物", "reward": {}}
+	quest_system.generator._assign_reward(refund_runtime, refund_definition, "ring")
+	quest_system.active["generator:__refund_ring"] = refund_runtime
+	quest_system.ring_progress["__refund_ring"] = 1
+	game_state.inventory["__refund_item"] = 1
+	var money_before_refund := int(game_state.profile.vitals.money)
+	var refunded_ring: Dictionary = quest_system.advance_generator("__refund_ring")
+	_assert_true(bool(refunded_ring.get("ok", false)) and int(refunded_ring.reward.money) == 160 and int(game_state.profile.vitals.money) == money_before_refund + 160, "物品原价 100 应固定退款；只有 10+20 的任务报酬参与第二环×2，合计应为 160")
+	data_registry.items.erase("__refund_item")
+	data_registry.quest_generators.erase("__refund_ring")
+	quest_system.reset_runtime()
 
 	# 小不二动态悬赏：严格使用四段姓名、父地图播报、五项基础技能和安全落点。
 	quest_system.reset_runtime()
@@ -150,7 +196,7 @@ func _run_domain_suite() -> void:
 	var bounty_offer: Dictionary = quest_system.offer_bounty()
 	_assert_true(bool(bounty_offer.get("ok", false)), "小不二悬赏应能生成动态目标")
 	var bounty: Dictionary = quest_system.get_bounty_target()
-	_assert_true(quest_system.bounty_board_text() == str(bounty_offer.get("message", "")), "暗网悬赏榜应复用参照项目的接取文案，而非进行中文案")
+	_assert_true(quest_system.bounty_board_text() == str(bounty_offer.get("message", "")), "暗网悬赏榜应复用接取文案，而非进行中文案")
 	var bounty_name_pattern := RegEx.new()
 	bounty_name_pattern.compile("^(傻X|脑残|白痴|霸道|凶狠)(老板|客户|领导|同事|朋友)(赵|钱|孙|李|周|吴|郑|王)(一|二|三|四|五|六|七|八|九|十)$")
 	_assert_true(bounty_name_pattern.search(str(bounty.get("target_name", ""))) != null, "悬赏目标姓名应按原项目四段词库生成")
@@ -171,13 +217,74 @@ func _run_domain_suite() -> void:
 	var settled_bounty: Dictionary = quest_system._settle_bounty_ring("generator:bountyring_xiaobuer", quest_system.active["generator:bountyring_xiaobuer"], fixed_reward_definition)
 	_assert_true(settled_bounty.reward == {"experience": 90, "potential": 90, "money": 72}, "小不二悬赏基础奖励应按经验×3、潜能×3、Token×2.4 计算")
 	quest_system.reset_runtime()
+	var linear_bounty := {"rewardBase": 100, "ringSize": 3, "rewardGrowthMin": 0.10, "rewardGrowthMax": 0.10, "statGrowthMin": 0.20, "statGrowthMax": 0.20, "fluctuationMin": 0.0, "fluctuationMax": 0.0}
+	quest_system.bounty_money_base["__linear_bounty"] = 100.0
+	quest_system.bounty_stat_base["__linear_bounty"] = 100.0
+	var linear_first: Dictionary = quest_system._settle_bounty_ring("generator:__linear_bounty", {"generator_id": "__linear_bounty"}, linear_bounty)
+	var linear_second: Dictionary = quest_system._settle_bounty_ring("generator:__linear_bounty", {"generator_id": "__linear_bounty"}, linear_bounty)
+	var linear_third: Dictionary = quest_system._settle_bounty_ring("generator:__linear_bounty", {"generator_id": "__linear_bounty"}, linear_bounty)
+	_assert_true(linear_first.reward == {"experience": 300, "potential": 300, "money": 240} and linear_second.reward == {"experience": 360, "potential": 360, "money": 264}, "悬赏第二轮奖励必须从初始基数线性增长，不得复利")
+	_assert_true(bool(linear_third.complete) and linear_third.reward == {"experience": 420, "potential": 420, "money": 288} and int(quest_system.ring_progress.get("__linear_bounty", -1)) == 0, "悬赏满环必须结算第三轮线性奖励并重置进度")
+	_assert_true(float(quest_system.bounty_money_base.get("__linear_bounty", -1.0)) == 100.0 and float(quest_system.bounty_stat_base.get("__linear_bounty", -1.0)) == 100.0, "悬赏满环后两类奖励基数必须恢复初始值")
+	quest_system.reset_runtime()
+	data_registry.quest_generators["__standard_bounty"] = {"type": "bounty", "reward": {"experience": 10, "potential": 10, "money": 10}}
+	quest_system.active["generator:__standard_bounty"] = {"generator_id": "__standard_bounty", "kind": "bounty", "target": {"target_id": "qc", "target_name": "Qc."}, "ready": false}
+	var bounty_progress_line: String = quest_system.on_enemy_defeated("qc")
+	_assert_true(not bounty_progress_line.is_empty() and bool(quest_system.active["generator:__standard_bounty"].ready), "普通悬赏击杀必须返回非空进度文案，以阻止战斗结算重复发放野战奖励")
+	data_registry.quest_generators.erase("__standard_bounty")
+	quest_system.reset_runtime()
+	data_registry.quest_generators["__talk_ring"] = {"type": "ring", "reward": {"experience": 10, "potential": 10, "money": 10}}
+	quest_system.active["generator:__talk_ring"] = {"generator_id": "__talk_ring", "kind": "ring", "target": {"target_id": "qc", "target_name": "Qc."}, "reward": {"experience": 10, "potential": 10, "money": 10}}
+	var talk_ring_defeat: Dictionary = quest_system.handle_enemy_defeated("qc")
+	_assert_true(not bool(talk_ring_defeat.get("handled", true)) and quest_system.active.has("generator:__talk_ring"), "击败跑腿/谈话目标不得推进或结算非击杀任务")
+	data_registry.quest_generators.erase("__talk_ring")
+	quest_system.reset_runtime()
 
-	# 生死簿目标池包含发布者本人；参照项目允许抽到活阎王。
+	# 生死簿只允许抽取成年、可战斗且没有任务保护的普通人物。
 	var original_targets: Array[Dictionary] = data_registry.placed_npc_targets.duplicate(true)
-	data_registry.placed_npc_targets.assign([{"npc_id": "huo_yan_wang", "map_id": "test", "map_name": "测试地图"}])
-	var self_kill_offer: Dictionary = quest_system.offer_generator("killring_huoyanwang")
-	_assert_true(bool(self_kill_offer.get("ok", false)) and str(quest_system.active.get("generator:killring_huoyanwang", {}).get("target", {}).get("target_id", "")) == "huo_yan_wang", "生死簿目标池不得排除发布者活阎王")
+	var synthetic_kill_npcs := {
+		"__kill_minor": {"displayName": "未成年战斗员", "age": 15, "roles": ["civilian"], "combatRank": "trained", "attributes": {"strength": 10, "agility": 10, "constitution": 10, "wisdom": 10}, "skillLevels": {}},
+		"__kill_seventeen": {"displayName": "十七岁战斗员", "age": 17, "roles": ["civilian"], "combatRank": "trained", "attributes": {"strength": 10, "agility": 10, "constitution": 10, "wisdom": 10}, "skillLevels": {}},
+		"__kill_noncombatant": {"displayName": "成年非战斗员", "age": 30, "roles": ["civilian"], "combatRank": "noncombatant", "attributes": {"strength": 10, "agility": 10, "constitution": 10, "wisdom": 10}, "skillLevels": {}},
+		"__kill_vendor": {"displayName": "成年商贩", "age": 30, "roles": ["vendor"], "combatRank": "trained", "attributes": {"strength": 10, "agility": 10, "constitution": 10, "wisdom": 10}, "skillLevels": {}},
+		"__kill_master": {"displayName": "成年师父", "age": 30, "roles": ["master"], "combatRank": "trained", "attributes": {"strength": 10, "agility": 10, "constitution": 10, "wisdom": 10}, "skillLevels": {}},
+		"__kill_optout": {"displayName": "剧情保护人物", "age": 30, "roles": ["civilian"], "combatRank": "trained", "targetableByKillQuest": false, "attributes": {"strength": 10, "agility": 10, "constitution": 10, "wisdom": 10}, "skillLevels": {}},
+		"__kill_eligible": {"displayName": "合法目标", "age": 30, "roles": ["civilian"], "combatRank": "trained", "attributes": {"strength": 10, "agility": 10, "constitution": 10, "wisdom": 10}, "skillLevels": {"basicStrength": 10}},
+	}
+	for synthetic_id in synthetic_kill_npcs:
+		data_registry.npcs[synthetic_id] = synthetic_kill_npcs[synthetic_id]
+	var rank_reward_definition := {"rewardPotentialScale": 1.0, "rewardPotentialMin": 0, "rewardPotentialMax": 999999}
+	var novice_reward_npc: Dictionary = synthetic_kill_npcs["__kill_eligible"].duplicate(true)
+	novice_reward_npc.combatRank = "novice"
+	var legendary_reward_npc: Dictionary = synthetic_kill_npcs["__kill_eligible"].duplicate(true)
+	legendary_reward_npc.combatRank = "legendary"
+	data_registry.npcs["__rank_reward_novice"] = novice_reward_npc
+	data_registry.npcs["__rank_reward_legendary"] = legendary_reward_npc
+	var novice_kill_reward: Dictionary = quest_system._kill_ring_reward(rank_reward_definition, "__rank_reward_novice")
+	var legendary_kill_reward: Dictionary = quest_system._kill_ring_reward(rank_reward_definition, "__rank_reward_legendary")
+	_assert_true(int(legendary_kill_reward.potential) > int(novice_kill_reward.potential), "生死簿奖励必须计入战斗阶位，传奇目标应高于同数值新手目标")
+	data_registry.npcs.erase("__rank_reward_novice")
+	data_registry.npcs.erase("__rank_reward_legendary")
+	data_registry.placed_npc_targets.assign([
+		{"npc_id": "huo_yan_wang", "map_id": "test", "map_name": "测试地图"},
+		{"npc_id": "jiu_ri", "map_id": "test", "map_name": "测试地图"},
+		{"npc_id": "xiao_bu_er", "map_id": "test", "map_name": "测试地图"},
+		{"npc_id": "dao_shi", "map_id": "test", "map_name": "测试地图"},
+		{"npc_id": "__kill_minor", "map_id": "test", "map_name": "测试地图"},
+		{"npc_id": "__kill_seventeen", "map_id": "test", "map_name": "测试地图"},
+		{"npc_id": "__kill_noncombatant", "map_id": "test", "map_name": "测试地图"},
+		{"npc_id": "__kill_vendor", "map_id": "test", "map_name": "测试地图"},
+		{"npc_id": "__kill_master", "map_id": "test", "map_name": "测试地图"},
+		{"npc_id": "__kill_optout", "map_id": "test", "map_name": "测试地图"},
+	])
+	_assert_true(quest_system._placed_npc_target(quest_system._reserved_task_npc_ids(), true).is_empty(), "生死簿应排除全部任务端点、所有未满18岁人物、非战斗员、商贩、师父和显式保护人物")
+	data_registry.placed_npc_targets.append({"npc_id": "__kill_eligible", "map_id": "test", "map_name": "测试地图"})
+	quest_system.reset_runtime()
+	var filtered_kill_offer: Dictionary = quest_system.offer_generator("killring_huoyanwang")
+	_assert_true(bool(filtered_kill_offer.get("ok", false)) and str(quest_system.active.get("generator:killring_huoyanwang", {}).get("target", {}).get("target_id", "")) == "__kill_eligible", "生死簿应只从过滤后的成年普通战斗人物中生成目标")
 	data_registry.placed_npc_targets.assign(original_targets)
+	for synthetic_id in synthetic_kill_npcs:
+		data_registry.npcs.erase(synthetic_id)
 	quest_system.reset_runtime()
 
 	# 学艺逻辑本身不离散快进；时间由 Game 场景的逐帧统一时钟推进。
@@ -194,7 +301,18 @@ func _run_domain_suite() -> void:
 	_assert_true(is_equal_approx(skill_system.PRACTICE_TICK_SECONDS, 1.0 / 5.0), "练功应每秒推进 5 次")
 	game_state.profile.attributes.constitution = 29
 	game_state.profile.vitals.cultivation = 130
-	_assert_true(game_state.player_mp_max() == 130 and game_state.player_hp_max() == 267, "内功修为 130 的当前精力上限应为 130，并按该上限反哺体力至 267")
+	_assert_true(game_state.player_mp_max() == 130 and game_state.player_hp_max() == 394, "29 根骨、130 修为且未装备架构功法时，应有 130 精力和 394 体力")
+	var vitality_skill_state: Dictionary = skill_system.ensure_skills()
+	vitality_skill_state.levels.basicConstitution = 10
+	vitality_skill_state.levels.ng_arch_zone = 5
+	vitality_skill_state.equipped_basic.arch = "basicConstitution"
+	vitality_skill_state.equipped_special.arch = "ng_arch_zone"
+	_assert_true(int(skill_system.combat_bonus().get("mp_max", 0)) == 25 and game_state.player_mp_max() == 155 and game_state.player_hp_max() == 397, "已装备架构功法的 10+5×3 上限加成应进入总精力，并通过平方根公式反哺体力")
+	game_state.combat_state.mp = 155
+	_assert_true(bool(skill_system.unequip("ng_arch_zone").get("ok", false)) and game_state.player_mp_max() == 140 and int(game_state.combat_state.mp) == 140, "卸下高级架构功法后应立即把当前精力钳到新上限")
+	_assert_true(bool(skill_system.unequip("basicConstitution").get("ok", false)) and game_state.player_mp_max() == 130 and int(game_state.combat_state.mp) == 130, "卸下基础架构功法后也应立即归一化资源")
+	vitality_skill_state.levels.erase("basicConstitution")
+	vitality_skill_state.levels.erase("ng_arch_zone")
 	game_state.profile.attributes.constitution = 25
 
 	# 练功：有效 tick 推进 1/5 秒，并消耗精力。
@@ -207,7 +325,7 @@ func _run_domain_suite() -> void:
 	before_time = game_state.game_time_sec
 	var practice_result: Dictionary = skill_system.practice_tick("ng_code_decorator")
 	_assert_true(bool(practice_result.get("ok", false)), "练功 tick 应成功")
-	_assert_true(str(practice_result.get("message", "")).begins_with("你苦练【模版语法】") and str(practice_result.get("message", "")).contains("，进度 "), "练功普通推进文案应与参照项目一致")
+	_assert_true(str(practice_result.get("message", "")).begins_with("你苦练【模版语法】") and str(practice_result.get("message", "")).contains("，进度 "), "练功普通推进文案应同时展示功法名与当前进度")
 	_assert_true(is_equal_approx(game_state.game_time_sec - before_time, 1.0 / 5.0), "练功 tick 应推进 1/5 秒")
 
 	# 冥想：装备基础/高级架构后，有效 tick 推进 1/30 秒。
@@ -246,15 +364,16 @@ func _run_domain_suite() -> void:
 	data_registry.items.erase("__sort_z")
 	data_registry.items.erase("__sort_a")
 
-	# 学习经验曲线：覆盖基础/门派、低/中/满级与悟性倍率，锁定原项目取整顺序。
+	# v4 学习经验曲线：四倍成本跨度内保持二次成长，覆盖基础/门派、低/中/满级与悟性倍率。
 	var basic_def: Dictionary = data_registry.get_skill("basicStrength")
 	var sect_def: Dictionary = data_registry.get_skill("ng_code_decorator")
+	_assert_true(is_equal_approx(skill_system.LEARN_COST_SPAN, 4.0), "学习成本跨度应固定为 4，避免后期成本膨胀到不可玩")
 	var curve_cases := [
-		[basic_def, 6, 0.65, 6], [basic_def, 40, 0.65, 204], [basic_def, 100, 0.65, 1300],
-		[basic_def, 6, 1.0, 8], [basic_def, 60, 1.0, 712], [basic_def, 100, 1.0, 2000],
-		[basic_def, 2, 1.25, 4], [basic_def, 80, 1.25, 1594],
-		[sect_def, 6, 0.8, 8], [sect_def, 40, 0.8, 374], [sect_def, 100, 0.8, 2400],
-		[sect_def, 6, 1.0, 10], [sect_def, 80, 1.0, 1912], [sect_def, 100, 1.25, 3750],
+		[basic_def, 6, 0.65, 2], [basic_def, 40, 0.65, 42], [basic_def, 100, 0.65, 260],
+		[basic_def, 6, 1.0, 4], [basic_def, 60, 1.0, 144], [basic_def, 100, 1.0, 400],
+		[basic_def, 2, 1.25, 4], [basic_def, 80, 1.25, 320],
+		[sect_def, 6, 0.8, 4], [sect_def, 40, 0.8, 76], [sect_def, 100, 0.8, 480],
+		[sect_def, 6, 1.0, 4], [sect_def, 80, 1.0, 384], [sect_def, 100, 1.25, 750],
 	]
 	for test_case in curve_cases:
 		var actual: int = skill_system._learn_required(test_case[0], test_case[1], test_case[2])
@@ -342,12 +461,12 @@ func _run_domain_suite() -> void:
 	quest_system.reset_runtime()
 	data_registry.quest_generators.test_bounty = {
 		"type": "bounty", "giverNpcId": "test_bounty_giver", "cooldownSec": 10,
-		"enemyPool": ["brendan_eich"], "spawnMaps": ["KaiyuanTown"],
+		"enemyPool": ["qc"], "spawnMaps": ["KaiyuanTown"],
 		"reward": {"experience": 5, "potential": 0, "money": 0},
 	}
 	quest_system.offer_generator("test_bounty")
 	exp_before = int(game_state.profile.vitals.experience)
-	quest_system.on_enemy_defeated("brendan_eich")
+	quest_system.on_enemy_defeated("qc")
 	_assert_true(int(game_state.profile.vitals.experience) == exp_before, "普通悬赏击杀时不应即时发奖")
 	quest_system.interact_npc("test_bounty_giver")
 	_assert_true(int(game_state.profile.vitals.experience) == exp_before + 5, "普通悬赏应回发布者领赏")

@@ -165,8 +165,8 @@
             "tags": ["medicine"],
             "source": "药贩子",
             "price": 200,
-            "description": "最常用的外伤治疗。",
-            "effects": { "injury": 20 },
+            "description": "最常用的外伤治疗，也能在战斗中紧急恢复少量体力。",
+            "effects": { "hp": 35, "injury": 20 },
             "useIntervalSec": 120,
             "cooldownLine": "你是要把自己贴成木乃伊吗？"
         },
@@ -179,8 +179,8 @@
             "tags": ["medicine"],
             "source": "药贩子",
             "price": 1000,
-            "description": "一颗万能的消炎药。",
-            "effects": { "injury": 100 },
+            "description": "一颗万能的消炎药，战斗中可恢复较多体力，并处理较重伤势。",
+            "effects": { "hp": 80, "injury": 100 },
             "useIntervalSec": 120,
             "cooldownLine": "你是要治疗？还是要自杀？"
         },
@@ -227,7 +227,7 @@
             "source": "装机媛",
             "price": 100,
             "description": "入门级武器，公司的标配。",
-            "equipmentBonus": { "attack": 5 }
+            "equipmentBonus": { "attack": 6 }
         },
         "hhkb": {
             "name": "HHKB",
@@ -240,7 +240,7 @@
             "source": "装机媛",
             "price": 2500,
             "description": "码农的神级键盘。",
-            "equipmentBonus": { "attack": 10, "hit": 5, "crit": 5 }
+            "equipmentBonus": { "attack": 11, "hit": 6, "crit": 4 }
         },
         "mei_chui": {
             "name": "妹吹",
@@ -252,8 +252,8 @@
             "tags": ["equipment", "weapon"],
             "source": "装机媛",
             "price": 5000,
-            "description": "客制化键盘之神。",
-            "equipmentBonus": { "attack": 25, "hit": 5, "crit": 5 }
+            "description": "客制化键盘之神，长于稳定输出与削弱强敌的体力上限。",
+            "equipmentBonus": { "attack": 18, "hit": 5, "crit": 7, "woundInflict": 4 }
         },
         "mbp": {
             "name": "MBP",
@@ -265,8 +265,8 @@
             "tags": ["equipment", "weapon"],
             "source": "装机媛",
             "price": 50000,
-            "description": "虽然略贵，但是确实是个综合性能极强的神器。",
-            "equipmentBonus": { "attack": 50, "hit": 20, "crit": 20 }
+            "description": "虽然略贵，但是攻守兼备、容错极高的综合型神器。",
+            "equipmentBonus": { "attack": 28, "defense": 4, "hit": 8, "crit": 10 }
         },
         "gpu_5090d": {
             "name": "5090D",
@@ -277,9 +277,9 @@
             "stackLimit": 1,
             "tags": ["equipment", "weapon"],
             "source": "装机媛",
-            "price": 30000,
-            "description": "攻击性不高，侮辱性极强，主打一个买不起。",
-            "equipmentBonus": { "hit": 25, "crit": 75 }
+            "price": 60000,
+            "description": "攻击性不高，侮辱性极强；以精准暴击和持续致伤对付高体力目标。",
+            "equipmentBonus": { "attack": 14, "hit": 14, "crit": 20, "woundInflict": 10 }
         },
         "gezi_shan": {
             "name": "格子衫",
@@ -292,7 +292,7 @@
             "source": "服装店老板娘",
             "price": 100,
             "description": "最刻板印象的衣服。",
-            "equipmentBonus": { "defense": 1 }
+            "equipmentBonus": { "defense": 3 }
         },
         "ut_wenhuashan": {
             "name": "UT文化衫",
@@ -305,7 +305,7 @@
             "source": "服装店老板娘",
             "price": 600,
             "description": "更多人喜欢这种休闲风格。",
-            "equipmentBonus": { "defense": 1, "parry": 2 }
+            "equipmentBonus": { "defense": 4, "parry": 4 }
         },
         "xizhuang": {
             "name": "西装",
@@ -318,7 +318,7 @@
             "source": "服装店老板娘",
             "price": 1500,
             "description": "穿上以后有点像卖保险，但是防御不俗。",
-            "equipmentBonus": { "defense": 10 }
+            "equipmentBonus": { "defense": 12 }
         },
         "dahui_polo_shan": {
             "name": "大会Polo衫",
@@ -331,7 +331,7 @@
             "source": "服装店老板娘",
             "price": 1000,
             "description": "没哈防御力，但是看起来很酷。",
-            "equipmentBonus": { "defense": 1, "parry": 10 }
+            "equipmentBonus": { "defense": 5, "parry": 8 }
         },
         "laobao_xie": {
             "name": "劳保鞋",
@@ -344,7 +344,7 @@
             "source": "黄鹤",
             "price": 100,
             "description": "结实耐用还便宜。",
-            "equipmentBonus": { "defense": 1, "dodge": 5 }
+            "equipmentBonus": { "defense": 3, "dodge": 6 }
         },
         "ar_yanjing": {
             "name": "AR眼睛",
@@ -356,7 +356,8 @@
             "tags": ["equipment", "accessory"],
             "price": 5000,
             "description": "摸鱼不二之选。",
-            "equipmentBonus": { "hit": 5, "dodge": 5, "parry": 5 },
+            "equipmentBonus": { "hit": 7, "dodge": 7, "parry": 3 },
+            "attributes": { "wisdom": 2 },
             "dropNpcId": "liu_ri_tian"
         },
         "chongdianbao": {
@@ -369,7 +370,7 @@
             "tags": ["equipment", "accessory"],
             "price": 2500,
             "description": "你有电量焦虑吗？",
-            "equipmentBonus": { "attack": 5, "defense": 5, "parry": 5 },
+            "equipmentBonus": { "attack": 5, "defense": 6, "parry": 3 },
             "dropNpcId": "ding_shi_fu"
         },
         "shou_chuan": {
@@ -383,7 +384,7 @@
             "source": "楼婉卿",
             "price": 500,
             "description": "没事拿出来盘一盘。",
-            "equipmentBonus": { "attack": 1, "defense": 1, "hit": 1, "dodge": 1, "parry": 1 }
+            "equipmentBonus": { "attack": 2, "defense": 2, "hit": 2, "dodge": 2, "parry": 2 }
         },
         "laohua_jing": {
             "name": "老花镜",
@@ -396,7 +397,8 @@
             "source": "楼婉卿",
             "price": 500,
             "description": "上岁数的码农都需要。",
-            "equipmentBonus": { "hit": 5 }
+            "equipmentBonus": { "hit": 8 },
+            "attributes": { "wisdom": 2 }
         }
     },
     "vendorStock": {

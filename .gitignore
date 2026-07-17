@@ -8,3 +8,9 @@
 node_modules/
 .DS_Store
 *.tiled-session
+
+# Unrelated local artifacts (vocabulary flashcard generator and its outputs)
+/output/
+/tmp/
+/vocabulary_a4/
+tools/make_vocabulary_a4.py

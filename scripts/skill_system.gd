@@ -17,6 +17,8 @@ const WISDOM_BASELINE := 25.0
 const WISDOM_LEARN_RATE_PER_POINT := 0.02
 const LEARN_RATE_MIN := 0.65
 const LEARN_RATE_MAX := 1.25
+## 满级单级成本跨度；由旧版 20 下调为 4，保留二次成长但缩短重复任务量。
+const LEARN_COST_SPAN := 4.0
 
 ## 门派绝招按内力功法等级解锁：一档 30 级、二档 80 级。
 const ULT_TIER1_ARCH_LEVEL := 30
@@ -171,7 +173,7 @@ func _attribute_growth_suffix(before: Dictionary) -> String:
 func _learn_required(definition: Dictionary, level_to_reach: int, rate: float) -> int:
 	if level_to_reach <= 1:
 		return 1
-	var max_cost := maxi(20, int(ceil(float(definition.get("costBase", 100)) * float(definition.get("costFactor", 1.0)) * 20.0)))
+	var max_cost := maxi(20, int(ceil(float(definition.get("costBase", 100)) * float(definition.get("costFactor", 1.0)) * LEARN_COST_SPAN)))
 	var denominator := maxi(1.0, float(int(definition.get("maxLevel", 100)) - 1))
 	var t := clampf(float(level_to_reach - 1) / denominator, 0.0, 1.0)
 	# 原项目严格顺序：基础曲线先 ceil → 乘悟性倍率 → ceil 到偶数。
@@ -244,11 +246,6 @@ func arch_sect_level_sum() -> int:
 ## 汇总已装备功法提供的全部战斗加成。
 func combat_bonus() -> Dictionary:
 	return loadout.combat_bonus()
-
-## BattleController._bestSkillBonus 的 Godot 对应：防御/闪避只取当前已装备
-## 门派高级功法中最高的一项，不把不同功法被动相加。
-func best_combat_bonus(key: String) -> float:
-	return loadout.best_combat_bonus(key)
 
 ## “加力”是玩家可调节的精力换伤害挡位（见 combat_system.player_attack）：
 ## 设得越高，攻击时消耗的精力越多、伤害加成越高，上限由架构功法等级决定。

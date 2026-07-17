@@ -1,6 +1,8 @@
 extends RefCounted
 ## 任务奖励计算与击杀环结算服务；集中维护成长、浮动和发放规则。
 
+const COMBAT_RULES := preload("res://scripts/combat/combat_rules.gd")
+
 var quests: Node
 
 ## 绑定任务系统协调器。
@@ -17,6 +19,15 @@ func base_reward(definition: Dictionary) -> Dictionary:
 		return {"experience": base * 2, "potential": base * 3, "money": int(ceil(float(base) * 3.0 * 0.8))}
 	return {}
 
+## 新手项目按工作量缩放奖励，避免 25/50/100 体力成本都获得同一报酬。
+func novice_reward(definition: Dictionary, variant: Dictionary) -> Dictionary:
+	var reward := base_reward(definition)
+	var scale := maxf(0.0, float(variant.get("rewardScale", 1.0)))
+	for key in reward:
+		if reward[key] is int or reward[key] is float:
+			reward[key] = maxi(0, int(round(float(reward[key]) * scale)))
+	return reward
+
 ## 按目标四维总和和平均技能等级计算生死簿奖励。
 func kill_ring_reward(definition: Dictionary, target_id: String) -> Dictionary:
 	var target: Dictionary = DataRegistry.get_npc(target_id)
@@ -29,19 +40,22 @@ func kill_ring_reward(definition: Dictionary, target_id: String) -> Dictionary:
 	for skill_id in skill_levels:
 		skill_score += float(skill_levels[skill_id])
 	var average_skill := skill_score / float(maxi(1, skill_levels.size()))
-	var raw := (attribute_score * 1.5 + average_skill * 4.0) * float(definition.get("rewardPotentialScale", 1.0))
+	var rank := str(target.get("combatRank", COMBAT_RULES.DEFAULT_COMBAT_RANK))
+	var rank_scale := float(COMBAT_RULES.NPC_RANK_REWARD_SCALE.get(rank, COMBAT_RULES.NPC_RANK_REWARD_SCALE[COMBAT_RULES.DEFAULT_COMBAT_RANK]))
+	var raw := (attribute_score * 1.5 + average_skill * 4.0) * rank_scale * float(definition.get("rewardPotentialScale", 1.0))
 	var potential := clampi(int(round(raw)), int(definition.get("rewardPotentialMin", 0)), int(definition.get("rewardPotentialMax", 999999)))
 	return {"experience": potential, "potential": potential, "money": int(ceil(float(potential) * 0.8))}
 
-## 按环数增长和配置浮动缩放奖励，所有结果向下取整且不小于零。
+## 按环数线性增长并设置封顶，避免长期环任务的复利奖励摧毁经济。
 func scaled_reward(definition: Dictionary, reward: Dictionary, round_index: int) -> Dictionary:
 	var result := reward.duplicate(true)
 	var growth := 1.0
 	if definition.has("ringGrowth"):
-		growth = pow(1.0 + float(definition.get("ringGrowth", 0.0)), maxi(0, round_index - 1))
+		growth = 1.0 + float(definition.get("ringGrowth", 0.0)) * maxi(0, round_index - 1)
 	elif definition.has("rewardGrowthMin"):
 		var growth_rate := randf_range(float(definition.get("rewardGrowthMin", 0.0)), float(definition.get("rewardGrowthMax", 0.0)))
-		growth = pow(1.0 + growth_rate, maxi(0, round_index - 1))
+		growth = 1.0 + growth_rate * maxi(0, round_index - 1)
+	growth = minf(growth, maxf(1.0, float(definition.get("growthCap", 3.0))))
 	var fluctuation_min := -float(definition.get("fluctuation", 0.0))
 	var fluctuation_max := float(definition.get("fluctuation", 0.0))
 	if definition.has("fluctuationMin"):

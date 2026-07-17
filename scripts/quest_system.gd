@@ -3,7 +3,14 @@ extends Node
 const BOUNTY_CONTROLLER := preload("res://scripts/quests/bounty_controller.gd")
 const QUEST_REWARDS := preload("res://scripts/quests/quest_rewards.gd")
 const QUEST_GENERATOR := preload("res://scripts/quests/quest_generator.gd")
+const COMBAT_RULES := preload("res://scripts/combat/combat_rules.gd")
 
+## 承担交易/典当/授业职能的人物不进入生死任务目标池；未成年人物一律排除。
+const KILL_QUEST_EXCLUDED_ROLES := ["vendor", "pawn", "master"]
+const KILL_QUEST_MIN_AGE := 18
+
+## 活动任务以固定 quest_id 或 generator:<generator_id> 为键；不同键可并行，
+## 相同键不可重复。该字典与其他任务进度都只存在于本局会话。
 var active: Dictionary = {}
 var bounty_target: Dictionary = {}
 var cooldown_until: Dictionary = {}
@@ -51,11 +58,49 @@ func _grant_reward(reward: Dictionary) -> void:
 		vitals[key] = int(vitals.get(key, 0)) + int(reward.get(key, 0))
 	GameState.profile.vitals = vitals
 
+func _append_reserved_npc_id(ids: Array[String], value: Variant) -> void:
+	var npc_id := str(value)
+	if not npc_id.is_empty() and not ids.has(npc_id):
+		ids.append(npc_id)
+
+## 汇总所有任务的发布、交付和当前目标人物，避免并行任务共享同一个交互端点，
+## 也防止随机击杀任务暂时移除其他任务所依赖的人物。
+func _reserved_task_npc_ids() -> Array[String]:
+	var ids: Array[String] = []
+	for definition in DataRegistry.quests.values():
+		if definition is Dictionary:
+			_append_reserved_npc_id(ids, definition.get("giverNpcId", ""))
+			_append_reserved_npc_id(ids, definition.get("completionGiverId", ""))
+	for definition in DataRegistry.quest_generators.values():
+		if definition is Dictionary:
+			_append_reserved_npc_id(ids, definition.get("giverNpcId", ""))
+	for runtime in active.values():
+		if not runtime is Dictionary:
+			continue
+		_append_reserved_npc_id(ids, runtime.get("giverNpcId", ""))
+		_append_reserved_npc_id(ids, runtime.get("completion_giver_id", ""))
+		var target = runtime.get("target", {})
+		if target is Dictionary:
+			_append_reserved_npc_id(ids, target.get("target_id", ""))
+	return ids
+
 ## 从地图人物摆放池随机选取任务目标并排除指定人物。
-func _placed_npc_target(exclude_id: String = "") -> Dictionary:
-	var excluded: Array = [exclude_id] if not exclude_id.is_empty() else []
+func _placed_npc_target(excluded_ids: Array = [], combat_only: bool = false) -> Dictionary:
+	var excluded: Array = excluded_ids.duplicate()
 	var candidates: Array[Dictionary] = DataRegistry.list_placed_npc_targets(excluded)
+	if combat_only:
+		candidates = candidates.filter(func(target): return _is_kill_quest_target(str(target.get("npc_id", ""))))
 	return candidates[randi() % candidates.size()] if not candidates.is_empty() else {}
+
+## 生死类随机目标共享同一资格检查，地图池和显式 enemyPool 不得出现两套规则。
+func _is_kill_quest_target(npc_id: String) -> bool:
+	var npc: Dictionary = DataRegistry.get_npc(npc_id)
+	var roles: Array = npc.get("roles", [])
+	return not npc.is_empty() \
+		and str(npc.get("combatRank", COMBAT_RULES.DEFAULT_COMBAT_RANK)) != COMBAT_RULES.RANK_NONCOMBATANT \
+		and int(npc.get("age", KILL_QUEST_MIN_AGE)) >= KILL_QUEST_MIN_AGE \
+		and not roles.any(func(role): return str(role) in KILL_QUEST_EXCLUDED_ROLES) \
+		and bool(npc.get("targetableByKillQuest", true))
 
 ## 三类任务对话分支，按顺序尝试：1) novice_darkxue_project 硬编码新手任务
 ## （独立状态机，不走通用生成器）；2) DataRegistry.quest_generators 驱动的通用
@@ -86,7 +131,7 @@ func interact_npc(npc_id: String) -> String:
 		if variants.is_empty():
 			return str(novice.get("lines", {}).get("cooldown", "暂时没有任务。"))
 		var variant: Dictionary = variants[randi() % variants.size()]
-		active[novice_id] = {"state": "active", "progress": 0, "completion_giver_id": novice.get("completionGiverId", ""), "target": variant.get("title", "项目"), "hp_cost": variant.get("hpCost", 0), "reward": novice.get("reward", {})}
+		active[novice_id] = {"state": "active", "progress": 0, "completion_giver_id": novice.get("completionGiverId", ""), "target": variant.get("title", "项目"), "hp_cost": variant.get("hpCost", 0), "reward": rewards.novice_reward(novice, variant)}
 		return str(novice.get("lines", {}).get("accepted", "已接取任务：{target}")).replace("{target}", str(variant.get("title", "项目")))
 
 	for generator_id in DataRegistry.quest_generators:
@@ -271,9 +316,7 @@ func bounty_board_text(generator_id: String = "bountyring_xiaobuer") -> String:
 func clear_bounty_target() -> void:
 	bounty.clear_target()
 
-## 悬赏环奖励基数逐轮复利增长（bounty_money_base/bounty_stat_base 未完成环时
-## 按增长率滚存），与 _settle_kill_ring 的固定奖励不同——悬赏环是持续经营的
-## 系统，需要递增激励；击杀环奖励在生成时已一次性算好，结算时按原值发放。
+## 悬赏环奖励基数按初始值线性增长；击杀环奖励在生成时一次性计算，结算时按原值发放。
 func _settle_bounty_ring(runtime_id: String, runtime: Dictionary, definition: Dictionary) -> Dictionary:
 	return bounty.settle_ring(runtime_id, runtime, definition)
 
@@ -281,25 +324,27 @@ func _settle_bounty_ring(runtime_id: String, runtime: Dictionary, definition: Di
 func _settle_kill_ring(runtime_id: String, runtime: Dictionary, definition: Dictionary) -> Dictionary:
 	return rewards.settle_kill_ring(runtime_id, runtime, definition)
 
-## 将击败人物事件路由到普通悬赏、悬赏环或击杀环。
-func on_enemy_defeated(enemy_id: String) -> String:
+## 结构化返回任务是否接管本次击杀，奖励互斥不依赖可为空的展示文案。
+func handle_enemy_defeated(enemy_id: String) -> Dictionary:
 	for runtime_id in active.keys():
 		var runtime: Dictionary = active[runtime_id]
+		var generator_id := str(runtime.get("generator_id", ""))
+		var definition: Dictionary = DataRegistry.quest_generators.get(generator_id, {})
+		var kind := str(definition.get("type", runtime.get("kind", "")))
+		if kind not in ["bounty", "bountyRing", "killRing"]:
+			continue
 		var target_value = runtime.get("target", {})
 		if not target_value is Dictionary:
 			continue
 		var target: Dictionary = target_value
 		if str(target.get("target_id", "")) != enemy_id:
 			continue
-		var generator_id := str(runtime.get("generator_id", ""))
-		var definition: Dictionary = DataRegistry.quest_generators.get(generator_id, {})
-		var kind := str(definition.get("type", ""))
 		var result: Dictionary
 		if kind == "bounty":
 			# 普通悬赏（非环）只标记击杀完成，实际发奖延后到玩家回去交付
-			# （见 _deliver_standard）；环类型悬赏/击杀无需回程交付，击杀即结算。
+			# （见 _deliver_standard）；handled 标记确保空文案也不会叠加野战奖励。
 			runtime.ready = true
-			return ""
+			return {"handled": true, "message": _line(definition, "ready", "【{target}】已经伏法，回去交差。", {"target": target.get("target_name", enemy_id)})}
 		elif kind == "bountyRing":
 			result = _settle_bounty_ring(str(runtime_id), runtime, definition)
 			clear_bounty_target()
@@ -310,6 +355,10 @@ func on_enemy_defeated(enemy_id: String) -> String:
 		if not bool(result.get("ok", false)):
 			# 专用环结算以存在 reward 表示成功；通用推进仍使用 ok。
 			if not result.has("reward"):
-				return str(result.get("message", "任务进度推进"))
-		return _generator_advance_message(definition, result, "done", "已击败{target}，获得{reward}")
-	return ""
+				return {"handled": true, "message": str(result.get("message", "任务进度推进"))}
+		return {"handled": true, "message": _generator_advance_message(definition, result, "done", "已击败{target}，获得{reward}")}
+	return {"handled": false, "message": ""}
+
+## 兼容只需要展示文本的既有调用；战斗结算必须使用 handle_enemy_defeated。
+func on_enemy_defeated(enemy_id: String) -> String:
+	return str(handle_enemy_defeated(enemy_id).get("message", ""))
