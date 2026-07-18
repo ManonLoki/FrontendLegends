@@ -13,8 +13,8 @@ var properties: Dictionary = {}
 var layers: Dictionary = {}
 var objects: Array[Dictionary] = []
 var tilesets: Array[Dictionary] = []
-## objects 在 load_file 之后不可变；NPC 过滤列表与 gid 贴图区域各只计算一次，
-## 供每帧绘制/寻路直接复用。
+## objects 在 load_file / inject_objects 之后不可变；NPC 过滤列表与 gid 贴图
+## 区域各只计算一次，供每帧绘制/寻路直接复用。
 var _npc_objects_cache: Array[Dictionary] = []
 var _tile_region_cache: Dictionary = {}
 
@@ -48,10 +48,19 @@ func load_file(path: String) -> bool:
 			object["text"] = _decode_xml_text(text_match.get_string(2))
 			object["text_options"] = _attrs(text_match.get_string(1))
 		objects.append(object)
-	for object in objects:
+	_index_npc_objects(objects)
+	return width > 0 and height > 0
+
+## 由调用方在解析完成后注入数据表对象（如 DataRegistry.world_event_objects）；
+## 解析器保持纯 TMX，不感知游戏数据层。
+func inject_objects(extra_objects: Array[Dictionary]) -> void:
+	objects.append_array(extra_objects)
+	_index_npc_objects(extra_objects)
+
+func _index_npc_objects(candidates: Array[Dictionary]) -> void:
+	for object in candidates:
 		if object.get("type", "") == "NPC" or object.get("properties", {}).has("npcId"):
 			_npc_objects_cache.append(object)
-	return width > 0 and height > 0
 
 func is_walkable(col: int, row: int) -> bool:
 	if col < 0 or row < 0 or col >= width or row >= height:
@@ -95,7 +104,7 @@ func interactable_object_at_tile(col: int, row: int) -> Dictionary:
 	var tile_rect := Rect2(float(col * tile_width), float(row * tile_height), float(tile_width), float(tile_height))
 	for object in objects:
 		var object_properties: Dictionary = object.get("properties", {})
-		if str(object_properties.get("event", "")).is_empty() and str(object_properties.get("text", "")).is_empty() and str(object_properties.get("questGiver", "")).is_empty():
+		if str(object.get("type", "")) != "WorldEvent" or str(object_properties.get("action", "")).is_empty():
 			continue
 		if _object_occupies_tile(object, tile_rect):
 			return object
@@ -147,7 +156,7 @@ func _valid_dynamic_npc_tile(col: int, row: int) -> bool:
 	for object in objects:
 		var object_properties: Dictionary = object.get("properties", {})
 		var is_npc := str(object.get("type", "")) == "NPC" or object_properties.has("npcId")
-		var is_prop := str(object.get("type", "")) == "Props" or object_properties.has("event") or object_properties.has("questGiver") or object_properties.has("text")
+		var is_prop := str(object.get("type", "")) in ["Props", "WorldEvent"]
 		if (is_npc or is_prop) and _object_occupies_tile(object, tile_rect):
 			return false
 	return true

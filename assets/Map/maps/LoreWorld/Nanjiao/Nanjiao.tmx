@@ -64,16 +64,8 @@
    </properties>
   </object>
   <object id="22" type="Props" gid="2000" x="336" y="80" width="16" height="16">
-   <properties>
-    <property name="text" value="去往笙火喵喵教"/>
-    <property name="type" propertytype="Type" value="props"/>
-   </properties>
   </object>
   <object id="23" type="Props" gid="1990" x="32" y="208" width="16" height="16">
-   <properties>
-    <property name="text" value="↓量子仙宗"/>
-    <property name="type" propertytype="Type" value="props"/>
-   </properties>
   </object>
  </objectgroup>
 </map>

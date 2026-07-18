@@ -1,8 +1,6 @@
 extends SceneTree
 ## 数据、任务、技能与物品规则回归。
-
 var failures: Array[String] = []
-
 func _assert_true(condition: bool, message: String) -> void:
 	if not condition:
 		failures.append(message)
@@ -51,7 +49,7 @@ func _run_domain_suite() -> void:
 	_assert_true(rating_rules.title(rating_rules.equipped_average(rating_levels, ["basicStrength", "literacy"])) == "略有小成", "武学称号平均值应只统计已装备武学并排除灵感")
 	game_state.profile.skills.levels = {"basicStrength": 20, "basicParry": 30}
 	skill_system.refresh_derived_attributes()
-	_assert_true(int(game_state.profile.attributes.strength) == 30, "基础编码与基础招架对编码的反哺应累加（25+2+3）")
+	_assert_true(int(game_state.profile.attributes.strength) == 27, "基础编码应独立反哺编码（25+2），基础招架不得重复叠加臂力")
 	game_state.profile.skills.levels = {}
 	skill_system.refresh_derived_attributes()
 	# 读档归一化：裁剪姓名、钳制资源、清理未知物品并迁移旧档师父。
@@ -81,7 +79,7 @@ func _run_domain_suite() -> void:
 	legacy_file.store_string(JSON.stringify({"version": 2, "profile": legacy_profile, "game_time_sec": 0, "combat_state": {"hp": 1, "mp": 0, "injury": 0}, "inventory": {"fagun": 2, "removed_item": 9}, "item_cooldowns": {"fagun": 12.0, "removed_item": 99.0}}))
 	legacy_file = null
 	_assert_true(game_state.load_game(), "归一化测试存档应可读取")
-	_assert_true(str(game_state.profile.name) == "1234567890" and int(game_state.profile.vitals.food) == 450, "读档应裁剪姓名并按派生编码钳制食物上限（实际 %s / %d）" % [game_state.profile.name, game_state.profile.vitals.food])
+	_assert_true(str(game_state.profile.name) == "1234567890" and int(game_state.profile.vitals.food) == 350, "读档应裁剪姓名并按派生编码钳制食物上限（实际 %s / %d）" % [game_state.profile.name, game_state.profile.vitals.food])
 	_assert_true(int(game_state.profile.vitals.money) == 0 and int(game_state.profile.vitals.potential) == 0, "读档应将资源钳为非负整数")
 	_assert_true(str(game_state.profile.master) == "da_mo_qiong_qiu", "旧档缺师父时应迁移到本门入门师父")
 	_assert_true(int(game_state.profile.base_attributes.agility) == 25 and int(game_state.profile.attributes.agility) == 27, "旧档缺基础四维时应扣除技能反哺后重建并重算派生值（实际 %d / %d）" % [game_state.profile.base_attributes.agility, game_state.profile.attributes.agility])
@@ -148,7 +146,8 @@ func _run_domain_suite() -> void:
 	])
 	quest_system.reset_runtime()
 	var endpoint_safe_offer: Dictionary = quest_system.offer_generator("ring_cunzhang")
-	_assert_true(bool(endpoint_safe_offer.get("ok", false)) and str(quest_system.active.get("generator:ring_cunzhang", {}).get("target", {}).get("target_id", "")) == "qc", "并行任务随机目标必须排除全部任务发布/交付端点")
+	var endpoint_safe_target := str(quest_system.active.get("generator:ring_cunzhang", {}).get("target", {}).get("target_id", ""))
+	_assert_true(bool(endpoint_safe_offer.get("ok", false)) and endpoint_safe_target in ["dao_shi", "qc"], "非击杀任务只排除其他任务的交付端点，不应全局禁用所有发布者")
 	quest_system.reset_runtime()
 	data_registry.placed_npc_targets.assign(original_endpoint_targets)
 	quest_system.reset_runtime()
@@ -265,28 +264,27 @@ func _run_domain_suite() -> void:
 	_assert_true(int(legendary_kill_reward.potential) > int(novice_kill_reward.potential), "生死簿奖励必须计入战斗阶位，传奇目标应高于同数值新手目标")
 	data_registry.npcs.erase("__rank_reward_novice")
 	data_registry.npcs.erase("__rank_reward_legendary")
+	# 除合法目标外的全部合成人物摆放；两次目标池检查共用同一份列表。
+	var ineligible_placements: Array = []
+	for synthetic_id in synthetic_kill_npcs:
+		if synthetic_id != "__kill_eligible":
+			ineligible_placements.append({"npc_id": synthetic_id, "map_id": "test", "map_name": "测试地图"})
 	data_registry.placed_npc_targets.assign([
 		{"npc_id": "huo_yan_wang", "map_id": "test", "map_name": "测试地图"},
 		{"npc_id": "jiu_ri", "map_id": "test", "map_name": "测试地图"},
 		{"npc_id": "xiao_bu_er", "map_id": "test", "map_name": "测试地图"},
 		{"npc_id": "dao_shi", "map_id": "test", "map_name": "测试地图"},
-		{"npc_id": "__kill_minor", "map_id": "test", "map_name": "测试地图"},
-		{"npc_id": "__kill_seventeen", "map_id": "test", "map_name": "测试地图"},
-		{"npc_id": "__kill_noncombatant", "map_id": "test", "map_name": "测试地图"},
-		{"npc_id": "__kill_vendor", "map_id": "test", "map_name": "测试地图"},
-		{"npc_id": "__kill_master", "map_id": "test", "map_name": "测试地图"},
-		{"npc_id": "__kill_optout", "map_id": "test", "map_name": "测试地图"},
-	])
-	_assert_true(quest_system._placed_npc_target(quest_system._reserved_task_npc_ids(), true).is_empty(), "生死簿应排除全部任务端点、所有未满18岁人物、非战斗员、商贩、师父和显式保护人物")
-	data_registry.placed_npc_targets.append({"npc_id": "__kill_eligible", "map_id": "test", "map_name": "测试地图"})
+	] + ineligible_placements)
+	var allowed_endpoint_target: Dictionary = quest_system._placed_npc_target([], true)
+	_assert_true(str(allowed_endpoint_target.get("npc_id", "")) in ["huo_yan_wang", "jiu_ri", "xiao_bu_er", "dao_shi"], "生死簿应允许其他任务的发布或交付人物成为击杀目标，同时继续过滤未成年与受保护人物")
+	data_registry.placed_npc_targets.assign(ineligible_placements + [{"npc_id": "__kill_eligible", "map_id": "test", "map_name": "测试地图"}])
 	quest_system.reset_runtime()
 	var filtered_kill_offer: Dictionary = quest_system.offer_generator("killring_huoyanwang")
-	_assert_true(bool(filtered_kill_offer.get("ok", false)) and str(quest_system.active.get("generator:killring_huoyanwang", {}).get("target", {}).get("target_id", "")) == "__kill_eligible", "生死簿应只从过滤后的成年普通战斗人物中生成目标")
+	_assert_true(bool(filtered_kill_offer.get("ok", false)) and str(quest_system.active.get("generator:killring_huoyanwang", {}).get("target", {}).get("target_id", "")) == "__kill_eligible", "生死簿仍应只从过滤后的成年普通战斗人物中生成目标")
 	data_registry.placed_npc_targets.assign(original_targets)
 	for synthetic_id in synthetic_kill_npcs:
 		data_registry.npcs.erase(synthetic_id)
 	quest_system.reset_runtime()
-
 	# 学艺逻辑本身不离散快进；时间由 Game 场景的逐帧统一时钟推进。
 	game_state.profile.sect = "NG神教"
 	game_state.profile.master = "xue_lang"
@@ -301,20 +299,19 @@ func _run_domain_suite() -> void:
 	_assert_true(is_equal_approx(skill_system.PRACTICE_TICK_SECONDS, 1.0 / 5.0), "练功应每秒推进 5 次")
 	game_state.profile.attributes.constitution = 29
 	game_state.profile.vitals.cultivation = 130
-	_assert_true(game_state.player_mp_max() == 130 and game_state.player_hp_max() == 394, "29 根骨、130 修为且未装备架构功法时，应有 130 精力和 394 体力")
+	_assert_true(game_state.player_mp_max() == 130 and game_state.player_hp_max() == 374, "29 根骨、130 修为且未装备架构功法时，应有 130 精力和 374 体力")
 	var vitality_skill_state: Dictionary = skill_system.ensure_skills()
 	vitality_skill_state.levels.basicConstitution = 10
 	vitality_skill_state.levels.ng_arch_zone = 5
 	vitality_skill_state.equipped_basic.arch = "basicConstitution"
 	vitality_skill_state.equipped_special.arch = "ng_arch_zone"
-	_assert_true(int(skill_system.combat_bonus().get("mp_max", 0)) == 25 and game_state.player_mp_max() == 155 and game_state.player_hp_max() == 397, "已装备架构功法的 10+5×3 上限加成应进入总精力，并通过平方根公式反哺体力")
+	_assert_true(int(skill_system.combat_bonus().get("mp_max", 0)) == 25 and game_state.player_mp_max() == 155 and game_state.player_hp_max() == 377, "已装备架构功法的 10+5×3 上限加成应进入总精力，并通过平方根公式反哺体力")
 	game_state.combat_state.mp = 155
 	_assert_true(bool(skill_system.unequip("ng_arch_zone").get("ok", false)) and game_state.player_mp_max() == 140 and int(game_state.combat_state.mp) == 140, "卸下高级架构功法后应立即把当前精力钳到新上限")
 	_assert_true(bool(skill_system.unequip("basicConstitution").get("ok", false)) and game_state.player_mp_max() == 130 and int(game_state.combat_state.mp) == 130, "卸下基础架构功法后也应立即归一化资源")
 	vitality_skill_state.levels.erase("basicConstitution")
 	vitality_skill_state.levels.erase("ng_arch_zone")
 	game_state.profile.attributes.constitution = 25
-
 	# 练功：有效 tick 推进 1/5 秒，并消耗精力。
 	var skills: Dictionary = skill_system.ensure_skills()
 	skills.levels.basicStrength = 5
@@ -364,16 +361,16 @@ func _run_domain_suite() -> void:
 	data_registry.items.erase("__sort_z")
 	data_registry.items.erase("__sort_a")
 
-	# v4 学习经验曲线：四倍成本跨度内保持二次成长，覆盖基础/门派、低/中/满级与悟性倍率。
+	# 师父学习经验曲线：2.25 次成长实现前期快、后期慢；练功仍由独立回归覆盖旧曲线。
 	var basic_def: Dictionary = data_registry.get_skill("basicStrength")
 	var sect_def: Dictionary = data_registry.get_skill("ng_code_decorator")
-	_assert_true(is_equal_approx(skill_system.LEARN_COST_SPAN, 4.0), "学习成本跨度应固定为 4，避免后期成本膨胀到不可玩")
+	_assert_true(is_equal_approx(skill_system.LEARN_COST_SPAN, 4.0) and is_equal_approx(skill_system.LEARN_CURVE_EXPONENT, 2.25), "学习曲线应固定为四倍跨度与 2.25 次指数")
 	var curve_cases := [
-		[basic_def, 6, 0.65, 2], [basic_def, 40, 0.65, 42], [basic_def, 100, 0.65, 260],
-		[basic_def, 6, 1.0, 4], [basic_def, 60, 1.0, 144], [basic_def, 100, 1.0, 400],
-		[basic_def, 2, 1.25, 4], [basic_def, 80, 1.25, 320],
-		[sect_def, 6, 0.8, 4], [sect_def, 40, 0.8, 76], [sect_def, 100, 0.8, 480],
-		[sect_def, 6, 1.0, 4], [sect_def, 80, 1.0, 384], [sect_def, 100, 1.25, 750],
+		[basic_def, 6, 0.70, 2], [basic_def, 40, 0.70, 36], [basic_def, 100, 0.70, 280],
+		[basic_def, 6, 1.0, 2], [basic_def, 60, 1.0, 126], [basic_def, 100, 1.0, 400],
+		[basic_def, 2, 1.30, 4], [basic_def, 80, 1.30, 316],
+		[sect_def, 6, 0.70, 2], [sect_def, 40, 0.70, 54], [sect_def, 100, 0.70, 420],
+		[sect_def, 6, 1.0, 2], [sect_def, 80, 1.0, 362], [sect_def, 100, 1.30, 780],
 	]
 	for test_case in curve_cases:
 		var actual: int = skill_system._learn_required(test_case[0], test_case[1], test_case[2])
@@ -473,11 +470,10 @@ func _run_domain_suite() -> void:
 	data_registry.quest_generators.erase("test_errand")
 	data_registry.quest_generators.erase("test_talk_errand")
 	data_registry.quest_generators.erase("test_bounty")
-
 	# 道具：满状态不消耗；有效使用展示原设定效果文案；冷却提示含剩余秒数。
 	game_state.inventory.clear()
 	inventory_system.add_item("linxing_kafei", 2)
-	var capacity := 200 + int(game_state.profile.attributes.strength) * 10
+	var capacity: int = game_state.vitals_capacity()
 	game_state.profile.vitals.food = capacity
 	game_state.profile.vitals.water = capacity
 	var item_result: Dictionary = inventory_system.use_item("linxing_kafei")

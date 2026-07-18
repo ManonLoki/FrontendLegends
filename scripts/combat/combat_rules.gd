@@ -153,11 +153,9 @@ func npc_move(npc: Dictionary, kind: String) -> Dictionary:
 	return weighted_pick(moves)
 
 func initiative(player: Dictionary, enemy: Dictionary) -> bool:
-	if int(player.get("agility", 0)) != int(enemy.get("agility", 0)):
-		return int(player.get("agility", 0)) > int(enemy.get("agility", 0))
-	var player_roll := float(player.get("agility", 0)) * randf_range(0.9, 1.1)
-	var enemy_roll := float(enemy.get("agility", 0)) * randf_range(0.9, 1.1)
-	return player_roll >= enemy_roll
+	var difference := float(player.get("agility", 0)) - float(enemy.get("agility", 0))
+	var player_first_rate := clampf(0.50 + difference * 0.015, 0.20, 0.80)
+	return randf() < player_first_rate
 
 func hp_max(attributes: Dictionary, mp_max: int) -> int:
 	return GameState.hp_max_with_mp_boost(float(attributes.get("constitution", 0)), mp_max)
@@ -168,7 +166,7 @@ func player_hp_max() -> int:
 func _attributes_with_bonus(base: Dictionary, bonus: Dictionary) -> Dictionary:
 	var result := base.duplicate(true)
 	for key in ["strength", "agility", "constitution", "wisdom"]:
-		result[key] = maxi(0, int(base.get(key, 0)) + int(bonus.get(key, 0)))
+		result[key] = maxf(0.0, float(base.get(key, 0)) + float(bonus.get(key, 0)))
 	return result
 
 func player_combat_attributes() -> Dictionary:

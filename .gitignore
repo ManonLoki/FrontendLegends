@@ -9,6 +9,9 @@ node_modules/
 .DS_Store
 *.tiled-session
 
+# Session-generated Excel exports (canonical workbook: docs/data/FrontendLegendsData.xlsx)
+/outputs/
+
 # Unrelated local artifacts (vocabulary flashcard generator and its outputs)
 /output/
 /tmp/

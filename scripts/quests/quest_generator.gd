@@ -16,7 +16,8 @@ func offer(generator_id: String) -> Dictionary:
 	if quests.active.has(runtime_id) or quests._on_cooldown(generator_id):
 		return {"ok": false, "message": "该环任务进行中"}
 	var generator_type := str(definition.get("type", ""))
-	var excluded_npc_ids: Array[String] = quests._reserved_task_npc_ids()
+	var excluded_npc_ids: Array[String] = quests._active_kill_target_ids() if generator_type in quests.KILL_QUEST_KINDS else quests._reserved_delivery_npc_ids()
+	quests._append_reserved_npc_id(excluded_npc_ids, definition.get("giverNpcId", ""))
 	var placed_target: Dictionary = quests._placed_npc_target(excluded_npc_ids, generator_type == "killRing")
 	if generator_type in ["ring", "killRing"] and placed_target.is_empty():
 		return {"ok": false, "message": "（环任务目标池是空的，请检查地图 Interactive 层 NPC id）"}

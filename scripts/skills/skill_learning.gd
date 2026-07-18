@@ -3,6 +3,7 @@ extends RefCounted
 
 const SKILL_MAPS := preload("res://scripts/skills/skill_maps.gd")
 const ATTRIBUTE_LABELS := SKILL_MAPS.ATTRIBUTE_LABELS
+const TUITION_PER_REQUIRED := 0.65
 
 var skills: Node
 
@@ -39,7 +40,7 @@ func learn_tick(npc_id: String, skill_id: String) -> Dictionary:
 		GameState.profile.vitals = vitals
 		if current_progress < required:
 			return {"ok": false, "message": "研习【%s】，进度 %d/%d。" % [definition.get("name", skill_id), current_progress, required], "progress": current_progress, "required": required}
-	var tuition := int(ceil(float(required) * 0.8))
+	var tuition := int(ceil(float(required) * TUITION_PER_REQUIRED))
 	if int(vitals.get("money", 0)) < tuition:
 		return {"ok": false, "message": "学习进度已满，Token 不足，学费 %d。" % tuition, "reason": "token"}
 	vitals.money = int(vitals.get("money", 0)) - tuition

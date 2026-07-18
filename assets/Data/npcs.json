@@ -16,10 +16,10 @@
             "combatRank": "veteran",
             "combatRole": "controller",
             "attributes": {
-                "strength": 14,
-                "agility": 16,
-                "constitution": 18,
-                "wisdom": 27
+                "strength": 13.7,
+                "agility": 15.9,
+                "constitution": 18.2,
+                "wisdom": 27.2
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -66,10 +66,10 @@
             "combatRank": "master",
             "combatRole": "skirmisher",
             "attributes": {
-                "strength": 24,
-                "agility": 30,
-                "constitution": 20,
-                "wisdom": 16
+                "strength": 24.1,
+                "agility": 29.8,
+                "constitution": 20.3,
+                "wisdom": 15.8
             },
             "skillLevels": {
                 "basicStrength": 70,
@@ -120,10 +120,10 @@
             "combatRank": "legendary",
             "combatRole": "striker",
             "attributes": {
-                "strength": 40,
-                "agility": 28,
-                "constitution": 27,
-                "wisdom": 25
+                "strength": 39.9,
+                "agility": 28.4,
+                "constitution": 26.8,
+                "wisdom": 24.9
             },
             "skillLevels": {
                 "basicStrength": 90,
@@ -174,10 +174,10 @@
             "combatRank": "veteran",
             "combatRole": "controller",
             "attributes": {
-                "strength": 12,
-                "agility": 16,
-                "constitution": 12,
-                "wisdom": 20
+                "strength": 11.8,
+                "agility": 16.1,
+                "constitution": 11.7,
+                "wisdom": 20.4
             },
             "skillLevels": {
                 "basicStrength": 30,
@@ -218,10 +218,10 @@
             "combatRank": "elite",
             "combatRole": "skirmisher",
             "attributes": {
-                "strength": 20,
-                "agility": 28,
-                "constitution": 18,
-                "wisdom": 24
+                "strength": 20.2,
+                "agility": 28.3,
+                "constitution": 17.9,
+                "wisdom": 23.6
             },
             "skillLevels": {
                 "basicStrength": 50,
@@ -262,10 +262,10 @@
             "combatRank": "elite",
             "combatRole": "counter",
             "attributes": {
-                "strength": 18,
-                "agility": 10,
-                "constitution": 30,
-                "wisdom": 12
+                "strength": 17.7,
+                "agility": 9.9,
+                "constitution": 30.2,
+                "wisdom": 12.2
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -306,10 +306,10 @@
             "combatRank": "elite",
             "combatRole": "striker",
             "attributes": {
-                "strength": 36,
-                "agility": 24,
-                "constitution": 18,
-                "wisdom": 12
+                "strength": 36.4,
+                "agility": 23.7,
+                "constitution": 17.8,
+                "wisdom": 12.1
             },
             "skillLevels": {
                 "basicStrength": 50,
@@ -350,10 +350,10 @@
             "combatRank": "novice",
             "combatRole": "skirmisher",
             "attributes": {
-                "strength": 2,
-                "agility": 7,
-                "constitution": 2,
-                "wisdom": 4
+                "strength": 2.2,
+                "agility": 7.3,
+                "constitution": 1.9,
+                "wisdom": 3.6
             },
             "skillLevels": {
                 "basicStrength": 10,
@@ -390,10 +390,10 @@
             "combatRank": "veteran",
             "combatRole": "controller",
             "attributes": {
-                "strength": 8,
-                "agility": 8,
-                "constitution": 9,
-                "wisdom": 20
+                "strength": 8.2,
+                "agility": 8.3,
+                "constitution": 8.9,
+                "wisdom": 19.6
             },
             "skillLevels": {
                 "basicStrength": 35,
@@ -432,10 +432,10 @@
             "combatRank": "legendary",
             "combatRole": "controller",
             "attributes": {
-                "strength": 28,
-                "agility": 38,
-                "constitution": 34,
-                "wisdom": 30
+                "strength": 27.8,
+                "agility": 38.1,
+                "constitution": 33.7,
+                "wisdom": 30.4
             },
             "skillLevels": {
                 "basicStrength": 90,
@@ -471,10 +471,10 @@
             "combatRank": "elite",
             "combatRole": "controller",
             "attributes": {
-                "strength": 20,
-                "agility": 18,
-                "constitution": 17,
-                "wisdom": 20
+                "strength": 20.1,
+                "agility": 17.8,
+                "constitution": 17.3,
+                "wisdom": 19.8
             },
             "skillLevels": {
                 "basicStrength": 50,
@@ -512,10 +512,10 @@
             "combatRank": "elite",
             "combatRole": "controller",
             "attributes": {
-                "strength": 10,
-                "agility": 12,
-                "constitution": 18,
-                "wisdom": 20
+                "strength": 9.7,
+                "agility": 11.9,
+                "constitution": 18.2,
+                "wisdom": 20.2
             },
             "skillLevels": {
                 "basicStrength": 60,
@@ -546,10 +546,10 @@
             "combatRank": "noncombatant",
             "combatRole": "noncombatant",
             "attributes": {
-                "strength": 3,
-                "agility": 7,
-                "constitution": 4,
-                "wisdom": 6
+                "strength": 2.8,
+                "agility": 7.1,
+                "constitution": 3.7,
+                "wisdom": 6.4
             },
             "skillLevels": {
                 "basicStrength": 0,
@@ -580,10 +580,10 @@
             "combatRank": "veteran",
             "combatRole": "tank",
             "attributes": {
-                "strength": 22,
-                "agility": 16,
-                "constitution": 28,
-                "wisdom": 14
+                "strength": 21.8,
+                "agility": 16.1,
+                "constitution": 27.7,
+                "wisdom": 14.4
             },
             "skillLevels": {
                 "basicStrength": 20,
@@ -614,10 +614,10 @@
             "combatRank": "trained",
             "combatRole": "controller",
             "attributes": {
-                "strength": 12,
-                "agility": 22,
-                "constitution": 18,
-                "wisdom": 28
+                "strength": 11.7,
+                "agility": 21.9,
+                "constitution": 18.2,
+                "wisdom": 28.2
             },
             "skillLevels": {
                 "basicStrength": 20,
@@ -648,10 +648,10 @@
             "combatRank": "veteran",
             "combatRole": "counter",
             "attributes": {
-                "strength": 18,
-                "agility": 14,
-                "constitution": 28,
-                "wisdom": 20
+                "strength": 17.8,
+                "agility": 14.1,
+                "constitution": 27.7,
+                "wisdom": 20.4
             },
             "skillLevels": {
                 "basicStrength": 30,
@@ -682,10 +682,10 @@
             "combatRank": "veteran",
             "combatRole": "skirmisher",
             "attributes": {
-                "strength": 20,
-                "agility": 24,
-                "constitution": 16,
-                "wisdom": 15
+                "strength": 19.8,
+                "agility": 24.1,
+                "constitution": 15.7,
+                "wisdom": 15.4
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -716,10 +716,10 @@
             "combatRank": "novice",
             "combatRole": "skirmisher",
             "attributes": {
-                "strength": 5,
-                "agility": 12,
-                "constitution": 5,
-                "wisdom": 8
+                "strength": 5.2,
+                "agility": 12.3,
+                "constitution": 4.9,
+                "wisdom": 7.6
             },
             "skillLevels": {
                 "basicStrength": 10,
@@ -750,10 +750,10 @@
             "combatRank": "novice",
             "combatRole": "tank",
             "attributes": {
-                "strength": 6,
-                "agility": 6,
-                "constitution": 12,
-                "wisdom": 6
+                "strength": 6.2,
+                "agility": 6.3,
+                "constitution": 11.9,
+                "wisdom": 5.6
             },
             "skillLevels": {
                 "basicStrength": 10,
@@ -784,10 +784,10 @@
             "combatRank": "novice",
             "combatRole": "controller",
             "attributes": {
-                "strength": 4,
-                "agility": 8,
-                "constitution": 6,
-                "wisdom": 12
+                "strength": 4.1,
+                "agility": 7.8,
+                "constitution": 6.3,
+                "wisdom": 11.8
             },
             "skillLevels": {
                 "basicStrength": 10,
@@ -819,10 +819,10 @@
             "combatRank": "elite",
             "combatRole": "tank",
             "attributes": {
-                "strength": 32,
-                "agility": 22,
-                "constitution": 42,
-                "wisdom": 24
+                "strength": 31.8,
+                "agility": 22.1,
+                "constitution": 41.7,
+                "wisdom": 24.4
             },
             "skillLevels": {
                 "basicStrength": 50,
@@ -862,10 +862,10 @@
             "combatRank": "elite",
             "combatRole": "striker",
             "attributes": {
-                "strength": 38,
-                "agility": 20,
-                "constitution": 34,
-                "wisdom": 18
+                "strength": 38.2,
+                "agility": 20.3,
+                "constitution": 33.9,
+                "wisdom": 17.6
             },
             "skillLevels": {
                 "basicStrength": 60,
@@ -904,10 +904,10 @@
             "combatRank": "noncombatant",
             "combatRole": "noncombatant",
             "attributes": {
-                "strength": 2,
-                "agility": 6,
-                "constitution": 2,
-                "wisdom": 5
+                "strength": 1.9,
+                "agility": 6.4,
+                "constitution": 1.8,
+                "wisdom": 4.9
             },
             "skillLevels": {
                 "basicStrength": 0,
@@ -945,10 +945,10 @@
             "combatRank": "elite",
             "combatRole": "controller",
             "attributes": {
-                "strength": 10,
-                "agility": 14,
-                "constitution": 14,
-                "wisdom": 22
+                "strength": 9.8,
+                "agility": 14.1,
+                "constitution": 13.7,
+                "wisdom": 22.4
             },
             "skillLevels": {
                 "basicStrength": 60,
@@ -988,10 +988,10 @@
             "combatRank": "legendary",
             "combatRole": "balanced",
             "attributes": {
-                "strength": 32,
-                "agility": 32,
-                "constitution": 32,
-                "wisdom": 24
+                "strength": 32.1,
+                "agility": 31.8,
+                "constitution": 32.3,
+                "wisdom": 23.8
             },
             "skillLevels": {
                 "basicStrength": 100,
@@ -1029,10 +1029,10 @@
             "combatRank": "elite",
             "combatRole": "controller",
             "attributes": {
-                "strength": 10,
-                "agility": 12,
-                "constitution": 16,
-                "wisdom": 22
+                "strength": 10.1,
+                "agility": 11.8,
+                "constitution": 16.3,
+                "wisdom": 21.8
             },
             "skillLevels": {
                 "basicStrength": 50,
@@ -1070,10 +1070,10 @@
             "combatRank": "veteran",
             "combatRole": "controller",
             "attributes": {
-                "strength": 10,
-                "agility": 18,
-                "constitution": 17,
-                "wisdom": 30
+                "strength": 10.2,
+                "agility": 18.3,
+                "constitution": 16.9,
+                "wisdom": 29.6
             },
             "skillLevels": {
                 "basicStrength": 25,
@@ -1115,10 +1115,10 @@
             "combatRank": "elite",
             "combatRole": "striker",
             "attributes": {
-                "strength": 28,
-                "agility": 24,
-                "constitution": 15,
-                "wisdom": 8
+                "strength": 28.1,
+                "agility": 23.8,
+                "constitution": 15.3,
+                "wisdom": 7.8
             },
             "skillLevels": {
                 "basicStrength": 45,
@@ -1157,10 +1157,10 @@
             "combatRank": "legendary",
             "combatRole": "counter",
             "attributes": {
-                "strength": 28,
-                "agility": 20,
-                "constitution": 40,
-                "wisdom": 22
+                "strength": 28.2,
+                "agility": 20.3,
+                "constitution": 39.9,
+                "wisdom": 21.6
             },
             "skillLevels": {
                 "basicStrength": 80,
@@ -1209,10 +1209,10 @@
             "combatRank": "veteran",
             "combatRole": "striker",
             "attributes": {
-                "strength": 34,
-                "agility": 12,
-                "constitution": 24,
-                "wisdom": 10
+                "strength": 34.2,
+                "agility": 12.3,
+                "constitution": 23.9,
+                "wisdom": 9.6
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -1251,10 +1251,10 @@
             "combatRank": "elite",
             "combatRole": "tank",
             "attributes": {
-                "strength": 20,
-                "agility": 15,
-                "constitution": 32,
-                "wisdom": 18
+                "strength": 19.9,
+                "agility": 15.4,
+                "constitution": 31.8,
+                "wisdom": 17.9
             },
             "skillLevels": {
                 "basicStrength": 50,
@@ -1303,10 +1303,10 @@
             "combatRank": "novice",
             "combatRole": "balanced",
             "attributes": {
-                "strength": 8,
-                "agility": 7,
-                "constitution": 7,
-                "wisdom": 8
+                "strength": 7.9,
+                "agility": 7.4,
+                "constitution": 6.8,
+                "wisdom": 7.9
             },
             "skillLevels": {
                 "basicStrength": 10,
@@ -1350,10 +1350,10 @@
             "combatRank": "veteran",
             "combatRole": "skirmisher",
             "attributes": {
-                "strength": 14,
-                "agility": 20,
-                "constitution": 18,
-                "wisdom": 8
+                "strength": 13.8,
+                "agility": 20.1,
+                "constitution": 17.7,
+                "wisdom": 8.4
             },
             "skillLevels": {
                 "basicStrength": 30,
@@ -1392,10 +1392,10 @@
             "combatRank": "veteran",
             "combatRole": "tank",
             "attributes": {
-                "strength": 18,
-                "agility": 20,
-                "constitution": 27,
-                "wisdom": 10
+                "strength": 17.8,
+                "agility": 20.1,
+                "constitution": 26.7,
+                "wisdom": 10.4
             },
             "skillLevels": {
                 "basicStrength": 30,
@@ -1434,10 +1434,10 @@
             "combatRank": "trained",
             "combatRole": "tank",
             "attributes": {
-                "strength": 8,
-                "agility": 12,
-                "constitution": 32,
-                "wisdom": 18
+                "strength": 8.2,
+                "agility": 12.3,
+                "constitution": 31.9,
+                "wisdom": 17.6
             },
             "skillLevels": {
                 "basicStrength": 10,
@@ -1481,10 +1481,10 @@
             "combatRank": "veteran",
             "combatRole": "skirmisher",
             "attributes": {
-                "strength": 17,
-                "agility": 25,
-                "constitution": 15,
-                "wisdom": 18
+                "strength": 16.8,
+                "agility": 25.1,
+                "constitution": 14.7,
+                "wisdom": 18.4
             },
             "skillLevels": {
                 "basicStrength": 25,
@@ -1533,10 +1533,10 @@
             "combatRank": "legendary",
             "combatRole": "controller",
             "attributes": {
-                "strength": 20,
-                "agility": 22,
-                "constitution": 22,
-                "wisdom": 26
+                "strength": 20.2,
+                "agility": 22.3,
+                "constitution": 21.9,
+                "wisdom": 25.6
             },
             "skillLevels": {
                 "basicStrength": 75,
@@ -1575,10 +1575,10 @@
             "combatRank": "elite",
             "combatRole": "skirmisher",
             "attributes": {
-                "strength": 10,
-                "agility": 22,
-                "constitution": 16,
-                "wisdom": 12
+                "strength": 10.2,
+                "agility": 22.3,
+                "constitution": 15.9,
+                "wisdom": 11.6
             },
             "skillLevels": {
                 "basicStrength": 50,
@@ -1617,10 +1617,10 @@
             "combatRank": "veteran",
             "combatRole": "striker",
             "attributes": {
-                "strength": 24,
-                "agility": 16,
-                "constitution": 12,
-                "wisdom": 8
+                "strength": 24.1,
+                "agility": 15.8,
+                "constitution": 12.3,
+                "wisdom": 7.8
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -1659,10 +1659,10 @@
             "combatRank": "veteran",
             "combatRole": "skirmisher",
             "attributes": {
-                "strength": 14,
-                "agility": 24,
-                "constitution": 12,
-                "wisdom": 10
+                "strength": 14.1,
+                "agility": 23.8,
+                "constitution": 12.3,
+                "wisdom": 9.8
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -1701,10 +1701,10 @@
             "combatRank": "veteran",
             "combatRole": "striker",
             "attributes": {
-                "strength": 24,
-                "agility": 14,
-                "constitution": 10,
-                "wisdom": 12
+                "strength": 23.7,
+                "agility": 13.9,
+                "constitution": 10.2,
+                "wisdom": 12.2
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -1743,10 +1743,10 @@
             "combatRank": "veteran",
             "combatRole": "skirmisher",
             "attributes": {
-                "strength": 12,
-                "agility": 24,
-                "constitution": 10,
-                "wisdom": 14
+                "strength": 11.7,
+                "agility": 23.9,
+                "constitution": 10.2,
+                "wisdom": 14.2
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -1785,10 +1785,10 @@
             "combatRank": "veteran",
             "combatRole": "tank",
             "attributes": {
-                "strength": 10,
-                "agility": 11,
-                "constitution": 25,
-                "wisdom": 14
+                "strength": 9.7,
+                "agility": 10.9,
+                "constitution": 25.2,
+                "wisdom": 14.2
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -1828,10 +1828,10 @@
             "combatRank": "novice",
             "combatRole": "controller",
             "attributes": {
-                "strength": 2,
-                "agility": 5,
-                "constitution": 2,
-                "wisdom": 6
+                "strength": 1.8,
+                "agility": 5.1,
+                "constitution": 1.7,
+                "wisdom": 6.4
             },
             "skillLevels": {
                 "basicStrength": 10,
@@ -1869,10 +1869,10 @@
             "combatRank": "novice",
             "combatRole": "controller",
             "attributes": {
-                "strength": 5,
-                "agility": 9,
-                "constitution": 6,
-                "wisdom": 10
+                "strength": 4.9,
+                "agility": 9.4,
+                "constitution": 5.8,
+                "wisdom": 9.9
             },
             "skillLevels": {
                 "basicStrength": 10,
@@ -1910,10 +1910,10 @@
             "combatRank": "veteran",
             "combatRole": "counter",
             "attributes": {
-                "strength": 22,
-                "agility": 14,
-                "constitution": 16,
-                "wisdom": 8
+                "strength": 21.8,
+                "agility": 14.1,
+                "constitution": 15.7,
+                "wisdom": 8.4
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -1951,10 +1951,10 @@
             "combatRank": "trained",
             "combatRole": "skirmisher",
             "attributes": {
-                "strength": 5,
-                "agility": 9,
-                "constitution": 8,
-                "wisdom": 8
+                "strength": 4.7,
+                "agility": 8.9,
+                "constitution": 8.2,
+                "wisdom": 8.2
             },
             "skillLevels": {
                 "basicStrength": 20,
@@ -1992,10 +1992,10 @@
             "combatRank": "veteran",
             "combatRole": "balanced",
             "attributes": {
-                "strength": 20,
-                "agility": 16,
-                "constitution": 14,
-                "wisdom": 10
+                "strength": 19.9,
+                "agility": 16.4,
+                "constitution": 13.8,
+                "wisdom": 9.9
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -2033,10 +2033,10 @@
             "combatRank": "trained",
             "combatRole": "skirmisher",
             "attributes": {
-                "strength": 5,
-                "agility": 13,
-                "constitution": 5,
-                "wisdom": 7
+                "strength": 5.4,
+                "agility": 12.7,
+                "constitution": 4.8,
+                "wisdom": 7.1
             },
             "skillLevels": {
                 "basicStrength": 15,
@@ -2074,10 +2074,10 @@
             "combatRank": "trained",
             "combatRole": "controller",
             "attributes": {
-                "strength": 5,
-                "agility": 7,
-                "constitution": 8,
-                "wisdom": 10
+                "strength": 4.9,
+                "agility": 7.4,
+                "constitution": 7.8,
+                "wisdom": 9.9
             },
             "skillLevels": {
                 "basicStrength": 15,
@@ -2115,10 +2115,10 @@
             "combatRank": "trained",
             "combatRole": "tank",
             "attributes": {
-                "strength": 10,
-                "agility": 12,
-                "constitution": 21,
-                "wisdom": 17
+                "strength": 10.2,
+                "agility": 12.3,
+                "constitution": 20.9,
+                "wisdom": 16.6
             },
             "skillLevels": {
                 "basicStrength": 20,
@@ -2156,10 +2156,10 @@
             "combatRank": "veteran",
             "combatRole": "skirmisher",
             "attributes": {
-                "strength": 6,
-                "agility": 14,
-                "constitution": 4,
-                "wisdom": 6
+                "strength": 6.2,
+                "agility": 14.3,
+                "constitution": 3.9,
+                "wisdom": 5.6
             },
             "skillLevels": {
                 "basicStrength": 30,
@@ -2197,10 +2197,10 @@
             "combatRank": "veteran",
             "combatRole": "controller",
             "attributes": {
-                "strength": 5,
-                "agility": 10,
-                "constitution": 10,
-                "wisdom": 25
+                "strength": 4.7,
+                "agility": 9.9,
+                "constitution": 10.2,
+                "wisdom": 25.2
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -2239,10 +2239,10 @@
             "combatRank": "master",
             "combatRole": "striker",
             "attributes": {
-                "strength": 14,
-                "agility": 12,
-                "constitution": 8,
-                "wisdom": 11
+                "strength": 13.7,
+                "agility": 11.9,
+                "constitution": 8.2,
+                "wisdom": 11.2
             },
             "skillLevels": {
                 "basicStrength": 66,
@@ -2280,10 +2280,10 @@
             "combatRank": "trained",
             "combatRole": "skirmisher",
             "attributes": {
-                "strength": 5,
-                "agility": 15,
-                "constitution": 4,
-                "wisdom": 6
+                "strength": 5.4,
+                "agility": 14.7,
+                "constitution": 3.8,
+                "wisdom": 6.1
             },
             "skillLevels": {
                 "basicStrength": 20,
@@ -2321,10 +2321,10 @@
             "combatRank": "veteran",
             "combatRole": "counter",
             "attributes": {
-                "strength": 20,
-                "agility": 12,
-                "constitution": 18,
-                "wisdom": 10
+                "strength": 20.1,
+                "agility": 11.8,
+                "constitution": 18.3,
+                "wisdom": 9.8
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -2362,10 +2362,10 @@
             "combatRank": "elite",
             "combatRole": "controller",
             "attributes": {
-                "strength": 20,
-                "agility": 22,
-                "constitution": 18,
-                "wisdom": 35
+                "strength": 19.9,
+                "agility": 22.4,
+                "constitution": 17.8,
+                "wisdom": 34.9
             },
             "skillLevels": {
                 "basicStrength": 50,
@@ -2408,10 +2408,10 @@
             "combatRank": "elite",
             "combatRole": "tank",
             "attributes": {
-                "strength": 9,
-                "agility": 12,
-                "constitution": 25,
-                "wisdom": 14
+                "strength": 9.2,
+                "agility": 12.3,
+                "constitution": 24.9,
+                "wisdom": 13.6
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -2448,10 +2448,10 @@
             "combatRank": "veteran",
             "combatRole": "skirmisher",
             "attributes": {
-                "strength": 16,
-                "agility": 22,
-                "constitution": 12,
-                "wisdom": 10
+                "strength": 16.4,
+                "agility": 21.7,
+                "constitution": 11.8,
+                "wisdom": 10.1
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -2488,10 +2488,10 @@
             "combatRank": "elite",
             "combatRole": "controller",
             "attributes": {
-                "strength": 18,
-                "agility": 18,
-                "constitution": 17,
-                "wisdom": 22
+                "strength": 18.4,
+                "agility": 17.7,
+                "constitution": 16.8,
+                "wisdom": 22.1
             },
             "skillLevels": {
                 "basicStrength": 60,
@@ -2528,10 +2528,10 @@
             "combatRank": "veteran",
             "combatRole": "striker",
             "attributes": {
-                "strength": 20,
-                "agility": 12,
-                "constitution": 10,
-                "wisdom": 18
+                "strength": 19.8,
+                "agility": 12.1,
+                "constitution": 9.7,
+                "wisdom": 18.4
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -2568,10 +2568,10 @@
             "combatRank": "veteran",
             "combatRole": "tank",
             "attributes": {
-                "strength": 10,
-                "agility": 11,
-                "constitution": 20,
-                "wisdom": 19
+                "strength": 9.9,
+                "agility": 11.4,
+                "constitution": 19.8,
+                "wisdom": 18.9
             },
             "skillLevels": {
                 "basicStrength": 40,
@@ -2608,10 +2608,10 @@
             "combatRank": "master",
             "combatRole": "tank",
             "attributes": {
-                "strength": 18,
-                "agility": 20,
-                "constitution": 26,
-                "wisdom": 26
+                "strength": 17.8,
+                "agility": 20.1,
+                "constitution": 25.7,
+                "wisdom": 26.4
             },
             "skillLevels": {
                 "basicStrength": 70,
@@ -2648,10 +2648,10 @@
             "combatRank": "legendary",
             "combatRole": "controller",
             "attributes": {
-                "strength": 20,
-                "agility": 26,
-                "constitution": 16,
-                "wisdom": 28
+                "strength": 20.2,
+                "agility": 26.3,
+                "constitution": 15.9,
+                "wisdom": 27.6
             },
             "skillLevels": {
                 "basicStrength": 75,
@@ -2698,10 +2698,10 @@
             "combatRank": "elite",
             "combatRole": "striker",
             "attributes": {
-                "strength": 26,
-                "agility": 14,
-                "constitution": 12,
-                "wisdom": 8
+                "strength": 26.4,
+                "agility": 13.7,
+                "constitution": 11.8,
+                "wisdom": 8.1
             },
             "skillLevels": {
                 "basicStrength": 60,
@@ -2739,10 +2739,10 @@
             "combatRank": "trained",
             "combatRole": "controller",
             "attributes": {
-                "strength": 6,
-                "agility": 8,
-                "constitution": 6,
-                "wisdom": 10
+                "strength": 5.8,
+                "agility": 8.1,
+                "constitution": 5.7,
+                "wisdom": 10.4
             },
             "skillLevels": {
                 "basicStrength": 20,

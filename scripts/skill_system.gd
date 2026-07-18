@@ -12,13 +12,19 @@ const SKILL_MAPS := preload("res://scripts/skills/skill_maps.gd")
 const THEMES := SKILL_MAPS.THEMES
 const BASIC_SKILL_IDS := SKILL_MAPS.BASIC_SKILL_IDS
 
-## 灵感（wisdom）对学习速率的软修正：以 25 为中性点，灵感越高研习越快。
+## 灵感（wisdom）对师父学习成本的软修正：以 25 为中性点，边际收益设有上下界。
 const WISDOM_BASELINE := 25.0
-const WISDOM_LEARN_RATE_PER_POINT := 0.02
-const LEARN_RATE_MIN := 0.65
-const LEARN_RATE_MAX := 1.25
-## 满级单级成本跨度；由旧版 20 下调为 4，保留二次成长但缩短重复任务量。
+const WISDOM_LEARN_RATE_PER_POINT := 0.015
+const LEARN_RATE_MIN := 0.70
+const LEARN_RATE_MAX := 1.30
+## 师父学习使用 2.25 次曲线：前 30 级迅速成形，70 级后显著放缓；练功仍保留 v4 原曲线。
 const LEARN_COST_SPAN := 4.0
+const LEARN_CURVE_EXPONENT := 2.25
+## 练功保留 v4 原曲线与倍率区间，避免师父学习调参改变玩家已经熟悉的练功节奏。
+const WISDOM_PRACTICE_RATE_PER_POINT := 0.02
+const PRACTICE_RATE_MIN := 0.65
+const PRACTICE_RATE_MAX := 1.25
+const PRACTICE_CURVE_EXPONENT := 2.0
 
 ## 门派绝招按内力功法等级解锁：一档 30 级、二档 80 级。
 const ULT_TIER1_ARCH_LEVEL := 30
@@ -171,6 +177,14 @@ func _attribute_growth_suffix(before: Dictionary) -> String:
 
 ## 按技能曲线、目标等级和灵感倍率计算学习需求。
 func _learn_required(definition: Dictionary, level_to_reach: int, rate: float) -> int:
+	return _exp_required(definition, level_to_reach, rate, LEARN_CURVE_EXPONENT, LEARN_RATE_MIN, LEARN_RATE_MAX)
+
+## 保留 v4 练功经验曲线，确保本次数值优化不改变练功体验。
+func _practice_required(definition: Dictionary, level_to_reach: int, rate: float) -> int:
+	return _exp_required(definition, level_to_reach, rate, PRACTICE_CURVE_EXPONENT, PRACTICE_RATE_MIN, PRACTICE_RATE_MAX)
+
+## 学习与练功共用的经验曲线；两条路径只差指数与倍率上下界。
+func _exp_required(definition: Dictionary, level_to_reach: int, rate: float, exponent: float, rate_min: float, rate_max: float) -> int:
 	if level_to_reach <= 1:
 		return 1
 	var max_cost := maxi(20, int(ceil(float(definition.get("costBase", 100)) * float(definition.get("costFactor", 1.0)) * LEARN_COST_SPAN)))
@@ -178,19 +192,26 @@ func _learn_required(definition: Dictionary, level_to_reach: int, rate: float) -
 	var t := clampf(float(level_to_reach - 1) / denominator, 0.0, 1.0)
 	# 原项目严格顺序：基础曲线先 ceil → 乘悟性倍率 → ceil 到偶数。
 	# 不能把倍率提前乘进基础曲线，否则高灵感档在部分等级会少 2 点潜能。
-	var base_required := maxi(1, int(ceil(1.0 + float(max_cost - 1) * pow(t, 2.0))))
-	var normalized_rate := clampf(rate, 0.65, 1.25)
+	var base_required := maxi(1, int(ceil(1.0 + float(max_cost - 1) * pow(t, exponent))))
+	var normalized_rate := clampf(rate, rate_min, rate_max)
 	return maxi(2, int(ceil(float(base_required) * normalized_rate / 2.0)) * 2)
 
 ## 将角色灵感转换为学习成本倍率。
 func _learning_cost_rate() -> float:
-	var wisdom := float(GameState.profile.get("attributes", {}).get("wisdom", 25))
-	return clampf(1.0 - (wisdom - WISDOM_BASELINE) * WISDOM_LEARN_RATE_PER_POINT, LEARN_RATE_MIN, LEARN_RATE_MAX)
+	return _wisdom_cost_rate(WISDOM_LEARN_RATE_PER_POINT, LEARN_RATE_MIN, LEARN_RATE_MAX)
 
-## 学艺与练功必须共用同一条技能经验曲线；公开此查询供 HUD 和回归测试使用。
+## 练功继续使用 v4 的灵感倍率。
+func _practice_cost_rate() -> float:
+	return _wisdom_cost_rate(WISDOM_PRACTICE_RATE_PER_POINT, PRACTICE_RATE_MIN, PRACTICE_RATE_MAX)
+
+func _wisdom_cost_rate(per_point: float, rate_min: float, rate_max: float) -> float:
+	var wisdom := float(GameState.profile.get("attributes", {}).get("wisdom", 25))
+	return clampf(1.0 - (wisdom - WISDOM_BASELINE) * per_point, rate_min, rate_max)
+
+## 练功继续通过这个稳定入口读取旧曲线；学习界面和师父研习直接使用新的 _learn_required。
 func skill_exp_required(skill_id: String, level_to_reach: int) -> int:
 	var definition := DataRegistry.get_skill(skill_id)
-	return 1 if definition.is_empty() else _learn_required(definition, level_to_reach, _learning_cost_rate())
+	return 1 if definition.is_empty() else _practice_required(definition, level_to_reach, _practice_cost_rate())
 
 ## 基础功法练至每 10 级为对应属性 +1（封顶 50），映射表见 skill_maps.gd，
 ## 与存档规范化（GameState._normalize_base_attributes）互为逆运算。

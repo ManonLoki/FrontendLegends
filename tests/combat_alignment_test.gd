@@ -33,10 +33,10 @@ func _run() -> void:
 	_assert_true(combat.rules.ATTACK_MOVE_STATUS_TABLE == {20: "paralysis", 40: "weakness", 50: "poison", 70: "paralysis", 80: "weakness", 90: "poison"}, "攻击招式应仅在六个明确档位附加异常")
 	var jiu_ri: Dictionary = npc_system.build_instance("jiu_ri")
 	var jiu_ri_mp_bonus: int = int(combat.rules.npc_combat_bonus(jiu_ri).get("mp_max", 0))
-	_assert_true(combat.rules.npc_inner_power(jiu_ri) == 150 and jiu_ri_mp_bonus == 150 and combat.rules.npc_mp_max(jiu_ri) == 3300, "九日精力应由 150 内功、根骨修正和 150 点已装备功法上限加成共同构成")
+	_assert_true(combat.rules.npc_inner_power(jiu_ri) == 150 and jiu_ri_mp_bonus == 150 and combat.rules.npc_mp_max(jiu_ri) == 3322, "九日精力应由 150 内功、17.3 架构修正和 150 点已装备功法上限加成共同构成")
 	var jiu_ri_veteran := jiu_ri.duplicate(true)
 	jiu_ri_veteran.combatRank = "veteran"
-	_assert_true(combat.rules.npc_hp_max(jiu_ri_veteran) == 460 and combat.rules.npc_hp_max(jiu_ri) == 506, "同一套属性的精英 NPC 应在 460 基础体力上按 1.10 位阶缩放到 506")
+	_assert_true(combat.rules.npc_hp_max(jiu_ri_veteran) == 451 and combat.rules.npc_hp_max(jiu_ri) == 496, "同一套属性的精英 NPC 应在 451 基础体力上按 1.10 位阶缩放到 496")
 	var student: Dictionary = npc_system.build_instance("xiao_xue_sheng")
 	_assert_true(combat.rules.npc_mp_max(student) == 0 and combat.rules.npc_hp_max(student) == 48, "小学生作为 noncombatant 应只有 48 体力且没有精力，不得形成同级战斗耐久")
 	state.delete_save()

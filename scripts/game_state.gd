@@ -320,19 +320,19 @@ func delete_save() -> void:
 ## 四维软修正共用的中性点。
 const ATTRIBUTE_NEUTRAL := 25.0
 
-## 以 25 为中性点计算带上下界的属性软修正。
+## 以 25 为中性点计算带上下界的属性软修正；保留小数，使 NPC 的细微资质差异真实生效。
 func centered_scale(value: float, per_point: float, lo: float, hi: float) -> float:
-	return clampf(1.0 + (maxf(0.0, floor(value)) - ATTRIBUTE_NEUTRAL) * per_point, lo, hi)
+	return clampf(1.0 + (maxf(0.0, value) - ATTRIBUTE_NEUTRAL) * per_point, lo, hi)
 
-## 编码 → 基础攻击：固定出手底值保证低编码流派仍能结束战斗，编码继续提供主要成长。
+## 编码 → 基础攻击：保留主输出定位，但下调斜率，避免同时拥有攻击、携带和招架后过强。
 func attack_base(strength: float) -> float:
-	var s := maxf(0.0, floor(strength))
-	return maxf(1.0, floor(10.0 + s * 1.8 * centered_scale(s, 0.004, 0.90, 1.10)))
+	var s := maxf(0.0, strength)
+	return maxf(1.0, 12.0 + s * 1.50 * centered_scale(s, 0.003, 0.94, 1.08))
 
-## 架构 → 防御：低于攻击成长，并交给递减收益公式转换为减伤，避免防御堆叠锁死战斗。
+## 架构 → 防御：与生命、冥想分摊收益，继续交给递减公式换算减伤。
 func defense_base(constitution: float) -> float:
-	var c := maxf(0.0, floor(constitution))
-	return maxf(0.0, floor(c * 1.2 * centered_scale(c, 0.003, 0.92, 1.08)))
+	var c := maxf(0.0, constitution)
+	return maxf(0.0, c * 0.95 * centered_scale(c, 0.0025, 0.94, 1.07))
 
 ## 架构 → 冥想速度/内力上限修正。
 func meditation_modifier(constitution: float) -> float:
@@ -340,15 +340,15 @@ func meditation_modifier(constitution: float) -> float:
 
 ## 基础体力以同配点镜像战 8–12 回合为标尺；非战斗 NPC 再由阶位系数单独压缩。
 func base_hp_max(constitution: float) -> int:
-	return maxi(1, int(floor(186.0 + maxf(0.0, constitution) * 6.0)))
+	return maxi(1, int(floor(190.0 + maxf(0.0, constitution) * 5.2)))
 
 ## 精力按平方根反哺体力；系数用于维持各功法等级的同配点镜像战在 8–12 回合。
 func hp_max_with_mp_boost(constitution: float, mp_max: int) -> int:
 	return base_hp_max(constitution) + int(floor(sqrt(maxf(0.0, float(mp_max))) * 3.0))
 
-## 食物/饮水携带上限 = 基础 200 + 每点编码（strength）10，全仓唯一公式来源。
+## 食物/饮水携带上限 = 基础 200 + 每点编码（strength）6，全仓唯一公式来源。
 const VITALS_BASE_CAPACITY := 200
-const VITALS_CAPACITY_PER_STRENGTH := 10
+const VITALS_CAPACITY_PER_STRENGTH := 6
 
 func vitals_capacity(attributes: Dictionary = {}) -> int:
 	var source: Dictionary = attributes if not attributes.is_empty() else profile.get("attributes", {})
@@ -388,14 +388,14 @@ func normalize_combat_state() -> void:
 ## 命中、暴击、招架与伤害结算的核心平衡系数；调参时与 docs/balance_design.md
 ## 和 tests/combat/mirror_round_benchmark.gd 的 8–12 回合基准保持同步。
 const HIT_RATE_BASE := 0.78
-const HIT_RATE_PER_AGILITY := 0.012
+const HIT_RATE_PER_AGILITY := 0.009
 const CRIT_BASE := 0.03
-const CRIT_PER_AGILITY := 0.0015
-const CRIT_PER_WISDOM := 0.0015
+const CRIT_PER_AGILITY := 0.0
+const CRIT_PER_WISDOM := 0.003
 const CRIT_MIN := 0.02
 const CRIT_MAX := 0.30
 const PARRY_BASE := 0.04
-const PARRY_PER_STRENGTH := 0.004
+const PARRY_PER_STRENGTH := 0.0025
 const PARRY_CAP := 0.55
 const PARRY_DAMAGE_MULT := 0.60
 const CRIT_DAMAGE_MULT := 1.5
@@ -410,7 +410,7 @@ func mitigation(defense: float) -> float:
 	var value := maxf(0.0, defense)
 	return value / (value + 100.0)
 
-## 暴击由思维与灵感共同决定；架构不再同时包办生命、防御、内力和暴击。
+## 暴击集中由灵感决定；思维专注命中与先手，避免一项属性包办全部进攻判定。
 func combat_crit_rate(attacker: Dictionary, bonus := 0.0) -> float:
 	return clampf(CRIT_BASE + float(attacker.get("agility", 0)) * CRIT_PER_AGILITY + float(attacker.get("wisdom", 0)) * CRIT_PER_WISDOM + float(bonus), CRIT_MIN, CRIT_MAX)
 

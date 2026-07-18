@@ -6,6 +6,8 @@ FrontendLegends 是一款使用 Godot 4.7 与 GDScript 开发的 2D 俯视角格
 
 - [世界与玩法设定集](lore_bible.md)：世界观、角色、门派、成长、战斗、任务、交易与时间规则。
 - [v4 数值设计](balance_design.md)：数值目标、公式、人物分层、经济约束、模拟结果与设计依据。
+- [72 小时人物养成曲线](growth_curve_72h.md)：师父学习成本、潜能与 Token 需求、阶段耗时和四维边界。
+- [世界事件维护](world_events.md)：Excel 事件原型/摆放表、地图职责与 JSON 导出流程。
 - [代码与存档规范](code_and_save_standards.md)：中文注释、英文标识符、文件职责、存档 v4 与旧档迁移规则。
 - [参照项目差异审计](reference_alignment_audit.md)：当前实现从参照项目保留的语义与有意改变的数值。
 - 仓库根目录的 `AGENTS.md`：开发、测试、冻结文件和文件规模规则。
@@ -18,8 +20,11 @@ FrontendLegends 是一款使用 Godot 4.7 与 GDScript 开发的 2D 俯视角格
 | `project.godot` | Godot 项目配置、输入映射和自动加载单例注册 |
 | `scenes/` | 启动画面、角色创建和主游戏场景 |
 | `scripts/` | 游戏运行时、领域系统、界面与地图加载代码 |
-| `assets/Data/` | 人物、物品、技能和任务的 JSON 数据 |
-| `docs/data/FrontendLegendsData.xlsx` | 四份 JSON、v4 平衡规则和维护说明的表格设定集 |
+| `assets/Data/` | 由 Excel 导出的运行时人物、物品、技能、任务和世界事件 JSON |
+| `docs/data/FrontendLegendsData.xlsx` | 五份 JSON、v4 平衡规则、世界事件原型/摆放和维护说明的主数据工作簿 |
+| `outputs/<任务编号>/NPC数值维护.xlsx` | NPC 身份、四维、技能、装备与拜师条件的独立中文维护表 |
+| `outputs/<任务编号>/道具数值维护.xlsx` | 道具效果、加成、商店库存、标签与掉落的独立中文维护表 |
+| `outputs/<任务编号>/技能数值维护.xlsx` | 技能系数、招式、绝招、要求与教学库存的独立中文维护表 |
 | `assets/Map/maps/LoreWorld/` | Tiled 制作的 TMX 世界地图 |
 | `assets/Map/tilesets/` | 地图直接依赖的 TSX 瓦片集定义 |
 | `tests/` | 领域、界面、菜单和战斗对齐测试 |

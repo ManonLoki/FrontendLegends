@@ -31,13 +31,6 @@
    </properties>
    <point/>
   </object>
-  <object id="7" name="电脑" type="Props" x="192" y="96" width="16" height="16">
-   <properties>
-    <property name="questGiver" value="darkxue_computer"/>
-    <property name="text" value="你在电脑前辛辛苦苦码完了导师的任务"/>
-    <property name="type" value="Props"/>
-   </properties>
-  </object>
   <object id="9" type="Transaction" x="160" y="208" width="16" height="16">
    <properties>
     <property name="from" value="KaiyuanTown"/>

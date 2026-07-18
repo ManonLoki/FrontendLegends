@@ -44,7 +44,7 @@
 
 ### 数据同步结论
 
-- 四份 JSON 与 `docs/data/FrontendLegendsData.xlsx` 共同构成可维护的数据设定集，工作簿可往返生成 JSON。
+- `docs/data/FrontendLegendsData.xlsx` 是人物、物品、技能、任务和世界事件的维护入口，可往返生成五份运行时 JSON。
 - `docs/balance_design.md` 记录 v4 公式、目标区间、经济约束、模拟结果和研究依据。
 - 任何未来“对齐参照项目”的修改都必须先判断是否会破坏 v4 的体验目标，不能以逐字节一致为理由覆盖当前运行时。
 
@@ -54,4 +54,4 @@
 - `tests/combat_alignment_test.gd`：战斗公式、招式/绝招、状态、恢复、战败结算和存档回归。
 - `tests/combat_balance_test.gd`：人物分层、短战斗目标、奖励阶位、任务过滤和装备定位回归。
 - `tools/check_file_size.sh`：项目源码 500 行硬上限。
-- XLSX 往返校验：四份 JSON 内容不变，公式错误扫描为 0。
+- XLSX 往返校验：五份 JSON 内容不变，公式错误扫描为 0。

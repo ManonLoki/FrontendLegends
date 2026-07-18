@@ -1,6 +1,6 @@
 export const DEFAULT_WORKBOOK = 'docs/data/FrontendLegendsData.xlsx';
 export const DATA_DIR = 'assets/Data';
-export const DATA_FILES = ['items', 'skills', 'npcs', 'quests'];
+export const DATA_FILES = ['items', 'skills', 'npcs', 'quests', 'world_events'];
 
 export const SHEETS = {
   meta: 'Meta',
@@ -15,6 +15,8 @@ export const SHEETS = {
   npcEquipment: 'NPCEquipment',
   npcLoot: 'NPCLoot',
   quests: 'Quests',
+  worldEventTypes: 'WorldEventTypes',
+  worldEvents: 'WorldEvents',
 };
 
 export const HEADERS = {
@@ -54,6 +56,14 @@ export const HEADERS = {
   [SHEETS.npcEquipment]: ['npcId', 'itemId', 'sort'],
   [SHEETS.npcLoot]: ['npcId', 'itemId', 'chance', 'min', 'max', 'sort'],
   [SHEETS.quests]: ['bucket', 'questId', 'type', 'title', 'configJson'],
+  [SHEETS.worldEventTypes]: [
+    'archetype', 'action', 'displayName', 'amount',
+    'prompt', 'acceptLabel', 'cancelLabel', 'configJson',
+  ],
+  [SHEETS.worldEvents]: [
+    'eventId', 'mapId', 'archetype', 'tileX', 'tileY', 'width', 'height',
+    'displayName', 'text', 'questEndpoint', 'configJson',
+  ],
 };
 
 export const BALANCE_RULE_ROWS = [

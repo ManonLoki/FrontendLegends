@@ -57,11 +57,6 @@
    </properties>
   </object>
   <object id="13" name="悬赏告示" type="Props" gid="575" x="130.381" y="107.216" width="44" height="42">
-   <properties>
-    <property name="event" value="bountyBoard"/>
-    <property name="text" value="悬赏信息"/>
-    <property name="type" propertytype="Type" value="props"/>
-   </properties>
   </object>
  </objectgroup>
 </map>

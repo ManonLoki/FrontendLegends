@@ -86,11 +86,5 @@
     <property name="to" value="YouyuShanzhuang"/>
    </properties>
   </object>
-  <object id="29" name="狗窝" type="Props" x="16" y="192" width="64" height="16">
-   <properties>
-    <property name="text" value="不知为何，你总能听到时不时传来几声狗叫"/>
-    <property name="type" propertytype="Type" value="props"/>
-   </properties>
-  </object>
  </objectgroup>
 </map>

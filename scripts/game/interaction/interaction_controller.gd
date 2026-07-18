@@ -1,10 +1,15 @@
 extends RefCounted
 ## 地图交互、Props、歪脖树确认与 NPC 浮动菜单。
 
+const WORLD_EVENT_HANDLER := preload("res://scripts/game/interaction/world_event_handler.gd")
+
 var game: Node
+var world_events: RefCounted
+var delete_confirm_properties: Dictionary = {}
 
 func _init(owner: Node) -> void:
 	game = owner
+	world_events = WORLD_EVENT_HANDLER.new(self, game)
 
 func _interact() -> void:
 	# 不信任跨帧缓存；打开任何交互 HUD 前按玩家当前朝向重新解析目标。
@@ -23,49 +28,13 @@ func _interact_prop() -> bool:
 	if not game.map_context:
 		return false
 	var object: Dictionary = game.map_context.interactable_object_at_tile(game.player_tile.x + game.facing.x, game.player_tile.y + game.facing.y)
-	var properties: Dictionary = object.get("properties", {})
-	if object.is_empty() or (str(properties.get("event", "")).is_empty() and str(properties.get("text", "")).is_empty() and str(properties.get("questGiver", "")).is_empty()):
-		return false
-	var event := str(properties.get("event", ""))
-	if event == "drink":
-		var vitals: Dictionary = GameState.profile.get("vitals", {})
-		var capacity: int = GameState.vitals_capacity()
-		var gain := mini(20, maxi(0, capacity - int(vitals.get("water", 0))))
-		vitals.water = int(vitals.get("water", 0)) + gain
-		GameState.profile.vitals = vitals
-		game.message = str(properties.get("text", "你喝了些水。")) + "（饮水 +%d）" % gain
-	elif event == "bountyBoard":
-		game.message = QuestSystem.bounty_board_text()
-	elif event == "deleteSave":
-		_show_delete_confirm()
-		return true
-	elif not str(properties.get("questGiver", "")).is_empty():
-		var quest_endpoint := str(properties.get("questGiver", ""))
-		var detailed: Dictionary = QuestSystem.begin_novice_completion(quest_endpoint)
-		if not detailed.is_empty():
-			game.message = str(detailed.get("message", ""))
-			var after_last := Callable()
-			if bool(detailed.get("can_finish", false)):
-				after_last = func() -> String: return QuestSystem.finish_novice_completion(quest_endpoint)
-			game._show_dialogue(_prop_display_name(object), game.message, float(detailed.get("lock_seconds", 0.0)), after_last)
-			return true
-		game.message = QuestSystem.interact_npc(quest_endpoint)
-	else:
-		game.message = str(properties.get("text", "已查看。"))
-	if event != "deleteSave" and (not str(properties.get("text", "")).is_empty() or not str(properties.get("questGiver", "")).is_empty() or event == "bountyBoard"):
-		game._show_dialogue(_prop_display_name(object), game.message)
-	else:
-		game._show_details(game.message)
-	return true
+	return world_events.interact(object)
 
 func _prop_display_name(object: Dictionary) -> String:
-	var properties: Dictionary = object.get("properties", {})
-	var display_name := str(properties.get("displayName", "")).strip_edges()
-	if display_name.is_empty():
-		display_name = str(object.get("name", "")).strip_edges()
-	return display_name if not display_name.is_empty() else "告示"
+	return world_events.display_name(object)
 
-func _show_delete_confirm() -> void:
+func _show_delete_confirm(properties := {}) -> void:
+	delete_confirm_properties = properties
 	game.delete_confirm_open = true
 	game.delete_confirm_index = 1
 	game.npc_menu_open = false
@@ -82,7 +51,10 @@ func _layout_delete_confirm() -> void:
 	game.tree_confirm_content.add_theme_font_size_override("font_size", maxi(12, int(round(13.0 * scale))))
 
 func _refresh_delete_confirm() -> void:
-	game.tree_confirm_content.text = "这棵歪脖树正合上吊。真要吊死吗？（存档将被删除）\n\n%s    %s" % [game._cursor("吊死", game.delete_confirm_index == 0), game._cursor("再想想", game.delete_confirm_index == 1)]
+	var prompt := str(delete_confirm_properties.get("prompt", "这棵歪脖树正合上吊。真要吊死吗？（存档将被删除）"))
+	var accept_label := str(delete_confirm_properties.get("acceptLabel", "吊死"))
+	var cancel_label := str(delete_confirm_properties.get("cancelLabel", "再想想"))
+	game.tree_confirm_content.text = "%s\n\n%s    %s" % [prompt, game._cursor(accept_label, game.delete_confirm_index == 0), game._cursor(cancel_label, game.delete_confirm_index == 1)]
 
 func _handle_delete_confirm_key(key: Key) -> void:
 	if key == KEY_ESCAPE:
@@ -108,10 +80,7 @@ func _has_front_interactable() -> bool:
 	if not game.map_context:
 		return false
 	var object: Dictionary = game.map_context.interactable_object_at_tile(game.player_tile.x + game.facing.x, game.player_tile.y + game.facing.y)
-	if object.is_empty():
-		return false
-	var properties: Dictionary = object.get("properties", {})
-	return not str(properties.get("event", "")).is_empty() or not str(properties.get("text", "")).is_empty() or not str(properties.get("questGiver", "")).is_empty()
+	return not object.is_empty() and world_events.is_interactable(object)
 
 func _handle_npc_menu_key(key: Key) -> void:
 	if key == KEY_ESCAPE:

@@ -91,10 +91,6 @@
    </properties>
   </object>
   <object id="34" name="告示牌" type="Props" gid="742" x="592" y="384" width="16" height="17.9123">
-   <properties>
-    <property name="text" value="欢迎来到NG神教"/>
-    <property name="type" propertytype="Type" value="props"/>
-   </properties>
   </object>
  </objectgroup>
  <layer id="5" name="Patch" width="40" height="30">

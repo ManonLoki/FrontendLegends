@@ -91,18 +91,6 @@
     <property name="to" value="Dongjiao"/>
    </properties>
   </object>
-  <object id="43" name="删除" type="Props" x="88.903" y="577.978" width="32" height="16">
-   <properties>
-    <property name="event" value="deleteSave"/>
-    <property name="text" value="删除存档"/>
-   </properties>
-  </object>
-  <object id="46" name="水井" type="Props" x="240" y="576" width="32" height="16">
-   <properties>
-    <property name="event" value="drink"/>
-    <property name="text" value="你舀起了水塘里的水喝了一口，感觉舒服多了"/>
-   </properties>
-  </object>
   <object id="47" type="Transaction" x="400" y="464" width="16" height="16">
    <properties>
     <property name="from" value="KaiyuanTown"/>
@@ -193,12 +181,6 @@
    </properties>
    <point/>
   </object>
-  <object id="77" name="坑" type="Props" x="1104" y="96" width="48" height="32">
-   <properties>
-    <property name="text" value="你猜猜这是谁挖的……又有谁掉了进去？"/>
-    <property name="type" propertytype="Type" value="props"/>
-   </properties>
-  </object>
   <object id="78" name="九日" type="NPC" x="919.991" y="215.203">
    <properties>
     <property name="npcId" value="jiu_ri"/>
@@ -215,28 +197,12 @@
    <point/>
   </object>
   <object id="81" name="路牌" type="Props" gid="20043" x="624" y="80" width="16" height="17.8257">
-   <properties>
-    <property name="text" value="↑北郊，去往香草派"/>
-    <property name="type" propertytype="Type" value="props"/>
-   </properties>
   </object>
   <object id="83" name="路牌" type="Props" gid="20043" x="912" y="480" width="12" height="16">
-   <properties>
-    <property name="text" value="↓南郊，去往量子仙宗，笙火喵喵教"/>
-    <property name="type" propertytype="Type" value="props"/>
-   </properties>
   </object>
   <object id="84" name="路牌" type="Props" gid="20053" x="1168" y="320" width="16" height="16">
-   <properties>
-    <property name="text" value="前方东郊，去往迷雾森林，鱿鱼山庄"/>
-    <property name="type" propertytype="Type" value="props"/>
-   </properties>
   </object>
   <object id="86" name="路牌" type="Props" gid="20054" x="48" y="592" width="16" height="16">
-   <properties>
-    <property name="text" value="前方西郊，去往空の国，NG神教"/>
-    <property name="type" propertytype="Type" value="props"/>
-   </properties>
   </object>
  </objectgroup>
 </map>

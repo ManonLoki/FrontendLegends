@@ -29,6 +29,7 @@ func load_map(index: int, arrival_from := "", cyber := false) -> void:
 	if not next_context.load_file(DataRegistry.map_files[game.map_index]):
 		game.map_transitioning = false
 		return
+	next_context.inject_objects(DataRegistry.world_event_objects(next_context.map_id, next_context.tile_width, next_context.tile_height))
 	game._close_dialogue()
 	game.map_context = next_context
 	game.map_renderer.set_context(game.map_context)

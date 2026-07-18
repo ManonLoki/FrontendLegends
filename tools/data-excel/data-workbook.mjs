@@ -40,6 +40,7 @@ export function workbookRowsFromJson(data) {
     skills: ['skills', 'teachStock'],
     npcs: ['npcs'],
     quests: ['quests', 'generators'],
+    world_events: ['archetypes', 'placements'],
   };
   rows[SHEETS.meta] = DATA_FILES.map(file => {
     const document = data[file] ?? {};
@@ -224,6 +225,39 @@ export function workbookRowsFromJson(data) {
     }
   }
 
+  rows[SHEETS.worldEventTypes] = Object.entries(data.world_events.archetypes ?? {}).map(([archetype, def]) => {
+    const { action, displayName, amount, prompt, acceptLabel, cancelLabel, ...rest } = def;
+    return {
+      archetype,
+      action: action ?? '',
+      displayName: displayName ?? '',
+      amount: amount ?? '',
+      prompt: prompt ?? '',
+      acceptLabel: acceptLabel ?? '',
+      cancelLabel: cancelLabel ?? '',
+      configJson: Object.keys(rest).length > 0 ? stableJson(rest) : '',
+    };
+  });
+  rows[SHEETS.worldEvents] = (data.world_events.placements ?? []).map(placement => {
+    const { id, map, archetype, tile = [0, 0], size = [1, 1], data: eventData = {}, ...rest } = placement;
+    const { displayName, text, questEndpoint, ...dataRest } = eventData;
+    const config = { ...rest };
+    if (Object.keys(dataRest).length > 0) config.data = dataRest;
+    return {
+      eventId: id ?? '',
+      mapId: map ?? '',
+      archetype: archetype ?? '',
+      tileX: tile[0] ?? 0,
+      tileY: tile[1] ?? 0,
+      width: size[0] ?? 1,
+      height: size[1] ?? 1,
+      displayName: displayName ?? '',
+      text: text ?? '',
+      questEndpoint: questEndpoint ?? '',
+      configJson: Object.keys(config).length > 0 ? stableJson(config) : '',
+    };
+  });
+
   return rows;
 }
 
@@ -246,6 +280,7 @@ export function jsonFromWorkbookRows(sheetRows) {
     skills: { version: num(meta['skills.json']?.version) ?? 1, skills: {}, teachStock: {} },
     npcs: { version: num(meta['npcs.json']?.version) ?? 1, npcs: {} },
     quests: { version: num(meta['quests.json']?.version) ?? 1, quests: {}, generators: {} },
+    world_events: { version: num(meta['world_events.json']?.version) ?? 1, archetypes: {}, placements: [] },
   };
   for (const [key, target] of Object.entries(result)) {
     const note = str(meta[`${key}.json`]?.note);
@@ -433,6 +468,44 @@ export function jsonFromWorkbookRows(sheetRows) {
     const def = cleanObject({ type: str(row.type), title: str(row.title), ...config });
     if (bucket === 'generators') result.quests.generators[questId] = def;
     else result.quests.quests[questId] = def;
+  }
+
+  for (const row of sheetRows[SHEETS.worldEventTypes] ?? []) {
+    const archetype = str(row.archetype);
+    if (!archetype) continue;
+    const extra = parseJsonCell(row.configJson, `WorldEventTypes.${archetype}.configJson`);
+    result.world_events.archetypes[archetype] = cleanObject({
+      action: str(row.action),
+      displayName: str(row.displayName),
+      amount: num(row.amount),
+      prompt: str(row.prompt),
+      acceptLabel: str(row.acceptLabel),
+      cancelLabel: str(row.cancelLabel),
+      ...extra,
+    });
+  }
+  for (const row of sheetRows[SHEETS.worldEvents] ?? []) {
+    const eventId = str(row.eventId);
+    if (!eventId) continue;
+    const extra = parseJsonCell(row.configJson, `WorldEvents.${eventId}.configJson`);
+    const eventData = cleanObject({
+      displayName: str(row.displayName),
+      text: str(row.text),
+      questEndpoint: str(row.questEndpoint),
+      ...(extra.data ?? {}),
+    });
+    delete extra.data;
+    const width = num(row.width) ?? 1;
+    const height = num(row.height) ?? 1;
+    result.world_events.placements.push(cleanObject({
+      id: eventId,
+      map: str(row.mapId),
+      archetype: str(row.archetype),
+      tile: [num(row.tileX) ?? 0, num(row.tileY) ?? 0],
+      size: width === 1 && height === 1 ? undefined : [width, height],
+      data: eventData,
+      ...extra,
+    }));
   }
 
   return result;

@@ -66,16 +66,8 @@
    </properties>
   </object>
   <object id="28" type="Props" gid="3165" x="304" y="272" width="14.875" height="16">
-   <properties>
-    <property name="text" value="↓空の国"/>
-    <property name="type" propertytype="Type" value="props"/>
-   </properties>
   </object>
   <object id="29" type="Props" gid="3176" x="64" y="272" width="16.4583" height="16">
-   <properties>
-    <property name="text" value="去往NG神教"/>
-    <property name="type" propertytype="Type" value="props"/>
-   </properties>
   </object>
  </objectgroup>
 </map>

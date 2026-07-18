@@ -25,6 +25,7 @@ func _run_hud_suite() -> Node:
 	_assert_true(export_presets.count("include_filter=\"*.tmx,*.tsx,*.tpsheet\"") == 4, "Web、macOS、Windows 与 Android 导出都必须包含运行时地图和图集定义")
 	var dark_study_map := TiledMapLoader.new()
 	_assert_true(dark_study_map.load_file("res://assets/Map/maps/LoreWorld/KaiyuanTown/DarkXue.tmx"), "HUD 测试应能加载 DARK学地图")
+	dark_study_map.inject_objects(data_registry.world_event_objects(dark_study_map.map_id, dark_study_map.tile_width, dark_study_map.tile_height))
 	# 启动、角色创建、地图相机与逻辑视口统一为 480×320。
 	var splash = load("res://scenes/splash.tscn").instantiate()
 	root.add_child(splash)
@@ -69,7 +70,7 @@ func _run_hud_suite() -> Node:
 	root.add_child(game)
 	await process_frame
 	# 新 TexturePacker 图集必须直接按 tpsheet 载入，不能继续使用旧横排图集坐标。
-	_assert_true(game.player_sprite_regions.size() == 64 and game.player_sprite_layouts.size() == 64, "Player 图集应载入男女、四方向、idle/run 各四帧，共 64 帧")
+	_assert_true(game.player_sprite_regions.size() == 64 and game.player_foot_anchors.size() == 64, "Player 图集应载入男女、四方向、idle/run 各四帧，共 64 帧")
 	_assert_true(npc_system.sprite_regions.size() == 70, "NPC 图集应从 NPC.tpsheet 载入全部 70 个角色区域")
 	for gender in ["male", "female"]:
 		for direction in ["down", "left", "right", "up"]:
@@ -83,8 +84,11 @@ func _run_hud_suite() -> Node:
 	for player_region_value in game.player_sprite_regions.values():
 		var player_region: Rect2 = player_region_value
 		_assert_true(Rect2(Vector2.ZERO, game.player_texture.get_size()).encloses(player_region), "Player 帧区域不得越出新 320×116 图集")
-	var male_up_layout: Dictionary = game.player_sprite_layouts.get("player_male_up_idle_0", {})
-	_assert_true(Vector2(male_up_layout.get("visual_offset", Vector2.ZERO)).x == 4.0, "男性朝上帧应按脚部支点向右补偿 4 个源像素，避免人物视觉偏斜")
+	for player_frame_key in game.player_foot_anchors:
+		var foot_anchor: Vector2 = game.player_foot_anchors[player_frame_key]
+		var player_region: Rect2 = game.player_sprite_regions[player_frame_key]
+		_assert_true(foot_anchor.x >= 0.0 and foot_anchor.x <= player_region.size.x, "Player 帧脚部横向支点必须位于裁切区域内：%s" % player_frame_key)
+		_assert_true(foot_anchor.y > 0.0 and foot_anchor.y <= player_region.size.y, "Player 帧脚底线必须位于裁切区域内：%s" % player_frame_key)
 	for npc_region_value in npc_system.sprite_regions.values():
 		var npc_region: Rect2 = npc_region_value
 		_assert_true(Rect2(Vector2.ZERO, game.npc_texture.get_size()).encloses(npc_region), "NPC 帧区域不得越出新 128×244 图集")
@@ -104,20 +108,19 @@ func _run_hud_suite() -> Node:
 	_assert_true(game._player_frame_key() == "player_female_left_idle_0", "行走序列第三帧应回到 idle_0")
 	game.animation_frame = 3
 	_assert_true(game._player_frame_key() == "player_female_left_run_3", "行走序列第四帧应使用相反脚的跨步帧")
-	_assert_true(is_equal_approx(game.world_renderer.player_frame_horizontal_shear(), -0.08), "朝左侧身帧应以脚底为轴适度扶正上半身，避免过度剪切后反向偏斜")
-	game.facing = Vector2i.RIGHT
-	_assert_true(is_equal_approx(game.world_renderer.player_frame_horizontal_shear(), 0.08), "朝右侧身帧应使用相反方向且相同幅度的水平剪切")
-	game.facing = Vector2i.UP
-	_assert_true(is_zero_approx(game.world_renderer.player_frame_horizontal_shear()), "上下朝向已经对齐，不应应用侧身剪切")
-	game.facing = Vector2i.LEFT
-	var female_run_layout: Dictionary = game.player_sprite_layouts[game._player_frame_key()]
-	_assert_true(female_run_layout.canvas_size == Vector2(40.0, 34.0), "Player 裁切帧应归一化到稳定的 40×34 最大逻辑画布，避免动画抖动")
-	for player_layout_value in game.player_sprite_layouts.values():
-		_assert_true(player_layout_value.canvas_size == Vector2(40.0, 34.0), "所有 Player 性别、方向和动作帧必须共用同一逻辑画布锚点")
 	game_state.profile.gender = "male"
 	game.facing = Vector2i.DOWN
 	game.player_moving = false
 	game.animation_frame = 0
+	var test_player_position := Vector2(100.0, 80.0)
+	var expected_player_foot: Vector2 = test_player_position + game.world_renderer.PLAYER_TILE_FOOT * float(game._render_scale())
+	for player_frame_key in game.player_foot_anchors:
+		var player_region: Rect2 = game.player_sprite_regions[player_frame_key]
+		var player_draw_rect: Rect2 = game.world_renderer.player_frame_draw_rect(test_player_position, player_region, player_frame_key)
+		var foot_anchor: Vector2 = game.player_foot_anchors[player_frame_key]
+		var rendered_player_foot: Vector2 = player_draw_rect.position + foot_anchor * float(game._render_scale()) * float(game.world_renderer.PLAYER_VISUAL_SCALE)
+		_assert_true(rendered_player_foot.is_equal_approx(expected_player_foot), "所有 Player 性别、方向和动作帧必须对齐到同一个格子脚点：%s" % player_frame_key)
+	_assert_true(is_equal_approx(game.world_renderer.PLAYER_VISUAL_SCALE, 0.86), "Player 可见高度应从平均 25.8px 缩放到约 22.2px，与 NPC 平均高度一致")
 	# UI 与地图相机统一使用 480×320 逻辑坐标；窗口缩放只交给 Godot stretch。
 	_assert_true(is_equal_approx(game._display_scale(), 1.0), "游戏 UI 不应按物理窗口执行第二次缩放")
 	var runtime_viewport_size: Vector2 = game.get_viewport_rect().size
@@ -270,7 +273,7 @@ func _run_hud_suite() -> Node:
 	game.battle_ui.active = false
 	game.battle_panel.visible = false
 	game.battle_ui._clear_widgets()
-	_assert_true(game._prop_display_name({"name": "电脑", "properties": {"questGiver": "darkxue_computer"}}) == "电脑", "Props 对话标题应使用 Tiled 对象名")
+	_assert_true(game._prop_display_name({"type": "WorldEvent", "properties": {"action": "quest_endpoint", "displayName": "电脑"}}) == "电脑", "世界事件对话标题应使用数据表显示名")
 	# 歪脖树使用独立 HUD，不得修改或复用 NPC 菜单的正文状态。
 	game.npc_menu_content.visible = false
 	game._show_delete_confirm()

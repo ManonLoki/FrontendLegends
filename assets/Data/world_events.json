@@ -1,0 +1,57 @@
+{
+    "version": 1,
+    "_note": "世界事件统一表。archetypes 定义行为，placements 仅定义地图与格子范围；TMX 只维护地形、传送、NPC 和纯视觉对象。tile/size 均以地图格为单位。",
+    "archetypes": {
+        "message": {
+            "action": "message",
+            "displayName": "告示"
+        },
+        "sign": {
+            "action": "message",
+            "displayName": "路牌"
+        },
+        "bounty_board": {
+            "action": "bounty_board",
+            "displayName": "悬赏告示"
+        },
+        "quest_terminal": {
+            "action": "quest_endpoint",
+            "displayName": "电脑"
+        },
+        "dangerous_tree": {
+            "action": "delete_save",
+            "displayName": "歪脖树",
+            "prompt": "这棵歪脖树正合上吊。真要吊死吗？（存档将被删除）",
+            "acceptLabel": "吊死",
+            "cancelLabel": "再想想"
+        },
+        "drink_source": {
+            "action": "drink",
+            "displayName": "水井",
+            "amount": 20
+        }
+    },
+    "placements": [
+        {"id": "angular_welcome", "map": "Angular", "archetype": "message", "tile": [37, 22], "size": [1, 2], "data": {"displayName": "告示牌", "text": "欢迎来到NG神教"}},
+        {"id": "beijiao_vanilla_sign", "map": "Beijiao", "archetype": "sign", "tile": [25, 5], "data": {"text": "↑香草派"}},
+        {"id": "dongjiao_forest_sign", "map": "Dongjiao", "archetype": "sign", "tile": [25, 0], "size": [2, 3], "data": {"text": "↑迷雾森林"}},
+        {"id": "dongjiao_youyu_sign", "map": "Dongjiao", "archetype": "sign", "tile": [18, 16], "data": {"text": "去往鱿鱼山庄"}},
+        {"id": "anwang_bounty_board", "map": "AnWang", "archetype": "bounty_board", "tile": [8, 4], "size": [3, 3]},
+        {"id": "darkxue_computer", "map": "DarkXue", "archetype": "quest_terminal", "tile": [12, 6], "data": {"questEndpoint": "darkxue_computer", "text": "你在电脑前辛辛苦苦码完了导师的任务"}},
+        {"id": "kaiyuan_dangerous_tree", "map": "KaiyuanTown", "archetype": "dangerous_tree", "tile": [5, 36], "size": [3, 2]},
+        {"id": "kaiyuan_well", "map": "KaiyuanTown", "archetype": "drink_source", "tile": [15, 36], "size": [2, 1], "data": {"text": "你舀起了水塘里的水喝了一口，感觉舒服多了"}},
+        {"id": "kaiyuan_pit", "map": "KaiyuanTown", "archetype": "message", "tile": [69, 6], "size": [3, 2], "data": {"displayName": "坑", "text": "你猜猜这是谁挖的……又有谁掉了进去？"}},
+        {"id": "kaiyuan_north_sign", "map": "KaiyuanTown", "archetype": "sign", "tile": [39, 3], "size": [1, 2], "data": {"text": "↑北郊，去往香草派"}},
+        {"id": "kaiyuan_south_sign", "map": "KaiyuanTown", "archetype": "sign", "tile": [57, 29], "data": {"text": "↓南郊，去往量子仙宗，笙火喵喵教"}},
+        {"id": "kaiyuan_east_sign", "map": "KaiyuanTown", "archetype": "sign", "tile": [73, 19], "data": {"text": "前方东郊，去往迷雾森林，鱿鱼山庄"}},
+        {"id": "kaiyuan_west_sign", "map": "KaiyuanTown", "archetype": "sign", "tile": [3, 36], "data": {"text": "前方西郊，去往空の国，NG神教"}},
+        {"id": "player_home_tutorial", "map": "PlayerHome", "archetype": "message", "tile": [10, 1], "size": [3, 3], "data": {"displayName": "新手提示", "text": "先去隔壁做导师任务\n然后外出拜师喜欢的门派\n技能能练功不要直接学\n最后尽情的探索吧"}},
+        {"id": "nanjiao_shenghuo_sign", "map": "Nanjiao", "archetype": "sign", "tile": [21, 4], "data": {"text": "去往笙火喵喵教"}},
+        {"id": "nanjiao_liangzi_sign", "map": "Nanjiao", "archetype": "sign", "tile": [2, 12], "data": {"text": "↓量子仙宗"}},
+        {"id": "shenghuo_notice", "map": "ShengHuoMiaoMiao", "archetype": "message", "tile": [18, 30], "data": {"displayName": "告示牌", "text": "笙火昭昭，笙火耀耀，请我奶茶，喵喵喵喵"}},
+        {"id": "shenghuo_lingyin_sign", "map": "ShengHuoMiaoMiao", "archetype": "sign", "tile": [36, 37], "data": {"text": "前往西湖灵隐"}},
+        {"id": "xijiao_kong_sign", "map": "Xijiao", "archetype": "sign", "tile": [19, 16], "data": {"text": "↓空の国"}},
+        {"id": "xijiao_angular_sign", "map": "Xijiao", "archetype": "sign", "tile": [4, 16], "size": [2, 1], "data": {"text": "去往NG神教"}},
+        {"id": "youyu_dog_house", "map": "YouyuShanzhuang", "archetype": "message", "tile": [1, 12], "size": [4, 1], "data": {"displayName": "狗窝", "text": "不知为何，你总能听到时不时传来几声狗叫"}}
+    ]
+}

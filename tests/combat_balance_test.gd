@@ -57,6 +57,7 @@ func _test_npc_schema(registry: Node) -> void:
 	var npcs: Dictionary = registry.npcs
 	_assert_true(npcs.size() == EXPECTED_NPC_COUNT, "数值基线应包含 %d 名 NPC" % EXPECTED_NPC_COUNT)
 	var seen_attributes: Dictionary = {}
+	var fractional_npcs := 0
 	for npc_id in npcs:
 		var npc: Dictionary = npcs[npc_id]
 		var rank := str(npc.get("combatRank", ""))
@@ -64,16 +65,22 @@ func _test_npc_schema(registry: Node) -> void:
 		_assert_true(valid_ranks.has(rank), "%s 的 combatRank 非法：%s" % [npc_id, rank])
 		_assert_true(VALID_ROLES.has(role), "%s 的 combatRole 非法：%s" % [npc_id, role])
 		var attributes: Dictionary = npc.get("attributes", {})
-		var values: Array[int] = []
+		var values: Array[float] = []
+		var has_fraction := false
 		for key in ["strength", "agility", "constitution", "wisdom"]:
 			var value = attributes.get(key, null)
 			var is_numeric := value is int or value is float
 			_assert_true(is_numeric and float(value) >= 0.0, "%s 的 %s 必须是非负数值" % [npc_id, key])
-			values.append(int(value) if is_numeric else -1)
-		var signature := "%d/%d/%d/%d" % values
+			var numeric_value := float(value) if is_numeric else -1.0
+			values.append(numeric_value)
+			has_fraction = has_fraction or not is_equal_approx(numeric_value, round(numeric_value))
+		if has_fraction:
+			fractional_npcs += 1
+		var signature := "%.1f/%.1f/%.1f/%.1f" % values
 		_assert_true(not seen_attributes.has(signature), "%s 与 %s 的四维配点重复：%s" % [npc_id, seen_attributes.get(signature, ""), signature])
 		seen_attributes[signature] = str(npc_id)
 	_assert_true(seen_attributes.size() == EXPECTED_NPC_COUNT, "%d 名 NPC 的四维配点必须全部唯一" % EXPECTED_NPC_COUNT)
+	_assert_true(fractional_npcs == EXPECTED_NPC_COUNT, "全部 NPC 都应保留一位小数的个体微差")
 
 func _test_small_student_ttk(state: Node, npc_system: Node, combat: Node) -> void:
 	_set_player_profile(state, {"strength": 5, "agility": 5, "constitution": 40, "wisdom": 50})
@@ -204,21 +211,21 @@ func _test_noncombatant_quest_filter(registry: Node, quests: Node) -> void:
 	registry.placed_npc_targets = original_targets
 
 func _test_generator_endpoint_filtering(registry: Node, quests: Node) -> void:
-	registry.quests["__reserved_endpoint"] = {"giverNpcId": "brendan_eich"}
+	registry.quests["__reserved_endpoint"] = {"giverNpcId": "brendan_eich", "completionGiverId": "jiu_ri"}
 	registry.quest_generators["__endpoint_errand"] = {
 		"type": "errand", "giverNpcId": "__errand_giver",
-		"pool": {"npcs": ["brendan_eich", "qc"]},
+		"pool": {"npcs": ["jiu_ri", "qc"]},
 	}
 	registry.quest_generators["__endpoint_bounty"] = {
 		"type": "bounty", "giverNpcId": "__bounty_giver",
-		"enemyPool": ["brendan_eich", "xiao_xue_sheng", "qc"],
+		"enemyPool": ["jiu_ri"],
 	}
 	quests.reset_runtime()
 	var errand: Dictionary = quests.offer_generator("__endpoint_errand")
-	_assert_true(bool(errand.get("ok", false)) and str(quests.active.get("generator:__endpoint_errand", {}).get("target", {}).get("target_id", "")) == "qc", "普通送信任务也必须排除全部任务端点")
+	_assert_true(bool(errand.get("ok", false)) and str(quests.active.get("generator:__endpoint_errand", {}).get("target", {}).get("target_id", "")) == "qc", "普通送信任务必须排除其他任务的交付端点")
 	quests.reset_runtime()
 	var bounty: Dictionary = quests.offer_generator("__endpoint_bounty")
-	_assert_true(bool(bounty.get("ok", false)) and str(quests.active.get("generator:__endpoint_bounty", {}).get("target", {}).get("target_id", "")) == "qc", "普通悬赏必须同时排除任务端点与非战斗人物")
+	_assert_true(bool(bounty.get("ok", false)) and str(quests.active.get("generator:__endpoint_bounty", {}).get("target", {}).get("target_id", "")) == "jiu_ri", "普通悬赏允许把另一任务的交付人物选为击杀目标")
 	quests.reset_runtime()
 	registry.quests.erase("__reserved_endpoint")
 	registry.quest_generators.erase("__endpoint_errand")

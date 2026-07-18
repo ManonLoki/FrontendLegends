@@ -15,7 +15,7 @@ const readme = [
   ['编辑建议：优先维护 ID 字段；多对多关系放在独立关系表。'],
   ['导出 JSON：npm run data:json'],
   ['从当前 JSON 重建 Excel：npm run data:excel'],
-  ['注意：Meta、Items、Skills、NPCs、Quests 的 configJson 会透传未展开字段，必须保持为合法 JSON。平衡公式详见 docs/balance_design.md。'],
+  ['注意：各主表的 configJson 会透传未展开字段，必须保持为合法 JSON。平衡公式详见 docs/balance_design.md。'],
   [],
   ['Sheet', '用途'],
   [SHEETS.items, 'items.json 道具主表'],
@@ -28,10 +28,12 @@ const readme = [
   [SHEETS.npcEquipment, 'NPC 装备：npcId + itemId'],
   [SHEETS.npcLoot, 'NPC 掉落：npcId + itemId'],
   [SHEETS.quests, '任务/生成器；复杂字段在 configJson'],
+  [SHEETS.worldEventTypes, '世界事件原型：统一行为与默认参数'],
+  [SHEETS.worldEvents, '世界事件摆放：地图、格子范围与实例文案'],
 ];
 XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(readme), SHEETS.readme);
 
-for (const sheetName of [SHEETS.meta, SHEETS.balanceRules, SHEETS.items, SHEETS.vendorStock, SHEETS.skills, SHEETS.teachStock, SHEETS.npcs, SHEETS.npcSkillLevels, SHEETS.npcEquipment, SHEETS.npcLoot, SHEETS.quests]) {
+for (const sheetName of [SHEETS.meta, SHEETS.balanceRules, SHEETS.items, SHEETS.vendorStock, SHEETS.skills, SHEETS.teachStock, SHEETS.npcs, SHEETS.npcSkillLevels, SHEETS.npcEquipment, SHEETS.npcLoot, SHEETS.quests, SHEETS.worldEventTypes, SHEETS.worldEvents]) {
   const matrix = matrixFromRows(sheetName, rows[sheetName] ?? []);
   const sheet = XLSX.utils.aoa_to_sheet(matrix);
   sheet['!freeze'] = { xSplit: 0, ySplit: 1 };

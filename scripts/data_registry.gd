@@ -9,6 +9,8 @@ var quests: Dictionary = {}
 var quest_generators: Dictionary = {}
 var skills: Dictionary = {}
 var teach_stock: Dictionary = {}
+var world_event_archetypes: Dictionary = {}
+var world_event_placements: Dictionary = {}
 var map_files: Array[String] = []
 var map_display_names: Dictionary = {}
 var map_parent_ids: Dictionary = {}
@@ -27,6 +29,9 @@ func _ready() -> void:
 	var skill_catalog := _load_document("skills.json")
 	skills = skill_catalog.get("skills", {})
 	teach_stock = skill_catalog.get("teachStock", {})
+	var world_event_catalog := _load_document("world_events.json")
+	world_event_archetypes = world_event_catalog.get("archetypes", {})
+	_index_world_event_placements(world_event_catalog.get("placements", []))
 	_scan_maps("res://assets/Map/maps")
 
 func _load_table(file_name: String, key: String) -> Dictionary:
@@ -67,6 +72,48 @@ func is_independent_tutor(npc_id: String) -> bool:
 
 func list_vendor_stock(npc_id: String) -> Array:
 	return vendor_stock.get(npc_id, [])
+
+## 将数据表中的格子摆放升格为地图对象；TMX 因此不再保存事件文案和行为参数。
+func world_event_objects(map_id: String, tile_width: int, tile_height: int) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for placement_value in world_event_placements.get(map_id, []):
+		var placement: Dictionary = placement_value
+		var archetype_id := str(placement.get("archetype", ""))
+		var properties: Dictionary = world_event_archetypes.get(archetype_id, {}).duplicate(true)
+		properties.merge(placement.get("data", {}), true)
+		properties["worldEventId"] = str(placement.get("id", ""))
+		var tile: Array = placement.get("tile", [0, 0])
+		var size: Array = placement.get("size", [1, 1])
+		result.append({
+			"name": str(properties.get("displayName", "")),
+			"type": "WorldEvent",
+			"x": int(tile[0]) * tile_width,
+			"y": int(tile[1]) * tile_height,
+			"width": maxi(1, int(size[0])) * tile_width,
+			"height": maxi(1, int(size[1])) * tile_height,
+			"properties": properties,
+		})
+	return result
+
+func _index_world_event_placements(placements: Array) -> void:
+	var known_ids: Dictionary = {}
+	for placement_value in placements:
+		if not placement_value is Dictionary:
+			continue
+		var placement: Dictionary = placement_value
+		var event_id := str(placement.get("id", ""))
+		var map_id := str(placement.get("map", ""))
+		var archetype_id := str(placement.get("archetype", ""))
+		if event_id.is_empty() or map_id.is_empty() or not world_event_archetypes.has(archetype_id):
+			push_error("Invalid world event placement: " + str(placement))
+			continue
+		if known_ids.has(event_id):
+			push_error("Duplicate world event id: " + event_id)
+			continue
+		known_ids[event_id] = true
+		if not world_event_placements.has(map_id):
+			world_event_placements[map_id] = []
+		world_event_placements[map_id].append(placement)
 
 ## 递归遍历地图目录并提取 TMX 中需要的少量 property 标签；启动期扫描无需引入完整 XML 导入器。
 func _scan_maps(path: String) -> void:

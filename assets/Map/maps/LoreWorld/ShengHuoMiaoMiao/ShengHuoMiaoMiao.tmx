@@ -62,9 +62,6 @@
    </properties>
   </object>
   <object id="23" name="告示牌" type="Props" gid="6" x="288" y="496" width="16" height="16">
-   <properties>
-    <property name="text" value="笙火昭昭，笙火耀耀，请我奶茶，喵喵喵喵"/>
-   </properties>
   </object>
   <object id="26" type="Transaction" x="304" y="448" width="32" height="16">
    <properties>
@@ -86,10 +83,6 @@
    <point/>
   </object>
   <object id="30" name="路牌" type="Props" gid="16" x="576" y="608" width="16" height="16">
-   <properties>
-    <property name="text" value="前往西湖灵隐"/>
-    <property name="type" propertytype="Type" value="props"/>
-   </properties>
   </object>
   <object id="31" type="Transaction" x="624" y="608" width="16" height="16">
    <properties>

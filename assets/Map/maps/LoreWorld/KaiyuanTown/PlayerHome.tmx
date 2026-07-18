@@ -43,12 +43,6 @@
     <property name="to" value="PlayerHome"/>
    </properties>
   </object>
-  <object id="6" name="新手提示" type="Props" x="160" y="16" width="48" height="48">
-   <properties>
-    <property name="text" value="先去隔壁做导师任务\n然后外出拜师喜欢的门派\n技能能练功不要直接学\n最后尽情的探索吧"/>
-    <property name="type" propertytype="Type" value="props"/>
-   </properties>
-  </object>
   <object id="7" x="167.739" y="9.63802" width="80" height="22.3906">
    <text pixelsize="9" wrap="1">游戏说明</text>
   </object>

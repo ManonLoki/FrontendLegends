@@ -52,10 +52,6 @@
    </properties>
   </object>
   <object id="22" type="Props" gid="1990" x="400" y="96" width="16" height="16">
-   <properties>
-    <property name="text" value="↑香草派"/>
-    <property name="type" propertytype="Type" value="props"/>
-   </properties>
   </object>
  </objectgroup>
 </map>

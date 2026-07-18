@@ -28,8 +28,11 @@ func _run_menu_suite(game: Node) -> void:
 	skill_system.ensure_skills().practice_progress["ng_code_decorator"] = 73
 	skill_system.ensure_skills().learn_progress["ng_code_decorator"] = 73
 	var ng_definition: Dictionary = data_registry.get_skill("ng_code_decorator")
-	_assert_true(skill_system._learn_required(ng_definition, 41, 1.0) == 100 and skill_system.skill_exp_required("ng_code_decorator", 41) == 100, "v4 四倍成本跨度下，门派功法 40→41 级应需要 100 点经验")
-	_assert_true(skill_system.practice_progress("ng_code_decorator").total == 100 and skill_system.learning_progress("ng_code_decorator").total == 100, "学艺与练功必须共用同一条 v4 经验曲线")
+	game_state.profile.attributes.wisdom = 50
+	_assert_true(skill_system.skill_exp_required("ng_code_decorator", 100) == 390 and skill_system._learn_required(ng_definition, 100, skill_system._learning_cost_rate()) == 420, "高灵感时练功应保留 65% 旧倍率，师父学习使用 70% 新下限")
+	game_state.profile.attributes.wisdom = 25
+	_assert_true(skill_system._learn_required(ng_definition, 41, 1.0) == 80, "师父学习 40→41 级应使用前快后慢的 2.25 次曲线")
+	_assert_true(skill_system.practice_progress("ng_code_decorator").total == 100 and skill_system.learning_progress("ng_code_decorator").total == 80, "练功必须保留 v4 原曲线，只有师父学习使用新曲线")
 	var practice_hp_before: int = game_state.combat_state.hp
 	var practice_mp_before: int = game_state.combat_state.mp
 	var aligned_practice_tick: Dictionary = skill_system.practice_tick("ng_code_decorator")
@@ -80,6 +83,8 @@ func _run_menu_suite(game: Node) -> void:
 	_assert_true(game.practice_progress_widgets.is_empty(), "停止练功后应立即清理进度条")
 	# 练功失败应立即停止，并在底部对话框明确提示原因。
 	skill_system.ensure_skills().levels["basicStrength"] = 10
+	skill_system.ensure_skills().levels["basicConstitution"] = 5
+	skill_system.ensure_skills().equipped_basic["arch"] = "basicConstitution"
 	skill_system.ensure_skills().levels["ng_code_decorator"] = 1
 	game_state.profile.vitals.cultivation = 3
 	game._refresh_practice()
@@ -136,7 +141,7 @@ func _run_menu_suite(game: Node) -> void:
 	var selected_skill: String = game.learn_items[game.learn_index]
 	var selected_definition: Dictionary = data_registry.get_skill(selected_skill)
 	var selected_level: int = skill_system.level(selected_skill)
-	var selected_rate: float = clampf(1.0 - (float(game_state.profile.attributes.wisdom) - 25.0) * 0.02, 0.65, 1.25)
+	var selected_rate: float = skill_system._learning_cost_rate()
 	var selected_required: int = skill_system._learn_required(selected_definition, selected_level + 1, selected_rate)
 	skill_system.ensure_skills().learn_progress[selected_skill] = selected_required - 1
 	game_state.profile.vitals.potential = 1
@@ -146,7 +151,7 @@ func _run_menu_suite(game: Node) -> void:
 	game._update_continuous_skill_actions(skill_system.LEARNING_TICK_SECONDS)
 	_assert_true(skill_system.level(selected_skill) == selected_level + 1, "最后 1 点潜能应在同一 tick 完成升级")
 	_assert_true(int(game_state.profile.vitals.potential) == 0, "每个有效学习 tick 应只消耗 1 点潜能")
-	_assert_true(int(game_state.profile.vitals.money) == money_before - ceili(float(selected_required) * 0.8), "升级 Token 学费应为本级经验需求的 80% 向上取整")
+	_assert_true(int(game_state.profile.vitals.money) == money_before - ceili(float(selected_required) * 0.65), "升级 Token 学费应为本级经验需求的 65% 向上取整")
 	_assert_true(str(game.learning_skill_id).is_empty() and game.learning_progress_widgets.is_empty(), "学习完成后进度条应立即消失")
 	game.npc_menu_open = false
 	game.npc_menu_panel.visible = false

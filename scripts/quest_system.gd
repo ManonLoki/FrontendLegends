@@ -8,6 +8,8 @@ const COMBAT_RULES := preload("res://scripts/combat/combat_rules.gd")
 ## 承担交易/典当/授业职能的人物不进入生死任务目标池；未成年人物一律排除。
 const KILL_QUEST_EXCLUDED_ROLES := ["vendor", "pawn", "master"]
 const KILL_QUEST_MIN_AGE := 18
+## 击杀类任务种类：只互斥追杀目标并响应击败事件；其余种类占用交付端点。
+const KILL_QUEST_KINDS := ["bounty", "bountyRing", "killRing"]
 
 ## 活动任务以固定 quest_id 或 generator:<generator_id> 为键；不同键可并行，
 ## 相同键不可重复。该字典与其他任务进度都只存在于本局会话。
@@ -63,22 +65,35 @@ func _append_reserved_npc_id(ids: Array[String], value: Variant) -> void:
 	if not npc_id.is_empty() and not ids.has(npc_id):
 		ids.append(npc_id)
 
-## 汇总所有任务的发布、交付和当前目标人物，避免并行任务共享同一个交互端点，
-## 也防止随机击杀任务暂时移除其他任务所依赖的人物。
-func _reserved_task_npc_ids() -> Array[String]:
+## 汇总当前活动任务真正的交付端点；只用于非击杀任务，避免一次交互同时结算两项任务。
+## 发布者和静态配置不做全局保留，交付人物也允许成为另一项任务的击杀目标。
+func _reserved_delivery_npc_ids() -> Array[String]:
 	var ids: Array[String] = []
 	for definition in DataRegistry.quests.values():
 		if definition is Dictionary:
-			_append_reserved_npc_id(ids, definition.get("giverNpcId", ""))
-			_append_reserved_npc_id(ids, definition.get("completionGiverId", ""))
+			_append_reserved_npc_id(ids, definition.get("completionGiverId", definition.get("giverNpcId", "")))
 	for definition in DataRegistry.quest_generators.values():
 		if definition is Dictionary:
 			_append_reserved_npc_id(ids, definition.get("giverNpcId", ""))
 	for runtime in active.values():
 		if not runtime is Dictionary:
 			continue
-		_append_reserved_npc_id(ids, runtime.get("giverNpcId", ""))
-		_append_reserved_npc_id(ids, runtime.get("completion_giver_id", ""))
+		var kind := str(runtime.get("kind", ""))
+		if runtime.has("completion_giver_id"):
+			_append_reserved_npc_id(ids, runtime.get("completion_giver_id", ""))
+		elif kind in ["errand", "bounty"]:
+			_append_reserved_npc_id(ids, runtime.get("giverNpcId", ""))
+		var target = runtime.get("target", {})
+		if kind == "ring" and target is Dictionary:
+			_append_reserved_npc_id(ids, target.get("target_id", ""))
+	return ids
+
+## 击杀类任务只互斥正在追杀的目标，允许命中其他任务的发布者、交付者或谈话目标。
+func _active_kill_target_ids() -> Array[String]:
+	var ids: Array[String] = []
+	for runtime in active.values():
+		if not runtime is Dictionary or str(runtime.get("kind", "")) not in KILL_QUEST_KINDS:
+			continue
 		var target = runtime.get("target", {})
 		if target is Dictionary:
 			_append_reserved_npc_id(ids, target.get("target_id", ""))
@@ -331,7 +346,7 @@ func handle_enemy_defeated(enemy_id: String) -> Dictionary:
 		var generator_id := str(runtime.get("generator_id", ""))
 		var definition: Dictionary = DataRegistry.quest_generators.get(generator_id, {})
 		var kind := str(definition.get("type", runtime.get("kind", "")))
-		if kind not in ["bounty", "bountyRing", "killRing"]:
+		if kind not in KILL_QUEST_KINDS:
 			continue
 		var target_value = runtime.get("target", {})
 		if not target_value is Dictionary:
