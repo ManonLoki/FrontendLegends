@@ -304,8 +304,8 @@ func unlocked_ults() -> Array:
 	return loadout.unlocked_ults()
 
 ## 为旧测试和调用方保留绝招字典构建入口。
-func _make_ult(config: Dictionary, tier: int, inner_power: int) -> Dictionary:
-	return loadout._make_ult(config, tier, inner_power)
+func _make_ult(config: Dictionary, tier: int, inner_power: int, inner_level: int = -1) -> Dictionary:
+	return loadout._make_ult(config, tier, inner_power, equipped_sect_skill_level("arch") if inner_level < 0 else inner_level)
 
 ## 冥想先填充当前精力，满值后转化为一点精力修为并清空当前精力。
 ## 理论上限只由已装备的架构功法和架构属性决定，赛博空间传送也使用该上限。

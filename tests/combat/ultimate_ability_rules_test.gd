@@ -11,6 +11,9 @@ func _assert_true(condition: bool, message: String) -> void:
 		push_error(message)
 
 func _initialize() -> void:
+	call_deferred("_run")
+
+func _run() -> void:
 	_assert_true([RULES.multi_hits(30), RULES.multi_hits(50), RULES.multi_hits(75), RULES.multi_hits(100)] == [3, 4, 5, 6], "连击次数必须按30/50/75/100级成长为3/4/5/6")
 	_assert_true([RULES.multi_power(30), RULES.multi_power(50), RULES.multi_power(75), RULES.multi_power(100)] == [0.65, 0.60, 0.55, 0.50], "连击逐击倍率必须随次数调整")
 	_assert_true(RULES.abnormal_count(30) == 1 and RULES.abnormal_count(79) == 1 and RULES.abnormal_count(80) == 2 and RULES.abnormal_count(100) == 2, "异常数量必须在80级从1种增长到2种")
@@ -31,5 +34,19 @@ func _initialize() -> void:
 	_assert_true(int(tier_one.inner_level) == 80 and int(tier_one.inner_power) == 190, "标准绝招必须区分特性等级与攻击内功")
 	_assert_true(int(tier_one.mp_cost) == 35 and int(tier_two.mp_cost) == 60, "精力消耗必须由绝招数据提供")
 	_assert_true(tier_one.kind == "reduceMax" and tier_two.kind == "reduceMax", "能力数据必须临时映射到旧执行器类型")
+	var guaranteed_ult := LOADOUT.build_ult({"abilitySets": [["guaranteed_hit"]]}, 1, 190, 80)
+	_assert_true(guaranteed_ult.kind == "hugeDamage", "guaranteed_hit 必须临时映射到旧执行器类型")
+	var state: Node = root.get_node("GameState")
+	var skill_system: Node = root.get_node("SkillSystem")
+	state.use_test_save_path("ultimate_ability_rules")
+	state.delete_save()
+	state.create_profile("绝招规则", {"strength": 25, "agility": 25, "constitution": 25, "wisdom": 25})
+	state.profile.sect = "NG神教"
+	var skill_state: Dictionary = skill_system.ensure_skills()
+	skill_state.levels["9287473e-59a9-5dc8-a914-324ec57ffc14"] = 67
+	skill_state.equipped_special.arch = "9287473e-59a9-5dc8-a914-324ec57ffc14"
+	var legacy_ult: Dictionary = skill_system._make_ult(config, 1, 190)
+	var explicit_ult: Dictionary = skill_system._make_ult(config, 1, 190, 81)
+	_assert_true(int(legacy_ult.inner_level) == 67 and int(explicit_ult.inner_level) == 81, "旧入口省略等级时必须读取已装备架构，显式等级必须原样传递")
 	print("ultimate_ability_rules_test: PASS" if failures.is_empty() else "ultimate_ability_rules_test: FAIL (%d)" % failures.size())
 	quit(0 if failures.is_empty() else 1)
