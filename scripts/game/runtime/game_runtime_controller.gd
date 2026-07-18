@@ -91,8 +91,7 @@ func _update_player_visual(delta: float) -> void:
 		game.player_visual_tile = target
 		return
 	game.player_step_elapsed = minf(game.player_step_elapsed + maxf(delta, 0.0), game.MOVE_STEP_SECONDS)
-	var progress := clampf(game.player_step_elapsed / game.MOVE_STEP_SECONDS, 0.0, 1.0)
-	var eased := progress * progress * (3.0 - 2.0 * progress)
+	var eased := smoothstep(0.0, 1.0, game.player_step_elapsed / game.MOVE_STEP_SECONDS)
 	game.player_visual_tile = game.player_step_start.lerp(target, eased)
 	game._update_camera()
 	game.queue_redraw()
@@ -124,18 +123,15 @@ func _update_continuous_skill_actions(delta: float) -> void:
 			game.message = str(result.get("message", ""))
 			learn_changed = true
 			# 原项目在升级成功或资源/门槛阻断时停止持续研习。
-			var failure_reason := str(result.get("reason", ""))
-			if bool(result.get("ok", false)) or not failure_reason.is_empty():
+			if bool(result.get("ok", false)) or not str(result.get("reason", "")).is_empty():
 				game.learning_skill_id = ""
-				if failure_reason in ["potential", "token"]:
+				if bool(result.get("resource_blocked", false)):
 					learning_failure_message = game.message
 		if learn_changed:
 			# 升级或阻断都会清空 learning_skill_id 并改变列表内容，需要整页重绘；
 			# 普通 tick 只需刷新顶部进度条。
 			if game.learning_skill_id.is_empty():
 				game._refresh_learn_list()
-			else:
-				game.learning_controller.update_tick_feedback()
 			game._render_learning_progress()
 			if not learning_failure_message.is_empty():
 				game._show_dialogue("学习", learning_failure_message)

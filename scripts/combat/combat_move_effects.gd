@@ -8,8 +8,7 @@ func _init(combat_system: Node) -> void:
 
 func merged(external: Dictionary, move: Dictionary) -> Dictionary:
 	var result := external.duplicate(true)
-	for key in move.get("combat_effects", {}):
-		result[key] = move.combat_effects[key]
+	result.merge(move.get("combat_effects", {}), true)
 	return result
 
 func apply_move_bonus(session: Dictionary, side: String, move: Dictionary, result: Dictionary) -> String:

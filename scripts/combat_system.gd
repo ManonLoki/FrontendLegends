@@ -57,7 +57,7 @@ func player_attack(session: Dictionary, turn_started := false, damage_scale := 1
 		session.log.append("%s%s，%s身形一晃避开了。" % [_player_name(), attack_verb, session.enemy.get("displayName", "敌人")])
 		return result
 	var enemy_dodge_move := _npc_move(session.enemy, "dodge") if not guaranteed else {}
-	if not guaranteed and not enemy_dodge_move.is_empty():
+	if not enemy_dodge_move.is_empty():
 		session.log.append("%s出招，%s危急间使出【%s】，身形一晃避开了。" % [_player_name(), session.enemy.get("displayName", "敌人"), enemy_dodge_move.get("name", "身法")])
 		return {"hit": false, "parried": false, "crit": false, "damage": 0, "dodged": true}
 	var enemy_parry := _npc_move(session.enemy, "parry")
@@ -196,7 +196,7 @@ func _npc_move(npc: Dictionary, kind: String) -> Dictionary:
 func enemy_action(session: Dictionary) -> Dictionary:
 	return enemy_ai.act(session)
 
-## NPC 版“已解锁绝招”：等级门槛与消耗表与玩家侧共用 skill_loadout.gd 中的定义。
+## NPC 版“已解锁绝招”：等级门槛与构造逻辑与玩家侧共用 combat_ability_rules.gd 中的定义。
 func _npc_ults(npc: Dictionary) -> Array:
 	return enemy_ai.npc_ults(npc)
 

@@ -160,9 +160,10 @@ func _run_domain_suite() -> void:
 	_assert_true(repeated_novice.contains("咋还没做完") and quest_system.active.size() == active_count_before_novice_repeat, "同一固定任务 ID 不得重复接取")
 	_assert_true(quest_system._base_reward({"rewardBase": 10}) == {"experience": 20, "potential": 30, "money": 24}, "通用 rewardBase 必须按 2:3:2.4 拆分")
 	var novice_definition: Dictionary = data_registry.get_quest(NOVICE_PROJECT_ID)
+	var novice_reward: Dictionary = quest_system.rewards.base_reward(novice_definition)
+	_assert_true(int(novice_reward.get("experience", -1)) == 50 and int(novice_reward.get("potential", -1)) == 50 and int(novice_reward.get("money", -1)) == 40, "导师项目必须固定奖励 50 经验、50 潜能、40 Token，当前为 %s" % [novice_reward])
 	for variant in novice_definition.get("variants", []):
-		var novice_reward: Dictionary = quest_system.rewards.novice_reward(novice_definition, variant)
-		_assert_true(int(novice_reward.get("experience", -1)) == 50 and int(novice_reward.get("potential", -1)) == 50 and int(novice_reward.get("money", -1)) == 40, "导师的%s必须固定奖励 50 经验、50 潜能、40 Token，当前为 %s" % [variant.get("title", "项目"), novice_reward])
+		_assert_true(not variant.has("rewardScale"), "导师项目难度只允许改变体力成本，%s 不得携带奖励缩放字段" % variant.get("title", "项目"))
 	_assert_true(quest_system._scaled_reward({"ringGrowth": 0.5, "fluctuation": 0.0}, {"experience": 1}, 2).experience == 1, "九日环增长后的小数奖励应向下取整而非四舍五入")
 	_assert_true(quest_system._scaled_reward({"ringGrowth": 1.0, "growthCap": 2.5, "fluctuation": 0.0}, {"experience": 10}, 10).experience == 25, "九日环线性增长必须受 growthCap 封顶")
 	data_registry.items["__refund_item"] = {"name": "退款测试物", "kind": "food", "price": 100, "stackLimit": 2}

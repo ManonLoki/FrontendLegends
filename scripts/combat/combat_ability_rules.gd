@@ -3,6 +3,9 @@ extends RefCounted
 
 const MIN_INNER_LEVEL := 30
 const MAX_INNER_LEVEL := 100
+## 门派绝招按内力功法等级解锁：一档 30 级、二档 80 级。
+const ULT_TIER1_ARCH_LEVEL := 30
+const ULT_TIER2_ARCH_LEVEL := 80
 
 static func progress(inner_level: int) -> float:
 	return clampf(float(inner_level - MIN_INNER_LEVEL) / float(MAX_INNER_LEVEL - MIN_INNER_LEVEL), 0.0, 1.0)
@@ -27,6 +30,20 @@ static func drain_hp_ratio(inner_level: int) -> float:
 
 static func drain_mp_ratio(inner_level: int) -> float:
 	return 0.08 + progress(inner_level) * 0.07
+
+## 把绝招配置与档位转换为战斗系统使用的标准字典；玩家侧与 NPC 侧共用。
+static func build_ult(config: Dictionary, tier: int, inner_power: int, inner_level: int) -> Dictionary:
+	var index := clampi(tier - 1, 0, 1)
+	var names: Array = config.get("names", ["绝招", "绝招"])
+	var sets: Array = config.get("abilitySets", [[], []])
+	var costs: Array = config.get("mpCosts", [40, 70])
+	var unlock_level := ULT_TIER1_ARCH_LEVEL if tier == 1 else ULT_TIER2_ARCH_LEVEL
+	return {
+		"id": "ult:%s:%d" % [config.get("key", "sect"), unlock_level],
+		"name": names[index], "tier": tier,
+		"inner_power": inner_power, "inner_level": inner_level,
+		"mp_cost": int(costs[index]), "abilities": sets[index].duplicate(),
+	}
 
 static func attack_effects(ult: Dictionary) -> Dictionary:
 	var abilities: Array = ult.get("abilities", [])

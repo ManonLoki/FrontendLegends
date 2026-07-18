@@ -19,10 +19,6 @@ func base_reward(definition: Dictionary) -> Dictionary:
 		return {"experience": base * 2, "potential": base * 3, "money": int(ceil(float(base) * 3.0 * 0.8))}
 	return {}
 
-## 导师项目的难度只改变体力成本，三种项目始终使用任务表中的固定奖励。
-func novice_reward(definition: Dictionary, _variant: Dictionary) -> Dictionary:
-	return base_reward(definition)
-
 ## 按目标四维总和和平均技能等级计算生死簿奖励。
 func kill_ring_reward(definition: Dictionary, target_id: String) -> Dictionary:
 	var target: Dictionary = DataRegistry.get_npc(target_id)

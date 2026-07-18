@@ -1,7 +1,6 @@
 extends SceneTree
 
 const RULES := preload("res://scripts/combat/combat_ability_rules.gd")
-const LOADOUT := preload("res://scripts/skills/skill_loadout.gd")
 
 var failures: Array[String] = []
 
@@ -28,8 +27,8 @@ func _run() -> void:
 		"key": "test", "names": ["一档", "二档"],
 		"abilitySets": [["drain_hp"], ["drain_mp"]], "mpCosts": [35, 60],
 	}
-	var tier_one := LOADOUT.build_ult(config, 1, 190, 80)
-	var tier_two := LOADOUT.build_ult(config, 2, 190, 80)
+	var tier_one := RULES.build_ult(config, 1, 190, 80)
+	var tier_two := RULES.build_ult(config, 2, 190, 80)
 	_assert_true(tier_one.abilities == ["drain_hp"] and tier_two.abilities == ["drain_mp"], "两档绝招必须携带各自能力")
 	_assert_true(int(tier_one.inner_level) == 80 and int(tier_one.inner_power) == 190, "标准绝招必须区分特性等级与攻击内功")
 	_assert_true(int(tier_one.mp_cost) == 35 and int(tier_two.mp_cost) == 60, "精力消耗必须由绝招数据提供")

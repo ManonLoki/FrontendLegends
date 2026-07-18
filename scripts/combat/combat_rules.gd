@@ -147,7 +147,7 @@ func npc_move(npc: Dictionary, kind: String) -> Dictionary:
 		var current := int(skill_levels.get(str(skill_id), 0))
 		for move in definition.get("moves", []):
 			if current >= int(move.get("unlockLevel", 0)):
-				moves.append({"name": move.get("name", "招式"), "level": current, "unlock": int(move.get("unlockLevel", 0)), "combat_effects": move.get("combatEffects", {}).duplicate(true)})
+				moves.append({"name": move.get("name", "招式"), "level": current, "unlock": int(move.get("unlockLevel", 0)), "combat_effects": move.get("combatEffects", {})})
 	if moves.is_empty() or randf() >= move_trigger_rate(kind, moves.size()):
 		return {}
 	return weighted_pick(moves)

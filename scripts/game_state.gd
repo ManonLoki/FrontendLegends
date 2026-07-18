@@ -354,6 +354,6 @@ func resolve_landed_attack(attack_power: float, attacker: Dictionary, defender: 
 ## 后续步骤只在命中成立后才滚动，与参考项目的判定顺序保持一致。
 func resolve_attack(attack_power: float, attacker: Dictionary, defender: Dictionary, defense: float, hit_bonus := 0.0, dodge_bonus := 0.0, parry_bonus := 0.0, crit_bonus := 0.0, guaranteed_hit := false) -> Dictionary:
 	var hit_rate := clampf(combat_hit_rate(attacker, defender) + float(hit_bonus) - float(dodge_bonus), MIN_HIT_RATE, MAX_HIT_RATE)
-	if not bool(guaranteed_hit) and randf() >= hit_rate:
+	if not guaranteed_hit and randf() >= hit_rate:
 		return {"hit": false, "parried": false, "crit": false, "damage": 0}
 	return resolve_landed_attack(attack_power, attacker, defender, defense, parry_bonus, crit_bonus)

@@ -1,6 +1,7 @@
 extends Node
 const SKILL_TRAINING := preload("res://scripts/skills/skill_training.gd")
 const SKILL_LOADOUT := preload("res://scripts/skills/skill_loadout.gd")
+const COMBAT_ABILITY_RULES := preload("res://scripts/combat/combat_ability_rules.gd")
 const SKILL_MEMBERSHIP := preload("res://scripts/skills/skill_membership.gd")
 const SKILL_LEARNING := preload("res://scripts/skills/skill_learning.gd")
 ## 学习、冥想和练功分别采用独立的固定推进间隔。
@@ -30,10 +31,6 @@ const WISDOM_PRACTICE_RATE_PER_POINT := 0.02
 const PRACTICE_RATE_MIN := 0.65
 const PRACTICE_RATE_MAX := 1.25
 const PRACTICE_CURVE_EXPONENT := 2.0
-
-## 门派绝招按内力功法等级解锁：一档 30 级、二档 80 级。
-const ULT_TIER1_ARCH_LEVEL := 30
-const ULT_TIER2_ARCH_LEVEL := 80
 
 @onready var training := SKILL_TRAINING.new(self)
 @onready var loadout := SKILL_LOADOUT.new(self)
@@ -149,15 +146,10 @@ func learning_progress(skill_id: String) -> Dictionary:
 	var definition := DataRegistry.get_skill(skill_id)
 	if definition.is_empty():
 		return {"current": 0, "total": 1}
-	var next_level := level(skill_id) + 1
-	var required := _learning_xp_required(definition, next_level)
-	var xp_per_potential := _learning_xp_per_potential()
-	var current := mini(required, int(ensure_skills().get("learn_progress", {}).get(skill_id, 0)))
+	var required := _learning_xp_required(definition, level(skill_id) + 1)
 	return {
-		"current": current,
+		"current": mini(required, int(ensure_skills().get("learn_progress", {}).get(skill_id, 0))),
 		"total": required,
-		"xp_per_potential": xp_per_potential,
-		"potential_remaining": int(ceil(float(required - current) / float(xp_per_potential))),
 	}
 
 ## 学艺/读秘籍升级后，四维是否因基础功法等级提升而跟涨（見 _refresh_derived_attributes）。
@@ -168,8 +160,14 @@ func _attribute_growth_suffix(before: Dictionary) -> String:
 			return "，四维亦有精进"
 	return ""
 
+## 固定学习经验只由曲线参数与目标等级决定；逐级累加较慢，按参数缓存结果。
+var _learning_xp_cache := {}
+
 ## 按技能曲线与目标等级计算固定学习经验；此函数不得读取或接收灵感。
 func _learning_xp_required(definition: Dictionary, level_to_reach: int) -> int:
+	var cache_key := [definition.get("costBase", 100), definition.get("costFactor", 1.0), definition.get("maxLevel", 100), level_to_reach]
+	if _learning_xp_cache.has(cache_key):
+		return _learning_xp_cache[cache_key]
 	var cost_factor := maxf(0.0, float(definition.get("costFactor", 1.0)))
 	var max_required := _ceil_even(float(definition.get("costBase", 100)) * cost_factor * LEARN_COST_SPAN * LEARN_XP_PER_POTENTIAL_BASE)
 	var denominator := maxf(1.0, float(int(definition.get("maxLevel", 100)) - 1))
@@ -183,6 +181,7 @@ func _learning_xp_required(definition: Dictionary, level_to_reach: int) -> int:
 		var ramp_required := LEARN_FIRST_LEVEL_XP + _ceil_even(float(candidate_level - 1) * LEARN_LEVEL_RAMP_XP * cost_factor)
 		# 两条候选曲线和最小增量都使用偶数，保证结果逐级增长且始终为偶数。
 		resolved_required = maxi(maxi(curve_required, ramp_required), resolved_required + 2)
+	_learning_xp_cache[cache_key] = resolved_required
 	return resolved_required
 
 func _ceil_even(value: float) -> int:
@@ -305,7 +304,7 @@ func unlocked_ults() -> Array:
 
 ## 为旧测试和调用方保留绝招字典构建入口。
 func _make_ult(config: Dictionary, tier: int, inner_power: int, inner_level: int = -1) -> Dictionary:
-	return loadout._make_ult(config, tier, inner_power, equipped_sect_skill_level("arch") if inner_level < 0 else inner_level)
+	return COMBAT_ABILITY_RULES.build_ult(config, tier, inner_power, equipped_sect_skill_level("arch") if inner_level < 0 else inner_level)
 
 ## 冥想先填充当前精力，满值后转化为一点精力修为并清空当前精力。
 ## 理论上限只由已装备的架构功法和架构属性决定，赛博空间传送也使用该上限。

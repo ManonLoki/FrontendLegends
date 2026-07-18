@@ -1,7 +1,7 @@
 extends RefCounted
 ## 敌方战斗决策服务；按优先级选择摸鱼、药品、绝招或普通攻击。
 
-const SKILL_LOADOUT := preload("res://scripts/skills/skill_loadout.gd")
+const ABILITY_RULES := preload("res://scripts/combat/combat_ability_rules.gd")
 const ULT_USE_RATE := 0.35
 const ITEM_USE_RATE := 0.55
 const REST_USE_RATE := 0.20
@@ -86,8 +86,8 @@ func npc_ults(npc: Dictionary) -> Array:
 		var level := int(skill_levels.get(str(skill_id), 0))
 		var inner_power := int(skill_levels.get("dcebef7e-09b8-5a69-8e3d-159cb2b0c355", 0)) + level * 2
 		var config: Dictionary = definition.get("ult", {})
-		if level >= SKILL_LOADOUT.ULT_TIER1_ARCH_LEVEL:
-			result.append(SKILL_LOADOUT.build_ult(config, 1, inner_power, level))
-		if level >= SKILL_LOADOUT.ULT_TIER2_ARCH_LEVEL:
-			result.append(SKILL_LOADOUT.build_ult(config, 2, inner_power, level))
+		if level >= ABILITY_RULES.ULT_TIER1_ARCH_LEVEL:
+			result.append(ABILITY_RULES.build_ult(config, 1, inner_power, level))
+		if level >= ABILITY_RULES.ULT_TIER2_ARCH_LEVEL:
+			result.append(ABILITY_RULES.build_ult(config, 2, inner_power, level))
 	return result

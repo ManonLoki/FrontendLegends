@@ -96,9 +96,6 @@ func render() -> void:
 			game._detail_label("%d/%d" % [SkillSystem.level(skill_id), teach_cap(skill_id)], Rect2(Vector2(area.x - 105.0 * scale, y), Vector2(80.0 * scale, row)), 12, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.35, 0.35, 0.35, 1))
 			if not game.learn_focus_category and index == game.learn_index:
 				game._detail_selection(item_rect)
-## 保留运行时调用入口；学习进度由顶部进度条呈现，无需刷新面板页脚。
-func update_tick_feedback() -> void:
-	pass
 
 func teach_cap(skill_id: String) -> int:
 	return SkillSystem.teach_cap(game.nearby_npc_id, skill_id)

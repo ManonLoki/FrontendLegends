@@ -1,21 +1,15 @@
-import { existsSync } from "node:fs";
-import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { dirname } from "node:path";
-import { join } from "node:path";
-import { tmpdir } from "node:os";
+import { dirname, resolve } from "node:path";
 import { hashWebBuild } from "./hash-web-build.mjs";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outputFile = resolve(projectRoot, process.argv[2] ?? "dist/web/index.html");
-const macGodot = "/Applications/Godot.app/Contents/MacOS/Godot";
-const godot = process.env.GODOT_BIN || (existsSync(macGodot) ? macGodot : "godot");
-const godotLog = process.env.FRONTEND_LEGENDS_GODOT_LOG || join(tmpdir(), `frontend-legends-web-build-${process.pid}.log`);
 
+// godot-safe.sh 是 Godot 命令行唯一入口，负责选择二进制并把日志固定到可写目录。
 const exportResult = spawnSync(
-  godot,
-  ["--headless", "--path", projectRoot, "--log-file", godotLog, "--export-release", "Web", outputFile],
+  resolve(projectRoot, "tools/godot-safe.sh"),
+  ["--headless", "--export-release", "Web", outputFile],
   { cwd: projectRoot, stdio: "inherit" },
 );
 if (exportResult.error) throw exportResult.error;

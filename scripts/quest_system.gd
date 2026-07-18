@@ -146,7 +146,8 @@ func interact_npc(npc_id: String) -> String:
 		if variants.is_empty():
 			return str(novice.get("lines", {}).get("cooldown", "暂时没有任务。"))
 		var variant: Dictionary = variants[randi() % variants.size()]
-		active[novice_id] = {"state": "active", "progress": 0, "completion_giver_id": novice.get("completionGiverId", ""), "target": variant.get("title", "项目"), "hp_cost": variant.get("hpCost", 0), "reward": rewards.novice_reward(novice, variant)}
+		# 导师项目的难度只改变体力成本，三种项目始终使用任务表中的固定奖励。
+		active[novice_id] = {"state": "active", "progress": 0, "completion_giver_id": novice.get("completionGiverId", ""), "target": variant.get("title", "项目"), "hp_cost": variant.get("hpCost", 0), "reward": rewards.base_reward(novice)}
 		return str(novice.get("lines", {}).get("accepted", "已接取任务：{target}")).replace("{target}", str(variant.get("title", "项目")))
 
 	for generator_id in DataRegistry.quest_generators:
