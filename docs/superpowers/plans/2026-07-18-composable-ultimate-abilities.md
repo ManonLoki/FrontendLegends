@@ -1,5 +1,7 @@
 # Composable Ultimate Abilities Implementation Plan
 
+> 历史记录：本计划已于提交 0b16ab1 前后全部完成，请勿再按下列步骤执行。后续重构已把 `build_ult` 与 `ULT_TIER*_ARCH_LEVEL` 移入 `scripts/combat/combat_ability_rules.gd`，并把 `_execute_multi`/`_execute_single` 合并为统一的 `_execute`；当前行为以实现与测试为准。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Replace the four hard-coded ultimate branches with level-scaled combo, guaranteed abnormal, guaranteed-hit damage, and HP/MP drain abilities while preserving existing ordinary-move status procs and allowing ordinary moves to reuse guaranteed-hit and drain effects.

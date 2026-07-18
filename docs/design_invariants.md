@@ -61,7 +61,7 @@
 ## 权威证据与回归
 
 - 运行行为：Godot 场景与 GDScript。
-- 不变量规范：本文档，以及仓库根目录 `AGENTS.md`、`CLAUDE.md` 的保护规则。
+- 不变量规范：本文档是不变量内容的唯一规范来源；仓库根目录 `AGENTS.md` 与 `CLAUDE.md` 的保护规则是其执行入口，若摘要与本文档粒度不一致，以本文档为准。
 - 学习结构回归：`tests/alignment/learning_suite.gd`。
 - 战斗结构回归：`tests/combat/invariant_contract.gd`、`tests/combat_alignment_test.gd`、`tests/combat_balance_test.gd`。
 - 数值说明：`docs/balance_design.md`、`docs/growth_curve_72h.md` 与 `docs/data/balance-rules.xlsx`。

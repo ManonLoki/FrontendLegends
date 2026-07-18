@@ -26,6 +26,7 @@ FrontendLegends 是一款使用 Godot 4.7 与 GDScript 开发的 2D 俯视角格
 | `docs/data/items.xlsx`、`skills.xlsx`、`npcs.xlsx` | 道具、技能和 NPC 的独立维护工作簿；关联库存、教学、装备与掉落使用子表 |
 | `docs/data/quests.xlsx`、`world-events.xlsx`、`maps.xlsx` | 任务、世界事件和地图索引的独立维护工作簿 |
 | `docs/data/balance-rules.xlsx` | v5 数值目标、公式和约束参考，不直接导出运行时 JSON |
+| `docs/superpowers/` | 已完成任务的实施计划与设计快照，仅作历史记录；当前行为以实现和上述文档为准 |
 | `assets/Map/maps/LoreWorld/` | Tiled 制作的 TMX 世界地图 |
 | `assets/Map/tilesets/` | 地图直接依赖的 TSX 瓦片集定义 |
 | `tests/` | 领域、界面、菜单和战斗对齐测试 |
@@ -64,7 +65,7 @@ FrontendLegends 是一款使用 Godot 4.7 与 GDScript 开发的 2D 俯视角格
 4. `docs/design_invariants.md` 定义学习与战斗的基础玩法契约；实现不得在没有用户后续明确确认时改变其中的资源身份、输入维度、职责或阶段顺序。
 5. 其余文档用于解释前述事实与契约，不得自行创造与实现不一致的规则。
 
-数值、系数、阈值与计算公式可以在保持不变量的前提下校准。若需求会触及不变量，首次提出不算授权：必须先列出准确文件、行为、存档/数据与测试影响，等待用户在后续消息中进行一次性明确解锁。
+数值、系数、阈值与计算公式可以在保持不变量的前提下校准；结构性修改的授权流程以 `docs/design_invariants.md` 的「修改授权」一节为准。
 
 ## 存档
 
