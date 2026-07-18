@@ -5,11 +5,13 @@ const COMBAT_STATUS := preload("res://scripts/combat/combat_status.gd")
 const ENEMY_AI := preload("res://scripts/combat/enemy_ai.gd")
 const ULTIMATE_ACTIONS := preload("res://scripts/combat/ultimate_actions.gd")
 const PLAYER_RECOVERY_ACTIONS := preload("res://scripts/combat/player_recovery_actions.gd")
+const COMBAT_MOVE_EFFECTS := preload("res://scripts/combat/combat_move_effects.gd")
 var rules := COMBAT_RULES.new()
 @onready var status_effects := COMBAT_STATUS.new(self)
 @onready var enemy_ai := ENEMY_AI.new(self)
 @onready var ultimate_actions := ULTIMATE_ACTIONS.new(self)
 @onready var player_recovery := PLAYER_RECOVERY_ACTIONS.new(self)
+@onready var move_effects := COMBAT_MOVE_EFFECTS.new(self)
 
 const FLEE_BASE := 0.40
 const FLEE_PER_AGILITY := 0.03
@@ -31,7 +33,7 @@ func create_session(enemy_id: String, lethal: bool = true) -> Dictionary:
 	return rules.create_session(enemy_id, lethal)
 
 ## 执行玩家攻击并依次结算招式、加力、装备、状态和战报。
-func player_attack(session: Dictionary, turn_started := false, damage_scale := 1.0, hit_bonus_extra := 0.0, attack_power_bonus := 0.0, action_label := "出手", allow_attack_move := true) -> Dictionary:
+func player_attack(session: Dictionary, turn_started := false, damage_scale := 1.0, hit_bonus_extra := 0.0, attack_power_bonus := 0.0, action_label := "出手", allow_attack_move := true, attack_effects: Dictionary = {}) -> Dictionary:
 	var turn_check := {"can_act": true, "message": ""} if turn_started else start_turn(session, "player")
 	if not turn_check.can_act:
 		return {"hit": false, "parried": false, "crit": false, "damage": 0, "skipped": true, "message": turn_check.message}
@@ -41,6 +43,8 @@ func player_attack(session: Dictionary, turn_started := false, damage_scale := 1
 	var attack_move: Dictionary = {}
 	if not attack_moves.is_empty() and randf() < rules.move_trigger_rate("attack", attack_moves.size()):
 		attack_move = _weighted_pick(attack_moves)
+	var effects := move_effects.merged(attack_effects, attack_move)
+	var guaranteed := bool(effects.get("guaranteedHit", false))
 	var move_hit_bonus := MOVE_HIT_BONUS if not attack_move.is_empty() else 0.0
 	var attack_verb := "使出【%s】" % attack_move.get("name", "招式") if not attack_move.is_empty() else action_label
 	var enemy_equipment := _npc_equipment_bonus(session.enemy)
@@ -48,12 +52,12 @@ func player_attack(session: Dictionary, turn_started := false, damage_scale := 1
 	var player_skill_bonus := SkillSystem.combat_bonus()
 	var equipment := InventorySystem.equipment_bonus()
 	var defense := GameState.defense_base(float(enemy_attributes.get("constitution", 0))) + float(enemy_skill_bonus.get("defense", 0)) + float(enemy_equipment.get("defense", 0))
-	var result: Dictionary = GameState.resolve_attack(_player_attack_power() + attack_power_bonus, player_attributes, enemy_attributes, defense, (float(player_skill_bonus.get("hit", 0)) + float(equipment.get("hit", 0))) * 0.01 + move_hit_bonus + hit_bonus_extra, (float(enemy_skill_bonus.get("dodge", 0)) + float(enemy_equipment.get("dodge", 0))) * 0.01, (float(enemy_skill_bonus.get("parry", 0)) + float(enemy_equipment.get("parry", 0))) * 0.01, float(equipment.get("crit", 0)) * 0.01)
+	var result: Dictionary = GameState.resolve_attack(_player_attack_power() + attack_power_bonus, player_attributes, enemy_attributes, defense, (float(player_skill_bonus.get("hit", 0)) + float(equipment.get("hit", 0))) * 0.01 + move_hit_bonus + hit_bonus_extra, (float(enemy_skill_bonus.get("dodge", 0)) + float(enemy_equipment.get("dodge", 0))) * 0.01, (float(enemy_skill_bonus.get("parry", 0)) + float(enemy_equipment.get("parry", 0))) * 0.01, float(equipment.get("crit", 0)) * 0.01, guaranteed)
 	if not result.hit:
 		session.log.append("%s%s，%s身形一晃避开了。" % [_player_name(), attack_verb, session.enemy.get("displayName", "敌人")])
 		return result
-	var enemy_dodge_move := _npc_move(session.enemy, "dodge")
-	if not enemy_dodge_move.is_empty():
+	var enemy_dodge_move := _npc_move(session.enemy, "dodge") if not guaranteed else {}
+	if not guaranteed and not enemy_dodge_move.is_empty():
 		session.log.append("%s出招，%s危急间使出【%s】，身形一晃避开了。" % [_player_name(), session.enemy.get("displayName", "敌人"), enemy_dodge_move.get("name", "身法")])
 		return {"hit": false, "parried": false, "crit": false, "damage": 0, "dodged": true}
 	var enemy_parry := _npc_move(session.enemy, "parry")
@@ -65,23 +69,13 @@ func player_attack(session: Dictionary, turn_started := false, damage_scale := 1
 	if int(session.get("enemy_status", {}).get("weakness", 0)) > 0:
 		result.damage = int(ceil(float(result.damage) * WEAKNESS_DAMAGE_MULT))
 	var force_extra := _apply_player_force_power(result)
-	var move_tag := ""
-	var status_tag := ""
-	if not attack_move.is_empty():
-		var status := _roll_attack_move_status(attack_move)
-		var extra := int(floor(8.0 + maxi(0, int(attack_move.get("level", 0)) - int(attack_move.get("unlock", 0))) * 0.6))
-		if not status.is_empty():
-			extra = int(floor(float(extra) * 0.5))
-		result.damage += extra
-		move_tag = "（招式+%d）" % extra
-		if not status.is_empty():
-			var turns := randi_range(1, 3)
-			add_status(session, "enemy", str(status.kind), turns)
-			status_tag = "（施加%s%d回合）" % [_status_name(str(status.kind)), turns]
-	result.damage = maxi(1, int(floor(float(result.damage) * maxf(0.0, damage_scale))))
+	var move_tag := move_effects.apply_move_bonus(session, "player", attack_move, result)
+	result.damage = maxi(1, int(floor(float(result.damage) * maxf(0.0, damage_scale * float(effects.get("damageScale", 1.0))))))
 	var wound := int(InventorySystem.equipment_bonus().get("woundInflict", 0))
 	var wound_tag := ""
+	var hp_before := int(session.enemy_hp)
 	session.enemy_hp = maxi(0 if bool(session.get("lethal", true)) else 1, int(session.enemy_hp) - int(result.damage))
+	var drain_tag := move_effects.apply_drain(session, true, hp_before - int(session.enemy_hp), effects)
 	if wound > 0 and int(session.enemy_hp) > 0:
 		var old_max := maxi(1, int(session.enemy_max_hp))
 		var new_max := maxi(1, old_max - wound)
@@ -91,7 +85,7 @@ func player_attack(session: Dictionary, turn_started := false, damage_scale := 1
 	var tags := ("暴击！" if result.crit else "") + ("（被招架）" if result.parried else "")
 	tags += move_tag
 	if force_extra > 0: tags += "（加力+%d，耗精力%d）" % [force_extra, SkillSystem.force_power()]
-	tags += wound_tag + status_tag + parry_move_tag
+	tags += wound_tag + drain_tag + parry_move_tag
 	session.log.append("%s%s，命中 %d 点%s。%s余 %d 体力。" % [_player_name(), attack_verb, result.damage, tags, session.enemy.get("displayName", "敌人"), session.enemy_hp])
 	return result
 
@@ -106,7 +100,7 @@ func _apply_player_force_power(result: Dictionary) -> int:
 	return extra
 
 ## 与 player_attack 结构对称；NPC 在命中后按 AI 配置尝试消耗精力加力。
-func enemy_attack(session: Dictionary, turn_started := false, damage_scale := 1.0, hit_bonus_extra := 0.0, attack_power_bonus := 0.0, action_label := "进招", allow_attack_move := true) -> Dictionary:
+func enemy_attack(session: Dictionary, turn_started := false, damage_scale := 1.0, hit_bonus_extra := 0.0, attack_power_bonus := 0.0, action_label := "进招", allow_attack_move := true, attack_effects: Dictionary = {}) -> Dictionary:
 	var turn_check := {"can_act": true, "message": ""} if turn_started else start_turn(session, "enemy")
 	if not turn_check.can_act:
 		return {"hit": false, "parried": false, "crit": false, "damage": 0, "skipped": true, "message": turn_check.message}
@@ -117,14 +111,16 @@ func enemy_attack(session: Dictionary, turn_started := false, damage_scale := 1.
 	var enemy_skill_bonus := _npc_combat_bonus(session.enemy)
 	var player_skill_bonus := SkillSystem.combat_bonus()
 	var attack_move := _npc_move(session.enemy, "attack") if allow_attack_move else {}
+	var effects := move_effects.merged(attack_effects, attack_move)
+	var guaranteed := bool(effects.get("guaranteedHit", false))
 	var move_hit_bonus := MOVE_HIT_BONUS if not attack_move.is_empty() else 0.0
 	var attack_verb := "使出【%s】" % attack_move.get("name", "招式") if not attack_move.is_empty() else action_label
-	var result: Dictionary = GameState.resolve_attack(_enemy_attack_power(session.enemy) + attack_power_bonus, enemy_attributes, player_attributes, _player_defense(), (float(enemy_skill_bonus.get("hit", 0)) + float(enemy_equipment.get("hit", 0))) * 0.01 + move_hit_bonus + hit_bonus_extra, (float(player_skill_bonus.get("dodge", 0)) + float(equipment.get("dodge", 0))) * 0.01, (float(player_skill_bonus.get("parry", 0)) + float(equipment.get("parry", 0))) * 0.01, float(enemy_equipment.get("crit", 0)) * 0.01)
+	var result: Dictionary = GameState.resolve_attack(_enemy_attack_power(session.enemy) + attack_power_bonus, enemy_attributes, player_attributes, _player_defense(), (float(enemy_skill_bonus.get("hit", 0)) + float(enemy_equipment.get("hit", 0))) * 0.01 + move_hit_bonus + hit_bonus_extra, (float(player_skill_bonus.get("dodge", 0)) + float(equipment.get("dodge", 0))) * 0.01, (float(player_skill_bonus.get("parry", 0)) + float(equipment.get("parry", 0))) * 0.01, float(enemy_equipment.get("crit", 0)) * 0.01, guaranteed)
 	if not result.hit:
 		session.log.append("%s%s，%s身形一晃避开了。" % [session.enemy.get("displayName", "敌人"), attack_verb, _player_name()])
 		return result
 	var player_dodge_moves: Array = SkillSystem.unlocked_moves().filter(func(move): return move.get("kind", "") == "dodge")
-	if not player_dodge_moves.is_empty() and randf() < rules.move_trigger_rate("dodge", player_dodge_moves.size()):
+	if not guaranteed and not player_dodge_moves.is_empty() and randf() < rules.move_trigger_rate("dodge", player_dodge_moves.size()):
 		var dodge_move: Dictionary = _weighted_pick(player_dodge_moves)
 		session.log.append("%s出招，%s危急间使出【%s】，身形一晃避开了。" % [session.enemy.get("displayName", "敌人"), _player_name(), dodge_move.get("name", "身法")])
 		return {"hit": false, "parried": false, "crit": false, "damage": 0, "dodged": true, "message": "你成功闪避"}
@@ -138,23 +134,13 @@ func enemy_attack(session: Dictionary, turn_started := false, damage_scale := 1.
 	if int(session.get("player_status", {}).get("weakness", 0)) > 0:
 		result.damage = int(ceil(float(result.damage) * WEAKNESS_DAMAGE_MULT))
 	var enemy_force_extra := _apply_enemy_force_power(session, result)
-	var move_tag := ""
-	var status_tag := ""
-	if not attack_move.is_empty():
-		var status := _roll_attack_move_status(attack_move)
-		var extra := int(floor(8.0 + maxi(0, int(attack_move.get("level", 0)) - int(attack_move.get("unlock", 0))) * 0.6))
-		if not status.is_empty():
-			extra = int(floor(float(extra) * 0.5))
-		result.damage += extra
-		move_tag = "（招式+%d）" % extra
-		if not status.is_empty():
-			var turns := randi_range(1, 3)
-			add_status(session, "player", str(status.kind), turns)
-			status_tag = "（施加%s%d回合）" % [_status_name(str(status.kind)), turns]
-	result.damage = maxi(1, int(floor(float(result.damage) * maxf(0.0, damage_scale))))
+	var move_tag := move_effects.apply_move_bonus(session, "enemy", attack_move, result)
+	result.damage = maxi(1, int(floor(float(result.damage) * maxf(0.0, damage_scale * float(effects.get("damageScale", 1.0))))))
 	var wound := int(enemy_equipment.get("woundInflict", 0))
 	var injury_tag := _maybe_apply_in_battle_injury(session, result)
+	var hp_before := int(GameState.combat_state.hp)
 	GameState.combat_state.hp = maxi(0 if bool(session.get("lethal", true)) else 1, int(GameState.combat_state.hp) - int(result.damage))
+	var drain_tag := move_effects.apply_drain(session, false, hp_before - int(GameState.combat_state.hp), effects)
 	var wound_tag := ""
 	if wound > 0 and int(GameState.combat_state.hp) > 0:
 		var old_max := maxi(1, int(session.get("player_max_hp", _player_hp_max())))
@@ -167,7 +153,7 @@ func enemy_attack(session: Dictionary, turn_started := false, damage_scale := 1.
 	var tags := ("暴击！" if result.crit else "") + ("（被招架）" if result.parried else "")
 	tags += move_tag
 	if enemy_force_extra > 0: tags += "（加力+%d）" % enemy_force_extra
-	tags += injury_tag + wound_tag + status_tag + parry_move_tag
+	tags += injury_tag + wound_tag + drain_tag + parry_move_tag
 	session.log.append("%s%s，命中 %d 点%s。%s余 %d 体力。" % [session.enemy.get("displayName", "敌人"), attack_verb, result.damage, tags, _player_name(), GameState.combat_state.hp])
 	return result
 

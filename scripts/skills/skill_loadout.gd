@@ -139,7 +139,7 @@ func unlocked_moves() -> Array:
 		for move in definition.get("moves", []):
 			var unlock_level := int(move.get("unlockLevel", 0))
 			if current_level >= unlock_level:
-				result.append({"skill_id": str(skill_id), "name": move.get("name", "招式"), "kind": kind, "unlock": unlock_level, "level": current_level})
+				result.append({"skill_id": str(skill_id), "name": move.get("name", "招式"), "kind": kind, "unlock": unlock_level, "level": current_level, "combat_effects": move.get("combatEffects", {}).duplicate(true)})
 	return result
 
 ## 按门派架构功法等级解锁 30 级和 80 级两档绝招。
