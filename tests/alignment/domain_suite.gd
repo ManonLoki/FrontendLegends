@@ -288,9 +288,9 @@ func _run_domain_suite() -> void:
 	_assert_true(not learn_result.has("reason"), "学习 tick 应实际推进")
 	_assert_true(is_equal_approx(game_state.game_time_sec, before_time), "学习 tick 不应重复推进全局时钟")
 
-	# 当前设定：学习/冥想 30 Hz、练功每秒 5 tick。
-	_assert_true(is_equal_approx(skill_system.LEARNING_TICK_SECONDS, 1.0 / 30.0), "学习应每秒推进 30 次")
-	_assert_true(is_equal_approx(skill_system.MEDITATION_TICK_SECONDS, 1.0 / 30.0), "冥想应每秒推进 30 次")
+	# 当前设定：学习/冥想 10 Hz、练功每秒 5 tick。
+	_assert_true(is_equal_approx(skill_system.LEARNING_TICK_SECONDS, 1.0 / 10.0), "学习应每秒推进 10 次")
+	_assert_true(is_equal_approx(skill_system.MEDITATION_TICK_SECONDS, 1.0 / 10.0), "冥想应每秒推进 10 次")
 	_assert_true(is_equal_approx(skill_system.PRACTICE_TICK_SECONDS, 1.0 / 5.0), "练功应每秒推进 5 次")
 	game_state.profile.attributes.constitution = 29
 	game_state.profile.vitals.cultivation = 130
@@ -320,7 +320,7 @@ func _run_domain_suite() -> void:
 	_assert_true(str(practice_result.get("message", "")).begins_with("你苦练【模版语法】") and str(practice_result.get("message", "")).contains("，进度 "), "练功普通推进文案应同时展示功法名与当前进度")
 	_assert_true(is_equal_approx(game_state.game_time_sec - before_time, 1.0 / 5.0), "练功 tick 应推进 1/5 秒")
 
-	# 冥想：装备基础/高级架构后，有效 tick 推进 1/30 秒。
+	# 冥想：装备基础/高级架构后，有效 tick 推进 1/10 秒。
 	skills.levels[BASIC_CONSTITUTION_SKILL_ID] = 2
 	skills.levels[SECT_CONSTITUTION_SKILL_ID] = 1
 	skills.equipped_special.arch = "9287473e-59a9-5dc8-a914-324ec57ffc14"
@@ -331,7 +331,7 @@ func _run_domain_suite() -> void:
 	before_time = game_state.game_time_sec
 	var meditation_result: Dictionary = skill_system.meditate_tick()
 	_assert_true(bool(meditation_result.get("ok", false)), "冥想 tick 应成功")
-	_assert_true(is_equal_approx(game_state.game_time_sec - before_time, 1.0 / 30.0), "冥想 tick 未推进 1/30 秒")
+	_assert_true(is_equal_approx(game_state.game_time_sec - before_time, 1.0 / 10.0), "冥想 tick 未推进 1/10 秒")
 
 	# 装备四维只进入战斗快照，并同时作用于玩家与 NPC。
 	data_registry.items["__alignment_attr_equip"] = {"name": "属性测试装备", "kind": "equip", "slot": "weapon", "attributes": {"strength": 3, "constitution": 5}}
@@ -360,7 +360,7 @@ func _run_domain_suite() -> void:
 	var basic_skill_id := "2224675d-63f2-50e8-a2c6-064acd5c5623"
 	var previous_basic_level: int = skill_system.level(basic_skill_id)
 	skill_system.ensure_skills().levels[basic_skill_id] = 4
-	_assert_true(int(skill_system.learning_progress(basic_skill_id).total) == 140, "基础功法 4→5 级应固定需要 140 学习经验")
+	_assert_true(int(skill_system.learning_progress(basic_skill_id).total) == 22, "基础功法 4→5 级应固定需要 22 学习经验")
 	skill_system.ensure_skills().levels[basic_skill_id] = previous_basic_level
 
 	# 九日送物：缺物品不结算，装备中不结算，卸下后扣物并发奖。

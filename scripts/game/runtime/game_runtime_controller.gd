@@ -110,7 +110,7 @@ func _update_continuous_skill_actions(delta: float) -> void:
 				game.learning_skill_id = ""
 		if learn_changed:
 			# 升级或阻断都会清空 learning_skill_id 并改变列表内容，需要整页重绘；
-			# 普通 tick 只有页脚进度文本和进度条变化。
+			# 普通 tick 只需刷新顶部进度条。
 			if game.learning_skill_id.is_empty():
 				game._refresh_learn_list()
 			else:
@@ -148,6 +148,10 @@ func _update_continuous_skill_actions(delta: float) -> void:
 				game._show_dialogue("冥想", game.message)
 				break
 			meditation_changed = true
+			# 修为提升的这个 tick 已把当前精力清为 0；先结束本帧补算并渲染零点，
+			# 剩余累计时间留到下一帧，再从 0 继续恢复。
+			if bool(result.get("cultivation_gained", false)):
+				break
 		if meditation_changed and game.meditation_open:
 			game._render_meditation_progress()
 

@@ -1,7 +1,7 @@
 extends RefCounted
 ## 技能训练与内息恢复领域服务。只通过 SkillSystem 的窄接口访问技能状态。
 
-const MEDITATION_TICK_SECONDS := 1.0 / 30.0
+const MEDITATION_TICK_SECONDS := 1.0 / 10.0
 const PRACTICE_TICK_SECONDS := 1.0 / 5.0
 const MEDITATION_INNER_POWER_UNIT := 25.0
 const HEAL_INJURY_ARCH_LEVEL_GATE := 30
@@ -43,8 +43,8 @@ func meditate_tick() -> Dictionary:
 			GameState.profile.vitals = vitals
 			GameState.advance_time(MEDITATION_TICK_SECONDS)
 			if vitals.cultivation >= cap:
-				return {"ok": true, "message": "冥想圆满，精力最大值提升至 %d，已达内功所限。" % vitals.cultivation}
-			return {"ok": true, "message": "冥想圆满，精力最大值提升至 %d。" % vitals.cultivation}
+				return {"ok": true, "message": "冥想圆满，精力最大值提升至 %d，已达内功所限。" % vitals.cultivation, "cultivation_gained": true}
+			return {"ok": true, "message": "冥想圆满，精力最大值提升至 %d。" % vitals.cultivation, "cultivation_gained": true}
 		return {"ok": false, "message": "冥想已满，无需继续冥想。"}
 	GameState.advance_time(MEDITATION_TICK_SECONDS)
 	return {"ok": true, "message": "你凝神冥想，当前精力 %d / %d。" % [GameState.combat_state.mp, maximum]}

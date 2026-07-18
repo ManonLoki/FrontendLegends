@@ -6,8 +6,6 @@ const UI_WIDGETS := preload("res://scripts/game/ui/ui_widgets.gd")
 const CATEGORY_ORDER: Array[String] = ["编码", "思维", "架构", "招架", "灵感"]
 
 var game: Node
-## 页脚标签在整页渲染时创建；研习 tick 只改它的文本，不重建整个列表。
-var footer_label: Label
 
 func _init(owner: Node) -> void:
 	game = owner
@@ -52,7 +50,16 @@ func handle_key(key: Key) -> void:
 		game.learn_index = posmod(game.learn_index + 1, maxi(1, game.learn_items.size()))
 		render()
 	elif not game.learn_focus_category and key == KEY_SPACE and not game.learn_items.is_empty():
-		game.learning_skill_id = game.learn_items[game.learn_index]
+		var selected_skill: String = game.learn_items[game.learn_index]
+		var progress: Dictionary = SkillSystem.learning_progress(selected_skill)
+		var potential := int(GameState.profile.get("vitals", {}).get("potential", 0))
+		if int(progress.get("current", 0)) < int(progress.get("total", 1)) and potential <= 0:
+			game.message = "潜能不足。"
+			game.learning_tick_accumulator = 0.0
+			clear_progress()
+			render()
+			return
+		game.learning_skill_id = selected_skill
 		game.learning_tick_accumulator = 0.0
 		game.message = "开始研习【%s】。" % DataRegistry.get_skill(game.learning_skill_id).get("name", game.learning_skill_id)
 		render_progress()
@@ -89,20 +96,9 @@ func render() -> void:
 			game._detail_label("%d/%d" % [SkillSystem.level(skill_id), teach_cap(skill_id)], Rect2(Vector2(area.x - 105.0 * scale, y), Vector2(80.0 * scale, row)), 12, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.35, 0.35, 0.35, 1))
 			if not game.learn_focus_category and index == game.learn_index:
 				game._detail_selection(item_rect)
-	footer_label = game._detail_label(_footer_text(), Rect2(Vector2(pad, area.y - 42.0 * scale), Vector2(area.x - pad * 2.0, 30.0 * scale)), 11, HORIZONTAL_ALIGNMENT_CENTER, Color(0.55, 0.55, 0.55, 1))
-
-func _footer_text() -> String:
-	if game.learn_focus_category or game.learn_items.is_empty():
-		return "↑↓ 选分类　·　空格/→ 查看　·　ESC 返回"
-	var focused_id: String = game.learn_items[game.learn_index]
-	var focused_progress: Dictionary = SkillSystem.learning_progress(focused_id)
-	return "学习经验 %d/%d　1潜能=%d经验　余%d潜能　%s" % [focused_progress.get("current", 0), focused_progress.get("total", 1), focused_progress.get("xp_per_potential", 1), focused_progress.get("potential_remaining", 0), "研习中 · 空格/ESC 停止" if game.learning_skill_id == focused_id else "空格研习 · ←/ESC返回"]
-
-## 研习 tick 的轻量刷新：列表等级只在升级（同时停止研习）时变化，
-## 平时只需更新页脚进度文本，避免每秒 30 次重建全部标签。
+## 保留运行时调用入口；学习进度由顶部进度条呈现，无需刷新面板页脚。
 func update_tick_feedback() -> void:
-	if is_instance_valid(footer_label):
-		footer_label.text = _footer_text()
+	pass
 
 func teach_cap(skill_id: String) -> int:
 	return SkillSystem.teach_cap(game.nearby_npc_id, skill_id)

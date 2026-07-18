@@ -4,8 +4,8 @@ const SKILL_LOADOUT := preload("res://scripts/skills/skill_loadout.gd")
 const SKILL_MEMBERSHIP := preload("res://scripts/skills/skill_membership.gd")
 const SKILL_LEARNING := preload("res://scripts/skills/skill_learning.gd")
 ## 学习、冥想和练功分别采用独立的固定推进间隔。
-const LEARNING_TICK_SECONDS := 1.0 / 30.0
-const MEDITATION_TICK_SECONDS := 1.0 / 30.0
+const LEARNING_TICK_SECONDS := 1.0 / 10.0
+const MEDITATION_TICK_SECONDS := 1.0 / 10.0
 const PRACTICE_TICK_SECONDS := 1.0 / 5.0
 const MEDITATION_INNER_POWER_UNIT := 25.0
 const SKILL_MAPS := preload("res://scripts/skills/skill_maps.gd")
@@ -19,12 +19,12 @@ const LEARN_RATE_MIN := 0.70
 const LEARN_RATE_MAX := 1.30
 ## 以 10 学习经验为中性灵感下 1 潜能的标准转化单位。
 const LEARN_XP_PER_POTENTIAL_BASE := 10.0
-## 师父学习使用前期线性下限叠加 2.25 次曲线：低等级不再长期卡在 2 点，
-## 70 级后仍由幂曲线显著放缓；练功保留既有曲线。
+## 师父学习从 50 灵感时 1 点潜能可提供的 14 经验起步，叠加 2.25 次曲线；
+## 低等级平滑递增，70 级后仍由幂曲线显著放缓，练功保留既有曲线。
 const LEARN_COST_SPAN := 4.0
 const LEARN_CURVE_EXPONENT := 2.25
-## 初期学习在目标等级之外增加固定 5 点底座，使第一批等级也需要真实投入。
-const LEARN_EARLY_BASE := 5.0
+const LEARN_FIRST_LEVEL_XP := 14
+const LEARN_LEVEL_RAMP_XP := 2.0
 ## 练功保留既有曲线与倍率区间，避免师父学习调参改变玩家已经熟悉的练功节奏。
 const WISDOM_PRACTICE_RATE_PER_POINT := 0.02
 const PRACTICE_RATE_MIN := 0.65
@@ -167,15 +167,22 @@ func _attribute_growth_suffix(before: Dictionary) -> String:
 ## 按技能曲线与目标等级计算固定学习经验；此函数不得读取或接收灵感。
 func _learning_xp_required(definition: Dictionary, level_to_reach: int) -> int:
 	var cost_factor := maxf(0.0, float(definition.get("costFactor", 1.0)))
+	var max_required := _ceil_even(float(definition.get("costBase", 100)) * cost_factor * LEARN_COST_SPAN * LEARN_XP_PER_POTENTIAL_BASE)
+	var denominator := maxf(1.0, float(int(definition.get("maxLevel", 100)) - 1))
 	var resolved_required := 0
 	for candidate_level in range(1, maxi(1, level_to_reach) + 1):
-		var curve_required := _exp_required(definition, candidate_level, 1.0, LEARN_CURVE_EXPONENT, 1.0, 1.0)
-		var ramp_base := maxi(1, int(ceil((LEARN_EARLY_BASE + float(candidate_level)) * cost_factor)))
-		var ramp_required := maxi(2, int(ceil(float(ramp_base) / 2.0)) * 2)
-		var raw_required := maxi(curve_required, ramp_required)
-		# 固定需求保持偶数单位并逐级增长；换成学习经验后，相邻等级至少增加 20。
-		resolved_required = raw_required if candidate_level == 1 else maxi(raw_required, resolved_required + 2)
-	return resolved_required * int(LEARN_XP_PER_POTENTIAL_BASE)
+		if candidate_level == 1:
+			resolved_required = LEARN_FIRST_LEVEL_XP
+			continue
+		var t := clampf(float(candidate_level - 1) / denominator, 0.0, 1.0)
+		var curve_required := _ceil_even(float(LEARN_FIRST_LEVEL_XP) + float(max_required - LEARN_FIRST_LEVEL_XP) * pow(t, LEARN_CURVE_EXPONENT))
+		var ramp_required := LEARN_FIRST_LEVEL_XP + _ceil_even(float(candidate_level - 1) * LEARN_LEVEL_RAMP_XP * cost_factor)
+		# 两条候选曲线和最小增量都使用偶数，保证结果逐级增长且始终为偶数。
+		resolved_required = maxi(maxi(curve_required, ramp_required), resolved_required + 2)
+	return resolved_required
+
+func _ceil_even(value: float) -> int:
+	return maxi(0, int(ceil(value / 2.0)) * 2)
 
 ## 返回 1 点潜能可转换的学习经验：高灵感倍率更低，因而转换经验更多。
 func _learning_xp_per_potential(rate: float = -1.0) -> int:

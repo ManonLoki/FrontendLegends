@@ -31,8 +31,8 @@ func _run_menu_suite(game: Node) -> void:
 	game_state.profile.attributes.wisdom = 50
 	_assert_true(skill_system.skill_exp_required("bcb538e2-4d6a-52ae-990d-20377e27ab64", 100) == 390 and skill_system._learning_xp_required(ng_definition, 100) == 6000 and skill_system._learning_xp_per_potential() == 14, "高灵感只应提高潜能转化效率，固定升级经验不得改变")
 	game_state.profile.attributes.wisdom = 25
-	_assert_true(skill_system._learning_xp_required(ng_definition, 41) == 900, "师父学习 40→41 级应固定需要 900 学习经验")
-	_assert_true(skill_system.practice_progress("bcb538e2-4d6a-52ae-990d-20377e27ab64").total == 100 and skill_system.learning_progress("bcb538e2-4d6a-52ae-990d-20377e27ab64").total == 900, "练功经验与固定学习经验必须使用独立口径")
+	_assert_true(skill_system._learning_xp_required(ng_definition, 41) == 794, "师父学习 40→41 级应固定需要 794 学习经验")
+	_assert_true(skill_system.practice_progress("bcb538e2-4d6a-52ae-990d-20377e27ab64").total == 100 and skill_system.learning_progress("bcb538e2-4d6a-52ae-990d-20377e27ab64").total == 794, "练功经验与固定学习经验必须使用独立口径")
 	var practice_hp_before: int = game_state.combat_state.hp
 	var practice_mp_before: int = game_state.combat_state.mp
 	var aligned_practice_tick: Dictionary = skill_system.practice_tick("bcb538e2-4d6a-52ae-990d-20377e27ab64")
@@ -134,6 +134,10 @@ func _run_menu_suite(game: Node) -> void:
 	game._rebuild_learn_categories()
 	game._handle_learn_key(KEY_SPACE)
 	_assert_true(not game.learn_focus_category and game.learning_progress_widgets.is_empty(), "仅进入功法右栏时不应显示学习进度条")
+	game_state.profile.vitals.potential = 0
+	game._handle_learn_key(KEY_SPACE)
+	_assert_true(str(game.learning_skill_id).is_empty() and game.learning_progress_widgets.is_empty() and str(game.message).contains("潜能不足"), "潜能不足时应直接提示且不得启动或闪现学习进度条")
+	game_state.profile.vitals.potential = 1000
 	game._handle_learn_key(KEY_SPACE)
 	_assert_true(not str(game.learning_skill_id).is_empty() and game.learning_progress_widgets.size() == 1, "选中功法按空格后才应显示并启动进度条")
 	game_state.profile.vitals.potential = 0
@@ -236,7 +240,7 @@ func _run_menu_suite(game: Node) -> void:
 	game_state.profile.vitals.cultivation = 2999
 	game_state.combat_state.mp = game_state.player_mp_max() - 1
 	var final_layer_result: Dictionary = skill_system.meditate_tick()
-	_assert_true(bool(final_layer_result.get("ok", false)) and game_state.profile.vitals.cultivation == 3000 and game_state.combat_state.mp == 0, "真实冥想 tick 应能从2999升至公式上限3000并清空当前精力")
+	_assert_true(bool(final_layer_result.get("ok", false)) and bool(final_layer_result.get("cultivation_gained", false)) and game_state.profile.vitals.cultivation == 3000 and game_state.combat_state.mp == 0, "真实冥想 tick 应能从2999升至公式上限3000并清空当前精力")
 	game_state.combat_state.mp = game_state.player_mp_max() - 1
 	var fill_final_mp_result: Dictionary = skill_system.meditate_tick()
 	_assert_true(not bool(fill_final_mp_result.get("ok", true)) and game_state.profile.vitals.cultivation == 3000 and game_state.combat_state.mp == 3160, "修为到 3000 后应继续允许当前精力充至含功法加成的 3160，并在充满时停止")
@@ -244,6 +248,15 @@ func _run_menu_suite(game: Node) -> void:
 	var capped_mp_before := int(game_state.combat_state.mp)
 	var capped_result: Dictionary = skill_system.meditate_tick()
 	_assert_true(not bool(capped_result.get("ok", true)) and game_state.profile.vitals.cultivation == capped_cultivation_before and game_state.combat_state.mp == capped_mp_before, "冥想到顶后继续 tick 不得突破 3000 修为或 3160 总精力上限")
+	game_state.profile.vitals.cultivation = 30
+	game_state.combat_state.mp = game_state.player_mp_max() - 1
+	game.meditation_open = true
+	game.meditation_tick_accumulator = 0.0
+	game._update_continuous_skill_actions(skill_system.MEDITATION_TICK_SECONDS * 2.0)
+	_assert_true(game_state.profile.vitals.cultivation == 31 and game_state.combat_state.mp == 0, "长帧补算也必须在冥想提升修为后先停在当前精力 0")
+	game._update_continuous_skill_actions(0.0)
+	_assert_true(game_state.profile.vitals.cultivation == 31 and game_state.combat_state.mp == 5, "剩余冥想时间片应在下一帧从 0 继续恢复精力")
+	game._close_meditation()
 	game_state.profile.vitals.cultivation = 30
 	game_state.combat_state.mp = 9
 	_assert_true(game_state.player_mp_max() == 190 and not game.cyber_open and game.dialogue_open and game.dialogue_content.text.contains("需要 64 点精力"), "传送要求应随修为与已装备功法共同构成的精力上限计算")
