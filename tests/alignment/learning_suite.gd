@@ -50,3 +50,25 @@ static func run(tree: SceneTree, assert_true: Callable) -> void:
 	assert_true.call(samples == [{"required": 34, "ticks": 5, "potential": 5, "token": 4}, {"required": 34, "ticks": 4, "potential": 4, "token": 3}, {"required": 34, "ticks": 3, "potential": 3, "token": 2}], "灵感0/25/50的10级学习经济应精确为5/4/3潜能与4/3/2 Token")
 	assert_true.call(samples[0].potential > samples[1].potential and samples[1].potential > samples[2].potential, "灵感越高，升级实际潜能消耗必须越少")
 	assert_true.call(samples[0].token > samples[1].token and samples[1].token > samples[2].token, "灵感越高，升级实际Token消耗必须越少")
+
+	state.profile = original_profile.duplicate(true)
+	state.profile.sect = "NG神教"
+	state.profile.master = MASTER_ID
+	state.profile.attributes.wisdom = 25
+	state.profile.skills = skills.create_default_skills()
+	state.profile.skills.learn_progress[BASIC_SKILL_ID] = 6
+	state.profile.skills.learn_potential_spent[BASIC_SKILL_ID] = 1
+	state.profile.vitals.potential = 0
+	state.profile.vitals.money = 100
+	var potential_failure: Dictionary = skills.learn_tick(MASTER_ID, BASIC_SKILL_ID)
+	assert_true.call(str(potential_failure.get("reason", "")) == "potential" and int(state.profile.skills.learn_progress[BASIC_SKILL_ID]) == 6 and int(state.profile.skills.learn_potential_spent[BASIC_SKILL_ID]) == 1 and skills.level(BASIC_SKILL_ID) == 0, "潜能不足必须中断并保留当前学习经验与潜能消耗记录")
+	var first_required: int = skills._learning_xp_required(basic, 1)
+	state.profile.skills.learn_progress[BASIC_SKILL_ID] = first_required
+	state.profile.skills.learn_potential_spent[BASIC_SKILL_ID] = 2
+	state.profile.vitals.money = 0
+	var token_failure: Dictionary = skills.learn_tick(MASTER_ID, BASIC_SKILL_ID)
+	assert_true.call(str(token_failure.get("reason", "")) == "token" and int(state.profile.skills.learn_progress[BASIC_SKILL_ID]) == first_required and int(state.profile.skills.learn_potential_spent[BASIC_SKILL_ID]) == 2 and skills.level(BASIC_SKILL_ID) == 0, "Token 不足必须中断并保留满额学习经验与潜能消耗记录")
+	state.profile.vitals.money = int(token_failure.get("tuition", 0))
+	var resumed_result: Dictionary = skills.learn_tick(MASTER_ID, BASIC_SKILL_ID)
+	assert_true.call(bool(resumed_result.get("ok", false)) and skills.level(BASIC_SKILL_ID) == 1 and int(state.profile.vitals.potential) == 0 and not state.profile.skills.learn_progress.has(BASIC_SKILL_ID), "补足 Token 后应直接从保留的满额经验完成升级，不得重复消耗潜能")
+	state.profile = original_profile

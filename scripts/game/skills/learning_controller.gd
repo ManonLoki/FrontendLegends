@@ -51,10 +51,9 @@ func handle_key(key: Key) -> void:
 		render()
 	elif not game.learn_focus_category and key == KEY_SPACE and not game.learn_items.is_empty():
 		var selected_skill: String = game.learn_items[game.learn_index]
-		var progress: Dictionary = SkillSystem.learning_progress(selected_skill)
-		var potential := int(GameState.profile.get("vitals", {}).get("potential", 0))
-		if int(progress.get("current", 0)) < int(progress.get("total", 1)) and potential <= 0:
-			game.message = "潜能不足。"
+		var resource_failure: Dictionary = SkillSystem.learning_resource_failure(selected_skill)
+		if not resource_failure.is_empty():
+			game.message = str(resource_failure.get("message", "资源不足。"))
 			game.learning_tick_accumulator = 0.0
 			clear_progress()
 			render()

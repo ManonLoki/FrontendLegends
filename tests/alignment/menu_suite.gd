@@ -140,10 +140,13 @@ func _run_menu_suite(game: Node) -> void:
 	game_state.profile.vitals.potential = 1000
 	game._handle_learn_key(KEY_SPACE)
 	_assert_true(not str(game.learning_skill_id).is_empty() and game.learning_progress_widgets.size() == 1, "选中功法按空格后才应显示并启动进度条")
-	game_state.profile.vitals.potential = 0
-	game._update_continuous_skill_actions(skill_system.LEARNING_TICK_SECONDS)
-	_assert_true(str(game.learning_skill_id).is_empty() and game.learning_progress_widgets.is_empty(), "潜能不足无法继续学习后进度条应消失")
 	var selected_skill: String = game.learn_items[game.learn_index]
+	game_state.profile.vitals.potential = 1
+	game._update_continuous_skill_actions(skill_system.LEARNING_TICK_SECONDS)
+	var interrupted_progress := int(skill_system.ensure_skills().learn_progress.get(selected_skill, 0))
+	_assert_true(interrupted_progress > 0 and not str(game.learning_skill_id).is_empty(), "最后一点潜能应先推进并保存当前学习经验")
+	game._update_continuous_skill_actions(skill_system.LEARNING_TICK_SECONDS)
+	_assert_true(str(game.learning_skill_id).is_empty() and game.learning_progress_widgets.is_empty() and int(skill_system.ensure_skills().learn_progress.get(selected_skill, 0)) == interrupted_progress, "潜能不足应中断并停留在当前学习经验")
 	var selected_definition: Dictionary = data_registry.get_skill(selected_skill)
 	var selected_level: int = skill_system.level(selected_skill)
 	var selected_required: int = skill_system._learning_xp_required(selected_definition, selected_level + 1)
@@ -160,6 +163,19 @@ func _run_menu_suite(game: Node) -> void:
 	_assert_true(int(game_state.profile.vitals.potential) == 0, "每个有效学习 tick 应只消耗 1 点潜能")
 	_assert_true(int(game_state.profile.vitals.money) == money_before - ceili(float(spent_before + 1) * 0.65), "升级 Token 学费应按本级实际潜能消耗的 65% 结算")
 	_assert_true(str(game.learning_skill_id).is_empty() and game.learning_progress_widgets.is_empty(), "学习完成后进度条应立即消失")
+	var token_blocked_level: int = skill_system.level(selected_skill)
+	var token_blocked_required: int = skill_system._learning_xp_required(selected_definition, token_blocked_level + 1)
+	var token_blocked_spent := int(ceil(float(token_blocked_required) / float(selected_gain)))
+	skill_system.ensure_skills().learn_progress[selected_skill] = token_blocked_required
+	skill_system.ensure_skills().learn_potential_spent[selected_skill] = token_blocked_spent
+	game_state.profile.vitals.money = 0
+	game._handle_learn_key(KEY_SPACE)
+	_assert_true(str(game.learning_skill_id).is_empty() and game.learning_progress_widgets.is_empty() and str(game.message).contains("Token 不足") and int(skill_system.ensure_skills().learn_progress[selected_skill]) == token_blocked_required, "Token 不足应在启动前中断并保留满额学习经验")
+	var token_tuition := ceili(float(token_blocked_spent) * 0.65)
+	game_state.profile.vitals.money = token_tuition
+	game._handle_learn_key(KEY_SPACE)
+	game._update_continuous_skill_actions(skill_system.LEARNING_TICK_SECONDS)
+	_assert_true(skill_system.level(selected_skill) == token_blocked_level + 1 and int(game_state.profile.vitals.potential) == 0 and int(game_state.profile.vitals.money) == 0, "补足 Token 后应直接完成升级且不得再次消耗潜能")
 	game.npc_menu_open = false
 	game.npc_menu_panel.visible = false
 	game.learn_focus_category = false

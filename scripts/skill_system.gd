@@ -101,6 +101,10 @@ func join_npc(npc_id: String) -> Dictionary:
 func learn_tick(npc_id: String, skill_id: String) -> Dictionary:
 	return learning.learn_tick(npc_id, skill_id)
 
+## 在启动研习前只读检查潜能或 Token 是否足够；不会推进经验或消耗资源。
+func learning_resource_failure(skill_id: String) -> Dictionary:
+	return learning.resource_failure(skill_id)
+
 ## 综合火候门槛用：门派功法按 2 倍计入，鼓励深耕本门而非只堆基础功法。
 func _skill_power() -> int:
 	var levels: Dictionary = ensure_skills().get("levels", {})

@@ -11,6 +11,28 @@ var skills: Node
 func _init(skill_system: Node) -> void:
 	skills = skill_system
 
+## 只读检查当前学习阶段的资源阻断；已有经验和潜能消耗记录必须原样保留。
+func resource_failure(skill_id: String) -> Dictionary:
+	var definition: Dictionary = DataRegistry.get_skill(skill_id)
+	if definition.is_empty():
+		return {}
+	var required: int = skills._learning_xp_required(definition, skills.level(skill_id) + 1)
+	var progress: Dictionary = skills.ensure_skills().get("learn_progress", {})
+	var current_progress := mini(required, maxi(0, int(progress.get(skill_id, 0))))
+	var vitals: Dictionary = GameState.profile.get("vitals", {})
+	if current_progress < required:
+		if int(vitals.get("potential", 0)) <= 0:
+			return {"ok": false, "message": "潜能不足，学习经验 %d/%d。" % [current_progress, required], "reason": "potential", "progress": current_progress, "required": required}
+		return {}
+	var potential_spent: Dictionary = skills.ensure_skills().get("learn_potential_spent", {})
+	var spent_total := maxi(0, int(potential_spent.get(skill_id, 0)))
+	if current_progress > 0 and spent_total == 0:
+		spent_total = int(ceil(float(current_progress) / float(skills._learning_xp_per_potential())))
+	var tuition := int(ceil(float(spent_total) * TUITION_PER_POTENTIAL))
+	if int(vitals.get("money", 0)) < tuition:
+		return {"ok": false, "message": "学习经验已满，Token 不足，学费 %d。" % tuition, "reason": "token", "progress": current_progress, "required": required, "tuition": tuition}
+	return {}
+
 ## 推进一次向师父学习的固定时间片，并在进度满时完成升级。
 func learn_tick(npc_id: String, skill_id: String) -> Dictionary:
 	if skill_id not in skills.learn_options_for_npc(npc_id):
@@ -33,10 +55,12 @@ func learn_tick(npc_id: String, skill_id: String) -> Dictionary:
 	# 已有 v5 存档可能只有旧进度字段；用当前转化率补出保守的实际消耗记录。
 	if current_progress > 0 and spent_total == 0:
 		spent_total = int(ceil(float(current_progress) / float(xp_gain)))
+		potential_spent[skill_id] = spent_total
+		skills.ensure_skills().learn_potential_spent = potential_spent
 	var vitals: Dictionary = GameState.profile.get("vitals", {})
 	if current_progress < required:
 		if int(vitals.get("potential", 0)) <= 0:
-			return {"ok": false, "message": "潜能不足，学习经验 %d/%d。" % [current_progress, required], "reason": "potential"}
+			return {"ok": false, "message": "潜能不足，学习经验 %d/%d。" % [current_progress, required], "reason": "potential", "progress": current_progress, "required": required}
 		vitals.potential = int(vitals.get("potential", 0)) - 1
 		spent_total += 1
 		current_progress = mini(required, current_progress + xp_gain)
@@ -49,7 +73,7 @@ func learn_tick(npc_id: String, skill_id: String) -> Dictionary:
 			return {"ok": false, "message": "研习【%s】：潜能 −1，学习经验 +%d（%d/%d）。" % [definition.get("name", skill_id), xp_gain, current_progress, required], "progress": current_progress, "required": required, "xp_gain": xp_gain}
 	var tuition := int(ceil(float(spent_total) * TUITION_PER_POTENTIAL))
 	if int(vitals.get("money", 0)) < tuition:
-		return {"ok": false, "message": "学习经验已满，Token 不足，学费 %d。" % tuition, "reason": "token"}
+		return {"ok": false, "message": "学习经验已满，Token 不足，学费 %d。" % tuition, "reason": "token", "progress": current_progress, "required": required, "tuition": tuition}
 	vitals.money = int(vitals.get("money", 0)) - tuition
 	progress.erase(skill_id)
 	potential_spent.erase(skill_id)
