@@ -2,6 +2,7 @@ extends SceneTree
 ## 数值重制回归：人物分层、四门派镜像回合、奖励、任务过滤与顶级装备定位。
 
 const MIRROR_ROUND_BENCHMARK := preload("res://tests/combat/mirror_round_benchmark.gd")
+const INVARIANT_CONTRACT := preload("res://tests/combat/invariant_contract.gd")
 const TRIALS := 1000
 const EXPECTED_NPC_COUNT := 66
 ## 合法阶位以 combat_rules 的生命缩放表为唯一来源，避免第二份清单漂移；
@@ -34,6 +35,7 @@ func _run() -> void:
 	state.delete_save()
 	_assert_true(state.current_save_path().begins_with(OS.get_temp_dir()), "数值测试必须使用系统临时目录存档")
 
+	INVARIANT_CONTRACT.run(root, _assert_true)
 	_test_npc_schema(registry)
 	_test_small_student_ttk(state, npc_system, combat)
 	_test_equal_build_mirror_rounds()
@@ -87,16 +89,17 @@ func _test_small_student_ttk(state: Node, npc_system: Node, combat: Node) -> voi
 	var student: Dictionary = npc_system.build_instance("98138ebf-d4f4-515c-aea7-d95bf6155994")
 	var student_hp := int(combat.rules.npc_hp_max(student))
 	_assert_true(str(student.get("combatRank", "")) == "noncombatant", "小学生必须属于 noncombatant")
-	_assert_true(student_hp == 48, "小学生 HP 应精确锁定为 48，当前为 %d" % student_hp)
+	_assert_true(student_hp == 100, "小学生 HP 应精确锁定为 100，当前为 %d" % student_hp)
 	var attacks := _simulate_player_attacks(combat, "98138ebf-d4f4-515c-aea7-d95bf6155994", TRIALS, 20260716)
 	var median := _percentile(attacks, 0.50)
 	var p90 := _percentile(attacks, 0.90)
-	_assert_true(median >= 3 and median <= 5, "低编码合法新手击败小学生的攻击次数中位数应为 3–5，当前为 %d" % median)
-	_assert_true(p90 <= 6, "低编码合法新手击败小学生的攻击次数 P90 应不超过 6，当前为 %d" % p90)
+	_assert_true(median >= 6 and median <= 9, "低编码合法新手击败小学生的攻击次数中位数应为 6–9，当前为 %d" % median)
+	_assert_true(p90 <= 12, "低编码合法新手击败小学生的攻击次数 P90 应不超过 12，当前为 %d" % p90)
 	_set_player_profile(state, {"strength": 25, "agility": 25, "constitution": 25, "wisdom": 25})
 	var balanced_student := _simulate_player_attacks(combat, "98138ebf-d4f4-515c-aea7-d95bf6155994", TRIALS, 20260717)
-	_assert_true(_percentile(balanced_student, 0.50) == 1, "均衡新手击败小学生的攻击次数中位数必须为 1")
-	_assert_true(_percentile(balanced_student, 0.90) <= 2, "均衡新手击败小学生的攻击次数 P90 应不超过 2")
+	_assert_true(_percentile(balanced_student, 0.50) >= 2, "均衡新手击败小学生的攻击次数中位数不得再为 1")
+	_assert_true(_percentile(balanced_student, 0.50) <= 4, "均衡新手击败小学生的攻击次数中位数应不超过 4")
+	_assert_true(_percentile(balanced_student, 0.90) <= 5, "均衡新手击败小学生的攻击次数 P90 应不超过 5")
 	var training_target_attacks := _simulate_player_attacks(combat, "0b38ec96-d752-5083-a03c-aa0ac49a6dc1", TRIALS, 20260718)
 	var training_target_median := _percentile(training_target_attacks, 0.50)
 	var training_target_p90 := _percentile(training_target_attacks, 0.90)

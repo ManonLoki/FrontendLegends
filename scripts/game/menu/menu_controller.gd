@@ -193,10 +193,12 @@ func _layout_meditation_widgets() -> void:
 
 func _layout_top_progress_meter(meter: Control) -> void:
 	var scale: float = game._display_scale()
-	meter.size = Vector2(200.0, 28.0) * scale
 	var view_rect: Rect2 = game._game_view_rect()
-	# 学习与冥想共用：相对摄像机可见区域顶部 16px，水平居中。
-	meter.position = Vector2(view_rect.position.x + (view_rect.size.x - meter.size.x) * 0.5, view_rect.position.y + 16.0 * scale)
+	var left := maxf(view_rect.position.x + 16.0 * scale, game.map_badge_panel.position.x + game.map_badge_panel.size.x + 8.0 * scale)
+	var right := view_rect.end.x - 16.0 * scale
+	# 学习、练功与冥想共用：避开左侧房间名，并向右延伸至视口边距。
+	meter.position = Vector2(left, view_rect.position.y + 16.0 * scale)
+	meter.size = Vector2(maxf(1.0, right - left), 28.0 * scale)
 
 func _clear_meditation_widgets() -> void:
 	UI_WIDGETS.free_all(game.meditation_widgets)

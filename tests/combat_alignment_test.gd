@@ -38,7 +38,7 @@ func _run() -> void:
 	veteran_task_giver.combatRank = "veteran"
 	_assert_true(combat.rules.npc_hp_max(veteran_task_giver) == 451 and combat.rules.npc_hp_max(task_giver) == 496, "同一套属性的精英 NPC 应在 451 基础体力上按 1.10 位阶缩放到 496")
 	var student: Dictionary = npc_system.build_instance("98138ebf-d4f4-515c-aea7-d95bf6155994")
-	_assert_true(combat.rules.npc_mp_max(student) == 0 and combat.rules.npc_hp_max(student) == 48, "小学生作为 noncombatant 应只有 48 体力且没有精力，不得形成同级战斗耐久")
+	_assert_true(combat.rules.npc_mp_max(student) == 0 and combat.rules.npc_hp_max(student) == 100, "小学生作为 noncombatant 应有 100 体力且没有精力，能承受均衡新手至少两次攻击但不形成同级战斗耐久")
 	state.delete_save()
 	state.create_profile("战斗测试", {"strength": 25, "agility": 25, "constitution": 25, "wisdom": 25})
 	state.profile.vitals.money = 1000
@@ -174,11 +174,11 @@ func _run() -> void:
 	game.battle_ui.session.player_true_max_hp = state.player_hp_max()
 	game.battle_ui.session.player_hp = state.combat_state.hp
 	game.battle_ui.refresh()
-	var expected_suffix := "（%d%%）" % state.player_effective_hp_percent()
+	var expected_suffix := "%d%%" % state.player_effective_hp_percent()
 	var found_percent := false
 	var report_label: Label
 	for widget in game.battle_ui.widgets:
-		if widget is Label and str(widget.text) == expected_suffix:
+		if widget is Label and str(widget.text).contains(expected_suffix):
 			found_percent = true
 		if widget is Label and widget.has_meta("battle_report"):
 			report_label = widget

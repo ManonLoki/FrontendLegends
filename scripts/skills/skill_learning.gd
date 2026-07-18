@@ -3,7 +3,7 @@ extends RefCounted
 
 const SKILL_MAPS := preload("res://scripts/skills/skill_maps.gd")
 const ATTRIBUTE_LABELS := SKILL_MAPS.ATTRIBUTE_LABELS
-const TUITION_PER_REQUIRED := 0.65
+const TUITION_PER_POTENTIAL := 0.65
 
 var skills: Node
 
@@ -24,34 +24,43 @@ func learn_tick(npc_id: String, skill_id: String) -> Dictionary:
 	if not requirement_failure.is_empty():
 		return requirement_failure
 	var progress: Dictionary = skills.ensure_skills().get("learn_progress", {})
+	var potential_spent: Dictionary = skills.ensure_skills().get("learn_potential_spent", {})
 	var next_level := current + 1
-	var required: int = skills._learn_required(definition, next_level, skills._learning_cost_rate())
+	var required: int = skills._learning_xp_required(definition, next_level)
+	var xp_gain: int = skills._learning_xp_per_potential()
 	var current_progress := mini(required, int(progress.get(skill_id, 0)))
+	var spent_total := maxi(0, int(potential_spent.get(skill_id, 0)))
+	# 已有 v5 存档可能只有旧进度字段；用当前转化率补出保守的实际消耗记录。
+	if current_progress > 0 and spent_total == 0:
+		spent_total = int(ceil(float(current_progress) / float(xp_gain)))
 	var vitals: Dictionary = GameState.profile.get("vitals", {})
-	var spent_potential := 0
 	if current_progress < required:
 		if int(vitals.get("potential", 0)) <= 0:
-			return {"ok": false, "message": "潜能不足，学习进度 %d/%d。" % [current_progress, required], "reason": "potential"}
+			return {"ok": false, "message": "潜能不足，学习经验 %d/%d。" % [current_progress, required], "reason": "potential"}
 		vitals.potential = int(vitals.get("potential", 0)) - 1
-		spent_potential = 1
-		current_progress += 1
+		spent_total += 1
+		current_progress = mini(required, current_progress + xp_gain)
 		progress[skill_id] = current_progress
+		potential_spent[skill_id] = spent_total
 		skills.ensure_skills().learn_progress = progress
+		skills.ensure_skills().learn_potential_spent = potential_spent
 		GameState.profile.vitals = vitals
 		if current_progress < required:
-			return {"ok": false, "message": "研习【%s】，进度 %d/%d。" % [definition.get("name", skill_id), current_progress, required], "progress": current_progress, "required": required}
-	var tuition := int(ceil(float(required) * TUITION_PER_REQUIRED))
+			return {"ok": false, "message": "研习【%s】：潜能 −1，学习经验 +%d（%d/%d）。" % [definition.get("name", skill_id), xp_gain, current_progress, required], "progress": current_progress, "required": required, "xp_gain": xp_gain}
+	var tuition := int(ceil(float(spent_total) * TUITION_PER_POTENTIAL))
 	if int(vitals.get("money", 0)) < tuition:
-		return {"ok": false, "message": "学习进度已满，Token 不足，学费 %d。" % tuition, "reason": "token"}
+		return {"ok": false, "message": "学习经验已满，Token 不足，学费 %d。" % tuition, "reason": "token"}
 	vitals.money = int(vitals.get("money", 0)) - tuition
-	progress[skill_id] = 0
+	progress.erase(skill_id)
+	potential_spent.erase(skill_id)
 	skills.ensure_skills().learn_progress = progress
+	skills.ensure_skills().learn_potential_spent = potential_spent
 	skills.ensure_skills().levels[skill_id] = next_level
 	GameState.profile.vitals = vitals
 	var before_attributes: Dictionary = GameState.profile.get("attributes", {}).duplicate()
 	skills.refresh_derived_attributes()
 	var growth_suffix: String = skills._attribute_growth_suffix(before_attributes)
-	return {"ok": true, "message": "研习【%s】至 %d 级（耗潜能 %d、Token %d）%s。" % [definition.get("name", skill_id), next_level, spent_potential, tuition, growth_suffix], "level": next_level}
+	return {"ok": true, "message": "研习【%s】至 %d 级（本级共耗潜能 %d、Token %d）%s。" % [definition.get("name", skill_id), next_level, spent_total, tuition, growth_suffix], "level": next_level, "potential_spent": spent_total, "tuition": tuition}
 
 ## 按门派、四维、综合火候、均衡度和前置功法顺序返回首个失败原因。
 func _requirement_failure(definition: Dictionary) -> Dictionary:

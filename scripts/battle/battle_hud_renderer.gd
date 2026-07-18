@@ -4,6 +4,11 @@ extends RefCounted
 const FONT := preload("res://assets/Font/fusion-pixel-12px-proportional-zh_hans.ttf")
 const UI_WIDGETS := preload("res://scripts/game/ui/ui_widgets.gd")
 const REPORT_MAX_ENTRIES := 8
+const STAT_LANE_INSET := 8.0
+const STAT_LANE_GAP := 8.0
+const STAT_TITLE_WIDTH := 34.0
+const STAT_BAR_WIDTH := 80.0
+const STAT_VALUE_OFFSET := 120.0
 
 var view: RefCounted
 var game: Node
@@ -45,11 +50,12 @@ func _render_stats(area: Vector2) -> void:
 	var true_player_hp_max := maxi(1, int(view.session.get("player_true_max_hp", GameState.player_hp_max())))
 	var hp_max_percent := clampi(int(round(float(player_hp_max) / float(true_player_hp_max) * 100.0)), 1, 100)
 	var displayed_player_hp := int(view.session.get("player_hp", GameState.combat_state.hp)) if view.ended else int(GameState.combat_state.hp)
-	_stat("体力", displayed_player_hp, player_hp_max, Vector2(16.0, 116.0), Color("df352d"), "（%d%%）" % hp_max_percent)
-	_stat("精力", GameState.combat_state.mp, player_mp_max, Vector2(16.0, 142.0), Color("3478d4"))
-	var enemy_stat_x := area.x - 274.0
-	_stat("体力", view.enemy_hp, enemy_hp_max, Vector2(enemy_stat_x, 116.0), Color("df352d"))
-	_stat("精力", int(view.session.get("enemy_mp", 0)), enemy_mp_max, Vector2(enemy_stat_x, 142.0), Color("3478d4"))
+	var lane_width := (area.x - STAT_LANE_INSET * 2.0 - STAT_LANE_GAP) * 0.5
+	var enemy_stat_x := STAT_LANE_INSET + lane_width + STAT_LANE_GAP
+	_stat("体力", displayed_player_hp, player_hp_max, Vector2(STAT_LANE_INSET, 114.0), lane_width, Color("df352d"), "上限 %d%%" % hp_max_percent)
+	_stat("精力", GameState.combat_state.mp, player_mp_max, Vector2(STAT_LANE_INSET, 140.0), lane_width, Color("3478d4"))
+	_stat("体力", view.enemy_hp, enemy_hp_max, Vector2(enemy_stat_x, 114.0), lane_width, Color("df352d"))
+	_stat("精力", int(view.session.get("enemy_mp", 0)), enemy_mp_max, Vector2(enemy_stat_x, 140.0), lane_width, Color("3478d4"))
 
 ## 创建半透明战报背景和限制在报告矩形内的自动换行文字。
 func _render_report(area: Vector2, scale: float) -> void:
@@ -142,12 +148,16 @@ func _portrait(texture: Texture2D, region: Rect2, center: Vector2, portrait_size
 	game.battle_content.add_child(portrait)
 	view.widgets.append(portrait)
 
-## 将资源条与完整数值拆开绘制，避免高属性或任务人物的长数字被条形控件裁切。
-func _stat(title: String, value: int, maximum: int, position: Vector2, color: Color, suffix := "") -> void:
+## 每方使用固定半宽栏；标题、资源条和六位数完整值各占独立区域，互不覆盖。
+func _stat(title: String, value: int, maximum: int, position: Vector2, lane_width: float, color: Color, suffix := "") -> void:
 	var scale: float = game._display_scale()
-	_label(title, Rect2(position, Vector2(42.0, 22.0) * scale), 11)
-	var bar_position := position + Vector2(42.0 * scale, 2.0 * scale)
-	var bar_size := Vector2(108.0, 18.0) * scale
+	var title_label := _label(title, Rect2(position, Vector2(STAT_TITLE_WIDTH, 22.0) * scale), 11, HORIZONTAL_ALIGNMENT_CENTER)
+	title_label.set_meta("battle_stat_component", true)
+	var bar_position := position + Vector2((STAT_TITLE_WIDTH + 2.0) * scale, 2.0 * scale)
+	var bar_size := Vector2(STAT_BAR_WIDTH, 18.0) * scale
+	if not suffix.is_empty():
+		var suffix_label := _label(suffix, Rect2(position + Vector2(0.0, -24.0) * scale, Vector2(90.0, 14.0) * scale), 9, HORIZONTAL_ALIGNMENT_LEFT)
+		suffix_label.set_meta("battle_stat_component", true)
 	var track := Panel.new()
 	track.position = bar_position
 	track.size = bar_size
@@ -156,17 +166,17 @@ func _stat(title: String, value: int, maximum: int, position: Vector2, color: Co
 	track.add_theme_stylebox_override("panel", game._ui_box(Color("f3f2ed"), Color("4b5145"), 2))
 	var fill := ColorRect.new()
 	fill.position = Vector2(3.0, 3.0) * scale
-	fill.size = Vector2(maxf(0.0, (108.0 - 6.0) * clampf(float(value) / float(maxi(1, maximum)), 0.0, 1.0)), 12.0) * scale
+	fill.size = Vector2(maxf(0.0, (STAT_BAR_WIDTH - 6.0) * clampf(float(value) / float(maxi(1, maximum)), 0.0, 1.0)), 12.0) * scale
 	fill.color = color
 	fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	track.add_child(fill)
 	game.battle_content.add_child(track)
 	view.widgets.append(track)
 	var value_text := "%d/%d" % [value, maximum]
-	var value_label := _label(value_text, Rect2(position + Vector2(158.0, 0.0) * scale, Vector2(100.0, 22.0) * scale), 10)
+	var value_width := maxf(1.0, lane_width - STAT_VALUE_OFFSET)
+	var value_label := _label(value_text, Rect2(position + Vector2(STAT_VALUE_OFFSET, 0.0) * scale, Vector2(value_width, 22.0) * scale), 10)
 	value_label.set_meta("battle_stat_value", true)
-	if not suffix.is_empty():
-		_label(suffix, Rect2(position + Vector2(258.0, 0.0) * scale, Vector2(58.0, 22.0) * scale), 10)
+	value_label.set_meta("battle_stat_component", true)
 
 ## 绘制普通战斗操作栏及当前选择边框。
 func _render_action_bar(area: Vector2, scale: float) -> void:

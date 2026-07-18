@@ -10,7 +10,9 @@
 | `quests.xlsx` | `quests.json` | `Quests` |
 | `world-events.xlsx` | `world_events.json` | `WorldEventTypes`、`WorldEvents` |
 | `maps.xlsx` | `maps.json` | `Maps` |
-| `balance-rules.xlsx` | 无 | `BalanceRules` 设计参考 |
+| `balance-rules.xlsx` | 无 | `BalanceRules` 战斗、成长、任务与 HUD 设计参考 |
+
+`balance-rules.xlsx` 只用于维护数值目标和公式，不能重新定义 `docs/design_invariants.md` 中的学习或战斗基础逻辑。无需额外授权的编辑仅限保留资源身份、阶段顺序、全部输入和既定职责的数值/公式调整；结构性修改必须取得用户后续明确确认。
 
 ## 维护流程
 

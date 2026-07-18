@@ -29,10 +29,10 @@ func _run_menu_suite(game: Node) -> void:
 	skill_system.ensure_skills().learn_progress["bcb538e2-4d6a-52ae-990d-20377e27ab64"] = 73
 	var ng_definition: Dictionary = data_registry.get_skill("bcb538e2-4d6a-52ae-990d-20377e27ab64")
 	game_state.profile.attributes.wisdom = 50
-	_assert_true(skill_system.skill_exp_required("bcb538e2-4d6a-52ae-990d-20377e27ab64", 100) == 390 and skill_system._learn_required(ng_definition, 100, skill_system._learning_cost_rate()) == 420, "高灵感时练功应保留 65% 旧倍率，师父学习使用 70% 新下限")
+	_assert_true(skill_system.skill_exp_required("bcb538e2-4d6a-52ae-990d-20377e27ab64", 100) == 390 and skill_system._learning_xp_required(ng_definition, 100) == 6000 and skill_system._learning_xp_per_potential() == 14, "高灵感只应提高潜能转化效率，固定升级经验不得改变")
 	game_state.profile.attributes.wisdom = 25
-	_assert_true(skill_system._learn_required(ng_definition, 41, 1.0) == 80, "师父学习 40→41 级应使用前快后慢的 2.25 次曲线")
-	_assert_true(skill_system.practice_progress("bcb538e2-4d6a-52ae-990d-20377e27ab64").total == 100 and skill_system.learning_progress("bcb538e2-4d6a-52ae-990d-20377e27ab64").total == 80, "练功必须保留既有曲线，只有师父学习使用新曲线")
+	_assert_true(skill_system._learning_xp_required(ng_definition, 41) == 900, "师父学习 40→41 级应固定需要 900 学习经验")
+	_assert_true(skill_system.practice_progress("bcb538e2-4d6a-52ae-990d-20377e27ab64").total == 100 and skill_system.learning_progress("bcb538e2-4d6a-52ae-990d-20377e27ab64").total == 900, "练功经验与固定学习经验必须使用独立口径")
 	var practice_hp_before: int = game_state.combat_state.hp
 	var practice_mp_before: int = game_state.combat_state.mp
 	var aligned_practice_tick: Dictionary = skill_system.practice_tick("bcb538e2-4d6a-52ae-990d-20377e27ab64")
@@ -142,9 +142,11 @@ func _run_menu_suite(game: Node) -> void:
 	var selected_skill: String = game.learn_items[game.learn_index]
 	var selected_definition: Dictionary = data_registry.get_skill(selected_skill)
 	var selected_level: int = skill_system.level(selected_skill)
-	var selected_rate: float = skill_system._learning_cost_rate()
-	var selected_required: int = skill_system._learn_required(selected_definition, selected_level + 1, selected_rate)
-	skill_system.ensure_skills().learn_progress[selected_skill] = selected_required - 1
+	var selected_required: int = skill_system._learning_xp_required(selected_definition, selected_level + 1)
+	var selected_gain: int = skill_system._learning_xp_per_potential()
+	var spent_before := int(ceil(float(selected_required - selected_gain) / float(selected_gain)))
+	skill_system.ensure_skills().learn_progress[selected_skill] = selected_required - selected_gain
+	skill_system.ensure_skills().learn_potential_spent[selected_skill] = spent_before
 	game_state.profile.vitals.potential = 1
 	game_state.profile.vitals.money = 100000
 	var money_before := int(game_state.profile.vitals.money)
@@ -152,7 +154,7 @@ func _run_menu_suite(game: Node) -> void:
 	game._update_continuous_skill_actions(skill_system.LEARNING_TICK_SECONDS)
 	_assert_true(skill_system.level(selected_skill) == selected_level + 1, "最后 1 点潜能应在同一 tick 完成升级")
 	_assert_true(int(game_state.profile.vitals.potential) == 0, "每个有效学习 tick 应只消耗 1 点潜能")
-	_assert_true(int(game_state.profile.vitals.money) == money_before - ceili(float(selected_required) * 0.65), "升级 Token 学费应为本级经验需求的 65% 向上取整")
+	_assert_true(int(game_state.profile.vitals.money) == money_before - ceili(float(spent_before + 1) * 0.65), "升级 Token 学费应按本级实际潜能消耗的 65% 结算")
 	_assert_true(str(game.learning_skill_id).is_empty() and game.learning_progress_widgets.is_empty(), "学习完成后进度条应立即消失")
 	game.npc_menu_open = false
 	game.npc_menu_panel.visible = false

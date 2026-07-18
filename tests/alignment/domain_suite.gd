@@ -1,5 +1,6 @@
 extends SceneTree
 ## 数据、任务、技能与物品规则回归。
+const LEARNING_SUITE := preload("res://tests/alignment/learning_suite.gd")
 var failures: Array[String] = []
 const NOVICE_PROJECT_ID := "b7ce37d7-b841-5a71-ac4b-24c8a491967b"
 const DELIVERY_RING_ID := "55578b74-31b5-5ef9-87d1-350ffb56e109"
@@ -150,6 +151,7 @@ func _run_domain_suite() -> void:
 	var parallel_novice: String = quest_system.interact_npc("831434cb-2471-5f24-9fdf-0259fe149eae")
 	_assert_true(bool(parallel_bounty.get("ok", false)) and parallel_novice.contains("【"), "普通环进行中仍应能跨类型接取悬赏环和新手任务")
 	_assert_true(quest_system.active.has("generator:" + DELIVERY_RING_ID) and quest_system.active.has("generator:" + BOUNTY_RING_ID) and quest_system.active.has(NOVICE_PROJECT_ID), "普通环、悬赏环和新手任务应能同时保持 active")
+	_assert_true(int(quest_system.active.get(NOVICE_PROJECT_ID, {}).get("reward", {}).get("potential", -1)) == 50, "从导师实际接取的任意项目都必须把 50 潜能写入运行时奖励快照")
 	var duplicate_ring: Dictionary = quest_system.offer_generator("55578b74-31b5-5ef9-87d1-350ffb56e109")
 	var duplicate_bounty: Dictionary = quest_system.offer_bounty()
 	var active_count_before_novice_repeat: int = quest_system.active.size()
@@ -157,7 +159,10 @@ func _run_domain_suite() -> void:
 	_assert_true(not bool(duplicate_ring.get("ok", true)) and not bool(duplicate_bounty.get("ok", true)), "同一 generator runtime_id 不得重复接取")
 	_assert_true(repeated_novice.contains("咋还没做完") and quest_system.active.size() == active_count_before_novice_repeat, "同一固定任务 ID 不得重复接取")
 	_assert_true(quest_system._base_reward({"rewardBase": 10}) == {"experience": 20, "potential": 30, "money": 24}, "通用 rewardBase 必须按 2:3:2.4 拆分")
-	_assert_true(quest_system.rewards.novice_reward({"reward": {"experience": 10, "potential": 8, "money": 5}}, {"rewardScale": 2.4}) == {"experience": 24, "potential": 19, "money": 12}, "新手项目 rewardScale 必须按工作量缩放并四舍五入")
+	var novice_definition: Dictionary = data_registry.get_quest(NOVICE_PROJECT_ID)
+	for variant in novice_definition.get("variants", []):
+		var novice_reward: Dictionary = quest_system.rewards.novice_reward(novice_definition, variant)
+		_assert_true(int(novice_reward.get("experience", -1)) == 50 and int(novice_reward.get("potential", -1)) == 50 and int(novice_reward.get("money", -1)) == 40, "导师的%s必须固定奖励 50 经验、50 潜能、40 Token，当前为 %s" % [variant.get("title", "项目"), novice_reward])
 	_assert_true(quest_system._scaled_reward({"ringGrowth": 0.5, "fluctuation": 0.0}, {"experience": 1}, 2).experience == 1, "九日环增长后的小数奖励应向下取整而非四舍五入")
 	_assert_true(quest_system._scaled_reward({"ringGrowth": 1.0, "growthCap": 2.5, "fluctuation": 0.0}, {"experience": 10}, 10).experience == 25, "九日环线性增长必须受 growthCap 封顶")
 	data_registry.items["__refund_item"] = {"name": "退款测试物", "kind": "food", "price": 100, "stackLimit": 2}
@@ -351,20 +356,12 @@ func _run_domain_suite() -> void:
 	data_registry.items.erase("__sort_z")
 	data_registry.items.erase("__sort_a")
 
-	# 师父学习经验曲线：2.25 次成长实现前期快、后期慢；练功仍由独立回归覆盖旧曲线。
-	var basic_def: Dictionary = data_registry.get_skill("2224675d-63f2-50e8-a2c6-064acd5c5623")
-	var sect_def: Dictionary = data_registry.get_skill("bcb538e2-4d6a-52ae-990d-20377e27ab64")
-	_assert_true(is_equal_approx(skill_system.LEARN_COST_SPAN, 4.0) and is_equal_approx(skill_system.LEARN_CURVE_EXPONENT, 2.25), "学习曲线应固定为四倍跨度与 2.25 次指数")
-	var curve_cases := [
-		[basic_def, 6, 0.70, 2], [basic_def, 40, 0.70, 36], [basic_def, 100, 0.70, 280],
-		[basic_def, 6, 1.0, 2], [basic_def, 60, 1.0, 126], [basic_def, 100, 1.0, 400],
-		[basic_def, 2, 1.30, 4], [basic_def, 80, 1.30, 316],
-		[sect_def, 6, 0.70, 2], [sect_def, 40, 0.70, 54], [sect_def, 100, 0.70, 420],
-		[sect_def, 6, 1.0, 2], [sect_def, 80, 1.0, 362], [sect_def, 100, 1.30, 780],
-	]
-	for test_case in curve_cases:
-		var actual: int = skill_system._learn_required(test_case[0], test_case[1], test_case[2])
-		_assert_true(actual == test_case[3], "学习曲线不符：Lv.%d rate %.2f，应为 %d，实际 %d" % [test_case[1], test_case[2], test_case[3], actual])
+	LEARNING_SUITE.run(self, _assert_true)
+	var basic_skill_id := "2224675d-63f2-50e8-a2c6-064acd5c5623"
+	var previous_basic_level: int = skill_system.level(basic_skill_id)
+	skill_system.ensure_skills().levels[basic_skill_id] = 4
+	_assert_true(int(skill_system.learning_progress(basic_skill_id).total) == 140, "基础功法 4→5 级应固定需要 140 学习经验")
+	skill_system.ensure_skills().levels[basic_skill_id] = previous_basic_level
 
 	# 九日送物：缺物品不结算，装备中不结算，卸下后扣物并发奖。
 	quest_system.reset_runtime()

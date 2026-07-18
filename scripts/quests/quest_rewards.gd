@@ -19,14 +19,9 @@ func base_reward(definition: Dictionary) -> Dictionary:
 		return {"experience": base * 2, "potential": base * 3, "money": int(ceil(float(base) * 3.0 * 0.8))}
 	return {}
 
-## 新手项目按工作量缩放奖励，避免 25/50/100 体力成本都获得同一报酬。
-func novice_reward(definition: Dictionary, variant: Dictionary) -> Dictionary:
-	var reward := base_reward(definition)
-	var scale := maxf(0.0, float(variant.get("rewardScale", 1.0)))
-	for key in reward:
-		if reward[key] is int or reward[key] is float:
-			reward[key] = maxi(0, int(round(float(reward[key]) * scale)))
-	return reward
+## 导师项目的难度只改变体力成本，三种项目始终使用任务表中的固定奖励。
+func novice_reward(definition: Dictionary, _variant: Dictionary) -> Dictionary:
+	return base_reward(definition)
 
 ## 按目标四维总和和平均技能等级计算生死簿奖励。
 func kill_ring_reward(definition: Dictionary, target_id: String) -> Dictionary:

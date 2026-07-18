@@ -96,7 +96,7 @@ func _footer_text() -> String:
 		return "↑↓ 选分类　·　空格/→ 查看　·　ESC 返回"
 	var focused_id: String = game.learn_items[game.learn_index]
 	var focused_progress: Dictionary = SkillSystem.learning_progress(focused_id)
-	return "研习【%s】，进度 %d/%d。　%s" % [DataRegistry.get_skill(focused_id).get("name", focused_id), focused_progress.get("current", 0), focused_progress.get("total", 1), "研习中 · 空格/ESC 停止" if game.learning_skill_id == focused_id else "空格 开始研习 · ←/ESC 返回"]
+	return "学习经验 %d/%d　1潜能=%d经验　余%d潜能　%s" % [focused_progress.get("current", 0), focused_progress.get("total", 1), focused_progress.get("xp_per_potential", 1), focused_progress.get("potential_remaining", 0), "研习中 · 空格/ESC 停止" if game.learning_skill_id == focused_id else "空格研习 · ←/ESC返回"]
 
 ## 研习 tick 的轻量刷新：列表等级只在升级（同时停止研习）时变化，
 ## 平时只需更新页脚进度文本，避免每秒 30 次重建全部标签。

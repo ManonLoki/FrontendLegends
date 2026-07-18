@@ -23,20 +23,17 @@
                 {
                     "id": "91c4203d-9099-4316-b358-99100aaa14bc",
                     "title": "图书管理系统",
-                    "hpCost": 25,
-                    "rewardScale": 1
+                    "hpCost": 25
                 },
                 {
                     "id": "0dbe3d76-4635-4d2e-b5f1-cb4d595a8640",
                     "title": "CRM系统",
-                    "hpCost": 50,
-                    "rewardScale": 1.5
+                    "hpCost": 50
                 },
                 {
                     "id": "3f362f95-3dc5-4eb7-b672-b44c41246c7e",
                     "title": "ERP系统",
-                    "hpCost": 100,
-                    "rewardScale": 2.4
+                    "hpCost": 100
                 }
             ],
             "lines": {

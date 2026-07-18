@@ -23,7 +23,7 @@ const MOVE_TRIGGER_RULES := {
 	"parry": {"base": 0.18, "per_move": 0.020, "cap": 0.35},
 }
 const NPC_RANK_HP_SCALE := {
-	"noncombatant": 0.24,
+	"noncombatant": 0.50,
 	"novice": 0.78,
 	"trained": 0.92,
 	"veteran": 1.00,

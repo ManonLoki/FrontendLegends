@@ -268,8 +268,16 @@ func _run_hud_suite() -> Node:
 				enemy_portrait_matches = true
 	_assert_true(complete_enemy_values.has("98765/123456") and complete_enemy_values.has("87654/234567"), "战斗 HUD 应完整显示高属性和任务人物的体力、精力数值")
 	_assert_true(enemy_portrait_matches, "战斗 HUD 应直接使用本次敌人快照中的任务形象")
+	var stat_components: Array[Control] = []
 	for widget in game.battle_ui.widgets:
 		_assert_true(Rect2(Vector2.ZERO, game.battle_panel.size).encloses(Rect2(widget.position, widget.size)), "战斗 UI 元素不得互相挤出面板边界：%s %s / %s（面板 %s，报告 %s）" % [widget.get_class(), widget.position, widget.size, game.battle_panel.size, widget.has_meta("battle_report")])
+		if widget is Control and widget.has_meta("battle_stat_component"):
+			stat_components.append(widget)
+	for left_index in stat_components.size():
+		for right_index in range(left_index + 1, stat_components.size()):
+			var left_rect := Rect2(stat_components[left_index].position, stat_components[left_index].size)
+			var right_rect := Rect2(stat_components[right_index].position, stat_components[right_index].size)
+			_assert_true(not left_rect.intersects(right_rect), "战斗 HUD 的属性文字区域不得互相覆盖：%s / %s" % [left_rect, right_rect])
 	game.battle_ui.active = false
 	game.battle_panel.visible = false
 	game.battle_ui._clear_widgets()
@@ -319,13 +327,13 @@ func _run_hud_suite() -> Node:
 	var view_rect: Rect2 = game._game_view_rect()
 	var scale: float = game._display_scale()
 	_assert_true(is_equal_approx(meter.position.y, view_rect.position.y + 16.0 * scale), "学习进度条顶部 margin 应为 16px")
-	_assert_true(is_equal_approx(meter.position.x + meter.size.x * 0.5, view_rect.position.x + view_rect.size.x * 0.5), "学习进度条应相对摄像机视口水平居中")
+	_assert_true(meter.size.x > 200.0 * scale and is_equal_approx(meter.position.x + meter.size.x, view_rect.end.x - 16.0 * scale), "学习进度条应占用房间名右侧至视口右边距的可用空间")
 	_assert_true(not Rect2(game.map_badge_panel.position, game.map_badge_panel.size).intersects(Rect2(meter.position, meter.size)), "房间名 HUD 不得与学习进度条重叠")
 	var meditation_meter := Control.new()
 	game.hud.add_child(meditation_meter)
 	game._layout_top_progress_meter(meditation_meter)
 	_assert_true(is_equal_approx(meditation_meter.position.y, view_rect.position.y + 16.0 * scale), "冥想进度条顶部 margin 应为 16px")
-	_assert_true(is_equal_approx(meditation_meter.position.x + meditation_meter.size.x * 0.5, view_rect.position.x + view_rect.size.x * 0.5), "冥想进度条应相对摄像机视口水平居中")
+	_assert_true(meditation_meter.size.x > 200.0 * scale and is_equal_approx(meditation_meter.position.x + meditation_meter.size.x, view_rect.end.x - 16.0 * scale), "冥想进度条应与学习进度条使用相同的加长布局")
 	_assert_true(not Rect2(game.map_badge_panel.position, game.map_badge_panel.size).intersects(Rect2(meditation_meter.position, meditation_meter.size)), "房间名 HUD 不得与冥想进度条重叠")
 
 	return game

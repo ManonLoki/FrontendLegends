@@ -12,14 +12,19 @@ const SKILL_MAPS := preload("res://scripts/skills/skill_maps.gd")
 const THEMES := SKILL_MAPS.THEMES
 const BASIC_SKILL_IDS := SKILL_MAPS.BASIC_SKILL_IDS
 
-## 灵感（wisdom）对师父学习成本的软修正：以 25 为中性点，边际收益设有上下界。
+## 灵感（wisdom）只影响潜能转化学习经验的效率，不改变每级固定经验上限。
 const WISDOM_BASELINE := 25.0
 const WISDOM_LEARN_RATE_PER_POINT := 0.015
 const LEARN_RATE_MIN := 0.70
 const LEARN_RATE_MAX := 1.30
-## 师父学习使用 2.25 次曲线：前 30 级迅速成形，70 级后显著放缓；练功保留既有曲线。
+## 以 10 学习经验为中性灵感下 1 潜能的标准转化单位。
+const LEARN_XP_PER_POTENTIAL_BASE := 10.0
+## 师父学习使用前期线性下限叠加 2.25 次曲线：低等级不再长期卡在 2 点，
+## 70 级后仍由幂曲线显著放缓；练功保留既有曲线。
 const LEARN_COST_SPAN := 4.0
 const LEARN_CURVE_EXPONENT := 2.25
+## 初期学习在目标等级之外增加固定 5 点底座，使第一批等级也需要真实投入。
+const LEARN_EARLY_BASE := 5.0
 ## 练功保留既有曲线与倍率区间，避免师父学习调参改变玩家已经熟悉的练功节奏。
 const WISDOM_PRACTICE_RATE_PER_POINT := 0.02
 const PRACTICE_RATE_MIN := 0.65
@@ -40,7 +45,7 @@ func create_default_skills() -> Dictionary:
 	# 对齐参考项目：新角色不会任何技能，也不会自动装备基础功法。
 	# 基础功法须经师父或秘籍学会，再由玩家在功法菜单中主动装备。
 	## 持久化字段统一使用蛇形命名，避免存档同时出现两套命名风格。
-	return {"levels": {}, "equipped_basic": {}, "equipped_special": {}, "progress": {}, "learn_progress": {}, "practice_progress": {}, "force_power": 0}
+	return {"levels": {}, "equipped_basic": {}, "equipped_special": {}, "progress": {}, "learn_progress": {}, "learn_potential_spent": {}, "practice_progress": {}, "force_power": 0}
 
 ## 保证当前版本技能状态具备全部容器；不读取或迁移旧版本字段。
 func ensure_skills() -> Dictionary:
@@ -75,6 +80,7 @@ func learn_from_book(skill_id: String, max_learn_level: int = -1) -> Dictionary:
 	var before_attrs: Dictionary = GameState.profile.get("attributes", {}).duplicate()
 	ensure_skills().levels[skill_id] = current + 1
 	ensure_skills().get("learn_progress", {}).erase(skill_id)
+	ensure_skills().get("learn_potential_spent", {}).erase(skill_id)
 	_refresh_derived_attributes()
 	return {"ok": true, "message": "读罢秘籍，领悟【%s】至 %d 级%s。" % [definition.get("name", skill_id), current + 1, _attribute_growth_suffix(before_attrs)], "level": current + 1}
 
@@ -90,8 +96,8 @@ func can_join(npc_id: String) -> bool:
 func join_npc(npc_id: String) -> Dictionary:
 	return membership.join_npc(npc_id)
 
-## 研习为两阶段消耗：先按 tick 花潜能推进进度条到 required，进度满后一次性
-## 支付 Token 学费（80% 曲线成本）才真正升级——潜能只买“进度”，Token 买“结果”。
+## 研习为两阶段消耗：潜能按灵感效率转换成固定口径的学习经验，经验满后再按
+## 本级实际潜能消耗的 65% 支付 Token；灵感不改变升级所需经验，只改变速度与成本。
 func learn_tick(npc_id: String, skill_id: String) -> Dictionary:
 	return learning.learn_tick(npc_id, skill_id)
 
@@ -140,10 +146,14 @@ func learning_progress(skill_id: String) -> Dictionary:
 	if definition.is_empty():
 		return {"current": 0, "total": 1}
 	var next_level := level(skill_id) + 1
-	var required := _learn_required(definition, next_level, _learning_cost_rate())
+	var required := _learning_xp_required(definition, next_level)
+	var xp_per_potential := _learning_xp_per_potential()
+	var current := mini(required, int(ensure_skills().get("learn_progress", {}).get(skill_id, 0)))
 	return {
-		"current": mini(required, int(ensure_skills().get("learn_progress", {}).get(skill_id, 0))),
+		"current": current,
 		"total": required,
+		"xp_per_potential": xp_per_potential,
+		"potential_remaining": int(ceil(float(required - current) / float(xp_per_potential))),
 	}
 
 ## 学艺/读秘籍升级后，四维是否因基础功法等级提升而跟涨（見 _refresh_derived_attributes）。
@@ -154,9 +164,23 @@ func _attribute_growth_suffix(before: Dictionary) -> String:
 			return "，四维亦有精进"
 	return ""
 
-## 按技能曲线、目标等级和灵感倍率计算学习需求。
-func _learn_required(definition: Dictionary, level_to_reach: int, rate: float) -> int:
-	return _exp_required(definition, level_to_reach, rate, LEARN_CURVE_EXPONENT, LEARN_RATE_MIN, LEARN_RATE_MAX)
+## 按技能曲线与目标等级计算固定学习经验；此函数不得读取或接收灵感。
+func _learning_xp_required(definition: Dictionary, level_to_reach: int) -> int:
+	var cost_factor := maxf(0.0, float(definition.get("costFactor", 1.0)))
+	var resolved_required := 0
+	for candidate_level in range(1, maxi(1, level_to_reach) + 1):
+		var curve_required := _exp_required(definition, candidate_level, 1.0, LEARN_CURVE_EXPONENT, 1.0, 1.0)
+		var ramp_base := maxi(1, int(ceil((LEARN_EARLY_BASE + float(candidate_level)) * cost_factor)))
+		var ramp_required := maxi(2, int(ceil(float(ramp_base) / 2.0)) * 2)
+		var raw_required := maxi(curve_required, ramp_required)
+		# 固定需求保持偶数单位并逐级增长；换成学习经验后，相邻等级至少增加 20。
+		resolved_required = raw_required if candidate_level == 1 else maxi(raw_required, resolved_required + 2)
+	return resolved_required * int(LEARN_XP_PER_POTENTIAL_BASE)
+
+## 返回 1 点潜能可转换的学习经验：高灵感倍率更低，因而转换经验更多。
+func _learning_xp_per_potential(rate: float = -1.0) -> int:
+	var resolved_rate := _learning_cost_rate() if rate < 0.0 else clampf(rate, LEARN_RATE_MIN, LEARN_RATE_MAX)
+	return maxi(1, int(round(LEARN_XP_PER_POTENTIAL_BASE / resolved_rate)))
 
 ## 保留既有练功经验曲线，确保本次数值优化不改变练功体验。
 func _practice_required(definition: Dictionary, level_to_reach: int, rate: float) -> int:
@@ -175,7 +199,7 @@ func _exp_required(definition: Dictionary, level_to_reach: int, rate: float, exp
 	var normalized_rate := clampf(rate, rate_min, rate_max)
 	return maxi(2, int(ceil(float(base_required) * normalized_rate / 2.0)) * 2)
 
-## 将角色灵感转换为学习成本倍率。
+## 将角色灵感转换为潜能转化倍率；只用于经验转化，不能再乘到固定升级经验上。
 func _learning_cost_rate() -> float:
 	return _wisdom_cost_rate(WISDOM_LEARN_RATE_PER_POINT, LEARN_RATE_MIN, LEARN_RATE_MAX)
 
@@ -187,7 +211,7 @@ func _wisdom_cost_rate(per_point: float, rate_min: float, rate_max: float) -> fl
 	var wisdom := float(GameState.profile.get("attributes", {}).get("wisdom", 25))
 	return clampf(1.0 - (wisdom - WISDOM_BASELINE) * per_point, rate_min, rate_max)
 
-## 练功继续通过这个稳定入口读取旧曲线；学习界面和师父研习直接使用新的 _learn_required。
+## 练功继续通过这个稳定入口读取旧曲线；学习界面和师父研习使用固定学习经验接口。
 func skill_exp_required(skill_id: String, level_to_reach: int) -> int:
 	var definition := DataRegistry.get_skill(skill_id)
 	return 1 if definition.is_empty() else _practice_required(definition, level_to_reach, _practice_cost_rate())
