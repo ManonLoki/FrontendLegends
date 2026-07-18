@@ -1,7 +1,7 @@
 extends RefCounted
 ## 玩家图集帧、世界/屏幕坐标换算与相机渲染。
 
-const PLAYER_VISUAL_SCALE := 0.86
+const PLAYER_VISUAL_SCALE := 0.72
 ## NPC 的 16px 帧从格子左侧内缩 1px；玩家脚点使用同一横向中心和格子底线。
 const PLAYER_TILE_FOOT := Vector2(1.0 + TiledMapLoader.DEFAULT_TILE_SIZE * 0.5, TiledMapLoader.DEFAULT_TILE_SIZE)
 
@@ -17,7 +17,7 @@ func draw() -> void:
 		for y in range(10):
 			for x in range(TiledMapLoader.DEFAULT_TILE_SIZE):
 				game.draw_rect(Rect2(grid_origin + Vector2(x, y) * cell, Vector2(cell - 1, cell - 1)), Color("#274f45"))
-	var player_pos := world_to_screen(Vector2(game.player_tile) * Vector2(TiledMapLoader.DEFAULT_TILE_SIZE, TiledMapLoader.DEFAULT_TILE_SIZE))
+	var player_pos := world_to_screen(game.player_visual_tile * Vector2(TiledMapLoader.DEFAULT_TILE_SIZE, TiledMapLoader.DEFAULT_TILE_SIZE))
 	game._draw_npcs()
 	var frame_key := player_frame_key()
 	var source := player_frame_region(frame_key)
@@ -81,9 +81,9 @@ func player_frame_key() -> String:
 	elif game.facing == Vector2i.RIGHT:
 		direction = "right"
 	var frame := posmod(game.animation_frame, 4)
-	if not game.player_moving or frame == 0 or frame == 2:
+	if not game.player_moving:
 		return "player_%s_%s_idle_0" % [gender, direction]
-	return "player_%s_%s_run_%d" % [gender, direction, 1 if frame == 1 else 3]
+	return "player_%s_%s_run_%d" % [gender, direction, frame]
 
 func player_frame_region(frame_key := "") -> Rect2:
 	var key := frame_key if not frame_key.is_empty() else player_frame_key()
@@ -131,7 +131,7 @@ func camera_world_top_left() -> Vector2:
 		return Vector2.ZERO
 	var map_size := Vector2(game.map_context.width * game.map_context.tile_width, game.map_context.height * game.map_context.tile_height)
 	var world_size := camera_world_size()
-	var player_center := (Vector2(game.player_tile) + Vector2(0.5, 0.5)) * Vector2(game.map_context.tile_width, game.map_context.tile_height)
+	var player_center: Vector2 = (game.player_visual_tile + Vector2(0.5, 0.5)) * Vector2(game.map_context.tile_width, game.map_context.tile_height)
 	return Vector2(
 		0.0 if map_size.x <= world_size.x else clampf(player_center.x - world_size.x * 0.5, 0.0, map_size.x - world_size.x),
 		0.0 if map_size.y <= world_size.y else clampf(player_center.y - world_size.y * 0.5, 0.0, map_size.y - world_size.y),

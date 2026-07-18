@@ -50,6 +50,9 @@ func load_map(index: int, arrival_from := "", cyber := false) -> void:
 		if not spawn.is_empty():
 			game.player_tile = game.map_context.object_tile(spawn)
 			_apply_spawn_facing(spawn)
+	game.player_visual_tile = Vector2(game.player_tile)
+	game.player_step_start = game.player_visual_tile
+	game.player_step_elapsed = game.MOVE_STEP_SECONDS
 	game.nearby_npc_id = ""
 	game._refresh_nearby_npc()
 	game.message = "已加载地图：%s（%dx%d）" % [game.map_context.properties.get("mapName", game.map_context.map_id), game.map_context.width, game.map_context.height]

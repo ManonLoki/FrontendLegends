@@ -27,6 +27,9 @@ const TRADE_MODE_SELL := "sell"
 const CYBER_TELEPORT_SKILL_REQUIREMENT := 30
 
 var player_tile := Vector2i(8, 5)
+var player_visual_tile := Vector2(8.0, 5.0)
+var player_step_start := Vector2(8.0, 5.0)
+var player_step_elapsed := MOVE_STEP_SECONDS
 var facing := Vector2i.RIGHT
 var move_cooldown := 0.0
 var message := "欢迎来到开源镇"

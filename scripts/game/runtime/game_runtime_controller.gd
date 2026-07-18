@@ -1,12 +1,15 @@
 extends RefCounted
 ## 逐帧世界更新、移动、连续技能动作与键盘/虚拟输入分发。
 
+const WALK_FRAME_SECONDS := 0.09
+
 var game: Node2D
 
 func _init(owner: Node2D) -> void:
 	game = owner
 
 func _process(delta: float) -> void:
+	_update_player_visual(delta)
 	# 每帧核对 HUD 几何，弥补网页或移动端在 ready 之后全屏导致尺寸信号遗漏的问题。
 	# 只在真实尺寸变化时重新布局。菜单节点不能每帧销毁重建，否则 Web
 	# 渲染时会出现旧帧/新帧交替的闪烁。
@@ -36,7 +39,7 @@ func _process(delta: float) -> void:
 		game._position_npc_menu()
 	var direction: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down") + game.virtual_direction
 	var requested_step := _apply_facing_input(direction)
-	# 持续移动在站立帧与两张相反迈步帧之间循环；每次起步从第零帧开始，避免半步切入。
+	# 动画帧率独立于格子移动冷却，避免低帧率下迈步停顿或跳帧。
 	if direction.length() > 0.0:
 		if not game.player_moving:
 			game.animation_frame = 0
@@ -44,8 +47,8 @@ func _process(delta: float) -> void:
 			game.queue_redraw()
 		game.player_moving = true
 		game.animation_timer += delta
-		if game.animation_timer >= game.MOVE_STEP_SECONDS:
-			game.animation_timer = fmod(game.animation_timer, game.MOVE_STEP_SECONDS)
+		if game.animation_timer >= WALK_FRAME_SECONDS:
+			game.animation_timer = fmod(game.animation_timer, WALK_FRAME_SECONDS)
 			game.animation_frame = (game.animation_frame + 1) % 4
 			game.queue_redraw()
 	else:
@@ -57,6 +60,8 @@ func _process(delta: float) -> void:
 			if game.map_context and (not game.map_context.is_walkable(next_tile.x, next_tile.y) or game._npc_occupies_tile(next_tile)):
 				game.message = "前方不可通行"
 				return
+			game.player_step_start = game.player_visual_tile
+			game.player_step_elapsed = 0.0
 			game.player_tile = next_tile
 			game._refresh_nearby_npc()
 			game.map_transition_controller.try_map_transition()
@@ -79,6 +84,18 @@ func _process(delta: float) -> void:
 			game.battle_ui.end("你离开了战斗")
 		else:
 			game._toggle_menu()
+
+func _update_player_visual(delta: float) -> void:
+	var target := Vector2(game.player_tile)
+	if game.player_visual_tile.is_equal_approx(target):
+		game.player_visual_tile = target
+		return
+	game.player_step_elapsed = minf(game.player_step_elapsed + maxf(delta, 0.0), game.MOVE_STEP_SECONDS)
+	var progress := clampf(game.player_step_elapsed / game.MOVE_STEP_SECONDS, 0.0, 1.0)
+	var eased := progress * progress * (3.0 - 2.0 * progress)
+	game.player_visual_tile = game.player_step_start.lerp(target, eased)
+	game._update_camera()
+	game.queue_redraw()
 
 func _apply_facing_input(direction: Vector2) -> Vector2i:
 	if direction.length() <= 0.0:

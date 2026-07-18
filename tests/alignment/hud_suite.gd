@@ -83,7 +83,7 @@ func _run_hud_suite() -> Node:
 		_assert_true(npc_system.sprite_regions.has(npc_sprite), "NPC %s 引用了图集中不存在的角色 %s" % [npc_id, npc_sprite])
 	for player_region_value in game.player_sprite_regions.values():
 		var player_region: Rect2 = player_region_value
-		_assert_true(Rect2(Vector2.ZERO, game.player_texture.get_size()).encloses(player_region), "Player 帧区域不得越出新 320×116 图集")
+		_assert_true(Rect2(Vector2.ZERO, game.player_texture.get_size()).encloses(player_region), "Player 帧区域不得越出运行时图集")
 	for player_frame_key in game.player_foot_anchors:
 		var foot_anchor: Vector2 = game.player_foot_anchors[player_frame_key]
 		var player_region: Rect2 = game.player_sprite_regions[player_frame_key]
@@ -101,11 +101,11 @@ func _run_hud_suite() -> Node:
 	game.facing = Vector2i.LEFT
 	game.player_moving = true
 	game.animation_frame = 0
-	_assert_true(game._player_frame_key() == "player_female_left_idle_0", "行走序列第 0 帧应为当前方向的 idle_0")
+	_assert_true(game._player_frame_key() == "player_female_left_run_0", "行走序列第 0 帧应使用第一张动作帧")
 	game.animation_frame = 1
 	_assert_true(game._player_frame_key() == "player_female_left_run_1", "行走序列第二帧应使用第一张跨步帧")
 	game.animation_frame = 2
-	_assert_true(game._player_frame_key() == "player_female_left_idle_0", "行走序列第三帧应回到 idle_0")
+	_assert_true(game._player_frame_key() == "player_female_left_run_2", "行走序列第三帧应使用相反脚接触帧")
 	game.animation_frame = 3
 	_assert_true(game._player_frame_key() == "player_female_left_run_3", "行走序列第四帧应使用相反脚的跨步帧")
 	game_state.profile.gender = "male"
@@ -120,7 +120,7 @@ func _run_hud_suite() -> Node:
 		var foot_anchor: Vector2 = game.player_foot_anchors[player_frame_key]
 		var rendered_player_foot: Vector2 = player_draw_rect.position + foot_anchor * float(game._render_scale()) * float(game.world_renderer.PLAYER_VISUAL_SCALE)
 		_assert_true(rendered_player_foot.is_equal_approx(expected_player_foot), "所有 Player 性别、方向和动作帧必须对齐到同一个格子脚点：%s" % player_frame_key)
-	_assert_true(is_equal_approx(game.world_renderer.PLAYER_VISUAL_SCALE, 0.86), "Player 可见高度应从平均 25.8px 缩放到约 22.2px，与 NPC 平均高度一致")
+	_assert_true(is_equal_approx(game.world_renderer.PLAYER_VISUAL_SCALE, 0.72), "Player 新图集应缩放到适合 16px 地图格的可见高度")
 	# UI 与地图相机统一使用 480×320 逻辑坐标；窗口缩放只交给 Godot stretch。
 	_assert_true(is_equal_approx(game._display_scale(), 1.0), "游戏 UI 不应按物理窗口执行第二次缩放")
 	var runtime_viewport_size: Vector2 = game.get_viewport_rect().size
