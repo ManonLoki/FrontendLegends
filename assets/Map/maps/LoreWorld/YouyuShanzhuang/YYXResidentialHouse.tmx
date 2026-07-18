@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="30" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="7">
  <properties>
+  <property name="mapId" value="c7b1abd6-df38-5fe2-bfdd-1fa39b1515f9"/>
   <property name="mapName" value="鱿鱼养殖场"/>
-  <property name="parentMap" value="YouyuShanzhuang"/>
+  <property name="parentMap" value="f832cbde-46e4-52d6-92fb-860bee93c8a8"/>
   <property name="region" value="鱿鱼山庄"/>
   <property name="type" propertytype="MapType" value="inDoor"/>
  </properties>
@@ -25,40 +26,40 @@
  <objectgroup id="4" name="Interactive">
   <object id="1" type="Transaction" x="224" y="448" width="32">
    <properties>
-    <property name="from" value="YouyuShanzhuang"/>
-    <property name="to" value="YYXResidentialHouse"/>
+    <property name="from" value="f832cbde-46e4-52d6-92fb-860bee93c8a8"/>
+    <property name="to" value="c7b1abd6-df38-5fe2-bfdd-1fa39b1515f9"/>
    </properties>
   </object>
   <object id="2" type="Transaction" x="208" y="464" width="64" height="16">
    <properties>
-    <property name="from" value="YYXResidentialHouse"/>
-    <property name="to" value="YouyuShanzhuang"/>
+    <property name="from" value="c7b1abd6-df38-5fe2-bfdd-1fa39b1515f9"/>
+    <property name="to" value="f832cbde-46e4-52d6-92fb-860bee93c8a8"/>
    </properties>
   </object>
   <object id="3" name="鱿鱼须" type="NPC" x="248.763" y="43.0835">
    <properties>
-    <property name="npcId" value="youyu_xu"/>
+    <property name="npcId" value="1f8eac82-dee2-5f0f-a499-d133299a1171"/>
     <property name="type" value="NPC"/>
    </properties>
    <point/>
   </object>
   <object id="4" name="iamkun" type="NPC" x="202.003" y="153.224">
    <properties>
-    <property name="npcId" value="iamkun"/>
+    <property name="npcId" value="6ff590e8-67ff-5743-ab8b-99e7a22a4ad5"/>
     <property name="type" value="NPC"/>
    </properties>
    <point/>
   </object>
   <object id="5" name="糖若曦" type="NPC" x="250" y="153.224">
    <properties>
-    <property name="npcId" value="tang_ruo_xi"/>
+    <property name="npcId" value="402a6e75-28a7-5ddb-8a1a-1fae27ba2596"/>
     <property name="type" value="NPC"/>
    </properties>
    <point/>
   </object>
   <object id="6" name="姬小溪" type="NPC" x="297.203" y="153.481">
    <properties>
-    <property name="npcId" value="ji_xiao_xi"/>
+    <property name="npcId" value="651c7bc6-4e42-5bc5-a4a1-c1db3ba2edc6"/>
     <property name="type" value="NPC"/>
    </properties>
    <point/>

@@ -1,10 +1,7 @@
 extends Node
 
-const SKILL_MAPS := preload("res://scripts/skills/skill_maps.gd")
-const COMBAT_BALANCE_MIGRATION := preload("res://scripts/state/combat_balance_migration.gd")
-const PRODUCTION_SAVE_PATH := "user://frontend_legends_save_v2.json"
-const SAVE_VERSION := 4
-const COMPATIBLE_SAVE_VERSIONS: Array[int] = [2, 3, SAVE_VERSION]
+const PRODUCTION_SAVE_PATH := "user://frontend_legends_save_v5.json"
+const SAVE_VERSION := 5
 
 var active_save_path := PRODUCTION_SAVE_PATH
 
@@ -24,13 +21,12 @@ var item_cooldowns: Dictionary = {}
 
 ## 自动加载单例就绪时尝试读取现有存档。
 func _ready() -> void:
-	_migrate_legacy_save_if_needed()
 	load_game()
 
 ## 将测试切换到独立存档；正式存档路径和备份绝不会被测试删除或覆盖。
 func use_test_save_path(suite_name: String) -> void:
 	var safe_name := suite_name.validate_filename().to_lower()
-	active_save_path = "user://test_saves/%s.json" % (safe_name if not safe_name.is_empty() else "unnamed")
+	active_save_path = OS.get_temp_dir().path_join("frontend_legends_test_saves/%s.json" % (safe_name if not safe_name.is_empty() else "unnamed"))
 
 ## 返回当前实际读写路径，供测试和诊断使用。
 func current_save_path() -> String:
@@ -96,7 +92,7 @@ func advance_time(seconds: float) -> void:
 	vitals.age = int(vitals.get("age", 18)) + current_age_tick - previous_age_tick
 	profile.vitals = vitals
 
-## 剥离运行时派生属性和本局装备后，以临时文件和备份轮换安全写出 v4 存档。
+## 剥离运行时派生属性和本局装备后，以临时文件和备份轮换安全写出 v5 存档。
 func save_game() -> bool:
 	if not has_profile():
 		return false
@@ -108,7 +104,7 @@ func save_game() -> bool:
 	var data := {"version": SAVE_VERSION, "profile": saved_profile, "game_time_sec": game_time_sec, "combat_state": combat_state, "inventory": inventory, "item_cooldowns": item_cooldowns}
 	return _write_save_document(data)
 
-## 读取兼容版本存档，迁移字段并重建派生状态。
+## 只读取当前 v5 存档；更早结构已因稳定 UUID 切换而明确失效。
 func load_game() -> bool:
 	var parsed := _read_save_document(active_save_path)
 	if parsed.is_empty():
@@ -118,22 +114,19 @@ func load_game() -> bool:
 			return false
 		# 主文件损坏或缺失时从已验证备份恢复，避免下一次保存覆盖唯一可用副本。
 		_restore_backup(backup_path, active_save_path)
-	if not COMPATIBLE_SAVE_VERSIONS.has(int(parsed.get("version", 0))):
+	if int(parsed.get("version", 0)) != SAVE_VERSION:
 		return false
-	var source_version := int(parsed.get("version", 0))
 	profile = parsed.get("profile", {})
 	game_time_sec = float(parsed.get("game_time_sec", 0.0))
 	combat_state = parsed.get("combat_state", _default_combat_state())
 	inventory = parsed.get("inventory", {})
-	# 旧档可能带 equipment；按原设定读档后一律空手，不恢复该字段。
+	# 装备按原设定只存在于本局内存；读档后一律空手。
 	equipment = _default_equipment()
 	item_cooldowns = parsed.get("item_cooldowns", {})
 	if profile.has("skills"):
 		SkillSystem.ensure_skills()
-		_normalize_base_attributes()
 		SkillSystem.refresh_derived_attributes()
 	_normalize_loaded_profile()
-	combat_state = COMBAT_BALANCE_MIGRATION.migrate(profile, combat_state, source_version, player_hp_max())
 	normalize_combat_state()
 	return has_profile()
 
@@ -150,7 +143,7 @@ func _read_save_document(path: String) -> Dictionary:
 	var parsed = parser.data
 	if not parsed is Dictionary:
 		return {}
-	if not COMPATIBLE_SAVE_VERSIONS.has(int(parsed.get("version", 0))):
+	if int(parsed.get("version", 0)) != SAVE_VERSION:
 		return {}
 	if not parsed.get("profile", {}) is Dictionary or str(parsed.get("profile", {}).get("name", "")).strip_edges().is_empty():
 		return {}
@@ -197,41 +190,6 @@ func _restore_backup(backup_path: String, target_path: String) -> void:
 	if DirAccess.rename_absolute(recovery, target) != OK:
 		DirAccess.copy_absolute(backup, target)
 
-## 项目显示名曾改变 user:// 目录；首次启动时选择最新的有效旧档迁入固定目录。
-func _migrate_legacy_save_if_needed() -> void:
-	if active_save_path != PRODUCTION_SAVE_PATH:
-		return
-	var target := ProjectSettings.globalize_path(active_save_path)
-	var target_valid := not _read_save_document(active_save_path).is_empty()
-	var target_modified := int(FileAccess.get_modified_time(target)) if target_valid else 0
-	var target_parent := target.get_base_dir().get_base_dir()
-	var data_roots := [
-		OS.get_data_dir().path_join("Godot/app_userdata"),
-		OS.get_data_dir().path_join("app_userdata"),
-		target_parent.path_join("Godot/app_userdata"),
-	]
-	var candidates: Array[String] = []
-	for data_root in data_roots:
-		for legacy_directory in ["前端群侠传", "FrontendLegends"]:
-			var candidate := str(data_root).path_join(legacy_directory).path_join("frontend_legends_save_v2.json")
-			if not candidates.has(candidate):
-				candidates.append(candidate)
-	var selected := ""
-	var newest_time := 0
-	for candidate in candidates:
-		if _read_save_document(candidate).is_empty():
-			continue
-		var modified := int(FileAccess.get_modified_time(candidate))
-		if selected.is_empty() or modified > newest_time:
-			selected = candidate
-			newest_time = modified
-	if selected.is_empty() or (target_valid and target_modified >= newest_time):
-		return
-	DirAccess.make_dir_recursive_absolute(target.get_base_dir())
-	DirAccess.copy_absolute(selected, target)
-	if FileAccess.file_exists(selected + ".bak"):
-		DirAccess.copy_absolute(selected + ".bak", target + ".bak")
-
 ## 裁剪角色资料、钳制资源并清理未知物品记录。
 func _normalize_loaded_profile() -> void:
 	profile.name = str(profile.get("name", "")).strip_edges().substr(0, 10)
@@ -243,25 +201,9 @@ func _normalize_loaded_profile() -> void:
 	for key in ["money", "potential", "experience", "cultivation"]:
 		vitals[key] = maxi(0, int(vitals.get(key, 0)))
 	profile.vitals = vitals
-	if not str(profile.get("sect", "")).is_empty() and str(profile.get("master", "")).is_empty():
-		profile.master = _entry_master_for_sect(str(profile.sect))
 	var item_catalog: Dictionary = _load_data_document("items.json").get("items", {})
 	inventory = _normalize_item_map(inventory, item_catalog, true)
 	item_cooldowns = _normalize_item_map(item_cooldowns, item_catalog, false)
-
-## 由旧档当前属性扣除技能反哺，重建基础四维；映射表与 SkillSystem 反哺共用 skill_maps.gd。
-func _normalize_base_attributes() -> void:
-	var current: Dictionary = profile.get("attributes", {})
-	var base: Dictionary = profile.get("base_attributes", {})
-	var levels: Dictionary = profile.get("skills", {}).get("levels", {})
-	var nudges := {"strength": 0, "agility": 0, "constitution": 0, "wisdom": 0}
-	for skill_id in SKILL_MAPS.BASIC_SKILL_ATTRIBUTE:
-		var key: String = SKILL_MAPS.BASIC_SKILL_ATTRIBUTE[skill_id]
-		nudges[key] = int(nudges[key]) + int(floor(float(levels.get(skill_id, 0)) / 10.0))
-	for key in nudges:
-		var fallback := int(current.get(key, 25)) - int(nudges[key])
-		base[key] = maxi(5, int(floor(float(base.get(key, fallback)))))
-	profile.base_attributes = base
 
 ## 清理物品数量或冷却映射中的未知、空值和负数项。
 func _normalize_item_map(raw: Dictionary, known_items: Dictionary, counts: bool) -> Dictionary:
@@ -277,25 +219,6 @@ func _normalize_item_map(raw: Dictionary, known_items: Dictionary, counts: bool)
 		else:
 			result[item_id] = maxf(0.0, float(raw[raw_id]))
 	return result
-
-## 从教学上限最低的人物中推断旧档缺失的入门师父。
-func _entry_master_for_sect(sect_name: String) -> String:
-	var npc_catalog: Dictionary = _load_data_document("npcs.json").get("npcs", {})
-	var teach_stock: Dictionary = _load_data_document("skills.json").get("teachStock", {})
-	var best_id := ""
-	var best_cap := 2147483647
-	for npc_id in npc_catalog:
-		var npc: Dictionary = npc_catalog[npc_id]
-		if not npc.has("joinSect") or str(npc.get("sect", "")) != sect_name:
-			continue
-		var cap := 0
-		for entry in teach_stock.get(npc_id, []):
-			if entry is Dictionary:
-				cap = maxi(cap, int(entry.get("maxTeachLevel", 0)))
-		if cap < best_cap:
-			best_id = str(npc_id)
-			best_cap = cap
-	return best_id
 
 ## 读取一份静态 JSON 数据文档，失败时返回空字典。
 func _load_data_document(file_name: String) -> Dictionary:

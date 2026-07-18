@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="30" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="16">
  <properties>
+  <property name="mapId" value="a72f4304-63e2-5a71-8609-8570a31f6282"/>
   <property name="Sort" type="int" value="0"/>
   <property name="mapName" value="商场"/>
-  <property name="parentMap" value="KaiyuanTown"/>
+  <property name="parentMap" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
   <property name="region" value="开源镇"/>
   <property name="type" propertytype="MapType" value="inDoor"/>
  </properties>
@@ -26,37 +27,37 @@
  <objectgroup id="5" name="Interactive">
   <object id="8" type="Transaction" x="224" y="448" width="32" height="16">
    <properties>
-    <property name="from" value="KaiyuanTown"/>
-    <property name="to" value="ShoppingMall"/>
+    <property name="from" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
+    <property name="to" value="a72f4304-63e2-5a71-8609-8570a31f6282"/>
    </properties>
   </object>
   <object id="9" type="Transaction" x="208" y="464" width="64" height="16">
    <properties>
-    <property name="from" value="ShoppingMall"/>
-    <property name="to" value="KaiyuanTown"/>
+    <property name="from" value="a72f4304-63e2-5a71-8609-8570a31f6282"/>
+    <property name="to" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
    </properties>
   </object>
   <object id="10" name="装机媛" type="NPC" x="101.51" y="258.546">
    <properties>
-    <property name="npcId" value="zhuang_ji_yuan"/>
+    <property name="npcId" value="1541271f-ec6d-5881-99dc-ddd0fa02ff45"/>
    </properties>
    <point/>
   </object>
   <object id="11" name="黄鹤" type="NPC" x="263.752" y="229.047">
    <properties>
-    <property name="npcId" value="huang_he"/>
+    <property name="npcId" value="62d75021-4e5d-511f-b7d5-0affd5ff1eab"/>
    </properties>
    <point/>
   </object>
   <object id="12" name="楼婉卿" type="NPC" x="281.104" y="230.783">
    <properties>
-    <property name="npcId" value="lou_wan_qing"/>
+    <property name="npcId" value="4f1b2bd2-e814-58be-aeaa-3b5f54ca5096"/>
    </properties>
    <point/>
   </object>
   <object id="15" name="服装店老板娘" type="NPC" x="422.523" y="244.664">
    <properties>
-    <property name="npcId" value="fu_zhuang_dian_lao_ban_niang"/>
+    <property name="npcId" value="3f5e872d-8990-5fc6-9096-e5461894705e"/>
    </properties>
    <point/>
   </object>

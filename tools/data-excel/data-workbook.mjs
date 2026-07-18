@@ -1,10 +1,8 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import {
   BALANCE_RULE_ROWS,
   DATA_DIR,
   DATA_FILES,
-  DEFAULT_WORKBOOK,
+  DEFAULT_WORKBOOK_DIR,
   HEADERS,
   SHEETS,
 } from './workbook-schema.mjs';
@@ -20,17 +18,14 @@ import {
   stableJson,
   str,
 } from './workbook-values.mjs';
+import { readJsonData, writeJsonData } from './json-files.mjs';
+import { mapsFromRows, mapsRowsFromJson } from './map-rows.mjs';
+import { matrixFromRows, objectRowsFromMatrix } from './workbook-matrix.mjs';
 
-export { DATA_DIR, DEFAULT_WORKBOOK, HEADERS, SHEETS };
-
-export async function readJsonData(rootDir = '.') {
-  const out = {};
-  for (const name of DATA_FILES) {
-    const file = path.join(rootDir, DATA_DIR, `${name}.json`);
-    out[name] = JSON.parse(await fs.readFile(file, 'utf8'));
-  }
-  return out;
-}
+export {
+  DATA_DIR, DEFAULT_WORKBOOK_DIR, HEADERS, matrixFromRows, objectRowsFromMatrix,
+  readJsonData, SHEETS, writeJsonData,
+};
 
 export function workbookRowsFromJson(data) {
   const rows = {};
@@ -41,6 +36,7 @@ export function workbookRowsFromJson(data) {
     npcs: ['npcs'],
     quests: ['quests', 'generators'],
     world_events: ['archetypes', 'placements'],
+    maps: ['maps'],
   };
   rows[SHEETS.meta] = DATA_FILES.map(file => {
     const document = data[file] ?? {};
@@ -257,20 +253,9 @@ export function workbookRowsFromJson(data) {
       configJson: Object.keys(config).length > 0 ? stableJson(config) : '',
     };
   });
+  rows[SHEETS.maps] = mapsRowsFromJson(data.maps);
 
   return rows;
-}
-
-export function matrixFromRows(sheetName, rows) {
-  const headers = HEADERS[sheetName];
-  return [headers, ...rows.map(row => headers.map(header => row[header] ?? ''))];
-}
-
-export function objectRowsFromMatrix(matrix) {
-  const [headers = [], ...body] = matrix;
-  return body
-    .filter(row => row.some(value => blankToUndefined(value) != null))
-    .map(row => Object.fromEntries(headers.map((header, index) => [header, row[index] ?? ''])));
 }
 
 export function jsonFromWorkbookRows(sheetRows) {
@@ -281,6 +266,7 @@ export function jsonFromWorkbookRows(sheetRows) {
     npcs: { version: num(meta['npcs.json']?.version) ?? 1, npcs: {} },
     quests: { version: num(meta['quests.json']?.version) ?? 1, quests: {}, generators: {} },
     world_events: { version: num(meta['world_events.json']?.version) ?? 1, archetypes: {}, placements: [] },
+    maps: { version: num(meta['maps.json']?.version) ?? 1, maps: {} },
   };
   for (const [key, target] of Object.entries(result)) {
     const note = str(meta[`${key}.json`]?.note);
@@ -508,12 +494,7 @@ export function jsonFromWorkbookRows(sheetRows) {
     }));
   }
 
-  return result;
-}
+  result.maps.maps = mapsFromRows(sheetRows[SHEETS.maps]);
 
-export async function writeJsonData(data, outDir = DATA_DIR) {
-  await fs.mkdir(outDir, { recursive: true });
-  for (const name of DATA_FILES) {
-    await fs.writeFile(path.join(outDir, `${name}.json`), `${JSON.stringify(data[name], null, 2)}\n`, 'utf8');
-  }
+  return result;
 }

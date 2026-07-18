@@ -12,6 +12,7 @@ var teach_stock: Dictionary = {}
 var world_event_archetypes: Dictionary = {}
 var world_event_placements: Dictionary = {}
 var map_files: Array[String] = []
+var map_ids_by_path: Dictionary = {}
 var map_display_names: Dictionary = {}
 var map_parent_ids: Dictionary = {}
 var map_types: Dictionary = {}
@@ -32,7 +33,7 @@ func _ready() -> void:
 	var world_event_catalog := _load_document("world_events.json")
 	world_event_archetypes = world_event_catalog.get("archetypes", {})
 	_index_world_event_placements(world_event_catalog.get("placements", []))
-	_scan_maps("res://assets/Map/maps")
+	_index_maps(_load_document("maps.json").get("maps", {}))
 
 func _load_table(file_name: String, key: String) -> Dictionary:
 	return _load_document(file_name).get(key, {})
@@ -115,42 +116,32 @@ func _index_world_event_placements(placements: Array) -> void:
 			world_event_placements[map_id] = []
 		world_event_placements[map_id].append(placement)
 
-## 递归遍历地图目录并提取 TMX 中需要的少量 property 标签；启动期扫描无需引入完整 XML 导入器。
-func _scan_maps(path: String) -> void:
-	var dir := DirAccess.open(path)
-	if not dir:
-		return
-	dir.list_dir_begin()
-	while true:
-		var name := dir.get_next()
-		if name.is_empty():
-			break
-		if name.begins_with("."):
+## maps.json 是 UUID 到 TMX 路径的维护索引；TMX 自身仍声明相同 mapId，启动时交叉校验。
+func _index_maps(map_catalog: Dictionary) -> void:
+	for map_id_value in map_catalog:
+		var map_id := str(map_id_value)
+		var definition: Dictionary = map_catalog[map_id_value]
+		var map_path := str(definition.get("path", ""))
+		var file := FileAccess.open(map_path, FileAccess.READ)
+		var xml := file.get_as_text() if file else ""
+		if map_id.is_empty() or map_path.is_empty() or xml.is_empty():
+			push_error("Invalid map registry entry: " + map_id)
 			continue
-		var child := path + "/" + name
-		if dir.current_is_dir():
-			_scan_maps(child)
-		elif name.ends_with(".tmx"):
-			map_files.append(child)
-			var file := FileAccess.open(child, FileAccess.READ)
-			var xml := file.get_as_text() if file else ""
-			var matcher := RegEx.new()
-			matcher.compile("<property\\s+name=\"mapName\"\\s+value=\"([^\"]*)\"")
-			var matched := matcher.search(xml)
-			var map_id := name.get_basename()
-			var map_name := matched.get_string(1) if matched else map_id
-			map_display_names[map_id] = map_name
-			var type_matcher := RegEx.new()
-			type_matcher.compile("<property\\s+name=\"type\"[^>]*\\svalue=\"([^\"]*)\"")
-			var type_matched := type_matcher.search(xml)
-			map_types[map_id] = type_matched.get_string(1) if type_matched else "outDoor"
-			var parent_matcher := RegEx.new()
-			parent_matcher.compile("<property\\s+name=\"parentMap\"\\s+value=\"([^\"]*)\"")
-			var parent_matched := parent_matcher.search(xml)
-			if parent_matched:
-				map_parent_ids[map_id] = parent_matched.get_string(1)
-			_collect_placed_npcs(xml, map_id, map_name)
-	dir.list_dir_end()
+		var id_matcher := RegEx.new()
+		id_matcher.compile("<property\\s+name=\"mapId\"\\s+value=\"([^\"]+)\"")
+		var id_match := id_matcher.search(xml)
+		if not id_match or id_match.get_string(1) != map_id:
+			push_error("TMX mapId mismatch: " + map_path)
+			continue
+		map_files.append(map_path)
+		map_ids_by_path[map_path] = map_id
+		var map_name := str(definition.get("displayName", map_id))
+		map_display_names[map_id] = map_name
+		map_types[map_id] = str(definition.get("mapType", "outDoor"))
+		var parent_map_id := str(definition.get("parentMapId", ""))
+		if not parent_map_id.is_empty():
+			map_parent_ids[map_id] = parent_map_id
+		_collect_placed_npcs(xml, map_id, map_name)
 
 ## 把地图上的每个人物对象注册为任务目标；以人物 ID 与地图 ID 组合去重，
 ## 同一人物模板出现在不同地图时仍视为不同目标位置。
@@ -193,6 +184,11 @@ func list_placed_npc_targets(exclude_ids: Array = []) -> Array[Dictionary]:
 func map_display_name(map_id: String) -> String:
 	var value := str(map_display_names.get(map_id, map_id))
 	return value.replace("{playerName}", str(GameState.profile.get("name", "玩家")))
+
+func map_id_at(index: int) -> String:
+	if index < 0 or index >= map_files.size():
+		return ""
+	return str(map_ids_by_path.get(map_files[index], ""))
 
 func map_type(map_id: String) -> String:
 	return str(map_types.get(map_id, "outDoor"))

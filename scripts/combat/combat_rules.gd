@@ -218,7 +218,7 @@ func inner_power_attack_bonus(inner_power: int) -> float:
 
 func npc_inner_power(npc: Dictionary) -> int:
 	var levels: Dictionary = npc.get("skillLevels", {})
-	var total := int(levels.get("basicConstitution", 0))
+	var total := int(levels.get("dcebef7e-09b8-5a69-8e3d-159cb2b0c355", 0))
 	for skill_id in npc.get("equippedSkillIds", []):
 		var definition := DataRegistry.get_skill(str(skill_id))
 		if str(definition.get("category", "")) == "sect" and str(definition.get("theme", "")) == "arch":

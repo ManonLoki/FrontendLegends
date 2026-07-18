@@ -41,7 +41,7 @@ func _on_cooldown(generator_id: String) -> bool:
 	return GameState.game_time_sec < float(cooldown_until.get(generator_id, 0.0))
 
 ## giverNpcId 是接任务的 NPC，completion_giver_id 是交任务的 NPC——多数任务两者
-## 是同一人，但 novice_darkxue_project 这类需要分两头跑腿的任务两者不同。
+## 是同一人，但需要分别前往发布点与交付点的新手项目两者不同。
 func _active_for_npc(npc_id: String) -> Dictionary:
 	for runtime_id in active:
 		var runtime: Dictionary = active[runtime_id]
@@ -117,12 +117,12 @@ func _is_kill_quest_target(npc_id: String) -> bool:
 		and not roles.any(func(role): return str(role) in KILL_QUEST_EXCLUDED_ROLES) \
 		and bool(npc.get("targetableByKillQuest", true))
 
-## 三类任务对话分支，按顺序尝试：1) novice_darkxue_project 硬编码新手任务
+## 三类任务对话分支，按顺序尝试：1) 固定新手项目
 ## （独立状态机，不走通用生成器）；2) DataRegistry.quest_generators 驱动的通用
 ## 环任务/差事/悬赏；3) 已在跑的送信类任务只记录“已交谈”，不接管对话。
 func interact_npc(npc_id: String) -> String:
-	var novice: Dictionary = DataRegistry.get_quest("novice_darkxue_project")
-	var novice_id := "novice_darkxue_project"
+	var novice: Dictionary = DataRegistry.get_quest("b7ce37d7-b841-5a71-ac4b-24c8a491967b")
+	var novice_id := "b7ce37d7-b841-5a71-ac4b-24c8a491967b"
 	if active.has(novice_id):
 		var runtime: Dictionary = active[novice_id]
 		if npc_id == str(runtime.get("completion_giver_id", "")):
@@ -193,7 +193,7 @@ func interact_npc(npc_id: String) -> String:
 
 ## 锁定 DARK 学电脑交互并返回延迟结算所需信息。
 func begin_novice_completion(endpoint_id: String) -> Dictionary:
-	var novice_id := "novice_darkxue_project"
+	var novice_id := "b7ce37d7-b841-5a71-ac4b-24c8a491967b"
 	if not active.has(novice_id):
 		return {}
 	var runtime: Dictionary = active[novice_id]
@@ -211,7 +211,7 @@ func begin_novice_completion(endpoint_id: String) -> Dictionary:
 
 ## 在工作演出结束后扣除体力、发放奖励并进入冷却。
 func finish_novice_completion(endpoint_id: String) -> String:
-	var novice_id := "novice_darkxue_project"
+	var novice_id := "b7ce37d7-b841-5a71-ac4b-24c8a491967b"
 	if not active.has(novice_id):
 		return "（任务状态已变化）"
 	var runtime: Dictionary = active[novice_id]
@@ -242,7 +242,7 @@ func complete(quest_id: String) -> Dictionary:
 func can_interact(npc_id: String) -> bool:
 	if not _active_for_npc(npc_id).is_empty():
 		return true
-	if str(DataRegistry.get_quest("novice_darkxue_project").get("giverNpcId", "")) == npc_id:
+	if str(DataRegistry.get_quest("b7ce37d7-b841-5a71-ac4b-24c8a491967b").get("giverNpcId", "")) == npc_id:
 		return true
 	for generator_id in DataRegistry.quest_generators:
 		if str(DataRegistry.quest_generators[generator_id].get("giverNpcId", "")) == npc_id:
@@ -312,7 +312,7 @@ func _generator_advance_message(definition: Dictionary, advanced: Dictionary, ta
 
 ## 悬赏目标的属性/功法按玩家当前面板动态缩放（target_scale），并随连续
 ## 击杀轮次（kill_index）走高——悬赏难度始终围绕玩家实力浮动，而非固定强度。
-func offer_bounty(generator_id: String = "bountyring_xiaobuer") -> Dictionary:
+func offer_bounty(generator_id: String = "c7666a34-f17b-5427-875a-74f227071fa2") -> Dictionary:
 	return bounty.offer(generator_id)
 
 ## 返回当前动态悬赏人物及地图信息。
@@ -324,7 +324,7 @@ func set_bounty_target_tile(tile: Vector2i) -> void:
 	bounty.set_target_tile(tile)
 
 ## 返回暗网悬赏榜当前展示文案。
-func bounty_board_text(generator_id: String = "bountyring_xiaobuer") -> String:
+func bounty_board_text(generator_id: String = "c7666a34-f17b-5427-875a-74f227071fa2") -> String:
 	return bounty.board_text(generator_id)
 
 ## 注销并清空当前动态悬赏人物。

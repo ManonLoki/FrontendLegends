@@ -6,7 +6,8 @@
     "web:hash": "node tools/hash-web-build.mjs dist/web",
     "data:excel": "node tools/data-excel/json-to-excel.mjs",
     "data:json": "node tools/data-excel/excel-to-json.mjs",
-    "data:check": "node tools/data-excel/data-workbook.test.mjs"
+    "data:ids:check": "node tools/validate-data-ids.mjs",
+    "data:check": "node tools/validate-data-ids.mjs && node tools/data-excel/data-workbook.test.mjs"
   },
   "devDependencies": {
     "xlsx": "^0.18.5"

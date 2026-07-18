@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="15" height="15" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="5">
  <properties>
+  <property name="mapId" value="a8e90daa-ea13-5d87-a4f8-88bd76bff121"/>
   <property name="mapName" value="量子实验室"/>
-  <property name="parentMap" value="LiangZiXianZong"/>
+  <property name="parentMap" value="891e09c1-4118-5933-ab59-4f59be8ada85"/>
   <property name="region" value="量子仙宗"/>
   <property name="type" propertytype="MapType" value="inDoor"/>
  </properties>
@@ -25,26 +26,26 @@
  <objectgroup id="4" name="Interactive">
   <object id="1" name="扎克伯格" type="NPC" x="40" y="132">
    <properties>
-    <property name="npcId" value="zha_ke_bo_ge"/>
+    <property name="npcId" value="365fcbd4-e6fc-5c95-8101-ffa518ab5ed5"/>
    </properties>
    <point/>
   </object>
   <object id="2" name="Jordan Walke" type="NPC" x="185.333" y="84">
    <properties>
-    <property name="npcId" value="jordan_walke"/>
+    <property name="npcId" value="1ca9a5e1-db3c-5fa9-af19-eba11e3f86e1"/>
    </properties>
    <point/>
   </object>
   <object id="3" type="Transaction" x="112" y="208" width="16" height="16">
    <properties>
-    <property name="from" value="LiangZiXianZong"/>
-    <property name="to" value="LiangZiShiYanShi"/>
+    <property name="from" value="891e09c1-4118-5933-ab59-4f59be8ada85"/>
+    <property name="to" value="a8e90daa-ea13-5d87-a4f8-88bd76bff121"/>
    </properties>
   </object>
   <object id="4" type="Transaction" x="96" y="224" width="48" height="16">
    <properties>
-    <property name="from" value="LiangZiShiYanShi"/>
-    <property name="to" value="LiangZiXianZong"/>
+    <property name="from" value="a8e90daa-ea13-5d87-a4f8-88bd76bff121"/>
+    <property name="to" value="891e09c1-4118-5933-ab59-4f59be8ada85"/>
    </properties>
   </object>
  </objectgroup>

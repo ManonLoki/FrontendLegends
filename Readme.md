@@ -74,4 +74,4 @@ npm run build:web
 - [世界与玩法设定](docs/lore_bible.md)
 - [代码与存档规范](docs/code_and_save_standards.md)
 
-当前版本：`0.7.7`
+当前版本：`0.8.0`

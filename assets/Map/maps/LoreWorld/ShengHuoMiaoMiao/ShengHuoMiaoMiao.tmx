@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="40" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="33">
  <properties>
+  <property name="mapId" value="0c9615d7-aeba-5e40-9b22-2a4d0254b66b"/>
   <property name="Sort" type="int" value="10"/>
   <property name="mapName" value="笙火喵喵教"/>
   <property name="region" value="笙火喵喵教"/>
@@ -40,44 +41,44 @@
  </layer>
  <objectgroup id="4" name="Interactive" class="Transaction">
   <properties>
-   <property name="from" value="ShengHuoMiaoMiao"/>
-   <property name="to" value="ShengHuoMansion"/>
+   <property name="from" value="0c9615d7-aeba-5e40-9b22-2a4d0254b66b"/>
+   <property name="to" value="580b0929-4c5b-5a2b-a555-2509c7c7f3f6"/>
   </properties>
   <object id="9" name="野猫" type="NPC" x="346.082" y="491.221">
    <properties>
-    <property name="npcId" value="ye_mao"/>
+    <property name="npcId" value="01ee8ae2-af17-500d-a659-4f2d3c3315a5"/>
    </properties>
    <point/>
   </object>
   <object id="21" type="Transaction" x="0" y="496" width="16" height="16">
    <properties>
-    <property name="from" value="ShengHuoMiaoMiao"/>
-    <property name="to" value="Nanjiao"/>
+    <property name="from" value="0c9615d7-aeba-5e40-9b22-2a4d0254b66b"/>
+    <property name="to" value="fb215e50-cd81-5f1a-a285-b32c09a09834"/>
    </properties>
   </object>
   <object id="22" type="Transaction" x="16" y="496" width="16" height="16">
    <properties>
-    <property name="from" value="Nanjiao"/>
-    <property name="to" value="ShengHuoMiaoMiao"/>
+    <property name="from" value="fb215e50-cd81-5f1a-a285-b32c09a09834"/>
+    <property name="to" value="0c9615d7-aeba-5e40-9b22-2a4d0254b66b"/>
    </properties>
   </object>
   <object id="23" name="告示牌" type="Props" gid="6" x="288" y="496" width="16" height="16">
   </object>
   <object id="26" type="Transaction" x="304" y="448" width="32" height="16">
    <properties>
-    <property name="from" value="ShengHuoMansion"/>
-    <property name="to" value="ShengHuoMiaoMiao"/>
+    <property name="from" value="580b0929-4c5b-5a2b-a555-2509c7c7f3f6"/>
+    <property name="to" value="0c9615d7-aeba-5e40-9b22-2a4d0254b66b"/>
    </properties>
   </object>
   <object id="27" type="Transaction" x="304" y="432" width="32" height="16">
    <properties>
-    <property name="from" value="ShenghuoMiaoMiao"/>
-    <property name="to" value="ShengHuoMansion"/>
+    <property name="from" value="0c9615d7-aeba-5e40-9b22-2a4d0254b66b"/>
+    <property name="to" value="580b0929-4c5b-5a2b-a555-2509c7c7f3f6"/>
    </properties>
   </object>
   <object id="28" name="狗团" type="NPC" x="359.643" y="599.696">
    <properties>
-    <property name="npcId" value="gou_tuan"/>
+    <property name="npcId" value="9db4110f-3a44-5d88-a064-4fadb7f81fdc"/>
     <property name="type" value="NPC"/>
    </properties>
    <point/>
@@ -86,14 +87,14 @@
   </object>
   <object id="31" type="Transaction" x="624" y="608" width="16" height="16">
    <properties>
-    <property name="from" value="ShengHuoMiaoMiao"/>
-    <property name="to" value="XiHuLingYin"/>
+    <property name="from" value="0c9615d7-aeba-5e40-9b22-2a4d0254b66b"/>
+    <property name="to" value="d1388237-5d83-5a08-a68c-41c18fe7d699"/>
    </properties>
   </object>
   <object id="32" type="Transaction" x="608" y="608" width="16" height="16">
    <properties>
-    <property name="from" value="XiHuLingYin"/>
-    <property name="to" value="ShengHuoMiaoMiao"/>
+    <property name="from" value="d1388237-5d83-5a08-a68c-41c18fe7d699"/>
+    <property name="to" value="0c9615d7-aeba-5e40-9b22-2a4d0254b66b"/>
    </properties>
   </object>
  </objectgroup>

@@ -1,6 +1,6 @@
-export const DEFAULT_WORKBOOK = 'docs/data/FrontendLegendsData.xlsx';
+export const DEFAULT_WORKBOOK_DIR = 'docs/data';
 export const DATA_DIR = 'assets/Data';
-export const DATA_FILES = ['items', 'skills', 'npcs', 'quests', 'world_events'];
+export const DATA_FILES = ['items', 'skills', 'npcs', 'quests', 'world_events', 'maps'];
 
 export const SHEETS = {
   meta: 'Meta',
@@ -17,6 +17,23 @@ export const SHEETS = {
   quests: 'Quests',
   worldEventTypes: 'WorldEventTypes',
   worldEvents: 'WorldEvents',
+  maps: 'Maps',
+};
+
+export const WORKBOOKS = {
+  items: { file: 'items.xlsx', dataFile: 'items', title: '道具数据', sheets: [SHEETS.items, SHEETS.vendorStock] },
+  skills: { file: 'skills.xlsx', dataFile: 'skills', title: '技能数据', sheets: [SHEETS.skills, SHEETS.teachStock] },
+  npcs: {
+    file: 'npcs.xlsx', dataFile: 'npcs', title: 'NPC 数据',
+    sheets: [SHEETS.npcs, SHEETS.npcSkillLevels, SHEETS.npcEquipment, SHEETS.npcLoot],
+  },
+  quests: { file: 'quests.xlsx', dataFile: 'quests', title: '任务数据', sheets: [SHEETS.quests] },
+  world_events: {
+    file: 'world-events.xlsx', dataFile: 'world_events', title: '世界事件数据',
+    sheets: [SHEETS.worldEventTypes, SHEETS.worldEvents],
+  },
+  maps: { file: 'maps.xlsx', dataFile: 'maps', title: '地图索引数据', sheets: [SHEETS.maps] },
+  balance: { file: 'balance-rules.xlsx', dataFile: null, title: '平衡规则', sheets: [SHEETS.balanceRules] },
 };
 
 export const HEADERS = {
@@ -64,6 +81,7 @@ export const HEADERS = {
     'eventId', 'mapId', 'archetype', 'tileX', 'tileY', 'width', 'height',
     'displayName', 'text', 'questEndpoint', 'configJson',
   ],
+  [SHEETS.maps]: ['mapId', 'path', 'displayName', 'mapType', 'parentMapId', 'configJson'],
 };
 
 export const BALANCE_RULE_ROWS = [
@@ -99,5 +117,5 @@ export const BALANCE_RULE_ROWS = [
   { category: '人物', key: 'combatRank 奖励倍率', value: '0.15 / 0.50 / 0.75 / 1.00 / 1.20 / 1.50 / 2.00', formula: 'noncombatant / novice / trained / veteran / elite / master / legendary', notes: '战斗奖励与生命倍率分离，非战斗人物不成为刷取目标' },
   { category: '人物', key: 'combatRole', value: '7种原型', formula: 'noncombatant/striker/skirmisher/tank/counter/controller/balanced', notes: '66 人四维配点全部唯一且总点数不变' },
   { category: '状态', key: '资源归一化', value: '上限变化即时钳制', formula: '卸功法或战败降级后重算四维、体力与精力上限', notes: '不允许保存当前值高于新上限' },
-  { category: '存档', key: 'v2/v3→v4', value: '按比例迁移', formula: '旧体力/伤势按比例映射；v2 仅有证据时按双倍精力折半', notes: '兼容 v2 中途未升版本便改为1:1精力的历史存档' },
+  { category: '存档', key: 'v5 版本边界', value: '仅接受当前版本', formula: 'version == 5', notes: '资源主键已切换为 UUID；v2、v3、v4 存档全部作废且不迁移' },
 ];

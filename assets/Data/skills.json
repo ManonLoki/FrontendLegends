@@ -1,8 +1,8 @@
 {
-    "version": 3,
-    "_note": "技能目录。基础功法为所有门派/NPC/玩家共用；门派高级功法每门派按 code/tune/arch/parry 各 1 个。灵感 knowledge 只有基础读书写字：无高级功法，且门派师父不授——由独立导师（有 teachStock 但无 joinSect 收徒门槛，如书颜 shu_yan）教授，无需拜师。combat 的 atk/def/hit/dodge/parry/mpMaxPerLv 均进入 v4 战斗聚合。teachStock 支持 { skillId, maxTeachLevel }，各导师实际上限以表中 30/40/60/70/80/100 等配置为准。",
+    "version": 5,
+    "_note": "技能目录。基础功法为所有门派/NPC/玩家共用；门派高级功法每门派按 code/tune/arch/parry 各 1 个。灵感 knowledge 只有基础读书写字：无高级功法，且门派师父不授——由独立导师（有 teachStock 但无 joinSect 收徒门槛，如书颜）教授，无需拜师。combat 的 atk/def/hit/dodge/parry/mpMaxPerLv 均进入 v5 战斗聚合。teachStock 支持 { skillId, maxTeachLevel }，各导师实际上限以表中 30/40/60/70/80/100 等配置为准。",
     "skills": {
-        "basicStrength": {
+        "2224675d-63f2-50e8-a2c6-064acd5c5623": {
             "name": "基础编码",
             "category": "basic",
             "theme": "code",
@@ -15,7 +15,7 @@
             },
             "description": "全员共用基础功法：编码。可装备在编码位。"
         },
-        "basicAgility": {
+        "af088f07-4c52-5a8c-aa16-df96e6b3e056": {
             "name": "基础思维",
             "category": "basic",
             "theme": "tune",
@@ -29,7 +29,7 @@
             },
             "description": "全员共用基础功法：思维。可装备在思维位。"
         },
-        "basicConstitution": {
+        "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": {
             "name": "基础架构",
             "category": "basic",
             "theme": "arch",
@@ -42,7 +42,7 @@
             },
             "description": "全员共用基础功法：架构。可装备在架构位，也是冥想入门根基。"
         },
-        "basicParry": {
+        "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": {
             "name": "基础招架",
             "category": "basic",
             "theme": "parry",
@@ -55,7 +55,7 @@
             },
             "description": "全员共用基础功法：招架。可装备在招架位，提升格挡对方攻击的概率，并减免战后伤势。"
         },
-        "literacy": {
+        "1011d493-be02-53e2-86a2-a6a439328f84": {
             "name": "读书写字",
             "category": "basic",
             "theme": "knowledge",
@@ -68,7 +68,7 @@
             },
             "description": "全员共用基础功法：灵感。可装备在灵感位，影响潜能折扣。灵感一脉无高级功法，门派师父亦不传授，据说只有奇人异士肯教。"
         },
-        "ng_code_decorator": {
+        "bcb538e2-4d6a-52ae-990d-20377e27ab64": {
             "name": "模版语法",
             "category": "sect",
             "sect": "NG神教",
@@ -129,7 +129,7 @@
             ],
             "description": "NG神教编码高级功法，以模版立规成招，一笔一式皆有法度。"
         },
-        "ng_tune_rx_step": {
+        "4d75539d-7873-5039-a596-d3dacc29c4d1": {
             "name": "组件生成",
             "category": "sect",
             "sect": "NG神教",
@@ -190,7 +190,7 @@
             ],
             "description": "NG神教思维高级功法，随需生成组件，随机应变、避实击虚。"
         },
-        "ng_arch_zone": {
+        "9287473e-59a9-5dc8-a914-324ec57ffc14": {
             "name": "依赖注入",
             "category": "sect",
             "sect": "NG神教",
@@ -216,7 +216,7 @@
             },
             "description": "NG神教架构高级功法，以依赖注入调度周身，护身养气、适合冥想。"
         },
-        "ng_parry_interceptor": {
+        "394fdd1b-c49d-52fc-a31b-41adf88a32d6": {
             "name": "路由守卫",
             "category": "sect",
             "sect": "NG神教",
@@ -234,20 +234,50 @@
                 "injuryReducePerLv": 0.4
             },
             "moves": [
-                { "unlockLevel": 10, "name": "路由守卫" },
-                { "unlockLevel": 20, "name": "请求拦截" },
-                { "unlockLevel": 30, "name": "权限校验" },
-                { "unlockLevel": 40, "name": "管道净化" },
-                { "unlockLevel": 50, "name": "依赖注入·盾" },
-                { "unlockLevel": 60, "name": "生命周期锁" },
-                { "unlockLevel": 70, "name": "变更冻结" },
-                { "unlockLevel": 80, "name": "模块隔离" },
-                { "unlockLevel": 90, "name": "服务熔断" },
-                { "unlockLevel": 100, "name": "路由守卫·终阵" }
+                {
+                    "unlockLevel": 10,
+                    "name": "路由守卫"
+                },
+                {
+                    "unlockLevel": 20,
+                    "name": "请求拦截"
+                },
+                {
+                    "unlockLevel": 30,
+                    "name": "权限校验"
+                },
+                {
+                    "unlockLevel": 40,
+                    "name": "管道净化"
+                },
+                {
+                    "unlockLevel": 50,
+                    "name": "依赖注入·盾"
+                },
+                {
+                    "unlockLevel": 60,
+                    "name": "生命周期锁"
+                },
+                {
+                    "unlockLevel": 70,
+                    "name": "变更冻结"
+                },
+                {
+                    "unlockLevel": 80,
+                    "name": "模块隔离"
+                },
+                {
+                    "unlockLevel": 90,
+                    "name": "服务熔断"
+                },
+                {
+                    "unlockLevel": 100,
+                    "name": "路由守卫·终阵"
+                }
             ],
             "description": "NG神教招架高级功法，如路由守卫层层设防，来招未至先截其势。"
         },
-        "vanilla_code_dom": {
+        "b9814e27-ea44-5a59-83fb-d452b79ee0f1": {
             "name": "DOM 直拳",
             "category": "sect",
             "sect": "香草派",
@@ -307,7 +337,7 @@
             ],
             "description": "香草派编码高级功法，不借外物，直取节点。"
         },
-        "vanilla_tune_event_loop": {
+        "0bd48657-0a35-5ec5-9068-adc9762736d8": {
             "name": "事件循环步",
             "category": "sect",
             "sect": "香草派",
@@ -368,7 +398,7 @@
             ],
             "description": "香草派思维高级功法，微任务与宏任务之间换位。"
         },
-        "vanilla_arch_closure": {
+        "bf770011-a135-56d5-8537-ee85f77df325": {
             "name": "闭包内功",
             "category": "sect",
             "sect": "香草派",
@@ -394,7 +424,7 @@
             },
             "description": "香草派架构高级功法，封存内劲，适合冥想养气。"
         },
-        "vanilla_parry_prevent": {
+        "d2f9550c-9725-56a5-8929-363aed058324": {
             "name": "阻默封手",
             "category": "sect",
             "sect": "香草派",
@@ -412,20 +442,50 @@
                 "injuryReducePerLv": 0.35
             },
             "moves": [
-                { "unlockLevel": 10, "name": "阻默封手" },
-                { "unlockLevel": 20, "name": "事件拦截" },
-                { "unlockLevel": 30, "name": "冒泡止息" },
-                { "unlockLevel": 40, "name": "默认阻断" },
-                { "unlockLevel": 50, "name": "节流封守" },
-                { "unlockLevel": 60, "name": "防抖固壁" },
-                { "unlockLevel": 70, "name": "捕获反制" },
-                { "unlockLevel": 80, "name": "委托封锁" },
-                { "unlockLevel": 90, "name": "静默劫持" },
-                { "unlockLevel": 100, "name": "阻默封手·终章" }
+                {
+                    "unlockLevel": 10,
+                    "name": "阻默封手"
+                },
+                {
+                    "unlockLevel": 20,
+                    "name": "事件拦截"
+                },
+                {
+                    "unlockLevel": 30,
+                    "name": "冒泡止息"
+                },
+                {
+                    "unlockLevel": 40,
+                    "name": "默认阻断"
+                },
+                {
+                    "unlockLevel": 50,
+                    "name": "节流封守"
+                },
+                {
+                    "unlockLevel": 60,
+                    "name": "防抖固壁"
+                },
+                {
+                    "unlockLevel": 70,
+                    "name": "捕获反制"
+                },
+                {
+                    "unlockLevel": 80,
+                    "name": "委托封锁"
+                },
+                {
+                    "unlockLevel": 90,
+                    "name": "静默劫持"
+                },
+                {
+                    "unlockLevel": 100,
+                    "name": "阻默封手·终章"
+                }
             ],
             "description": "香草派招架高级功法，一手封停来势，招式再急也进不了身。"
         },
-        "react_code_jsx": {
+        "31cae377-72c7-5210-affd-b738c917c6d4": {
             "name": "阶式真言",
             "category": "sect",
             "sect": "量子仙宗",
@@ -486,7 +546,7 @@
             ],
             "description": "量子仙宗编码高级功法，以 JSX 拆影成阶。"
         },
-        "react_tune_virtual": {
+        "ba00f74e-8309-5097-a096-a6145dc5fb6e": {
             "name": "虚影掌",
             "category": "sect",
             "sect": "量子仙宗",
@@ -547,7 +607,7 @@
             ],
             "description": "量子仙宗思维高级功法，虚实切换，先手轻灵。"
         },
-        "react_arch_state": {
+        "d6bd0498-0551-54de-b5bf-1ededfe9aa06": {
             "name": "状态归一",
             "category": "sect",
             "sect": "量子仙宗",
@@ -573,7 +633,7 @@
             },
             "description": "量子仙宗架构高级功法，归一状态，适合冥想养气。"
         },
-        "react_parry_boundary": {
+        "6e43fafa-2f44-58c1-ad30-1e8bd86b2a14": {
             "name": "边界护法",
             "category": "sect",
             "sect": "量子仙宗",
@@ -591,20 +651,50 @@
                 "injuryReducePerLv": 0.45
             },
             "moves": [
-                { "unlockLevel": 10, "name": "边界护法" },
-                { "unlockLevel": 20, "name": "引用固守" },
-                { "unlockLevel": 30, "name": "记忆屏障" },
-                { "unlockLevel": 40, "name": "悬念封界" },
-                { "unlockLevel": 50, "name": "纯粹隔离" },
-                { "unlockLevel": 60, "name": "副作用清" },
-                { "unlockLevel": 70, "name": "上下文壁" },
-                { "unlockLevel": 80, "name": "严格模式" },
-                { "unlockLevel": 90, "name": "并发调度盾" },
-                { "unlockLevel": 100, "name": "边界护法·圆满" }
+                {
+                    "unlockLevel": 10,
+                    "name": "边界护法"
+                },
+                {
+                    "unlockLevel": 20,
+                    "name": "引用固守"
+                },
+                {
+                    "unlockLevel": 30,
+                    "name": "记忆屏障"
+                },
+                {
+                    "unlockLevel": 40,
+                    "name": "悬念封界"
+                },
+                {
+                    "unlockLevel": 50,
+                    "name": "纯粹隔离"
+                },
+                {
+                    "unlockLevel": 60,
+                    "name": "副作用清"
+                },
+                {
+                    "unlockLevel": 70,
+                    "name": "上下文壁"
+                },
+                {
+                    "unlockLevel": 80,
+                    "name": "严格模式"
+                },
+                {
+                    "unlockLevel": 90,
+                    "name": "并发调度盾"
+                },
+                {
+                    "unlockLevel": 100,
+                    "name": "边界护法·圆满"
+                }
             ],
             "description": "量子仙宗招架高级功法，身周立起错界，伤势止于界外。"
         },
-        "vue_code_template": {
+        "bf405613-2fce-5cdd-9106-6936c89b036f": {
             "name": "模板拆招",
             "category": "sect",
             "sect": "鱿鱼山庄",
@@ -665,7 +755,7 @@
             ],
             "description": "鱿鱼山庄编码高级功法，以模板拆招成件。"
         },
-        "vue_tune_router": {
+        "59972225-62ad-5180-844f-17e05b24b55c": {
             "name": "路由步",
             "category": "sect",
             "sect": "鱿鱼山庄",
@@ -726,7 +816,7 @@
             ],
             "description": "鱿鱼山庄思维高级功法，路由一转，身位全开。"
         },
-        "vue_arch_reactive": {
+        "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc": {
             "name": "响应内功",
             "category": "sect",
             "sect": "鱿鱼山庄",
@@ -752,7 +842,7 @@
             },
             "description": "鱿鱼山庄架构高级功法，响应周身气机，适合冥想养气。"
         },
-        "vue_parry_keepalive": {
+        "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2": {
             "name": "常驻金身",
             "category": "sect",
             "sect": "鱿鱼山庄",
@@ -770,192 +860,222 @@
                 "injuryReducePerLv": 0.4
             },
             "moves": [
-                { "unlockLevel": 10, "name": "常驻金身" },
-                { "unlockLevel": 20, "name": "侦听固守" },
-                { "unlockLevel": 30, "name": "计算屏息" },
-                { "unlockLevel": 40, "name": "指令封印" },
-                { "unlockLevel": 50, "name": "插槽护体" },
-                { "unlockLevel": 60, "name": "混入拒斥" },
-                { "unlockLevel": 70, "name": "作用域锁" },
-                { "unlockLevel": 80, "name": "响应熔断" },
-                { "unlockLevel": 90, "name": "组合守则" },
-                { "unlockLevel": 100, "name": "常驻金身·大成" }
+                {
+                    "unlockLevel": 10,
+                    "name": "常驻金身"
+                },
+                {
+                    "unlockLevel": 20,
+                    "name": "侦听固守"
+                },
+                {
+                    "unlockLevel": 30,
+                    "name": "计算屏息"
+                },
+                {
+                    "unlockLevel": 40,
+                    "name": "指令封印"
+                },
+                {
+                    "unlockLevel": 50,
+                    "name": "插槽护体"
+                },
+                {
+                    "unlockLevel": 60,
+                    "name": "混入拒斥"
+                },
+                {
+                    "unlockLevel": 70,
+                    "name": "作用域锁"
+                },
+                {
+                    "unlockLevel": 80,
+                    "name": "响应熔断"
+                },
+                {
+                    "unlockLevel": 90,
+                    "name": "组合守则"
+                },
+                {
+                    "unlockLevel": 100,
+                    "name": "常驻金身·大成"
+                }
             ],
             "description": "鱿鱼山庄招架高级功法，气机常驻不散，架开重手不伤根本。"
         }
     },
     "teachStock": {
-        "da_mo_qiong_qiu": [
+        "5b9e5ff0-1be6-5b83-b3b6-a6f6a8181c50": [
             {
-                "skillId": "ng_code_decorator",
+                "skillId": "bcb538e2-4d6a-52ae-990d-20377e27ab64",
                 "maxTeachLevel": 40
             },
             {
-                "skillId": "ng_tune_rx_step",
+                "skillId": "4d75539d-7873-5039-a596-d3dacc29c4d1",
                 "maxTeachLevel": 40
             },
             {
-                "skillId": "ng_arch_zone",
+                "skillId": "9287473e-59a9-5dc8-a914-324ec57ffc14",
                 "maxTeachLevel": 40
             },
             {
-                "skillId": "ng_parry_interceptor",
+                "skillId": "394fdd1b-c49d-52fc-a31b-41adf88a32d6",
                 "maxTeachLevel": 40
             }
         ],
-        "xi_xi_fu_si": [
+        "688cbec0-c143-5e40-bdd2-57103066fa4e": [
             {
-                "skillId": "ng_code_decorator",
+                "skillId": "bcb538e2-4d6a-52ae-990d-20377e27ab64",
                 "maxTeachLevel": 80
             },
             {
-                "skillId": "ng_tune_rx_step",
+                "skillId": "4d75539d-7873-5039-a596-d3dacc29c4d1",
                 "maxTeachLevel": 80
             },
             {
-                "skillId": "ng_arch_zone",
+                "skillId": "9287473e-59a9-5dc8-a914-324ec57ffc14",
                 "maxTeachLevel": 80
             },
             {
-                "skillId": "ng_parry_interceptor",
+                "skillId": "394fdd1b-c49d-52fc-a31b-41adf88a32d6",
                 "maxTeachLevel": 80
             }
         ],
-        "xue_lang": [
+        "21e05288-a075-5137-85e8-a6c4c115be87": [
             {
-                "skillId": "ng_code_decorator",
+                "skillId": "bcb538e2-4d6a-52ae-990d-20377e27ab64",
                 "maxTeachLevel": 100
             },
             {
-                "skillId": "ng_tune_rx_step",
+                "skillId": "4d75539d-7873-5039-a596-d3dacc29c4d1",
                 "maxTeachLevel": 100
             },
             {
-                "skillId": "ng_arch_zone",
+                "skillId": "9287473e-59a9-5dc8-a914-324ec57ffc14",
                 "maxTeachLevel": 100
             },
             {
-                "skillId": "ng_parry_interceptor",
-                "maxTeachLevel": 100
-            }
-        ],
-        "shu_yan": [
-            {
-                "skillId": "literacy",
+                "skillId": "394fdd1b-c49d-52fc-a31b-41adf88a32d6",
                 "maxTeachLevel": 100
             }
         ],
-        "wei_te_er": [
+        "649ae1b0-2a25-59d2-90d8-c52744587221": [
             {
-                "skillId": "vue_code_template",
-                "maxTeachLevel": 60
-            },
-            {
-                "skillId": "vue_tune_router",
-                "maxTeachLevel": 60
-            },
-            {
-                "skillId": "vue_arch_reactive",
-                "maxTeachLevel": 60
-            },
-            {
-                "skillId": "vue_parry_keepalive",
-                "maxTeachLevel": 60
-            }
-        ],
-        "youyu_xu": [
-            "vue_code_template",
-            "vue_tune_router",
-            "vue_arch_reactive",
-            "vue_parry_keepalive"
-        ],
-        "pete_hunt": [
-            {
-                "skillId": "react_code_jsx",
-                "maxTeachLevel": 60
-            },
-            {
-                "skillId": "react_tune_virtual",
-                "maxTeachLevel": 60
-            },
-            {
-                "skillId": "react_arch_state",
-                "maxTeachLevel": 60
-            },
-            {
-                "skillId": "react_parry_boundary",
-                "maxTeachLevel": 60
-            }
-        ],
-        "jordan_walke": [
-            {
-                "skillId": "react_code_jsx",
-                "maxTeachLevel": 100
-            },
-            {
-                "skillId": "react_tune_virtual",
-                "maxTeachLevel": 100
-            },
-            {
-                "skillId": "react_arch_state",
-                "maxTeachLevel": 100
-            },
-            {
-                "skillId": "react_parry_boundary",
+                "skillId": "1011d493-be02-53e2-86a2-a6a439328f84",
                 "maxTeachLevel": 100
             }
         ],
-        "douglas_crockford": [
+        "c3e0a935-ec47-584f-9a90-648ead8dc206": [
             {
-                "skillId": "vanilla_code_dom",
+                "skillId": "bf405613-2fce-5cdd-9106-6936c89b036f",
+                "maxTeachLevel": 60
+            },
+            {
+                "skillId": "59972225-62ad-5180-844f-17e05b24b55c",
+                "maxTeachLevel": 60
+            },
+            {
+                "skillId": "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc",
+                "maxTeachLevel": 60
+            },
+            {
+                "skillId": "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2",
+                "maxTeachLevel": 60
+            }
+        ],
+        "1f8eac82-dee2-5f0f-a499-d133299a1171": [
+            "bf405613-2fce-5cdd-9106-6936c89b036f",
+            "59972225-62ad-5180-844f-17e05b24b55c",
+            "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc",
+            "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2"
+        ],
+        "9dd3e6a1-754c-5982-8ddb-a968597126d1": [
+            {
+                "skillId": "31cae377-72c7-5210-affd-b738c917c6d4",
+                "maxTeachLevel": 60
+            },
+            {
+                "skillId": "ba00f74e-8309-5097-a096-a6145dc5fb6e",
+                "maxTeachLevel": 60
+            },
+            {
+                "skillId": "d6bd0498-0551-54de-b5bf-1ededfe9aa06",
+                "maxTeachLevel": 60
+            },
+            {
+                "skillId": "6e43fafa-2f44-58c1-ad30-1e8bd86b2a14",
+                "maxTeachLevel": 60
+            }
+        ],
+        "1ca9a5e1-db3c-5fa9-af19-eba11e3f86e1": [
+            {
+                "skillId": "31cae377-72c7-5210-affd-b738c917c6d4",
+                "maxTeachLevel": 100
+            },
+            {
+                "skillId": "ba00f74e-8309-5097-a096-a6145dc5fb6e",
+                "maxTeachLevel": 100
+            },
+            {
+                "skillId": "d6bd0498-0551-54de-b5bf-1ededfe9aa06",
+                "maxTeachLevel": 100
+            },
+            {
+                "skillId": "6e43fafa-2f44-58c1-ad30-1e8bd86b2a14",
+                "maxTeachLevel": 100
+            }
+        ],
+        "00175cfc-77cd-5b4a-b38e-a26cf617bab1": [
+            {
+                "skillId": "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
                 "maxTeachLevel": 30
             },
             {
-                "skillId": "vanilla_tune_event_loop",
+                "skillId": "0bd48657-0a35-5ec5-9068-adc9762736d8",
                 "maxTeachLevel": 30
             },
             {
-                "skillId": "vanilla_arch_closure",
+                "skillId": "bf770011-a135-56d5-8537-ee85f77df325",
                 "maxTeachLevel": 30
             },
             {
-                "skillId": "vanilla_parry_prevent",
+                "skillId": "d2f9550c-9725-56a5-8929-363aed058324",
                 "maxTeachLevel": 30
             }
         ],
-        "john_resig": [
+        "006623e0-420d-5866-b012-31cc28f7da69": [
             {
-                "skillId": "vanilla_code_dom",
+                "skillId": "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
                 "maxTeachLevel": 70
             },
             {
-                "skillId": "vanilla_tune_event_loop",
+                "skillId": "0bd48657-0a35-5ec5-9068-adc9762736d8",
                 "maxTeachLevel": 70
             },
             {
-                "skillId": "vanilla_arch_closure",
+                "skillId": "bf770011-a135-56d5-8537-ee85f77df325",
                 "maxTeachLevel": 70
             },
             {
-                "skillId": "vanilla_parry_prevent",
+                "skillId": "d2f9550c-9725-56a5-8929-363aed058324",
                 "maxTeachLevel": 70
             }
         ],
-        "brendan_eich": [
+        "de6328e3-32c7-5560-b6c7-298a7fa02a03": [
             {
-                "skillId": "vanilla_code_dom",
+                "skillId": "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
                 "maxTeachLevel": 100
             },
             {
-                "skillId": "vanilla_tune_event_loop",
+                "skillId": "0bd48657-0a35-5ec5-9068-adc9762736d8",
                 "maxTeachLevel": 100
             },
             {
-                "skillId": "vanilla_arch_closure",
+                "skillId": "bf770011-a135-56d5-8537-ee85f77df325",
                 "maxTeachLevel": 100
             },
             {
-                "skillId": "vanilla_parry_prevent",
+                "skillId": "d2f9550c-9725-56a5-8929-363aed058324",
                 "maxTeachLevel": 100
             }
         ]

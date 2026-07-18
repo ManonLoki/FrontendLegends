@@ -5,10 +5,10 @@ FrontendLegends 是一款使用 Godot 4.7 与 GDScript 开发的 2D 俯视角格
 ## 文档导航
 
 - [世界与玩法设定集](lore_bible.md)：世界观、角色、门派、成长、战斗、任务、交易与时间规则。
-- [v4 数值设计](balance_design.md)：数值目标、公式、人物分层、经济约束、模拟结果与设计依据。
+- [v5 数值设计](balance_design.md)：数值目标、公式、人物分层、经济约束、模拟结果与设计依据。
 - [72 小时人物养成曲线](growth_curve_72h.md)：师父学习成本、潜能与 Token 需求、阶段耗时和四维边界。
 - [世界事件维护](world_events.md)：Excel 事件原型/摆放表、地图职责与 JSON 导出流程。
-- [代码与存档规范](code_and_save_standards.md)：中文注释、英文标识符、文件职责、存档 v4 与旧档迁移规则。
+- [代码与存档规范](code_and_save_standards.md)：中文注释、英文标识符、UUID 规则、存档 v5 与版本边界。
 - [参照项目差异审计](reference_alignment_audit.md)：当前实现从参照项目保留的语义与有意改变的数值。
 - 仓库根目录的 `AGENTS.md`：开发、测试、冻结文件和文件规模规则。
 - 仓库根目录的 `CLAUDE.md`：与自动化开发工具共享的强制维护约束。
@@ -20,11 +20,10 @@ FrontendLegends 是一款使用 Godot 4.7 与 GDScript 开发的 2D 俯视角格
 | `project.godot` | Godot 项目配置、输入映射和自动加载单例注册 |
 | `scenes/` | 启动画面、角色创建和主游戏场景 |
 | `scripts/` | 游戏运行时、领域系统、界面与地图加载代码 |
-| `assets/Data/` | 由 Excel 导出的运行时人物、物品、技能、任务和世界事件 JSON |
-| `docs/data/FrontendLegendsData.xlsx` | 五份 JSON、v4 平衡规则、世界事件原型/摆放和维护说明的主数据工作簿 |
-| `outputs/<任务编号>/NPC数值维护.xlsx` | NPC 身份、四维、技能、装备与拜师条件的独立中文维护表 |
-| `outputs/<任务编号>/道具数值维护.xlsx` | 道具效果、加成、商店库存、标签与掉落的独立中文维护表 |
-| `outputs/<任务编号>/技能数值维护.xlsx` | 技能系数、招式、绝招、要求与教学库存的独立中文维护表 |
+| `assets/Data/` | 六份 v5 运行时数据：人物、物品、技能、任务、世界事件和地图 UUID 索引 |
+| `docs/data/items.xlsx`、`skills.xlsx`、`npcs.xlsx` | 道具、技能和 NPC 的独立维护工作簿；关联库存、教学、装备与掉落使用子表 |
+| `docs/data/quests.xlsx`、`world-events.xlsx`、`maps.xlsx` | 任务、世界事件和地图索引的独立维护工作簿 |
+| `docs/data/balance-rules.xlsx` | v5 数值目标、公式和约束参考，不直接导出运行时 JSON |
 | `assets/Map/maps/LoreWorld/` | Tiled 制作的 TMX 世界地图 |
 | `assets/Map/tilesets/` | 地图直接依赖的 TSX 瓦片集定义 |
 | `tests/` | 领域、界面、菜单和战斗对齐测试 |
@@ -58,13 +57,13 @@ FrontendLegends 是一款使用 Godot 4.7 与 GDScript 开发的 2D 俯视角格
 ## 数据权威顺序
 
 1. Godot 场景与 GDScript 是运行行为的唯一实现事实。
-2. `assets/Data/*.json` 是人物、技能、物品和任务内容的权威数据。
+2. `assets/Data/*.json` 是人物、技能、物品、任务、世界事件和地图 UUID 索引的权威数据。
 3. TMX 与 TSX 是地图、碰撞和地图对象的权威数据。
 4. 本目录文档用于解释前三者，不得自行创造与实现不一致的规则。
 
 ## 存档
 
-当前结构版本为 v4，仍沿用历史文件名 `user://frontend_legends_save_v2.json`，以便已有玩家无感升级。游戏可以读取 v2/v3 存档，把旧技能字段迁移为蛇形英文键，并按比例迁移旧生命资源；再次保存后写出 v4。装备状态按当前设计只存在于本局内存，不写入存档。
+当前结构版本为 v5，文件名为 `user://frontend_legends_save_v5.json`。资源主键已整体切换为 UUID，v2、v3、v4 存档全部作废且不会迁移。装备状态按当前设计只存在于本局内存，不写入存档。
 
 ## 验证
 
@@ -77,4 +76,4 @@ FrontendLegends 是一款使用 Godot 4.7 与 GDScript 开发的 2D 俯视角格
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script tests/combat_balance_test.gd
 ```
 
-测试必须使用隔离的 `user://` 路径，不能污染正式存档。数据表变更还必须执行 XLSX 往返校验，确保导出后四份 JSON 内容不变。
+测试必须使用 `GameState.use_test_save_path(...)` 写入系统临时目录，不能污染正式存档。数据表变更还必须执行 `npm run data:check`，校验 UUID 引用并确保六个独立工作簿覆盖的 JSON 往返不变。

@@ -84,7 +84,7 @@ func npc_ults(npc: Dictionary) -> Array:
 		if str(definition.get("theme", "")) != "arch" or definition.get("ult", {}).is_empty():
 			continue
 		var level := int(skill_levels.get(str(skill_id), 0))
-		var inner_power := int(skill_levels.get("basicConstitution", 0)) + level * 2
+		var inner_power := int(skill_levels.get("dcebef7e-09b8-5a69-8e3d-159cb2b0c355", 0)) + level * 2
 		var config: Dictionary = definition.get("ult", {})
 		var kind := str(config.get("kind", "hugeDamage"))
 		var names: Array = config.get("names", ["绝招", "绝招"])

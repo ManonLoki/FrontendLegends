@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="20" height="15" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="14">
  <properties>
+  <property name="mapId" value="06467980-5568-5a03-8d5d-2d5df42db6a0"/>
   <property name="mapName" value="暗网"/>
-  <property name="parentMap" value="KaiyuanTown"/>
+  <property name="parentMap" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
   <property name="region" value="开源镇"/>
   <property name="type" propertytype="MapType" value="inDoor"/>
  </properties>
@@ -34,26 +35,26 @@
  <objectgroup id="4" name="Interactive">
   <object id="5" name="小不二" type="NPC" x="86.7945" y="101.171">
    <properties>
-    <property name="npcId" value="xiao_bu_er"/>
+    <property name="npcId" value="c6592971-0e60-5f47-969c-2db122c7c011"/>
    </properties>
    <point/>
   </object>
   <object id="11" name="奸商" type="NPC" x="264.12" y="105.485">
    <properties>
-    <property name="npcId" value="jian_shang"/>
+    <property name="npcId" value="4a351008-af94-5d1a-92af-6e6ab6142017"/>
    </properties>
    <point/>
   </object>
   <object id="9" type="Transaction" x="144" y="208" width="16" height="16">
    <properties>
-    <property name="from" value="KaiyuanTown"/>
-    <property name="to" value="AnWang"/>
+    <property name="from" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
+    <property name="to" value="06467980-5568-5a03-8d5d-2d5df42db6a0"/>
    </properties>
   </object>
   <object id="10" type="Transaction" x="128" y="224" width="48" height="16">
    <properties>
-    <property name="from" value="AnWang"/>
-    <property name="to" value="KaiyuanTown"/>
+    <property name="from" value="06467980-5568-5a03-8d5d-2d5df42db6a0"/>
+    <property name="to" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
    </properties>
   </object>
   <object id="13" name="悬赏告示" type="Props" gid="575" x="130.381" y="107.216" width="44" height="42">

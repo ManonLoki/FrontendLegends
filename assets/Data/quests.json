@@ -1,12 +1,12 @@
 {
-    "version": 1,
+    "version": 5,
     "_note": "任务 mock 数据；novice=新手(日常杂活或DARK学项目)，errand=布告栏(寻物/送信，回发布者交差)，bounty=捕快(悬赏)，ring=九日环任务(带话/送物到目标NPC处即时结算，每 ringSize 件一环，每单交付后 cooldownSec 冷却；奖励按环数线性成长并受 growthCap 封顶，交付时整包随机±fluctuation)，bountyRing/killRing=环形悬赏/杀人任务。所有任务均无时限；不同任务可以并行，同一固定任务 ID 或 generator runtime_id 不可重复接取。随机目标池排除全部任务发布、交付和当前目标人物；只有 bounty/bountyRing/killRing 会响应击败事件，跑腿和谈话任务必须正常交付。任务状态仅在本局内存中，重开或读档时清空（规范见 docs/balance_design.md）。giverNpcId / completionGiverId 都是任务端点 id，可指向 NPC 或 Props。通用 rewardBase 按经验:潜能:金钱=2:3:2.4 拆分；小不二 bountyRing 专用公式为 3:3:2.4；也可用显式 reward 覆盖。",
     "_linesNote": "novice.lines 支持 accepted/inProgress/tooExp/lowHp/done/cooldown（新手任务只耗体力，无 lowMp）；generators.lines 可选：offer 接取/inProgress 催办/done 完成/cooldown 冷却/requireFail 门槛。占位符 {target}=目标名 {map}=出没地图 {reward}=奖励串 {hpCost}=项目体力消耗。缺省走内置兜底句。",
     "quests": {
-        "novice_darkxue_project": {
+        "b7ce37d7-b841-5a71-ac4b-24c8a491967b": {
             "type": "novice",
-            "giverNpcId": "dao_shi",
-            "completionGiverId": "darkxue_computer",
+            "giverNpcId": "831434cb-2471-5f24-9fdf-0259fe149eae",
+            "completionGiverId": "d07dc3ae-a94f-5bf5-a352-b2c487682d31",
             "title": "DARK学项目练手",
             "requires": {
                 "minAge": 14,
@@ -21,19 +21,19 @@
             },
             "variants": [
                 {
-                    "id": "library_system",
+                    "id": "91c4203d-9099-4316-b358-99100aaa14bc",
                     "title": "图书管理系统",
                     "hpCost": 25,
-                    "rewardScale": 1.0
+                    "rewardScale": 1
                 },
                 {
-                    "id": "crm_system",
+                    "id": "0dbe3d76-4635-4d2e-b5f1-cb4d595a8640",
                     "title": "CRM系统",
                     "hpCost": 50,
                     "rewardScale": 1.5
                 },
                 {
-                    "id": "erp_system",
+                    "id": "3f362f95-3dc5-4eb7-b672-b44c41246c7e",
                     "title": "ERP系统",
                     "hpCost": 100,
                     "rewardScale": 2.4
@@ -51,9 +51,9 @@
         }
     },
     "generators": {
-        "ring_cunzhang": {
+        "55578b74-31b5-5ef9-87d1-350ffb56e109": {
             "type": "ring",
-            "giverNpcId": "jiu_ri",
+            "giverNpcId": "ac079dbc-e7f3-5aa7-9ef1-6db6e8ec3eb1",
             "title": "九日环任务",
             "requires": {
                 "minAge": 14
@@ -62,11 +62,11 @@
             "ringSize": 10,
             "ringGrowth": 0.12,
             "growthCap": 2.5,
-            "fluctuation": 0.10,
+            "fluctuation": 0.1,
             "items": [
-                "fagun",
-                "bingliang_quanshui",
-                "chuang_ke_tie"
+                "1bb38a9b-68ca-55e1-88ff-933102dbcb64",
+                "2bd76f9a-e45d-5444-b070-0c25bdf58857",
+                "173f2c35-09a0-58cd-9598-7477c0e698cd"
             ],
             "itemChance": 0.5,
             "reward": {
@@ -74,7 +74,7 @@
                 "potential": 50,
                 "money": 40
             },
-            "itemRefundRate": 1.0,
+            "itemRefundRate": 1,
             "itemExtraMoney": 20,
             "lines": {
                 "offer": "让【{map}】的【{target}】来一下。",
@@ -90,43 +90,43 @@
                 "ringDone": "这一环 {ringSize} 件差事都跑完了，往后九日的赏格更丰厚！"
             }
         },
-        "bountyring_xiaobuer": {
+        "c7666a34-f17b-5427-875a-74f227071fa2": {
             "type": "bountyRing",
-            "giverNpcId": "xiao_bu_er",
+            "giverNpcId": "c6592971-0e60-5f47-969c-2db122c7c011",
             "title": "小不二悬赏",
             "requires": {
                 "minAge": 16
             },
             "cooldownSec": 120,
             "ringSize": 10,
-            "baseDiscount": 0.20,
+            "baseDiscount": 0.2,
             "roundGrowth": 0.05,
             "spawnMaps": [
-                "KaiyuanTown",
-                "Dongjiao",
-                "Xijiao",
-                "Nanjiao",
-                "Beijiao",
-                "DarkXue",
-                "AnWang",
-                "ShoppingMall",
-                "Pharmacy",
-                "PlayerHome",
-                "ResidentialHouseDing",
-                "MiWuSenLin",
-                "Angular",
-                "AngularZhiFaTang",
-                "AngularZongTan",
-                "KongZhiGuo",
-                "XiangCaoPai",
-                "YouyuShanzhuang",
-                "VUEHome",
-                "YYXResidentialHouse",
-                "LiangZiXianZong",
-                "LiangZiShiYanShi",
-                "ShengHuoMiaoMiao",
-                "ShengHuoMansion",
-                "XiHuLingYin"
+                "25f3952d-ec39-53af-a8c1-d523c43b80b0",
+                "294515d0-c122-5720-85d6-e5eeda2cf05d",
+                "f11a4867-c98d-5857-8c6a-e93bd568eda3",
+                "fb215e50-cd81-5f1a-a285-b32c09a09834",
+                "9b5bdbd9-3999-5e1e-aa17-5099491e841c",
+                "8f8add5e-93f8-5afe-b3e6-ba96dfc273c8",
+                "06467980-5568-5a03-8d5d-2d5df42db6a0",
+                "a72f4304-63e2-5a71-8609-8570a31f6282",
+                "9e19a1a7-85bb-523e-b1aa-5a9e5bd2d5a8",
+                "aa8f90d3-05e2-5f9a-9dee-a6adcd60db60",
+                "ae6f7dce-7a5c-59cd-92ba-fe8190eaac0b",
+                "e4c8dc5c-474d-58be-aa33-f092e17f1f8c",
+                "44ebb310-6990-5d82-bc23-623343b9acca",
+                "d13b1890-ac73-5d89-b32c-10fd5563f34c",
+                "ac57455f-8917-5ef1-ae25-286d080691eb",
+                "da94005d-198e-5e73-8a5a-d0a8ac87911b",
+                "46c0823c-c650-5200-a391-2cfb37761b30",
+                "f832cbde-46e4-52d6-92fb-860bee93c8a8",
+                "10ed5235-d761-5009-9033-a156038ee534",
+                "c7b1abd6-df38-5fe2-bfdd-1fa39b1515f9",
+                "891e09c1-4118-5933-ab59-4f59be8ada85",
+                "a8e90daa-ea13-5d87-a4f8-88bd76bff121",
+                "0c9615d7-aeba-5e40-9b22-2a4d0254b66b",
+                "580b0929-4c5b-5a2b-a555-2509c7c7f3f6",
+                "d1388237-5d83-5a08-a68c-41c18fe7d699"
             ],
             "targetSprite": "npc-30",
             "rewardBase": 30,
@@ -135,7 +135,7 @@
             "statGrowthMin": 0.05,
             "statGrowthMax": 0.08,
             "fluctuationMin": -0.05,
-            "fluctuationMax": 0.10,
+            "fluctuationMax": 0.1,
             "lines": {
                 "offer": "有人举报「{target}」出现在「{map}」，请速速将其捉拿归案！",
                 "inProgress": "「{target}」已在「{map}」，请速速将其捉拿归案！",
@@ -145,9 +145,9 @@
                 "ringDone": "十恶已除，这一环功德圆满！暗网赏格重新起算，下一环从头再来。"
             }
         },
-        "killring_huoyanwang": {
+        "2bbbd0f5-280f-5141-a4ad-79fcb3478579": {
             "type": "killRing",
-            "giverNpcId": "huo_yan_wang",
+            "giverNpcId": "95621051-c06f-58a7-b004-b4eee0d7f472",
             "title": "活阎王生死簿",
             "requires": {
                 "minAge": 16

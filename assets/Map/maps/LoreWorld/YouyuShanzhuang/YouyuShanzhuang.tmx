@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="30" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="31">
  <properties>
+  <property name="mapId" value="f832cbde-46e4-52d6-92fb-860bee93c8a8"/>
   <property name="Sort" type="int" value="7"/>
   <property name="mapName" value="鱿鱼山庄"/>
   <property name="region" value="鱿鱼山庄"/>
@@ -31,59 +32,59 @@
  <objectgroup id="4" name="Interactive">
   <object id="18" type="Transaction" x="0" y="432" width="16" height="16">
    <properties>
-    <property name="from" value="YouyuShanzhuang"/>
-    <property name="to" value="Dongjiao"/>
+    <property name="from" value="f832cbde-46e4-52d6-92fb-860bee93c8a8"/>
+    <property name="to" value="294515d0-c122-5720-85d6-e5eeda2cf05d"/>
    </properties>
   </object>
   <object id="19" type="Transaction" x="16" y="432" width="16" height="16">
    <properties>
-    <property name="from" value="Dongjiao"/>
-    <property name="to" value="YouyuShanzhuang"/>
+    <property name="from" value="294515d0-c122-5720-85d6-e5eeda2cf05d"/>
+    <property name="to" value="f832cbde-46e4-52d6-92fb-860bee93c8a8"/>
    </properties>
   </object>
   <object id="21" name="维特" type="NPC" x="215.625" y="420.833">
    <properties>
-    <property name="npcId" value="wei_te_er"/>
+    <property name="npcId" value="c3e0a935-ec47-584f-9a90-648ead8dc206"/>
     <property name="type" value="NPC"/>
    </properties>
    <point/>
   </object>
   <object id="22" name="肖邦弟" type="NPC" x="248.149" y="200.813">
    <properties>
-    <property name="npcId" value="xiao_bang_di"/>
+    <property name="npcId" value="dc8f1d62-4bfc-5b8b-9e59-744b7f5fd78f"/>
     <property name="type" value="NPC"/>
    </properties>
    <point/>
   </object>
   <object id="23" name="肖邦兄" type="NPC" x="231.6" y="200.465">
    <properties>
-    <property name="npcId" value="xiao_bang_xiong"/>
+    <property name="npcId" value="5bb54011-ee5d-598f-84fe-5e21948e76c4"/>
     <property name="type" value="NPC"/>
    </properties>
    <point/>
   </object>
   <object id="24" type="Transaction" x="112" y="416" width="16" height="16">
    <properties>
-    <property name="from" value="YouyuShanzhuang"/>
-    <property name="to" value="VUEHome"/>
+    <property name="from" value="f832cbde-46e4-52d6-92fb-860bee93c8a8"/>
+    <property name="to" value="10ed5235-d761-5009-9033-a156038ee534"/>
    </properties>
   </object>
   <object id="25" type="Transaction" x="112" y="432" width="16" height="16">
    <properties>
-    <property name="from" value="VUEHome"/>
-    <property name="to" value="YouyuShanzhuang"/>
+    <property name="from" value="10ed5235-d761-5009-9033-a156038ee534"/>
+    <property name="to" value="f832cbde-46e4-52d6-92fb-860bee93c8a8"/>
    </properties>
   </object>
   <object id="27" type="Transaction" x="416" y="192" width="32" height="16">
    <properties>
-    <property name="from" value="YouyuShanzhuang"/>
-    <property name="to" value="YYXResidentialHouse"/>
+    <property name="from" value="f832cbde-46e4-52d6-92fb-860bee93c8a8"/>
+    <property name="to" value="c7b1abd6-df38-5fe2-bfdd-1fa39b1515f9"/>
    </properties>
   </object>
   <object id="28" type="Transaction" x="416" y="208" width="32" height="16">
    <properties>
-    <property name="from" value="YYXResidentialHouse"/>
-    <property name="to" value="YouyuShanzhuang"/>
+    <property name="from" value="c7b1abd6-df38-5fe2-bfdd-1fa39b1515f9"/>
+    <property name="to" value="f832cbde-46e4-52d6-92fb-860bee93c8a8"/>
    </properties>
   </object>
  </objectgroup>

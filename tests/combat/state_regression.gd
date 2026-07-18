@@ -7,7 +7,7 @@ static func post_start_recovery_result(root: Node) -> Dictionary:
 	state.create_profile("恢复行动归一化", {"strength": 25, "agility": 25, "constitution": 25, "wisdom": 25})
 	state.combat_state.hp = 95
 	state.combat_state.mp = 50
-	var session: Dictionary = combat.create_session("jiu_ri", true)
+	var session: Dictionary = combat.create_session("ac079dbc-e7f3-5aa7-9ef1-6db6e8ec3eb1", true)
 	session.player_max_hp = 100
 	session.player_hp = 95
 	session.player_status = {"poison": 1}
@@ -25,8 +25,8 @@ static func defeat_downgrade_result(root: Node) -> Dictionary:
 	var resolver = root.get_node("BattleResolve")
 	state.create_profile("降级归一化", {"strength": 25, "agility": 25, "constitution": 25, "wisdom": 25})
 	var skill_state: Dictionary = skills.ensure_skills()
-	skill_state.levels = {"basicConstitution": 10}
-	skill_state.equipped_basic = {"arch": "basicConstitution"}
+	skill_state.levels = {"dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 10}
+	skill_state.equipped_basic = {"arch": "dcebef7e-09b8-5a69-8e3d-159cb2b0c355"}
 	skill_state.equipped_special = {}
 	skills.refresh_derived_attributes()
 	state.profile.vitals.cultivation = 0
@@ -40,7 +40,7 @@ static func defeat_downgrade_result(root: Node) -> Dictionary:
 	seed(2)
 	resolver.resolve_defeat({"initial_player_hp": initial_hp, "player_in_battle_injury": 0}, true)
 	return {
-		"level": int(skills.level("basicConstitution")),
+		"level": int(skills.level("dcebef7e-09b8-5a69-8e3d-159cb2b0c355")),
 		"constitution": int(state.profile.attributes.constitution),
 		"mp": int(state.combat_state.mp),
 		"mp_max": int(state.player_mp_max()),

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="24">
  <properties>
+  <property name="mapId" value="294515d0-c122-5720-85d6-e5eeda2cf05d"/>
   <property name="Sort" type="int" value="2"/>
   <property name="cameraAutoFit" type="bool" value="true"/>
   <property name="cameraFitPadding" type="float" value="0"/>
@@ -31,38 +32,38 @@
  <objectgroup id="4" name="Interactive">
   <object id="15" type="Transaction" x="0" y="272" width="16" height="16">
    <properties>
-    <property name="from" value="Dongjiao"/>
-    <property name="to" value="KaiyuanTown"/>
+    <property name="from" value="294515d0-c122-5720-85d6-e5eeda2cf05d"/>
+    <property name="to" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
    </properties>
   </object>
   <object id="16" type="Transaction" x="16" y="272" width="16" height="16">
    <properties>
-    <property name="from" value="KaiyuanTown"/>
-    <property name="to" value="Dongjiao"/>
+    <property name="from" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
+    <property name="to" value="294515d0-c122-5720-85d6-e5eeda2cf05d"/>
    </properties>
   </object>
   <object id="17" type="Transaction" x="432" y="0" width="15.798" height="16.6303">
    <properties>
-    <property name="from" value="Dongjiao"/>
-    <property name="to" value="MiWuSenLin"/>
+    <property name="from" value="294515d0-c122-5720-85d6-e5eeda2cf05d"/>
+    <property name="to" value="e4c8dc5c-474d-58be-aa33-f092e17f1f8c"/>
    </properties>
   </object>
   <object id="18" type="Transaction" x="432" y="16" width="16" height="14.3511">
    <properties>
-    <property name="from" value="MiWuSenLin"/>
-    <property name="to" value="Dongjiao"/>
+    <property name="from" value="e4c8dc5c-474d-58be-aa33-f092e17f1f8c"/>
+    <property name="to" value="294515d0-c122-5720-85d6-e5eeda2cf05d"/>
    </properties>
   </object>
   <object id="19" type="Transaction" x="464" y="272" width="16" height="16">
    <properties>
-    <property name="from" value="Dongjiao"/>
-    <property name="to" value="YouyuShanzhuang"/>
+    <property name="from" value="294515d0-c122-5720-85d6-e5eeda2cf05d"/>
+    <property name="to" value="f832cbde-46e4-52d6-92fb-860bee93c8a8"/>
    </properties>
   </object>
   <object id="20" type="Transaction" x="448" y="272" width="16" height="16">
    <properties>
-    <property name="from" value="YouyuShanzhuang"/>
-    <property name="to" value="Dongjiao"/>
+    <property name="from" value="f832cbde-46e4-52d6-92fb-860bee93c8a8"/>
+    <property name="to" value="294515d0-c122-5720-85d6-e5eeda2cf05d"/>
    </properties>
   </object>
   <object id="21" type="Props" gid="1990" x="412.289" y="32.2598" width="18.1569" height="17.3316">
@@ -71,7 +72,7 @@
   </object>
   <object id="23" name="精神小妹" type="NPC" x="135.873" y="266.962">
    <properties>
-    <property name="npcId" value="jing_shen_xiao_mei"/>
+    <property name="npcId" value="0f698d2f-2b95-5692-9a13-bde3f2d5f126"/>
     <property name="type" value="NPC"/>
    </properties>
    <point/>

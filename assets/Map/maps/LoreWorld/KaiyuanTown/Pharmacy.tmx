@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="4">
  <properties>
+  <property name="mapId" value="9e19a1a7-85bb-523e-b1aa-5a9e5bd2d5a8"/>
   <property name="mapName" value="镇医院"/>
-  <property name="parentMap" value="KaiyuanTown"/>
+  <property name="parentMap" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
   <property name="region" value="开源镇"/>
   <property name="type" propertytype="MapType" value="inDoor"/>
  </properties>
@@ -25,19 +26,19 @@
  <objectgroup id="5" name="Interactive">
   <object id="1" type="Transaction" x="144" y="288" width="16" height="16">
    <properties>
-    <property name="from" value="KaiyuanTown"/>
-    <property name="to" value="Pharmacy"/>
+    <property name="from" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
+    <property name="to" value="9e19a1a7-85bb-523e-b1aa-5a9e5bd2d5a8"/>
    </properties>
   </object>
   <object id="2" type="Transaction" x="128" y="304" width="48" height="16">
    <properties>
-    <property name="from" value="Pharmacy"/>
-    <property name="to" value="KaiyuanTown"/>
+    <property name="from" value="9e19a1a7-85bb-523e-b1aa-5a9e5bd2d5a8"/>
+    <property name="to" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
    </properties>
   </object>
   <object id="3" name="药贩子" type="NPC" x="151.943" y="149.541">
    <properties>
-    <property name="npcId" value="yao_fan_zi"/>
+    <property name="npcId" value="a04f2657-ce6d-5777-9508-af927441a431"/>
    </properties>
    <point/>
   </object>

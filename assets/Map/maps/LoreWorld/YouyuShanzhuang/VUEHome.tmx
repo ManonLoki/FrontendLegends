@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="5">
  <properties>
+  <property name="mapId" value="10ed5235-d761-5009-9033-a156038ee534"/>
   <property name="mapName" value="VUE之家"/>
-  <property name="parentMap" value="YouyuShanzhuang"/>
+  <property name="parentMap" value="f832cbde-46e4-52d6-92fb-860bee93c8a8"/>
   <property name="region" value="鱿鱼山庄"/>
   <property name="type" propertytype="MapType" value="inDoor"/>
  </properties>
@@ -25,21 +26,21 @@
  <objectgroup id="4" name="Interactive">
   <object id="1" name="Posva" type="NPC" x="88.7513" y="168.559">
    <properties>
-    <property name="npcId" value="posva"/>
+    <property name="npcId" value="f201d372-90e8-529d-ae6d-ea26011d48c2"/>
     <property name="type" value="NPC"/>
    </properties>
    <point/>
   </object>
   <object id="3" type="Transaction" x="144" y="288" width="32" height="16">
    <properties>
-    <property name="from" value="YouyuShanzhuang"/>
-    <property name="to" value="VUEHome"/>
+    <property name="from" value="f832cbde-46e4-52d6-92fb-860bee93c8a8"/>
+    <property name="to" value="10ed5235-d761-5009-9033-a156038ee534"/>
    </properties>
   </object>
   <object id="4" type="Transaction" x="128" y="304" width="64" height="16">
    <properties>
-    <property name="from" value="VUEHome"/>
-    <property name="to" value="YouyuShanzhuang"/>
+    <property name="from" value="10ed5235-d761-5009-9033-a156038ee534"/>
+    <property name="to" value="f832cbde-46e4-52d6-92fb-860bee93c8a8"/>
    </properties>
   </object>
  </objectgroup>

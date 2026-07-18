@@ -15,7 +15,7 @@ func _init(quest_system: Node) -> void:
 	quests = quest_system
 
 ## 按玩家当前属性与基础技能生成一个随环数成长的悬赏人物。
-func offer(generator_id: String = "bountyring_xiaobuer") -> Dictionary:
+func offer(generator_id: String = "c7666a34-f17b-5427-875a-74f227071fa2") -> Dictionary:
 	var definition: Dictionary = DataRegistry.quest_generators.get(generator_id, {})
 	var runtime_id := "generator:" + generator_id
 	if definition.is_empty() or quests.active.has(runtime_id) or quests._on_cooldown(generator_id):
@@ -63,7 +63,7 @@ func set_target_tile(tile: Vector2i) -> void:
 			runtime["target"] = quests.bounty_target
 
 ## 返回暗网悬赏榜当前显示文本。
-func board_text(generator_id: String = "bountyring_xiaobuer") -> String:
+func board_text(generator_id: String = "c7666a34-f17b-5427-875a-74f227071fa2") -> String:
 	if quests.bounty_target.is_empty():
 		return "暗网悬赏榜暂时空着，去找小不二接一单吧。"
 	var definition: Dictionary = DataRegistry.quest_generators.get(generator_id, {})

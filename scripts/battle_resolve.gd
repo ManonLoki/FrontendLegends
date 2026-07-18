@@ -63,7 +63,7 @@ func resolve_defeat(session: Dictionary, lethal: bool = true) -> String:
 	var loss_candidates: Array[String] = []
 	for skill_id in levels.keys():
 		var current := int(levels[skill_id])
-		var floor_level := 1 if str(skill_id).begins_with("basic") or str(skill_id) == "literacy" else 0
+		var floor_level := 1 if str(skill_id).begins_with("basic") or str(skill_id) == "1011d493-be02-53e2-86a2-a6a439328f84" else 0
 		if current > floor_level:
 			loss_candidates.append(str(skill_id))
 	if not loss_candidates.is_empty() and randf() < DEFEAT_SKILL_LOSS_CHANCE:

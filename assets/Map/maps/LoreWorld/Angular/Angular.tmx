@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="40" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="35">
  <properties>
+  <property name="mapId" value="44ebb310-6990-5d82-bc23-623343b9acca"/>
   <property name="Sort" type="int" value="6"/>
   <property name="mapName" value="Ng神教"/>
   <property name="region" value="NG神教"/>
@@ -32,62 +33,62 @@
  <objectgroup id="4" name="Interactive">
   <object id="4" name="大漠穷秋" type="NPC" x="439.243" y="377.541">
    <properties>
-    <property name="npcId" value="da_mo_qiong_qiu"/>
+    <property name="npcId" value="5b9e5ff0-1be6-5b83-b3b6-a6f6a8181c50"/>
    </properties>
    <point/>
   </object>
   <object id="22" type="Transaction" x="623.577" y="384" width="13.4383" height="13.7437">
    <properties>
-    <property name="from" value="Angular"/>
-    <property name="to" value="Xijiao"/>
+    <property name="from" value="44ebb310-6990-5d82-bc23-623343b9acca"/>
+    <property name="to" value="f11a4867-c98d-5857-8c6a-e93bd568eda3"/>
    </properties>
   </object>
   <object id="23" type="Transaction" x="608" y="384" width="14.3546" height="13.4383">
    <properties>
-    <property name="from" value="Xijiao"/>
-    <property name="to" value="Angular"/>
+    <property name="from" value="f11a4867-c98d-5857-8c6a-e93bd568eda3"/>
+    <property name="to" value="44ebb310-6990-5d82-bc23-623343b9acca"/>
    </properties>
   </object>
   <object id="26" name="Qc." type="NPC" x="249.14" y="379.911">
    <properties>
-    <property name="npcId" value="qc"/>
+    <property name="npcId" value="0b38ec96-d752-5083-a03c-aa0ac49a6dc1"/>
    </properties>
    <point/>
   </object>
   <object id="27" name="远行客" type="NPC" x="473.006" y="138.582">
    <properties>
-    <property name="npcId" value="yuan_xing_ke"/>
+    <property name="npcId" value="5b77e264-5756-56cb-a8c5-6738f6d7ad58"/>
    </properties>
    <point/>
   </object>
   <object id="28" name="GC主义接班人" type="NPC" x="40.584" y="372.583">
    <properties>
-    <property name="npcId" value="gc_jie_ban_ren"/>
+    <property name="npcId" value="71edc44c-0722-5b9a-9f6e-c03c5eb96b12"/>
    </properties>
    <point/>
   </object>
   <object id="29" type="Transaction" x="160" y="368" width="16" height="16">
    <properties>
-    <property name="from" value="Angular"/>
-    <property name="to" value="AngularZhiFaTang"/>
+    <property name="from" value="44ebb310-6990-5d82-bc23-623343b9acca"/>
+    <property name="to" value="d13b1890-ac73-5d89-b32c-10fd5563f34c"/>
    </properties>
   </object>
   <object id="30" type="Transaction" x="160" y="384" width="16" height="16">
    <properties>
-    <property name="from" value="AngularZhiFaTang"/>
-    <property name="to" value="Angular"/>
+    <property name="from" value="d13b1890-ac73-5d89-b32c-10fd5563f34c"/>
+    <property name="to" value="44ebb310-6990-5d82-bc23-623343b9acca"/>
    </properties>
   </object>
   <object id="31" type="Transaction" x="144" y="128" width="16" height="16">
    <properties>
-    <property name="from" value="Angular"/>
-    <property name="to" value="AngularZongTan"/>
+    <property name="from" value="44ebb310-6990-5d82-bc23-623343b9acca"/>
+    <property name="to" value="ac57455f-8917-5ef1-ae25-286d080691eb"/>
    </properties>
   </object>
   <object id="32" type="Transaction" x="144" y="144" width="16" height="16">
    <properties>
-    <property name="from" value="AngularZongTan"/>
-    <property name="to" value="Angular"/>
+    <property name="from" value="ac57455f-8917-5ef1-ae25-286d080691eb"/>
+    <property name="to" value="44ebb310-6990-5d82-bc23-623343b9acca"/>
    </properties>
   </object>
   <object id="34" name="告示牌" type="Props" gid="742" x="592" y="384" width="16" height="17.9123">

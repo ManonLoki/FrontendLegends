@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="8">
  <properties>
+  <property name="mapId" value="ac57455f-8917-5ef1-ae25-286d080691eb"/>
   <property name="mapName" value="NG总坛"/>
-  <property name="parentMap" value="Angular"/>
+  <property name="parentMap" value="44ebb310-6990-5d82-bc23-623343b9acca"/>
   <property name="region" value="NG神教"/>
   <property name="type" propertytype="MapType" value="inDoor"/>
  </properties>
@@ -27,38 +28,38 @@
  <objectgroup id="4" name="Interactive">
   <object id="1" name="Lucian" type="NPC" x="22.917" y="204.616">
    <properties>
-    <property name="npcId" value="manon_loki"/>
+    <property name="npcId" value="4dd9d221-051e-5200-b8ef-de60a7f182bf"/>
    </properties>
    <point/>
   </object>
   <object id="3" name="雪狼" type="NPC" x="231.625" y="136.684">
    <properties>
-    <property name="npcId" value="xue_lang"/>
+    <property name="npcId" value="21e05288-a075-5137-85e8-a6c4c115be87"/>
    </properties>
    <point/>
   </object>
   <object id="4" name="褪色" type="NPC" x="423.146" y="130.136">
    <properties>
-    <property name="npcId" value="tui_se"/>
+    <property name="npcId" value="ca88e5c9-3740-5fe4-9020-63ac54c6316d"/>
    </properties>
    <point/>
   </object>
   <object id="5" name="青格勒" type="NPC" x="341.3" y="215.256">
    <properties>
-    <property name="npcId" value="qing_ge_le"/>
+    <property name="npcId" value="b1c244d0-c1d6-5f0b-bea0-bdf3db8e46e6"/>
    </properties>
    <point/>
   </object>
   <object id="6" type="Transaction" x="240" y="288" width="16" height="16">
    <properties>
-    <property name="from" value="Angular"/>
-    <property name="to" value="AngularZongTan"/>
+    <property name="from" value="44ebb310-6990-5d82-bc23-623343b9acca"/>
+    <property name="to" value="ac57455f-8917-5ef1-ae25-286d080691eb"/>
    </properties>
   </object>
   <object id="7" type="Transaction" x="224" y="304" width="48" height="16">
    <properties>
-    <property name="from" value="AngularZongTan"/>
-    <property name="to" value="Angular"/>
+    <property name="from" value="ac57455f-8917-5ef1-ae25-286d080691eb"/>
+    <property name="to" value="44ebb310-6990-5d82-bc23-623343b9acca"/>
    </properties>
   </object>
  </objectgroup>

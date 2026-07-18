@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="21" height="15" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="8">
  <properties>
+  <property name="mapId" value="580b0929-4c5b-5a2b-a555-2509c7c7f3f6"/>
   <property name="mapName" value="笙堡"/>
-  <property name="parentMap" value="ShengHuoMiaoMiao"/>
+  <property name="parentMap" value="0c9615d7-aeba-5e40-9b22-2a4d0254b66b"/>
   <property name="region" value="笙火喵喵教"/>
   <property name="type" propertytype="MapType" value="inDoor"/>
  </properties>
@@ -33,32 +34,32 @@
  <objectgroup id="4" name="Interactive">
   <object id="3" name="阿朱" type="NPC" x="151.213" y="121.285">
    <properties>
-    <property name="npcId" value="a_zhu"/>
+    <property name="npcId" value="8e2db40d-ec24-5e49-99d6-d75c4369d3fc"/>
    </properties>
    <point/>
   </object>
   <object id="4" name="书颜" type="NPC" x="184.751" y="122.317">
    <properties>
-    <property name="npcId" value="shu_yan"/>
+    <property name="npcId" value="649ae1b0-2a25-59d2-90d8-c52744587221"/>
    </properties>
    <point/>
   </object>
   <object id="5" name="南笙" type="NPC" x="167.747" y="74.3438">
    <properties>
-    <property name="npcId" value="nan_sheng"/>
+    <property name="npcId" value="0a6c6295-33cd-5ade-ba37-722bdd2cd8b5"/>
    </properties>
    <point/>
   </object>
   <object id="6" type="Transaction" x="160" y="208" width="16" height="16">
    <properties>
-    <property name="from" value="ShengHuoMiaoMiao"/>
-    <property name="to" value="ShengHuoMansion"/>
+    <property name="from" value="0c9615d7-aeba-5e40-9b22-2a4d0254b66b"/>
+    <property name="to" value="580b0929-4c5b-5a2b-a555-2509c7c7f3f6"/>
    </properties>
   </object>
   <object id="7" type="Transaction" x="144" y="224" width="48" height="16">
    <properties>
-    <property name="from" value="ShengHuoMansion"/>
-    <property name="to" value="ShengHuoMiaoMiao"/>
+    <property name="from" value="580b0929-4c5b-5a2b-a555-2509c7c7f3f6"/>
+    <property name="to" value="0c9615d7-aeba-5e40-9b22-2a4d0254b66b"/>
    </properties>
   </object>
  </objectgroup>

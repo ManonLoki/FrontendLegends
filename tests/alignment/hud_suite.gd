@@ -181,9 +181,9 @@ func _run_hud_suite() -> Node:
 	for detail_entry in game.detail_huds.values():
 		unique_detail_panel_ids[(detail_entry.panel as PanelContainer).get_instance_id()] = true
 	_assert_true(unique_detail_panel_ids.size() == game.detail_huds.size(), "每类详情 HUD 必须拥有独立 PanelContainer，不得复用")
-	game.nearby_npc_id = "nai_cha_mei_mei"
+	game.nearby_npc_id = "fface007-32fe-52f4-8e8c-19b497f364e8"
 	game.trade_mode = game.TRADE_MODE_BUY
-	game.trade_all_items = data_registry.list_vendor_stock("nai_cha_mei_mei")
+	game.trade_all_items = data_registry.list_vendor_stock("fface007-32fe-52f4-8e8c-19b497f364e8")
 	game.trade_open = true
 	game._rebuild_trade_categories()
 	_assert_true(game.active_detail_hud == "buy" and game.details_panel == game.detail_huds.buy.panel, "购买应使用独立 BuyHUD，不得复用 NPC 菜单")
@@ -247,7 +247,7 @@ func _run_hud_suite() -> Node:
 	game.trade_open = false
 	game.details_panel.visible = false
 	game.inventory_open = false
-	game.nearby_npc_id = "jiu_ri"
+	game.nearby_npc_id = "ac079dbc-e7f3-5aa7-9ef1-6db6e8ec3eb1"
 	game.battle_ui.start()
 	await process_frame
 	# 高属性与任务人物的资源数值必须使用独立文本区完整显示，头像必须取战斗快照形象。
@@ -286,16 +286,16 @@ func _run_hud_suite() -> Node:
 	game.player_tile = Vector2i(7, 7)
 	game.facing = Vector2i.UP
 	game._refresh_nearby_npc()
-	_assert_true(game.nearby_npc_id == "dao_shi", "玩家正面紧邻 NPC 时应允许交互")
+	_assert_true(game.nearby_npc_id == "831434cb-2471-5f24-9fdf-0259fe149eae", "玩家正面紧邻 NPC 时应允许交互")
 	game.facing = Vector2i.RIGHT
 	game._refresh_nearby_npc()
 	_assert_true(game.nearby_npc_id.is_empty(), "NPC 位于玩家侧面时不得触发交互")
-	game.nearby_npc_id = "dao_shi"
+	game.nearby_npc_id = "831434cb-2471-5f24-9fdf-0259fe149eae"
 	game._interact()
 	_assert_true(not game.npc_menu_open, "交互触发前必须重验当前朝向，不得使用旧 NPC 缓存")
 	game.move_cooldown = 1.0
 	game._apply_facing_input(Vector2.UP)
-	_assert_true(game.facing == Vector2i.UP and game.nearby_npc_id == "dao_shi", "移动冷却期间方向输入也必须立即更新交互朝向")
+	_assert_true(game.facing == Vector2i.UP and game.nearby_npc_id == "831434cb-2471-5f24-9fdf-0259fe149eae", "移动冷却期间方向输入也必须立即更新交互朝向")
 	game.player_tile = Vector2i(12, 7)
 	game.facing = Vector2i.UP
 	_assert_true(game._has_front_interactable(), "玩家正面紧邻 Props 时应允许交互")
@@ -313,7 +313,7 @@ func _run_hud_suite() -> Node:
 	game.dialogue_auto_close_at_msec = 1
 	game.dialogue_controller.update_auto_close()
 	_assert_true(not game.dialogue_open, "单页对话到期后应自动关闭")
-	game.learning_skill_id = "basicStrength"
+	game.learning_skill_id = "2224675d-63f2-50e8-a2c6-064acd5c5623"
 	game._render_learning_progress()
 	var meter: Control = game.learning_progress_widgets[0]
 	var view_rect: Rect2 = game._game_view_rect()

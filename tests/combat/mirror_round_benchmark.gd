@@ -2,26 +2,26 @@ extends RefCounted
 ## 同属性同功法的标准镜像战：忽略闪避、装备、道具、加力与主动招式，
 ## 每回合双方至多各命中一次普通攻击；保留暴击、招架、减伤和伤害浮动。
 
-const BASIC := ["basicStrength", "basicAgility", "basicConstitution", "basicParry"]
+const BASIC := ["2224675d-63f2-50e8-a2c6-064acd5c5623", "af088f07-4c52-5a8c-aa16-df96e6b3e056", "dcebef7e-09b8-5a69-8e3d-159cb2b0c355", "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2"]
 const SECT_LOADOUTS := {
 	"NG": {
 		"sect": "NG神教",
-		"skills": ["ng_code_decorator", "ng_tune_rx_step", "ng_arch_zone", "ng_parry_interceptor"],
+		"skills": ["bcb538e2-4d6a-52ae-990d-20377e27ab64", "4d75539d-7873-5039-a596-d3dacc29c4d1", "9287473e-59a9-5dc8-a914-324ec57ffc14", "394fdd1b-c49d-52fc-a31b-41adf88a32d6"],
 		"seed_offset": 0,
 	},
 	"React": {
 		"sect": "量子仙宗",
-		"skills": ["react_code_jsx", "react_tune_virtual", "react_arch_state", "react_parry_boundary"],
+		"skills": ["31cae377-72c7-5210-affd-b738c917c6d4", "ba00f74e-8309-5097-a096-a6145dc5fb6e", "d6bd0498-0551-54de-b5bf-1ededfe9aa06", "6e43fafa-2f44-58c1-ad30-1e8bd86b2a14"],
 		"seed_offset": 1,
 	},
 	"Vue": {
 		"sect": "鱿鱼山庄",
-		"skills": ["vue_code_template", "vue_tune_router", "vue_arch_reactive", "vue_parry_keepalive"],
+		"skills": ["bf405613-2fce-5cdd-9106-6936c89b036f", "59972225-62ad-5180-844f-17e05b24b55c", "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc", "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2"],
 		"seed_offset": 2,
 	},
 	"Vanilla": {
 		"sect": "香草派",
-		"skills": ["vanilla_code_dom", "vanilla_tune_event_loop", "vanilla_arch_closure", "vanilla_parry_prevent"],
+		"skills": ["b9814e27-ea44-5a59-83fb-d452b79ee0f1", "0bd48657-0a35-5ec5-9068-adc9762736d8", "bf770011-a135-56d5-8537-ee85f77df325", "d2f9550c-9725-56a5-8929-363aed058324"],
 		"seed_offset": 3,
 	},
 }
@@ -50,8 +50,8 @@ static func _run_level(root: Node, sect_key: String, loadout: Dictionary, level:
 		for skill_id in all_skills:
 			skill_state.levels[skill_id] = level
 		skill_state.equipped_basic = {
-			"code": "basicStrength", "tune": "basicAgility",
-			"arch": "basicConstitution", "parry": "basicParry",
+			"code": "2224675d-63f2-50e8-a2c6-064acd5c5623", "tune": "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+			"arch": "dcebef7e-09b8-5a69-8e3d-159cb2b0c355", "parry": "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
 		}
 		skill_state.equipped_special = {
 			"code": special_skills[0], "tune": special_skills[1],

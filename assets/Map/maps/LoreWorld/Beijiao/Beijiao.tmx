@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="23">
  <properties>
+  <property name="mapId" value="9b5bdbd9-3999-5e1e-aa17-5099491e841c"/>
   <property name="Sort" type="int" value="5"/>
   <property name="mapName" value="北郊"/>
   <property name="region" value="开源镇"/>
@@ -29,26 +30,26 @@
  <objectgroup id="4" name="Interactive">
   <object id="15" type="Transaction" x="416" y="0" width="15.8181" height="14.3467">
    <properties>
-    <property name="from" value="BeiJiao"/>
-    <property name="to" value="XiangCaoPai"/>
+    <property name="from" value="9b5bdbd9-3999-5e1e-aa17-5099491e841c"/>
+    <property name="to" value="46c0823c-c650-5200-a391-2cfb37761b30"/>
    </properties>
   </object>
   <object id="16" type="Transaction" x="416" y="16" width="15.8181" height="14.7145">
    <properties>
-    <property name="from" value="XiangCaoPai"/>
-    <property name="to" value="BeiJiao"/>
+    <property name="from" value="46c0823c-c650-5200-a391-2cfb37761b30"/>
+    <property name="to" value="9b5bdbd9-3999-5e1e-aa17-5099491e841c"/>
    </properties>
   </object>
   <object id="19" type="Transaction" x="224" y="304" width="16" height="16">
    <properties>
-    <property name="from" value="Beijiao"/>
-    <property name="to" value="KaiyuanTown"/>
+    <property name="from" value="9b5bdbd9-3999-5e1e-aa17-5099491e841c"/>
+    <property name="to" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
    </properties>
   </object>
   <object id="20" type="Transaction" x="224" y="288" width="16" height="16">
    <properties>
-    <property name="from" value="KaiyuanTown"/>
-    <property name="to" value="Beijiao"/>
+    <property name="from" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
+    <property name="to" value="9b5bdbd9-3999-5e1e-aa17-5099491e841c"/>
    </properties>
   </object>
   <object id="22" type="Props" gid="1990" x="400" y="96" width="16" height="16">

@@ -1,10 +1,10 @@
 # 世界事件
 
-世界事件统一维护在 `docs/data/FrontendLegendsData.xlsx` 的 `WorldEventTypes` 和 `WorldEvents` 工作表。`assets/Data/world_events.json` 是由工作簿导出的运行时文件，不应手工维护。TMX 地图不再保存 `event`、`text` 或 `questGiver` 属性。
+世界事件统一维护在 `docs/data/world-events.xlsx` 的 `WorldEventTypes` 和 `WorldEvents` 工作表。`assets/Data/world_events.json` 是由该工作簿导出的运行时文件，不应手工维护。TMX 地图不再保存 `event`、`text` 或 `questGiver` 属性。
 
 ## 分层
 
-- `WorldEventTypes`：定义可复用行为与默认参数，例如 `sign`、`drink_source`、`dangerous_tree`。
+- `WorldEventTypes`：以 UUID 定义可复用行为与默认参数；`action` 仍使用可读英文行为名。
 - `WorldEvents`：定义稳定事件 ID、地图 ID、原型、触发格子和实例参数。
 - TMX：只负责地形、道路、传送点、NPC，以及需要由 Tiled 绘制的纯视觉对象。
 - `world_event_handler.gd`：解释 `action` 并执行游戏行为。
@@ -17,9 +17,9 @@
 
 | eventId | mapId | archetype | tileX | tileY | width | height | text |
 | --- | --- | --- | ---: | ---: | ---: | ---: | --- |
-| `new_town_east_sign` | `NewTown` | `sign` | 12 | 8 | 1 | 1 | 前方东郊 |
+| `<新 UUID>` | `<地图 UUID>` | `<事件原型 UUID>` | 12 | 8 | 1 | 1 | 前方东郊 |
 
-- `eventId` 必须全局唯一，存档或任务以后可安全引用它。
+- `eventId`、`mapId` 和 `archetype` 必须填写现有或新生成的 UUID；禁止用显示名或缩写代替。
 - `tileX/tileY` 是触发矩形左上角的列和行。
 - `width/height` 是触发范围的格数，单格事件均填 1。
 - `displayName/text/questEndpoint` 只放该实例独有的数据，空白时继承原型默认值。
@@ -31,10 +31,11 @@
 编辑完成后统一导出运行时 JSON：
 
 ```sh
-npm run data:json
+npm run data:json -- --file=world_events
+npm run data:ids:check
 ```
 
-导出命令会同时生成 `items.json`、`skills.json`、`npcs.json`、`quests.json` 和 `world_events.json`。禁止只复制某一张事件表或手工同步 JSON。
+该命令只生成 `world_events.json`；不带 `--file` 时才会从六个工作簿生成全部运行时 JSON。禁止只复制某一张事件表或手工同步 JSON。
 
 ## 验证
 

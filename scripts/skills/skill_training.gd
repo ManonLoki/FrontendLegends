@@ -14,7 +14,7 @@ func _init(skill_system: Node) -> void:
 
 func meditation_cap() -> int:
 	var constitution := float(GameState.profile.get("attributes", {}).get("constitution", 0))
-	return meditation_cap_from_values(constitution, skills.level("basicConstitution"), equipped_sect_skill_level("arch"))
+	return meditation_cap_from_values(constitution, skills.level("dcebef7e-09b8-5a69-8e3d-159cb2b0c355"), equipped_sect_skill_level("arch"))
 
 func meditation_cap_from_values(constitution: float, basic_arch_level: int, advanced_arch_level: int) -> int:
 	var modifier := GameState.meditation_modifier(constitution)
@@ -64,13 +64,13 @@ func equipped_sect_skill_level(theme: String) -> int:
 
 func can_meditate() -> bool:
 	var basic_arch_id: String = skills.equipped_id("arch", "basic")
-	return basic_arch_id == "basicConstitution" and skills.level(basic_arch_id) > 0 and equipped_sect_skill_level("arch") > 0
+	return basic_arch_id == "dcebef7e-09b8-5a69-8e3d-159cb2b0c355" and skills.level(basic_arch_id) > 0 and equipped_sect_skill_level("arch") > 0
 
 func practice_cap(skill_id: String) -> int:
 	var definition: Dictionary = DataRegistry.get_skill(skill_id)
 	if definition.is_empty() or str(definition.get("category", "")) != "sect" or str(definition.get("theme", "")) == "arch":
 		return 0
-	var basic_id: String = str({"code": "basicStrength", "tune": "basicAgility", "parry": "basicParry", "knowledge": "literacy"}.get(str(definition.get("theme", "")), ""))
+	var basic_id: String = str({"code": "2224675d-63f2-50e8-a2c6-064acd5c5623", "tune": "af088f07-4c52-5a8c-aa16-df96e6b3e056", "parry": "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2", "knowledge": "1011d493-be02-53e2-86a2-a6a439328f84"}.get(str(definition.get("theme", "")), ""))
 	return mini(int(definition.get("maxLevel", 100)), mini(skills.level(basic_id), GameState.player_mp_max()))
 
 func practice_tick(skill_id: String) -> Dictionary:
@@ -80,7 +80,7 @@ func practice_tick(skill_id: String) -> Dictionary:
 	if str(definition.get("sect", "")) != str(GameState.profile.get("sect", "")) or skills.level(skill_id) <= 0:
 		return {"ok": false, "message": "尚未学会本门这门功法。", "reason": "invalid"}
 	var skill_state: Dictionary = skills.ensure_skills()
-	var basic_id: String = str({"code": "basicStrength", "tune": "basicAgility", "parry": "basicParry", "knowledge": "literacy"}.get(str(definition.get("theme", "")), ""))
+	var basic_id: String = str({"code": "2224675d-63f2-50e8-a2c6-064acd5c5623", "tune": "af088f07-4c52-5a8c-aa16-df96e6b3e056", "parry": "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2", "knowledge": "1011d493-be02-53e2-86a2-a6a439328f84"}.get(str(definition.get("theme", "")), ""))
 	var cap := practice_cap(skill_id)
 	var current: int = skills.level(skill_id)
 	if current >= cap:

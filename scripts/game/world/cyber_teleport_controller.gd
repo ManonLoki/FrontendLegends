@@ -21,7 +21,7 @@ func try_open() -> void:
 		return
 	game.cyber_maps.clear()
 	for index in DataRegistry.map_files.size():
-		var map_id := DataRegistry.map_files[index].get_file().get_basename()
+		var map_id := DataRegistry.map_id_at(index)
 		if DataRegistry.map_type(map_id) != "inDoor":
 			game.cyber_maps.append(index)
 	if game.cyber_maps.is_empty():
@@ -90,7 +90,7 @@ func build_menu() -> void:
 	game._layout_cyber_panel()
 	for position in game.cyber_maps.size():
 		var index: int = game.cyber_maps[position]
-		var map_id := DataRegistry.map_files[index].get_file().get_basename()
+		var map_id := DataRegistry.map_id_at(index)
 		var label: Label = game._detail_label(DataRegistry.map_display_name(map_id), Rect2(), 13, HORIZONTAL_ALIGNMENT_CENTER)
 		game.cyber_labels.append(label)
 	game.cyber_selection_widget = Panel.new()

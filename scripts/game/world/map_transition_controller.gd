@@ -87,7 +87,7 @@ func try_map_transition() -> void:
 func map_index_by_id(target: String) -> int:
 	var normalized_target := target.strip_edges().to_lower()
 	for index in DataRegistry.map_files.size():
-		var map_id := DataRegistry.map_files[index].get_file().get_basename().to_lower()
+		var map_id := DataRegistry.map_id_at(index).to_lower()
 		if map_id == normalized_target:
 			return index
 	return -1

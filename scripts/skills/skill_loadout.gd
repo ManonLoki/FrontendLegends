@@ -95,7 +95,7 @@ func combat_bonus() -> Dictionary:
 
 ## 加力上限等于基础架构等级加本门架构功法等级的两倍。
 func force_power_cap() -> int:
-	return maxi(0, skills.level("basicConstitution") + skills.equipped_sect_skill_level("arch") * 2)
+	return maxi(0, skills.level("dcebef7e-09b8-5a69-8e3d-159cb2b0c355") + skills.equipped_sect_skill_level("arch") * 2)
 
 ## 读取加力档位，并按当前上限钳制旧存档或降级后的值。
 func force_power() -> int:
@@ -137,7 +137,7 @@ func unlocked_ults() -> Array:
 	if ult.is_empty():
 		return result
 	var arch_level: int = skills.level(arch_id)
-	var inner_power: int = skills.level("basicConstitution") + arch_level * 2
+	var inner_power: int = skills.level("dcebef7e-09b8-5a69-8e3d-159cb2b0c355") + arch_level * 2
 	if arch_level >= ULT_TIER1_ARCH_LEVEL:
 		result.append(_make_ult(ult, 1, inner_power))
 	if arch_level >= ULT_TIER2_ARCH_LEVEL:

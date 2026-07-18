@@ -23,13 +23,13 @@ func load_file(path: String) -> bool:
 	if not file:
 		return false
 	var xml := file.get_as_text()
-	map_id = path.get_file().get_basename()
 	var map_attrs := _attrs(_first_match(xml, "<map\\b([^>]*)>"))
 	width = int(map_attrs.get("width", 0))
 	height = int(map_attrs.get("height", 0))
 	tile_width = int(map_attrs.get("tilewidth", DEFAULT_TILE_SIZE))
 	tile_height = int(map_attrs.get("tileheight", DEFAULT_TILE_SIZE))
 	properties = _properties(_first_match(xml, "<map\\b[^>]*>(.*?)<tileset", true))
+	map_id = str(properties.get("mapId", ""))
 	for match in _all_matches(xml, "<tileset\\b([^>]*?)(?:/>|>(.*?)</tileset>)", true):
 		_load_tileset(path, _attrs(match.get_string(1)), match.get_string(2))
 	for match in _all_matches(xml, "<layer\\b([^>]*)>(.*?)</layer>", true):

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="40" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="28">
  <properties>
+  <property name="mapId" value="da94005d-198e-5e73-8a5a-d0a8ac87911b"/>
   <property name="Sort" type="int" value="13"/>
   <property name="mapName" value="空の国"/>
   <property name="region" value="空の国"/>
@@ -36,75 +37,75 @@
  <objectgroup id="4" name="Interactive">
   <object id="16" type="Transaction" x="576" y="0" width="16" height="16">
    <properties>
-    <property name="from" value="KongZhiGuo"/>
-    <property name="to" value="Xijiao"/>
+    <property name="from" value="da94005d-198e-5e73-8a5a-d0a8ac87911b"/>
+    <property name="to" value="f11a4867-c98d-5857-8c6a-e93bd568eda3"/>
    </properties>
   </object>
   <object id="17" type="Transaction" x="576" y="16" width="16" height="16">
    <properties>
-    <property name="from" value="Xijiao"/>
-    <property name="to" value="KongZhiGuo"/>
+    <property name="from" value="f11a4867-c98d-5857-8c6a-e93bd568eda3"/>
+    <property name="to" value="da94005d-198e-5e73-8a5a-d0a8ac87911b"/>
    </properties>
   </object>
   <object id="19" name="寻" type="NPC" x="37.7326" y="107.195">
    <properties>
-    <property name="npcId" value="xun"/>
+    <property name="npcId" value="7450f4e4-4e6d-56e6-9743-7f843914f7b0"/>
     <property name="type" value="NPC"/>
    </properties>
    <point/>
   </object>
   <object id="20" name="天空" type="NPC" x="70.3199" y="108.052">
    <properties>
-    <property name="npcId" value="tian_kong"/>
+    <property name="npcId" value="1afe56fb-6990-560d-922e-9cfd49ce528f"/>
     <property name="type" value="NPC"/>
    </properties>
    <point/>
   </object>
   <object id="21" name="空空" x="131.207" y="280.422">
    <properties>
-    <property name="npcId" value="kong_kong"/>
+    <property name="npcId" value="3be9a9b9-8d8d-59ed-b780-2a9c3533c236"/>
     <property name="type" value="NPC"/>
    </properties>
    <point/>
   </object>
   <object id="22" name="等等" x="186.09" y="282.137">
    <properties>
-    <property name="npcId" value="deng_deng"/>
+    <property name="npcId" value="9cfe265a-8fbc-5df7-851b-eaa87bb16248"/>
     <property name="type" value="NPC"/>
    </properties>
    <point/>
   </object>
   <object id="23" name="倾慕" type="NPC" x="489.666" y="234.971">
    <properties>
-    <property name="npcId" value="qing_mu"/>
+    <property name="npcId" value="2537da28-ab5c-52ee-bd0e-5385f9a432a9"/>
     <property name="type" value="NPC"/>
    </properties>
    <point/>
   </object>
   <object id="24" name="QQ" x="518.823" y="234.971">
    <properties>
-    <property name="npcId" value="qq"/>
+    <property name="npcId" value="26b12368-99c9-5fe9-8a8c-b0198fe29e2f"/>
     <property name="type" value="NPC"/>
    </properties>
    <point/>
   </object>
   <object id="25" name="Ray" type="NPC" x="295.001" y="234.971">
    <properties>
-    <property name="npcId" value="ray"/>
+    <property name="npcId" value="28859d4b-116d-578d-9a11-b1288243d966"/>
     <property name="type" value="NPC"/>
    </properties>
    <point/>
   </object>
   <object id="26" name="海豹" type="NPC" x="440.786" y="106.337">
    <properties>
-    <property name="npcId" value="hai_bao"/>
+    <property name="npcId" value="96b8f5c4-1d0d-556d-a8f3-71675f9b0fb5"/>
     <property name="type" value="NPC"/>
    </properties>
    <point/>
   </object>
   <object id="27" name="流氓" type="NPC" x="261.556" y="234.114">
    <properties>
-    <property name="npcId" value="liu_mang"/>
+    <property name="npcId" value="b192b55f-2abe-5d6c-beba-0b97e5a96c75"/>
     <property name="type" value="NPC"/>
    </properties>
    <point/>

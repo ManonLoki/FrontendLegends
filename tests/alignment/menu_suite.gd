@@ -21,26 +21,26 @@ func _run_menu_suite(game: Node) -> void:
 	game_state.profile.vitals.cultivation = 80
 	game_state.combat_state.mp = 10
 	game_state.combat_state.hp = 100
-	skill_system.ensure_skills().levels["basicStrength"] = 80
-	skill_system.ensure_skills().levels["ng_code_decorator"] = 40
-	skill_system.ensure_skills().levels["ng_tune_rx_step"] = 40
-	skill_system.ensure_skills().levels["ng_parry_interceptor"] = 40
-	skill_system.ensure_skills().practice_progress["ng_code_decorator"] = 73
-	skill_system.ensure_skills().learn_progress["ng_code_decorator"] = 73
-	var ng_definition: Dictionary = data_registry.get_skill("ng_code_decorator")
+	skill_system.ensure_skills().levels["2224675d-63f2-50e8-a2c6-064acd5c5623"] = 80
+	skill_system.ensure_skills().levels["bcb538e2-4d6a-52ae-990d-20377e27ab64"] = 40
+	skill_system.ensure_skills().levels["4d75539d-7873-5039-a596-d3dacc29c4d1"] = 40
+	skill_system.ensure_skills().levels["394fdd1b-c49d-52fc-a31b-41adf88a32d6"] = 40
+	skill_system.ensure_skills().practice_progress["bcb538e2-4d6a-52ae-990d-20377e27ab64"] = 73
+	skill_system.ensure_skills().learn_progress["bcb538e2-4d6a-52ae-990d-20377e27ab64"] = 73
+	var ng_definition: Dictionary = data_registry.get_skill("bcb538e2-4d6a-52ae-990d-20377e27ab64")
 	game_state.profile.attributes.wisdom = 50
-	_assert_true(skill_system.skill_exp_required("ng_code_decorator", 100) == 390 and skill_system._learn_required(ng_definition, 100, skill_system._learning_cost_rate()) == 420, "高灵感时练功应保留 65% 旧倍率，师父学习使用 70% 新下限")
+	_assert_true(skill_system.skill_exp_required("bcb538e2-4d6a-52ae-990d-20377e27ab64", 100) == 390 and skill_system._learn_required(ng_definition, 100, skill_system._learning_cost_rate()) == 420, "高灵感时练功应保留 65% 旧倍率，师父学习使用 70% 新下限")
 	game_state.profile.attributes.wisdom = 25
 	_assert_true(skill_system._learn_required(ng_definition, 41, 1.0) == 80, "师父学习 40→41 级应使用前快后慢的 2.25 次曲线")
-	_assert_true(skill_system.practice_progress("ng_code_decorator").total == 100 and skill_system.learning_progress("ng_code_decorator").total == 80, "练功必须保留 v4 原曲线，只有师父学习使用新曲线")
+	_assert_true(skill_system.practice_progress("bcb538e2-4d6a-52ae-990d-20377e27ab64").total == 100 and skill_system.learning_progress("bcb538e2-4d6a-52ae-990d-20377e27ab64").total == 80, "练功必须保留既有曲线，只有师父学习使用新曲线")
 	var practice_hp_before: int = game_state.combat_state.hp
 	var practice_mp_before: int = game_state.combat_state.mp
-	var aligned_practice_tick: Dictionary = skill_system.practice_tick("ng_code_decorator")
-	_assert_true(bool(aligned_practice_tick.get("ok", false)) and int(skill_system.ensure_skills().practice_progress["ng_code_decorator"]) == 78, "灵感 25 时练功每 tick 应推进 floor(25/5)=5 点经验")
+	var aligned_practice_tick: Dictionary = skill_system.practice_tick("bcb538e2-4d6a-52ae-990d-20377e27ab64")
+	_assert_true(bool(aligned_practice_tick.get("ok", false)) and int(skill_system.ensure_skills().practice_progress["bcb538e2-4d6a-52ae-990d-20377e27ab64"]) == 78, "灵感 25 时练功每 tick 应推进 floor(25/5)=5 点经验")
 	_assert_true(game_state.combat_state.mp == practice_mp_before - 2 and game_state.combat_state.hp == practice_hp_before - 4, "练功每 tick 应固定消耗 2 精力，并按经验增量分摊 80% 体力成本")
 	game._open_practice()
 	_assert_true(game.practice_focus_category and game.practice_categories.size() == 3, "练功打开后应先聚焦编码、思维、招架分类栏")
-	_assert_true(game.practice_items == ["ng_code_decorator"], "编码分类右栏应只显示对应的已学门派功法")
+	_assert_true(game.practice_items == ["bcb538e2-4d6a-52ae-990d-20377e27ab64"], "编码分类右栏应只显示对应的已学门派功法")
 	var first_category_x := -INF
 	var first_skill_x := -INF
 	for first_practice_widget in game.details_widgets:
@@ -52,65 +52,66 @@ func _run_menu_suite(game: Node) -> void:
 	game._handle_practice_key(KEY_SPACE)
 	_assert_true(not game.practice_focus_category and game.practicing_skill_id.is_empty(), "分类栏按空格应只进入功法栏，不得立即开始练功")
 	game._handle_practice_key(KEY_SPACE)
-	_assert_true(game.practicing_skill_id == "ng_code_decorator" and game.practice_progress_widgets.size() == 1, "功法栏选中具体功法后按空格才应开始修炼")
+	_assert_true(game.practicing_skill_id == "bcb538e2-4d6a-52ae-990d-20377e27ab64" and game.practice_progress_widgets.size() == 1, "功法栏选中具体功法后按空格才应开始修炼")
 	game._handle_practice_key(KEY_ESCAPE)
 	_assert_true(game.practice_open and not game.practice_focus_category and game.practicing_skill_id.is_empty(), "修炼中按 ESC 应先停止并留在功法栏")
 	game._handle_practice_key(KEY_ESCAPE)
 	_assert_true(game.practice_open and game.practice_focus_category, "功法栏按 ESC 应先退回分类栏")
 	game._handle_practice_key(KEY_DOWN)
-	_assert_true(game.practice_category_index == 1 and game.practice_items == ["ng_tune_rx_step"], "切换练功分类时右栏功法必须同步更新")
+	_assert_true(game.practice_category_index == 1 and game.practice_items == ["4d75539d-7873-5039-a596-d3dacc29c4d1"], "切换练功分类时右栏功法必须同步更新")
 	game._handle_practice_key(KEY_ESCAPE)
 	_assert_true(not game.practice_open and not game.details_panel.visible, "练功分类栏按 ESC 才关闭整个独立 HUD")
 
 	# 练功进度条：开始时显示当前等级内进度，停止后立即清理。
 	game.practice_open = true
 	game.practice_focus_category = false
-	game.practice_items.assign(["ng_code_decorator"])
+	game.practice_items.assign(["bcb538e2-4d6a-52ae-990d-20377e27ab64"])
 	game.practice_index = 0
-	game.practicing_skill_id = "ng_code_decorator"
-	skill_system.ensure_skills().practice_progress["ng_code_decorator"] = 3
+	game.practicing_skill_id = "bcb538e2-4d6a-52ae-990d-20377e27ab64"
+	skill_system.ensure_skills().practice_progress["bcb538e2-4d6a-52ae-990d-20377e27ab64"] = 3
 	game._refresh_practice()
 	_assert_true(game.practice_progress_widgets.size() == 1, "开始练功后应显示独立进度条")
 	var practice_meter = game.practice_progress_widgets[0]
-	var expected_practice_progress: Dictionary = skill_system.practice_progress("ng_code_decorator")
+	var expected_practice_progress: Dictionary = skill_system.practice_progress("bcb538e2-4d6a-52ae-990d-20377e27ab64")
 	_assert_true(practice_meter.current == int(expected_practice_progress.current) and practice_meter.total == int(expected_practice_progress.total), "练功进度条应显示当前等级内的真实进度")
 	_assert_true(not Rect2(game.map_badge_panel.position, game.map_badge_panel.size).intersects(Rect2(practice_meter.position, practice_meter.size)), "房间名 HUD 不得与练功进度条重叠")
-	skill_system.ensure_skills().practice_progress["ng_code_decorator"] = 4
+	skill_system.ensure_skills().practice_progress["bcb538e2-4d6a-52ae-990d-20377e27ab64"] = 4
 	game._refresh_practice()
 	_assert_true(game.practice_progress_widgets[0] == practice_meter and practice_meter.current == 4, "练功 tick 刷新时应复用并更新同一进度条，避免闪烁")
 	game.practicing_skill_id = ""
 	game._refresh_practice()
 	_assert_true(game.practice_progress_widgets.is_empty(), "停止练功后应立即清理进度条")
 	# 练功失败应立即停止，并在底部对话框明确提示原因。
-	skill_system.ensure_skills().levels["basicStrength"] = 10
-	skill_system.ensure_skills().levels["basicConstitution"] = 5
-	skill_system.ensure_skills().equipped_basic["arch"] = "basicConstitution"
-	skill_system.ensure_skills().levels["ng_code_decorator"] = 1
+	skill_system.ensure_skills().levels["2224675d-63f2-50e8-a2c6-064acd5c5623"] = 10
+	skill_system.ensure_skills().levels["dcebef7e-09b8-5a69-8e3d-159cb2b0c355"] = 5
+	skill_system.ensure_skills().equipped_basic["arch"] = "dcebef7e-09b8-5a69-8e3d-159cb2b0c355"
+	skill_system.ensure_skills().equipped_special.erase("arch")
+	skill_system.ensure_skills().levels["bcb538e2-4d6a-52ae-990d-20377e27ab64"] = 1
 	game_state.profile.vitals.cultivation = 3
 	game._refresh_practice()
 	var practice_level_cap_visible := false
 	for practice_widget in game.details_widgets:
 		if practice_widget is Label and str(practice_widget.text) == "1/8":
 			practice_level_cap_visible = true
-	_assert_true(game_state.player_mp_max() == 8 and skill_system.practice_cap("ng_code_decorator") == 8 and practice_level_cap_visible, "练功上限应包含 3 修为与已装备架构功法的 5 点精力加成，并显示为 1/8")
+	_assert_true(game_state.player_mp_max() == 8 and skill_system.practice_cap("bcb538e2-4d6a-52ae-990d-20377e27ab64") == 8 and practice_level_cap_visible, "练功上限应包含 3 修为与已装备架构功法的 5 点精力加成，并显示为 1/8（实际精力上限 %d，练功上限 %d，显示 %s）" % [game_state.player_mp_max(), skill_system.practice_cap("bcb538e2-4d6a-52ae-990d-20377e27ab64"), practice_level_cap_visible])
 	game_state.profile.vitals.cultivation = 10
 	game_state.combat_state.mp = 0
 	game_state.combat_state.hp = 100
-	skill_system.ensure_skills().practice_progress["ng_code_decorator"] = 0
-	game.practicing_skill_id = "ng_code_decorator"
+	skill_system.ensure_skills().practice_progress["bcb538e2-4d6a-52ae-990d-20377e27ab64"] = 0
+	game.practicing_skill_id = "bcb538e2-4d6a-52ae-990d-20377e27ab64"
 	game.practice_tick_accumulator = 0.0
 	game._update_continuous_skill_actions(skill_system.PRACTICE_TICK_SECONDS)
 	_assert_true(game.practicing_skill_id.is_empty() and game.practice_progress_widgets.is_empty(), "练功失败后应停止并清理进度条")
 	_assert_true(game.dialogue_open and game.dialogue_panel.visible and game.dialogue_content.text.contains("精力不足，练不动功。"), "精力不足时应在底部练功对话框显示参考文案")
 	game._close_dialogue()
-	skill_system.ensure_skills().levels["ng_code_decorator"] = 7
+	skill_system.ensure_skills().levels["bcb538e2-4d6a-52ae-990d-20377e27ab64"] = 7
 	game_state.profile.vitals.cultivation = 2
-	var practice_cap_failure: Dictionary = skill_system.practice_tick("ng_code_decorator")
-	_assert_true(game_state.player_mp_max() == 7 and str(practice_cap_failure.get("reason", "")) == "cap" and str(practice_cap_failure.get("message", "")).contains("精力修为不足，须多冥想积累内力。"), "功法达到含装备加成的 7 点精力上限时，应明确提示继续冥想")
+	var practice_cap_failure: Dictionary = skill_system.practice_tick("bcb538e2-4d6a-52ae-990d-20377e27ab64")
+	_assert_true(game_state.player_mp_max() == 7 and str(practice_cap_failure.get("reason", "")) == "cap" and str(practice_cap_failure.get("message", "")).contains("精力修为不足，须多冥想积累内力。"), "功法达到含装备加成的 7 点精力上限时，应明确提示继续冥想（实际精力上限 %d，结果 %s）" % [game_state.player_mp_max(), practice_cap_failure])
 	game.practice_open = true
 	game.menu_open = false
 	game.menu_panel.visible = false
-	game.practicing_skill_id = "ng_code_decorator"
+	game.practicing_skill_id = "bcb538e2-4d6a-52ae-990d-20377e27ab64"
 	game._refresh_practice()
 	game._handle_practice_key(KEY_ESCAPE)
 	_assert_true(game.practice_open and game.practicing_skill_id.is_empty() and game.details_panel.visible, "练功中第一次 ESC 应只停止练功并保留面板")
@@ -125,10 +126,10 @@ func _run_menu_suite(game: Node) -> void:
 	game._clear_learning_progress_widgets()
 	game.learning_skill_id = ""
 	game.learn_open = true
-	game.nearby_npc_id = "xue_lang"
+	game.nearby_npc_id = "21e05288-a075-5137-85e8-a6c4c115be87"
 	game_state.profile.sect = "NG神教"
-	game_state.profile.master = "xue_lang"
-	game.learn_all_items = skill_system.learn_options_for_npc("xue_lang")
+	game_state.profile.master = "21e05288-a075-5137-85e8-a6c4c115be87"
+	game.learn_all_items = skill_system.learn_options_for_npc("21e05288-a075-5137-85e8-a6c4c115be87")
 	game.learn_category_index = 0
 	game._rebuild_learn_categories()
 	game._handle_learn_key(KEY_SPACE)
@@ -172,10 +173,10 @@ func _run_menu_suite(game: Node) -> void:
 	_assert_true(game.skill_menu_items.get_child_count() == game.SKILL_ITEMS.size(), "技能二级菜单条目应挂在自己的 HUD 面板中")
 	# 加力在技能菜单内进入独立调整态，上下调档、空格确认；上限取基础架构+高级架构×2。
 	game_state.profile.sect = "NG神教"
-	skill_system.ensure_skills().levels["basicConstitution"] = 40
-	skill_system.ensure_skills().levels["ng_arch_zone"] = 40
-	skill_system.ensure_skills().equipped_basic["arch"] = "basicConstitution"
-	skill_system.ensure_skills().equipped_special["arch"] = "ng_arch_zone"
+	skill_system.ensure_skills().levels["dcebef7e-09b8-5a69-8e3d-159cb2b0c355"] = 40
+	skill_system.ensure_skills().levels["9287473e-59a9-5dc8-a914-324ec57ffc14"] = 40
+	skill_system.ensure_skills().equipped_basic["arch"] = "dcebef7e-09b8-5a69-8e3d-159cb2b0c355"
+	skill_system.ensure_skills().equipped_special["arch"] = "9287473e-59a9-5dc8-a914-324ec57ffc14"
 	skill_system.ensure_skills().force_power = 0
 	game.skill_index = 2
 	game._select_skill_menu()
@@ -205,16 +206,16 @@ func _run_menu_suite(game: Node) -> void:
 	_assert_true(game.menu_open and game.menu_panel.visible and game.system_menu_panel.visible, "保存等无弹窗的二级操作不得收起父子菜单")
 	# 赛博传送使用自己的下拉 HUD：保留一级菜单、替换系统操作列表，ESC 回系统菜单。
 	game_state.profile.sect = "NG神教"
-	skill_system.ensure_skills().levels["basicAgility"] = 40
-	skill_system.ensure_skills().levels["ng_tune_rx_step"] = 40
-	skill_system.ensure_skills().equipped_basic["tune"] = "basicAgility"
-	skill_system.ensure_skills().equipped_special["tune"] = "ng_tune_rx_step"
+	skill_system.ensure_skills().levels["af088f07-4c52-5a8c-aa16-df96e6b3e056"] = 40
+	skill_system.ensure_skills().levels["4d75539d-7873-5039-a596-d3dacc29c4d1"] = 40
+	skill_system.ensure_skills().equipped_basic["tune"] = "af088f07-4c52-5a8c-aa16-df96e6b3e056"
+	skill_system.ensure_skills().equipped_special["tune"] = "4d75539d-7873-5039-a596-d3dacc29c4d1"
 	# 基础架构 40 + NG 架构 40×2，根骨 25 时理论修为终点为 3000；
 	# 两门已装备功法另提供 40+40×3=160 精力，传送按总上限 190 的 1/3 收取 64。
-	skill_system.ensure_skills().levels["basicConstitution"] = 40
-	skill_system.ensure_skills().levels["ng_arch_zone"] = 40
-	skill_system.ensure_skills().equipped_basic["arch"] = "basicConstitution"
-	skill_system.ensure_skills().equipped_special["arch"] = "ng_arch_zone"
+	skill_system.ensure_skills().levels["dcebef7e-09b8-5a69-8e3d-159cb2b0c355"] = 40
+	skill_system.ensure_skills().levels["9287473e-59a9-5dc8-a914-324ec57ffc14"] = 40
+	skill_system.ensure_skills().equipped_basic["arch"] = "dcebef7e-09b8-5a69-8e3d-159cb2b0c355"
+	skill_system.ensure_skills().equipped_special["arch"] = "9287473e-59a9-5dc8-a914-324ec57ffc14"
 	game_state.profile.attributes.constitution = 25
 	game_state.profile.vitals.cultivation = 30
 	game_state.combat_state.mp = 9

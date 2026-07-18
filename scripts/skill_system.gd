@@ -17,10 +17,10 @@ const WISDOM_BASELINE := 25.0
 const WISDOM_LEARN_RATE_PER_POINT := 0.015
 const LEARN_RATE_MIN := 0.70
 const LEARN_RATE_MAX := 1.30
-## 师父学习使用 2.25 次曲线：前 30 级迅速成形，70 级后显著放缓；练功仍保留 v4 原曲线。
+## 师父学习使用 2.25 次曲线：前 30 级迅速成形，70 级后显著放缓；练功保留既有曲线。
 const LEARN_COST_SPAN := 4.0
 const LEARN_CURVE_EXPONENT := 2.25
-## 练功保留 v4 原曲线与倍率区间，避免师父学习调参改变玩家已经熟悉的练功节奏。
+## 练功保留既有曲线与倍率区间，避免师父学习调参改变玩家已经熟悉的练功节奏。
 const WISDOM_PRACTICE_RATE_PER_POINT := 0.02
 const PRACTICE_RATE_MIN := 0.65
 const PRACTICE_RATE_MAX := 1.25
@@ -42,38 +42,17 @@ func create_default_skills() -> Dictionary:
 	## 持久化字段统一使用蛇形命名，避免存档同时出现两套命名风格。
 	return {"levels": {}, "equipped_basic": {}, "equipped_special": {}, "progress": {}, "learn_progress": {}, "practice_progress": {}, "force_power": 0}
 
-## 兼容旧存档：早期版本用单一 "equipped" 槽位混存基础/门派功法，这里一次性
-## 迁移拆分为 equipped_basic/equipped_special 两个独立槽位后即删除旧字段。
+## 保证当前版本技能状态具备全部容器；不读取或迁移旧版本字段。
 func ensure_skills() -> Dictionary:
 	if not GameState.profile.has("skills") or GameState.profile.skills.is_empty():
 		GameState.profile.skills = create_default_skills()
 	var skills: Dictionary = GameState.profile.skills
-	## 第二版存档使用驼峰字段；读取后一次性迁移到标准字段。
-	_migrate_saved_key(skills, "learnProgress", "learn_progress", {})
-	_migrate_saved_key(skills, "practiceProgress", "practice_progress", {})
-	_migrate_saved_key(skills, "forcePower", "force_power", 0)
-	if not skills.has("levels"): skills.levels = {}
-	if not skills.has("equipped_basic"):
-		skills.equipped_basic = {}
-		for theme in THEMES:
-			var basic_id := str(THEME_BASIC_SKILL.get(theme, ""))
-			if int(skills.levels.get(basic_id, 0)) > 0:
-				skills.equipped_basic[theme] = basic_id
-	if not skills.has("equipped_special"):
-		skills.equipped_special = {}
-		for theme in skills.get("equipped", {}):
-			var old_id := str(skills.equipped[theme])
-			if str(DataRegistry.get_skill(old_id).get("category", "")) == "sect":
-				skills.equipped_special[theme] = old_id
-	skills.erase("equipped")
-	if not skills.has("progress"): skills.progress = {}
+	var defaults := create_default_skills()
+	for key in defaults:
+		if not skills.has(key):
+			var fallback: Variant = defaults[key]
+			skills[key] = fallback.duplicate(true) if fallback is Dictionary else fallback
 	return skills
-
-## 新字段优先于旧字段，迁移不会覆盖已经写入的标准数据。
-func _migrate_saved_key(skills: Dictionary, old_key: String, new_key: String, fallback: Variant) -> void:
-	if not skills.has(new_key):
-		skills[new_key] = skills.get(old_key, fallback)
-	skills.erase(old_key)
 
 ## 返回指定技能当前等级，未学习时为零。
 func level(skill_id: String) -> int:
@@ -179,7 +158,7 @@ func _attribute_growth_suffix(before: Dictionary) -> String:
 func _learn_required(definition: Dictionary, level_to_reach: int, rate: float) -> int:
 	return _exp_required(definition, level_to_reach, rate, LEARN_CURVE_EXPONENT, LEARN_RATE_MIN, LEARN_RATE_MAX)
 
-## 保留 v4 练功经验曲线，确保本次数值优化不改变练功体验。
+## 保留既有练功经验曲线，确保本次数值优化不改变练功体验。
 func _practice_required(definition: Dictionary, level_to_reach: int, rate: float) -> int:
 	return _exp_required(definition, level_to_reach, rate, PRACTICE_CURVE_EXPONENT, PRACTICE_RATE_MIN, PRACTICE_RATE_MAX)
 
@@ -200,7 +179,7 @@ func _exp_required(definition: Dictionary, level_to_reach: int, rate: float, exp
 func _learning_cost_rate() -> float:
 	return _wisdom_cost_rate(WISDOM_LEARN_RATE_PER_POINT, LEARN_RATE_MIN, LEARN_RATE_MAX)
 
-## 练功继续使用 v4 的灵感倍率。
+## 练功继续使用既有灵感倍率。
 func _practice_cost_rate() -> float:
 	return _wisdom_cost_rate(WISDOM_PRACTICE_RATE_PER_POINT, PRACTICE_RATE_MIN, PRACTICE_RATE_MAX)
 
@@ -214,7 +193,7 @@ func skill_exp_required(skill_id: String, level_to_reach: int) -> int:
 	return 1 if definition.is_empty() else _practice_required(definition, level_to_reach, _practice_cost_rate())
 
 ## 基础功法练至每 10 级为对应属性 +1（封顶 50），映射表见 skill_maps.gd，
-## 与存档规范化（GameState._normalize_base_attributes）互为逆运算。
+## 基础四维只来自当前版本存档中的 base_attributes，再叠加功法反哺。
 func _refresh_derived_attributes() -> void:
 	var base: Dictionary = GameState.profile.get("base_attributes", GameState.profile.get("attributes", {}))
 	var levels: Dictionary = ensure_skills().get("levels", {})

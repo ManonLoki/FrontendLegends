@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="80" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="87">
  <properties>
+  <property name="mapId" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
   <property name="mapName" value="开源镇"/>
   <property name="region" value="开源镇"/>
   <property name="type" propertytype="MapType" value="outDoor"/>
@@ -45,145 +46,145 @@
  <objectgroup id="4" name="Interactive">
   <object id="35" type="Transaction" x="608" y="0" width="16.072" height="17.3891">
    <properties>
-    <property name="from" value="KaiyuanTown"/>
-    <property name="to" value="Beijiao"/>
+    <property name="from" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
+    <property name="to" value="9b5bdbd9-3999-5e1e-aa17-5099491e841c"/>
    </properties>
   </object>
   <object id="36" type="Transaction" x="608.072" y="17.3891" width="16" height="16">
    <properties>
-    <property name="from" value="Beijiao"/>
-    <property name="to" value="KaiyuanTown"/>
+    <property name="from" value="9b5bdbd9-3999-5e1e-aa17-5099491e841c"/>
+    <property name="to" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
    </properties>
   </object>
   <object id="37" type="Transaction" x="0" y="592" width="16.9892" height="16.9892">
    <properties>
-    <property name="from" value="KaiyuanTown"/>
-    <property name="to" value="Xijiao"/>
+    <property name="from" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
+    <property name="to" value="f11a4867-c98d-5857-8c6a-e93bd568eda3"/>
    </properties>
   </object>
   <object id="38" type="Transaction" x="16.9892" y="592.276" width="16.9892" height="16.7131">
    <properties>
-    <property name="from" value="Xijiao"/>
-    <property name="to" value="KaiyuanTown"/>
+    <property name="from" value="f11a4867-c98d-5857-8c6a-e93bd568eda3"/>
+    <property name="to" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
    </properties>
   </object>
   <object id="39" type="Transaction" x="928" y="608" width="15.9024" height="15.5144">
    <properties>
-    <property name="from" value="Nanjiao"/>
-    <property name="to" value="KaiyuanTown"/>
+    <property name="from" value="fb215e50-cd81-5f1a-a285-b32c09a09834"/>
+    <property name="to" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
    </properties>
   </object>
   <object id="40" type="Transaction" x="928" y="624" width="16" height="16">
    <properties>
-    <property name="from" value="KaiyuanTown"/>
-    <property name="to" value="Nanjiao"/>
+    <property name="from" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
+    <property name="to" value="fb215e50-cd81-5f1a-a285-b32c09a09834"/>
    </properties>
   </object>
   <object id="41" type="Transaction" x="1248" y="320" width="16" height="16">
    <properties>
-    <property name="from" value="Dongjiao"/>
-    <property name="to" value="KaiyuanTown"/>
+    <property name="from" value="294515d0-c122-5720-85d6-e5eeda2cf05d"/>
+    <property name="to" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
    </properties>
   </object>
   <object id="42" type="Transaction" x="1264" y="320" width="16" height="16">
    <properties>
-    <property name="from" value="KaiyuanTown"/>
-    <property name="to" value="Dongjiao"/>
+    <property name="from" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
+    <property name="to" value="294515d0-c122-5720-85d6-e5eeda2cf05d"/>
    </properties>
   </object>
   <object id="47" type="Transaction" x="400" y="464" width="16" height="16">
    <properties>
-    <property name="from" value="KaiyuanTown"/>
-    <property name="to" value="DarkXue"/>
+    <property name="from" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
+    <property name="to" value="8f8add5e-93f8-5afe-b3e6-ba96dfc273c8"/>
    </properties>
   </object>
   <object id="48" type="Transaction" x="400" y="480" width="16" height="16">
    <properties>
-    <property name="from" value="DarkXue"/>
-    <property name="to" value="KaiyuanTown"/>
+    <property name="from" value="8f8add5e-93f8-5afe-b3e6-ba96dfc273c8"/>
+    <property name="to" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
    </properties>
   </object>
   <object id="52" type="Transaction" x="768" y="464" width="22.1026" height="15.1505">
    <properties>
-    <property name="from" value="KaiyuanTown"/>
-    <property name="to" value="AnWang"/>
+    <property name="from" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
+    <property name="to" value="06467980-5568-5a03-8d5d-2d5df42db6a0"/>
    </properties>
   </object>
   <object id="54" type="Transaction" x="768" y="480" width="22.1026" height="16">
    <properties>
-    <property name="from" value="AnWang"/>
-    <property name="to" value="KaiyuanTown"/>
+    <property name="from" value="06467980-5568-5a03-8d5d-2d5df42db6a0"/>
+    <property name="to" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
    </properties>
   </object>
   <object id="56" type="Transaction" x="160" y="576" width="16" height="16">
    <properties>
-    <property name="from" value="KaiyuanTown"/>
-    <property name="to" value="PlayerHome"/>
+    <property name="from" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
+    <property name="to" value="aa8f90d3-05e2-5f9a-9dee-a6adcd60db60"/>
    </properties>
   </object>
   <object id="57" type="Transaction" x="160" y="592" width="16" height="16">
    <properties>
-    <property name="from" value="PlayerHome"/>
-    <property name="to" value="KaiyuanTown"/>
+    <property name="from" value="aa8f90d3-05e2-5f9a-9dee-a6adcd60db60"/>
+    <property name="to" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
    </properties>
   </object>
   <object id="59" type="Transaction" x="1152" y="64" width="16" height="16">
    <properties>
-    <property name="from" value="KaiyuanTown"/>
-    <property name="to" value="ResidentialHouseDing"/>
+    <property name="from" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
+    <property name="to" value="ae6f7dce-7a5c-59cd-92ba-fe8190eaac0b"/>
    </properties>
   </object>
   <object id="60" type="Transaction" x="1152" y="80" width="16" height="16">
    <properties>
-    <property name="from" value="ResidentialHouseDing"/>
-    <property name="to" value="KaiyuanTown"/>
+    <property name="from" value="ae6f7dce-7a5c-59cd-92ba-fe8190eaac0b"/>
+    <property name="to" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
    </properties>
   </object>
   <object id="61" type="Transaction" x="240" y="272" width="32.1667" height="16">
    <properties>
-    <property name="from" value="KaiyuanTown"/>
-    <property name="to" value="ShoppingMall"/>
+    <property name="from" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
+    <property name="to" value="a72f4304-63e2-5a71-8609-8570a31f6282"/>
    </properties>
   </object>
   <object id="62" type="Transaction" x="144" y="288" width="33.3889" height="16">
    <properties>
-    <property name="from" value="ShoppingMall"/>
-    <property name="to" value="KaiyuanTown"/>
+    <property name="from" value="a72f4304-63e2-5a71-8609-8570a31f6282"/>
+    <property name="to" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
    </properties>
   </object>
   <object id="64" type="Transaction" x="992" y="304" width="16" height="16">
    <properties>
-    <property name="from" value="KaiyuanTown"/>
-    <property name="to" value="Pharmacy"/>
+    <property name="from" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
+    <property name="to" value="9e19a1a7-85bb-523e-b1aa-5a9e5bd2d5a8"/>
    </properties>
   </object>
   <object id="65" type="Transaction" x="992" y="320" width="16" height="16">
    <properties>
-    <property name="from" value="Pharmacy"/>
-    <property name="to" value="KaiyuanTown"/>
+    <property name="from" value="9e19a1a7-85bb-523e-b1aa-5a9e5bd2d5a8"/>
+    <property name="to" value="25f3952d-ec39-53af-a8c1-d523c43b80b0"/>
    </properties>
   </object>
   <object id="66" name="奶茶妹妹" type="NPC" x="377.937" y="220.78">
    <properties>
-    <property name="npcId" value="nai_cha_mei_mei"/>
+    <property name="npcId" value="fface007-32fe-52f4-8e8c-19b497f364e8"/>
    </properties>
    <point/>
   </object>
   <object id="67" name="小学生" type="NPC" x="635.638" y="219.757">
    <properties>
-    <property name="npcId" value="xiao_xue_sheng"/>
+    <property name="npcId" value="98138ebf-d4f4-515c-aea7-d95bf6155994"/>
    </properties>
    <point/>
   </object>
   <object id="75" name="活阎王" type="NPC" x="599.256" y="68.88">
    <properties>
-    <property name="npcId" value="huo_yan_wang"/>
+    <property name="npcId" value="95621051-c06f-58a7-b004-b4eee0d7f472"/>
    </properties>
    <point/>
   </object>
   <object id="78" name="九日" type="NPC" x="919.991" y="215.203">
    <properties>
-    <property name="npcId" value="jiu_ri"/>
+    <property name="npcId" value="ac079dbc-e7f3-5aa7-9ef1-6db6e8ec3eb1"/>
    </properties>
    <point/>
   </object>
@@ -192,7 +193,7 @@
   </object>
   <object id="80" name="流动摊贩" type="NPC" x="469.603" y="217.508">
    <properties>
-    <property name="npcId" value="liu_dong_tan_fan"/>
+    <property name="npcId" value="17d9119b-3a2c-51fe-98be-a1e5b1add733"/>
    </properties>
    <point/>
   </object>

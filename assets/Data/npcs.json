@@ -1,7 +1,7 @@
 {
-    "version": 1,
+    "version": 5,
     "npcs": {
-        "douglas_crockford": {
+        "00175cfc-77cd-5b4a-b38e-a26cf617bab1": {
             "displayName": "道格拉斯·克罗克福德",
             "gender": "male",
             "age": 71,
@@ -22,24 +22,24 @@
                 "wisdom": 27.2
             },
             "skillLevels": {
-                "basicStrength": 40,
-                "basicAgility": 40,
-                "basicConstitution": 40,
-                "basicParry": 40,
-                "vanilla_code_dom": 40,
-                "vanilla_tune_event_loop": 40,
-                "vanilla_arch_closure": 40,
-                "vanilla_parry_prevent": 40
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 40,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 40,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 40,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 40,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 40,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 40,
+                "bf770011-a135-56d5-8537-ee85f77df325": 40,
+                "d2f9550c-9725-56a5-8929-363aed058324": 40
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324"
             ],
             "joinSect": {
                 "strength": 0,
@@ -48,10 +48,10 @@
                 "wisdom": 0
             },
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "john_resig": {
+        "006623e0-420d-5866-b012-31cc28f7da69": {
             "displayName": "约翰·雷西格",
             "gender": "male",
             "age": 42,
@@ -72,24 +72,24 @@
                 "wisdom": 15.8
             },
             "skillLevels": {
-                "basicStrength": 70,
-                "basicAgility": 70,
-                "basicConstitution": 70,
-                "basicParry": 70,
-                "vanilla_code_dom": 70,
-                "vanilla_tune_event_loop": 70,
-                "vanilla_arch_closure": 70,
-                "vanilla_parry_prevent": 70
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 70,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 70,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 70,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 70,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 70,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 70,
+                "bf770011-a135-56d5-8537-ee85f77df325": 70,
+                "d2f9550c-9725-56a5-8929-363aed058324": 70
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324"
             ],
             "joinSect": {
                 "strength": 0,
@@ -98,14 +98,14 @@
                 "wisdom": 0
             },
             "joinSkillRequirements": {
-                "basicConstitution": 30,
-                "vanilla_arch_closure": 30
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 30,
+                "bf770011-a135-56d5-8537-ee85f77df325": 30
             },
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "brendan_eich": {
+        "de6328e3-32c7-5560-b6c7-298a7fa02a03": {
             "displayName": "布兰登·艾奇",
             "gender": "male",
             "age": 64,
@@ -126,24 +126,24 @@
                 "wisdom": 24.9
             },
             "skillLevels": {
-                "basicStrength": 90,
-                "basicAgility": 90,
-                "basicConstitution": 90,
-                "basicParry": 90,
-                "vanilla_code_dom": 90,
-                "vanilla_tune_event_loop": 90,
-                "vanilla_arch_closure": 90,
-                "vanilla_parry_prevent": 90
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 90,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 90,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 90,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 90,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 90,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 90,
+                "bf770011-a135-56d5-8537-ee85f77df325": 90,
+                "d2f9550c-9725-56a5-8929-363aed058324": 90
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324"
             ],
             "joinSect": {
                 "strength": 0,
@@ -152,14 +152,14 @@
                 "wisdom": 0
             },
             "joinSkillRequirements": {
-                "basicConstitution": 70,
-                "vanilla_arch_closure": 70
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 70,
+                "bf770011-a135-56d5-8537-ee85f77df325": 70
             },
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "saito_yuya": {
+        "8df741f7-d27e-5f0b-b096-13aca2e48ebf": {
             "displayName": "齐藤 祐也",
             "gender": "male",
             "age": 45,
@@ -180,30 +180,30 @@
                 "wisdom": 20.4
             },
             "skillLevels": {
-                "basicStrength": 30,
-                "basicAgility": 30,
-                "basicConstitution": 30,
-                "basicParry": 30,
-                "vanilla_code_dom": 30,
-                "vanilla_tune_event_loop": 30,
-                "vanilla_arch_closure": 30,
-                "vanilla_parry_prevent": 30
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 30,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 30,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 30,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 30,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 30,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 30,
+                "bf770011-a135-56d5-8537-ee85f77df325": 30,
+                "d2f9550c-9725-56a5-8929-363aed058324": 30
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324"
             ],
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "endo_masanobu": {
+        "6bb0b4fe-6cec-5524-9c1b-2e69fda8bafa": {
             "displayName": "远藤 雅伸",
             "gender": "male",
             "age": 55,
@@ -224,30 +224,30 @@
                 "wisdom": 23.6
             },
             "skillLevels": {
-                "basicStrength": 50,
-                "basicAgility": 50,
-                "basicConstitution": 50,
-                "basicParry": 50,
-                "vanilla_code_dom": 50,
-                "vanilla_tune_event_loop": 50,
-                "vanilla_arch_closure": 50,
-                "vanilla_parry_prevent": 50
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 50,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 50,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 50,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 50,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 50,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 50,
+                "bf770011-a135-56d5-8537-ee85f77df325": 50,
+                "d2f9550c-9725-56a5-8929-363aed058324": 50
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324"
             ],
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "situ_zhengmei": {
+        "66b4afcf-15d2-555d-adc2-a4cd240760c5": {
             "displayName": "司徒正美",
             "gender": "male",
             "age": 36,
@@ -268,30 +268,30 @@
                 "wisdom": 12.2
             },
             "skillLevels": {
-                "basicStrength": 40,
-                "basicAgility": 40,
-                "basicConstitution": 60,
-                "basicParry": 60,
-                "vanilla_code_dom": 40,
-                "vanilla_tune_event_loop": 40,
-                "vanilla_arch_closure": 60,
-                "vanilla_parry_prevent": 60
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 40,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 40,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 60,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 60,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 40,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 40,
+                "bf770011-a135-56d5-8537-ee85f77df325": 60,
+                "d2f9550c-9725-56a5-8929-363aed058324": 60
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324"
             ],
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "chen_baishui": {
+        "9f159d86-c4e7-5b20-be78-5c8226128b2a": {
             "displayName": "陈白水",
             "gender": "male",
             "age": 26,
@@ -312,30 +312,30 @@
                 "wisdom": 12.1
             },
             "skillLevels": {
-                "basicStrength": 50,
-                "basicAgility": 50,
-                "basicConstitution": 50,
-                "basicParry": 50,
-                "vanilla_code_dom": 50,
-                "vanilla_tune_event_loop": 50,
-                "vanilla_arch_closure": 50,
-                "vanilla_parry_prevent": 50
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 50,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 50,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 50,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 50,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 50,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 50,
+                "bf770011-a135-56d5-8537-ee85f77df325": 50,
+                "d2f9550c-9725-56a5-8929-363aed058324": 50
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324"
             ],
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "jing_shen_xiao_mei": {
+        "0f698d2f-2b95-5692-9a13-bde3f2d5f126": {
             "displayName": "精神小妹",
             "gender": "female",
             "age": 18,
@@ -356,27 +356,27 @@
                 "wisdom": 3.6
             },
             "skillLevels": {
-                "basicStrength": 10,
-                "basicAgility": 10,
-                "basicConstitution": 10,
-                "basicParry": 10,
-                "vanilla_code_dom": 10,
-                "vanilla_tune_event_loop": 10,
-                "vanilla_arch_closure": 10,
-                "vanilla_parry_prevent": 10
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 10,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 10,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 10,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 10,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 10,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 10,
+                "bf770011-a135-56d5-8537-ee85f77df325": 10,
+                "d2f9550c-9725-56a5-8929-363aed058324": 10
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324"
             ]
         },
-        "dao_shi": {
+        "831434cb-2471-5f24-9fdf-0259fe149eae": {
             "displayName": "导师",
             "gender": "male",
             "age": 56,
@@ -396,29 +396,29 @@
                 "wisdom": 19.6
             },
             "skillLevels": {
-                "basicStrength": 35,
-                "basicAgility": 35,
-                "basicConstitution": 20,
-                "basicParry": 50,
-                "vue_code_template": 35,
-                "vue_tune_router": 35,
-                "vue_arch_reactive": 20,
-                "vue_parry_keepalive": 50,
-                "literacy": 40
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 35,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 35,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 20,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 50,
+                "bf405613-2fce-5cdd-9106-6936c89b036f": 35,
+                "59972225-62ad-5180-844f-17e05b24b55c": 35,
+                "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc": 20,
+                "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2": 50,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 40
             },
             "equippedSkillIds": [
-                "vue_code_template",
-                "vue_tune_router",
-                "vue_arch_reactive",
-                "vue_parry_keepalive",
-                "literacy"
+                "bf405613-2fce-5cdd-9106-6936c89b036f",
+                "59972225-62ad-5180-844f-17e05b24b55c",
+                "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc",
+                "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "money": 3000,
             "equipment": [
-                "laohua_jing"
+                "feeb5d00-1096-5643-a94c-45f4559651f5"
             ]
         },
-        "xiao_bu_er": {
+        "c6592971-0e60-5f47-969c-2db122c7c011": {
             "displayName": "小不二",
             "gender": "female",
             "age": 26,
@@ -438,26 +438,26 @@
                 "wisdom": 30.4
             },
             "skillLevels": {
-                "basicStrength": 90,
-                "basicAgility": 90,
-                "basicConstitution": 90,
-                "basicParry": 90,
-                "ng_code_decorator": 90,
-                "ng_tune_rx_step": 90,
-                "ng_arch_zone": 90,
-                "ng_parry_interceptor": 90,
-                "literacy": 90
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 90,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 90,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 90,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 90,
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64": 90,
+                "4d75539d-7873-5039-a596-d3dacc29c4d1": 90,
+                "9287473e-59a9-5dc8-a914-324ec57ffc14": 90,
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6": 90,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 90
             },
             "equippedSkillIds": [
-                "ng_code_decorator",
-                "ng_tune_rx_step",
-                "ng_arch_zone",
-                "ng_parry_interceptor",
-                "literacy"
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64",
+                "4d75539d-7873-5039-a596-d3dacc29c4d1",
+                "9287473e-59a9-5dc8-a914-324ec57ffc14",
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "money": 60000
         },
-        "jiu_ri": {
+        "ac079dbc-e7f3-5aa7-9ef1-6db6e8ec3eb1": {
             "displayName": "九日",
             "gender": "male",
             "age": 44,
@@ -477,29 +477,29 @@
                 "wisdom": 19.8
             },
             "skillLevels": {
-                "basicStrength": 50,
-                "basicAgility": 50,
-                "basicConstitution": 50,
-                "basicParry": 50,
-                "vanilla_code_dom": 50,
-                "vanilla_tune_event_loop": 50,
-                "vanilla_arch_closure": 50,
-                "vanilla_parry_prevent": 50,
-                "literacy": 50
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 50,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 50,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 50,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 50,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 50,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 50,
+                "bf770011-a135-56d5-8537-ee85f77df325": 50,
+                "d2f9550c-9725-56a5-8929-363aed058324": 50,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 50
             },
             "equippedSkillIds": [
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent",
-                "literacy"
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "money": 20000,
             "equipment": [
-                "laohua_jing"
+                "feeb5d00-1096-5643-a94c-45f4559651f5"
             ]
         },
-        "huo_yan_wang": {
+        "95621051-c06f-58a7-b004-b4eee0d7f472": {
             "displayName": "活阎王",
             "gender": "male",
             "age": 0,
@@ -518,22 +518,22 @@
                 "wisdom": 20.2
             },
             "skillLevels": {
-                "basicStrength": 60,
-                "basicAgility": 60,
-                "basicConstitution": 50,
-                "basicParry": 50,
-                "literacy": 30
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 60,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 60,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 50,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 50,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 30
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "literacy"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "money": 8888
         },
-        "nai_cha_mei_mei": {
+        "fface007-32fe-52f4-8e8c-19b497f364e8": {
             "displayName": "奶茶妹妹",
             "gender": "female",
             "age": 20,
@@ -552,22 +552,22 @@
                 "wisdom": 6.4
             },
             "skillLevels": {
-                "basicStrength": 0,
-                "basicAgility": 0,
-                "basicConstitution": 0,
-                "basicParry": 0,
-                "literacy": 5
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 0,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 0,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 0,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 0,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 5
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "literacy"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "money": 100
         },
-        "zhuang_ji_yuan": {
+        "1541271f-ec6d-5881-99dc-ddd0fa02ff45": {
             "displayName": "装机媛",
             "gender": "female",
             "age": 32,
@@ -586,22 +586,22 @@
                 "wisdom": 14.4
             },
             "skillLevels": {
-                "basicStrength": 20,
-                "basicAgility": 25,
-                "basicConstitution": 50,
-                "basicParry": 20,
-                "literacy": 20
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 20,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 25,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 50,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 20,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 20
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "literacy"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "money": 4888
         },
-        "yao_fan_zi": {
+        "a04f2657-ce6d-5777-9508-af927441a431": {
             "displayName": "药贩子",
             "gender": "male",
             "age": 40,
@@ -620,22 +620,22 @@
                 "wisdom": 28.2
             },
             "skillLevels": {
-                "basicStrength": 20,
-                "basicAgility": 25,
-                "basicConstitution": 20,
-                "basicParry": 20,
-                "literacy": 20
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 20,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 25,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 20,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 20,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 20
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "literacy"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "money": 18888
         },
-        "lou_wan_qing": {
+        "4f1b2bd2-e814-58be-aeaa-3b5f54ca5096": {
             "displayName": "楼婉卿",
             "gender": "female",
             "age": 35,
@@ -654,22 +654,22 @@
                 "wisdom": 20.4
             },
             "skillLevels": {
-                "basicStrength": 30,
-                "basicAgility": 30,
-                "basicConstitution": 30,
-                "basicParry": 30,
-                "literacy": 30
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 30,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 30,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 30,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 30,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 30
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "literacy"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "money": 2666
         },
-        "huang_he": {
+        "62d75021-4e5d-511f-b7d5-0affd5ff1eab": {
             "displayName": "黄鹤",
             "gender": "male",
             "age": 50,
@@ -688,22 +688,22 @@
                 "wisdom": 15.4
             },
             "skillLevels": {
-                "basicStrength": 40,
-                "basicAgility": 40,
-                "basicConstitution": 40,
-                "basicParry": 40,
-                "literacy": 40
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 40,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 40,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 40,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 40,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 40
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "literacy"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "money": 16666
         },
-        "liu_dong_tan_fan": {
+        "17d9119b-3a2c-51fe-98be-a1e5b1add733": {
             "displayName": "流动摊贩",
             "gender": "male",
             "age": 24,
@@ -722,22 +722,22 @@
                 "wisdom": 7.6
             },
             "skillLevels": {
-                "basicStrength": 10,
-                "basicAgility": 10,
-                "basicConstitution": 10,
-                "basicParry": 10,
-                "literacy": 10
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 10,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 10,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 10,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 10,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 10
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "literacy"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "money": 500
         },
-        "fu_zhuang_dian_lao_ban_niang": {
+        "3f5e872d-8990-5fc6-9096-e5461894705e": {
             "displayName": "服装店老板娘",
             "gender": "female",
             "age": 32,
@@ -756,22 +756,22 @@
                 "wisdom": 5.6
             },
             "skillLevels": {
-                "basicStrength": 10,
-                "basicAgility": 10,
-                "basicConstitution": 10,
-                "basicParry": 10,
-                "literacy": 10
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 10,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 10,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 10,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 10,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 10
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "literacy"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "money": 1500
         },
-        "jian_shang": {
+        "4a351008-af94-5d1a-92af-6e6ab6142017": {
             "displayName": "奸商",
             "gender": "male",
             "age": 60,
@@ -790,22 +790,22 @@
                 "wisdom": 11.8
             },
             "skillLevels": {
-                "basicStrength": 10,
-                "basicAgility": 10,
-                "basicConstitution": 10,
-                "basicParry": 10,
-                "literacy": 10
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 10,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 10,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 10,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 10,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 10
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "literacy"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "money": 6
         },
-        "ding_shi_fu": {
+        "9ea0d852-96de-5e1c-bb27-8c5ad48599c9": {
             "displayName": "丁师傅",
             "gender": "male",
             "age": 28,
@@ -825,30 +825,30 @@
                 "wisdom": 24.4
             },
             "skillLevels": {
-                "basicStrength": 50,
-                "basicAgility": 35,
-                "basicConstitution": 60,
-                "basicParry": 60,
-                "ng_code_decorator": 50,
-                "ng_tune_rx_step": 35,
-                "ng_arch_zone": 60,
-                "ng_parry_interceptor": 60,
-                "literacy": 50
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 50,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 35,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 60,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 60,
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64": 50,
+                "4d75539d-7873-5039-a596-d3dacc29c4d1": 35,
+                "9287473e-59a9-5dc8-a914-324ec57ffc14": 60,
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6": 60,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 50
             },
             "equippedSkillIds": [
-                "ng_code_decorator",
-                "ng_tune_rx_step",
-                "ng_arch_zone",
-                "ng_parry_interceptor",
-                "literacy"
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64",
+                "4d75539d-7873-5039-a596-d3dacc29c4d1",
+                "9287473e-59a9-5dc8-a914-324ec57ffc14",
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "money": 6666,
             "equipment": [
-                "ar_yanjing",
-                "chongdianbao"
+                "53439dc3-5429-531a-af35-e70a8f718075",
+                "6fcf5d86-dcc2-53d7-be50-88927078ac53"
             ]
         },
-        "liu_ri_tian": {
+        "eb2a432a-0565-566f-a020-248170205123": {
             "displayName": "刘日天",
             "gender": "male",
             "age": 33,
@@ -868,30 +868,30 @@
                 "wisdom": 17.6
             },
             "skillLevels": {
-                "basicStrength": 60,
-                "basicAgility": 40,
-                "basicConstitution": 50,
-                "basicParry": 60,
-                "vue_code_template": 60,
-                "vue_tune_router": 40,
-                "vue_arch_reactive": 50,
-                "vue_parry_keepalive": 60,
-                "literacy": 50
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 60,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 40,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 50,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 60,
+                "bf405613-2fce-5cdd-9106-6936c89b036f": 60,
+                "59972225-62ad-5180-844f-17e05b24b55c": 40,
+                "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc": 50,
+                "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2": 60,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 50
             },
             "equippedSkillIds": [
-                "vue_code_template",
-                "vue_tune_router",
-                "vue_arch_reactive",
-                "vue_parry_keepalive",
-                "literacy"
+                "bf405613-2fce-5cdd-9106-6936c89b036f",
+                "59972225-62ad-5180-844f-17e05b24b55c",
+                "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc",
+                "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "money": 8888,
             "equipment": [
-                "ar_yanjing",
-                "chongdianbao"
+                "53439dc3-5429-531a-af35-e70a8f718075",
+                "6fcf5d86-dcc2-53d7-be50-88927078ac53"
             ]
         },
-        "xiao_xue_sheng": {
+        "98138ebf-d4f4-515c-aea7-d95bf6155994": {
             "displayName": "小学生",
             "gender": "male",
             "age": 11,
@@ -910,18 +910,18 @@
                 "wisdom": 4.9
             },
             "skillLevels": {
-                "basicStrength": 0,
-                "basicAgility": 0,
-                "basicConstitution": 0,
-                "basicParry": 0,
-                "literacy": 1
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 0,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 0,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 0,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 0,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 1
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "literacy"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "combatReward": {
                 "experience": 0,
@@ -930,7 +930,7 @@
             },
             "money": 1888
         },
-        "manon_loki": {
+        "4dd9d221-051e-5200-b8ef-de60a7f182bf": {
             "displayName": "ManonLoki",
             "gender": "male",
             "age": 38,
@@ -951,29 +951,29 @@
                 "wisdom": 22.4
             },
             "skillLevels": {
-                "basicStrength": 60,
-                "basicAgility": 60,
-                "basicConstitution": 60,
-                "basicParry": 60,
-                "literacy": 0,
-                "ng_code_decorator": 60,
-                "ng_tune_rx_step": 60,
-                "ng_arch_zone": 60,
-                "ng_parry_interceptor": 60
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 60,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 60,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 60,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 60,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 0,
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64": 60,
+                "4d75539d-7873-5039-a596-d3dacc29c4d1": 60,
+                "9287473e-59a9-5dc8-a914-324ec57ffc14": 60,
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6": 60
             },
             "equippedSkillIds": [
-                "ng_code_decorator",
-                "ng_tune_rx_step",
-                "ng_arch_zone",
-                "ng_parry_interceptor",
-                "literacy"
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64",
+                "4d75539d-7873-5039-a596-d3dacc29c4d1",
+                "9287473e-59a9-5dc8-a914-324ec57ffc14",
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "equipment": [
-                "dahui_polo_shan",
-                "hhkb"
+                "9644bbb2-95da-530d-b411-56bb07c0f8d1",
+                "85021013-908c-5a02-a78a-35e5a6e85001"
             ]
         },
-        "lucian": {
+        "772129be-db40-5e99-929c-e77fde74174c": {
             "displayName": "Lucian",
             "gender": "male",
             "age": 38,
@@ -994,27 +994,27 @@
                 "wisdom": 23.8
             },
             "skillLevels": {
-                "basicStrength": 100,
-                "basicAgility": 100,
-                "basicConstitution": 100,
-                "basicParry": 100,
-                "ng_code_decorator": 100,
-                "ng_tune_rx_step": 100,
-                "ng_arch_zone": 100,
-                "ng_parry_interceptor": 100
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 100,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 100,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 100,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 100,
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64": 100,
+                "4d75539d-7873-5039-a596-d3dacc29c4d1": 100,
+                "9287473e-59a9-5dc8-a914-324ec57ffc14": 100,
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6": 100
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "ng_code_decorator",
-                "ng_tune_rx_step",
-                "ng_arch_zone",
-                "ng_parry_interceptor"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64",
+                "4d75539d-7873-5039-a596-d3dacc29c4d1",
+                "9287473e-59a9-5dc8-a914-324ec57ffc14",
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6"
             ]
         },
-        "jin_xiang_ke": {
+        "5327eb7e-10ce-5fad-a200-bd7f9e722723": {
             "displayName": "进香客",
             "gender": "male",
             "age": 37,
@@ -1035,27 +1035,27 @@
                 "wisdom": 21.8
             },
             "skillLevels": {
-                "basicStrength": 50,
-                "basicAgility": 50,
-                "basicConstitution": 50,
-                "basicParry": 50,
-                "ng_code_decorator": 50,
-                "ng_tune_rx_step": 50,
-                "ng_arch_zone": 50,
-                "ng_parry_interceptor": 50
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 50,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 50,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 50,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 50,
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64": 50,
+                "4d75539d-7873-5039-a596-d3dacc29c4d1": 50,
+                "9287473e-59a9-5dc8-a914-324ec57ffc14": 50,
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6": 50
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "ng_code_decorator",
-                "ng_tune_rx_step",
-                "ng_arch_zone",
-                "ng_parry_interceptor"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64",
+                "4d75539d-7873-5039-a596-d3dacc29c4d1",
+                "9287473e-59a9-5dc8-a914-324ec57ffc14",
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6"
             ]
         },
-        "da_mo_qiong_qiu": {
+        "5b9e5ff0-1be6-5b83-b3b6-a6f6a8181c50": {
             "displayName": "大漠穷秋",
             "gender": "male",
             "age": 41,
@@ -1076,22 +1076,22 @@
                 "wisdom": 29.6
             },
             "skillLevels": {
-                "basicStrength": 25,
-                "basicAgility": 25,
-                "basicConstitution": 20,
-                "basicParry": 40,
-                "literacy": 0,
-                "ng_code_decorator": 25,
-                "ng_tune_rx_step": 25,
-                "ng_arch_zone": 20,
-                "ng_parry_interceptor": 40
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 25,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 25,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 20,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 40,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 0,
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64": 25,
+                "4d75539d-7873-5039-a596-d3dacc29c4d1": 25,
+                "9287473e-59a9-5dc8-a914-324ec57ffc14": 20,
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6": 40
             },
             "equippedSkillIds": [
-                "ng_code_decorator",
-                "ng_tune_rx_step",
-                "ng_arch_zone",
-                "ng_parry_interceptor",
-                "literacy"
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64",
+                "4d75539d-7873-5039-a596-d3dacc29c4d1",
+                "9287473e-59a9-5dc8-a914-324ec57ffc14",
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "joinSect": {
                 "strength": 20,
@@ -1100,7 +1100,7 @@
                 "wisdom": 20
             }
         },
-        "qing_ge_le": {
+        "b1c244d0-c1d6-5f0b-bea0-bdf3db8e46e6": {
             "displayName": "青格勒",
             "gender": "male",
             "age": 31,
@@ -1121,28 +1121,28 @@
                 "wisdom": 7.8
             },
             "skillLevels": {
-                "basicStrength": 45,
-                "basicAgility": 45,
-                "basicConstitution": 60,
-                "basicParry": 45,
-                "literacy": 0,
-                "ng_code_decorator": 45,
-                "ng_tune_rx_step": 45,
-                "ng_arch_zone": 60,
-                "ng_parry_interceptor": 45
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 45,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 45,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 60,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 45,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 0,
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64": 45,
+                "4d75539d-7873-5039-a596-d3dacc29c4d1": 45,
+                "9287473e-59a9-5dc8-a914-324ec57ffc14": 60,
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6": 45
             },
             "equippedSkillIds": [
-                "ng_code_decorator",
-                "ng_tune_rx_step",
-                "ng_arch_zone",
-                "ng_parry_interceptor",
-                "literacy"
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64",
+                "4d75539d-7873-5039-a596-d3dacc29c4d1",
+                "9287473e-59a9-5dc8-a914-324ec57ffc14",
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "equipment": [
-                "dahui_polo_shan"
+                "9644bbb2-95da-530d-b411-56bb07c0f8d1"
             ]
         },
-        "xue_lang": {
+        "21e05288-a075-5137-85e8-a6c4c115be87": {
             "displayName": "雪狼",
             "gender": "male",
             "age": 46,
@@ -1163,22 +1163,22 @@
                 "wisdom": 21.6
             },
             "skillLevels": {
-                "basicStrength": 80,
-                "basicAgility": 80,
-                "basicConstitution": 100,
-                "basicParry": 80,
-                "literacy": 0,
-                "ng_code_decorator": 80,
-                "ng_tune_rx_step": 80,
-                "ng_arch_zone": 100,
-                "ng_parry_interceptor": 80
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 80,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 80,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 100,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 80,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 0,
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64": 80,
+                "4d75539d-7873-5039-a596-d3dacc29c4d1": 80,
+                "9287473e-59a9-5dc8-a914-324ec57ffc14": 100,
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6": 80
             },
             "equippedSkillIds": [
-                "ng_code_decorator",
-                "ng_tune_rx_step",
-                "ng_arch_zone",
-                "ng_parry_interceptor",
-                "literacy"
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64",
+                "4d75539d-7873-5039-a596-d3dacc29c4d1",
+                "9287473e-59a9-5dc8-a914-324ec57ffc14",
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "joinSect": {
                 "strength": 0,
@@ -1187,14 +1187,14 @@
                 "wisdom": 0
             },
             "joinSkillRequirements": {
-                "basicConstitution": 70,
-                "ng_arch_zone": 70
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 70,
+                "9287473e-59a9-5dc8-a914-324ec57ffc14": 70
             },
             "equipment": [
-                "dahui_polo_shan"
+                "9644bbb2-95da-530d-b411-56bb07c0f8d1"
             ]
         },
-        "bu_lai_ke": {
+        "500b8aac-9ac5-5012-8650-49c4813ce413": {
             "displayName": "布莱克",
             "gender": "male",
             "age": 36,
@@ -1215,28 +1215,28 @@
                 "wisdom": 9.6
             },
             "skillLevels": {
-                "basicStrength": 40,
-                "basicAgility": 40,
-                "basicConstitution": 50,
-                "basicParry": 40,
-                "literacy": 0,
-                "ng_code_decorator": 40,
-                "ng_tune_rx_step": 40,
-                "ng_arch_zone": 50,
-                "ng_parry_interceptor": 40
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 40,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 40,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 50,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 40,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 0,
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64": 40,
+                "4d75539d-7873-5039-a596-d3dacc29c4d1": 40,
+                "9287473e-59a9-5dc8-a914-324ec57ffc14": 50,
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6": 40
             },
             "equippedSkillIds": [
-                "ng_code_decorator",
-                "ng_tune_rx_step",
-                "ng_arch_zone",
-                "ng_parry_interceptor",
-                "literacy"
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64",
+                "4d75539d-7873-5039-a596-d3dacc29c4d1",
+                "9287473e-59a9-5dc8-a914-324ec57ffc14",
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "equipment": [
-                "dahui_polo_shan"
+                "9644bbb2-95da-530d-b411-56bb07c0f8d1"
             ]
         },
-        "xi_xi_fu_si": {
+        "688cbec0-c143-5e40-bdd2-57103066fa4e": {
             "displayName": "西西弗斯",
             "gender": "male",
             "age": 32,
@@ -1257,22 +1257,22 @@
                 "wisdom": 17.9
             },
             "skillLevels": {
-                "basicStrength": 50,
-                "basicAgility": 45,
-                "basicConstitution": 60,
-                "basicParry": 50,
-                "literacy": 0,
-                "ng_code_decorator": 50,
-                "ng_tune_rx_step": 45,
-                "ng_arch_zone": 60,
-                "ng_parry_interceptor": 50
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 50,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 45,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 60,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 50,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 0,
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64": 50,
+                "4d75539d-7873-5039-a596-d3dacc29c4d1": 45,
+                "9287473e-59a9-5dc8-a914-324ec57ffc14": 60,
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6": 50
             },
             "equippedSkillIds": [
-                "ng_code_decorator",
-                "ng_tune_rx_step",
-                "ng_arch_zone",
-                "ng_parry_interceptor",
-                "literacy"
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64",
+                "4d75539d-7873-5039-a596-d3dacc29c4d1",
+                "9287473e-59a9-5dc8-a914-324ec57ffc14",
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "joinSect": {
                 "strength": 0,
@@ -1281,14 +1281,14 @@
                 "wisdom": 0
             },
             "joinSkillRequirements": {
-                "basicConstitution": 30,
-                "ng_arch_zone": 30
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 30,
+                "9287473e-59a9-5dc8-a914-324ec57ffc14": 30
             },
             "equipment": [
-                "dahui_polo_shan"
+                "9644bbb2-95da-530d-b411-56bb07c0f8d1"
             ]
         },
-        "qc": {
+        "0b38ec96-d752-5083-a03c-aa0ac49a6dc1": {
             "displayName": "Qc.",
             "gender": "male",
             "age": 28,
@@ -1309,22 +1309,22 @@
                 "wisdom": 7.9
             },
             "skillLevels": {
-                "basicStrength": 10,
-                "basicAgility": 10,
-                "basicConstitution": 10,
-                "basicParry": 10,
-                "literacy": 0,
-                "ng_code_decorator": 10,
-                "ng_tune_rx_step": 10,
-                "ng_arch_zone": 10,
-                "ng_parry_interceptor": 10
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 10,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 10,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 10,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 10,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 0,
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64": 10,
+                "4d75539d-7873-5039-a596-d3dacc29c4d1": 10,
+                "9287473e-59a9-5dc8-a914-324ec57ffc14": 10,
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6": 10
             },
             "equippedSkillIds": [
-                "ng_code_decorator",
-                "ng_tune_rx_step",
-                "ng_arch_zone",
-                "ng_parry_interceptor",
-                "literacy"
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64",
+                "4d75539d-7873-5039-a596-d3dacc29c4d1",
+                "9287473e-59a9-5dc8-a914-324ec57ffc14",
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "combatReward": {
                 "experience": 60,
@@ -1332,10 +1332,10 @@
                 "money": 5
             },
             "equipment": [
-                "dahui_polo_shan"
+                "9644bbb2-95da-530d-b411-56bb07c0f8d1"
             ]
         },
-        "yuan_xing_ke": {
+        "5b77e264-5756-56cb-a8c5-6738f6d7ad58": {
             "displayName": "远行客",
             "gender": "male",
             "age": 32,
@@ -1356,28 +1356,28 @@
                 "wisdom": 8.4
             },
             "skillLevels": {
-                "basicStrength": 30,
-                "basicAgility": 30,
-                "basicConstitution": 30,
-                "basicParry": 30,
-                "literacy": 0,
-                "ng_code_decorator": 30,
-                "ng_tune_rx_step": 30,
-                "ng_arch_zone": 30,
-                "ng_parry_interceptor": 30
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 30,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 30,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 30,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 30,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 0,
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64": 30,
+                "4d75539d-7873-5039-a596-d3dacc29c4d1": 30,
+                "9287473e-59a9-5dc8-a914-324ec57ffc14": 30,
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6": 30
             },
             "equippedSkillIds": [
-                "ng_code_decorator",
-                "ng_tune_rx_step",
-                "ng_arch_zone",
-                "ng_parry_interceptor",
-                "literacy"
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64",
+                "4d75539d-7873-5039-a596-d3dacc29c4d1",
+                "9287473e-59a9-5dc8-a914-324ec57ffc14",
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "equipment": [
-                "dahui_polo_shan"
+                "9644bbb2-95da-530d-b411-56bb07c0f8d1"
             ]
         },
-        "gc_jie_ban_ren": {
+        "71edc44c-0722-5b9a-9f6e-c03c5eb96b12": {
             "displayName": "GC主义接班人",
             "gender": "male",
             "age": 30,
@@ -1398,28 +1398,28 @@
                 "wisdom": 10.4
             },
             "skillLevels": {
-                "basicStrength": 30,
-                "basicAgility": 40,
-                "basicConstitution": 50,
-                "basicParry": 20,
-                "literacy": 0,
-                "ng_code_decorator": 30,
-                "ng_tune_rx_step": 40,
-                "ng_arch_zone": 50,
-                "ng_parry_interceptor": 20
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 30,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 40,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 50,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 20,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 0,
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64": 30,
+                "4d75539d-7873-5039-a596-d3dacc29c4d1": 40,
+                "9287473e-59a9-5dc8-a914-324ec57ffc14": 50,
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6": 20
             },
             "equippedSkillIds": [
-                "ng_code_decorator",
-                "ng_tune_rx_step",
-                "ng_arch_zone",
-                "ng_parry_interceptor",
-                "literacy"
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64",
+                "4d75539d-7873-5039-a596-d3dacc29c4d1",
+                "9287473e-59a9-5dc8-a914-324ec57ffc14",
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "equipment": [
-                "dahui_polo_shan"
+                "9644bbb2-95da-530d-b411-56bb07c0f8d1"
             ]
         },
-        "tui_se": {
+        "ca88e5c9-3740-5fe4-9020-63ac54c6316d": {
             "displayName": "褪色",
             "gender": "female",
             "age": 28,
@@ -1440,28 +1440,28 @@
                 "wisdom": 17.6
             },
             "skillLevels": {
-                "basicStrength": 10,
-                "basicAgility": 20,
-                "basicConstitution": 40,
-                "basicParry": 20,
-                "literacy": 0,
-                "ng_code_decorator": 10,
-                "ng_tune_rx_step": 20,
-                "ng_arch_zone": 40,
-                "ng_parry_interceptor": 20
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 10,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 20,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 40,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 20,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 0,
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64": 10,
+                "4d75539d-7873-5039-a596-d3dacc29c4d1": 20,
+                "9287473e-59a9-5dc8-a914-324ec57ffc14": 40,
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6": 20
             },
             "equippedSkillIds": [
-                "ng_code_decorator",
-                "ng_tune_rx_step",
-                "ng_arch_zone",
-                "ng_parry_interceptor",
-                "literacy"
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64",
+                "4d75539d-7873-5039-a596-d3dacc29c4d1",
+                "9287473e-59a9-5dc8-a914-324ec57ffc14",
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "equipment": [
-                "dahui_polo_shan"
+                "9644bbb2-95da-530d-b411-56bb07c0f8d1"
             ]
         },
-        "wei_te_er": {
+        "c3e0a935-ec47-584f-9a90-648ead8dc206": {
             "displayName": "维特",
             "gender": "male",
             "age": 18,
@@ -1487,29 +1487,29 @@
                 "wisdom": 18.4
             },
             "skillLevels": {
-                "basicStrength": 25,
-                "basicAgility": 25,
-                "basicConstitution": 20,
-                "basicParry": 40,
-                "vue_code_template": 25,
-                "vue_tune_router": 25,
-                "vue_arch_reactive": 20,
-                "vue_parry_keepalive": 40,
-                "literacy": 25
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 25,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 25,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 20,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 40,
+                "bf405613-2fce-5cdd-9106-6936c89b036f": 25,
+                "59972225-62ad-5180-844f-17e05b24b55c": 25,
+                "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc": 20,
+                "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2": 40,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 25
             },
             "equippedSkillIds": [
-                "vue_code_template",
-                "vue_tune_router",
-                "vue_arch_reactive",
-                "vue_parry_keepalive",
-                "literacy"
+                "bf405613-2fce-5cdd-9106-6936c89b036f",
+                "59972225-62ad-5180-844f-17e05b24b55c",
+                "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc",
+                "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "money": 1200,
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "youyu_xu": {
+        "1f8eac82-dee2-5f0f-a499-d133299a1171": {
             "displayName": "鱿鱼须",
             "gender": "male",
             "age": 39,
@@ -1525,8 +1525,8 @@
                 "wisdom": 0
             },
             "joinSkillRequirements": {
-                "basicConstitution": 50,
-                "vue_arch_reactive": 50
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 50,
+                "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc": 50
             },
             "description": "传说中的那个男人，多处致敬，一生致力于整合。",
             "defaultLine": "你别问我对不对，我就问你快不快。",
@@ -1539,29 +1539,29 @@
                 "wisdom": 25.6
             },
             "skillLevels": {
-                "basicStrength": 75,
-                "basicAgility": 75,
-                "basicConstitution": 60,
-                "basicParry": 80,
-                "vue_code_template": 75,
-                "vue_tune_router": 75,
-                "vue_arch_reactive": 60,
-                "vue_parry_keepalive": 80,
-                "literacy": 80
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 75,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 75,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 60,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 80,
+                "bf405613-2fce-5cdd-9106-6936c89b036f": 75,
+                "59972225-62ad-5180-844f-17e05b24b55c": 75,
+                "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc": 60,
+                "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2": 80,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 80
             },
             "equippedSkillIds": [
-                "vue_code_template",
-                "vue_tune_router",
-                "vue_arch_reactive",
-                "vue_parry_keepalive",
-                "literacy"
+                "bf405613-2fce-5cdd-9106-6936c89b036f",
+                "59972225-62ad-5180-844f-17e05b24b55c",
+                "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc",
+                "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "money": 38888,
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "posva": {
+        "f201d372-90e8-529d-ae6d-ea26011d48c2": {
             "displayName": "Posva",
             "gender": "male",
             "age": 34,
@@ -1581,29 +1581,29 @@
                 "wisdom": 11.6
             },
             "skillLevels": {
-                "basicStrength": 50,
-                "basicAgility": 60,
-                "basicConstitution": 60,
-                "basicParry": 40,
-                "vue_code_template": 50,
-                "vue_tune_router": 60,
-                "vue_arch_reactive": 60,
-                "vue_parry_keepalive": 40,
-                "literacy": 60
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 50,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 60,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 60,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 40,
+                "bf405613-2fce-5cdd-9106-6936c89b036f": 50,
+                "59972225-62ad-5180-844f-17e05b24b55c": 60,
+                "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc": 60,
+                "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2": 40,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 60
             },
             "equippedSkillIds": [
-                "vue_code_template",
-                "vue_tune_router",
-                "vue_arch_reactive",
-                "vue_parry_keepalive",
-                "literacy"
+                "bf405613-2fce-5cdd-9106-6936c89b036f",
+                "59972225-62ad-5180-844f-17e05b24b55c",
+                "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc",
+                "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "money": 6000,
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "xiao_bang_xiong": {
+        "5bb54011-ee5d-598f-84fe-5e21948e76c4": {
             "displayName": "肖邦兄",
             "gender": "male",
             "age": 34,
@@ -1623,29 +1623,29 @@
                 "wisdom": 7.8
             },
             "skillLevels": {
-                "basicStrength": 40,
-                "basicAgility": 40,
-                "basicConstitution": 35,
-                "basicParry": 30,
-                "vue_code_template": 40,
-                "vue_tune_router": 40,
-                "vue_arch_reactive": 35,
-                "vue_parry_keepalive": 30,
-                "literacy": 40
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 40,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 40,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 35,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 30,
+                "bf405613-2fce-5cdd-9106-6936c89b036f": 40,
+                "59972225-62ad-5180-844f-17e05b24b55c": 40,
+                "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc": 35,
+                "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2": 30,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 40
             },
             "equippedSkillIds": [
-                "vue_code_template",
-                "vue_tune_router",
-                "vue_arch_reactive",
-                "vue_parry_keepalive",
-                "literacy"
+                "bf405613-2fce-5cdd-9106-6936c89b036f",
+                "59972225-62ad-5180-844f-17e05b24b55c",
+                "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc",
+                "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "money": 4888,
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "xiao_bang_di": {
+        "dc8f1d62-4bfc-5b8b-9e59-744b7f5fd78f": {
             "displayName": "肖邦弟",
             "gender": "male",
             "age": 33,
@@ -1665,30 +1665,30 @@
                 "wisdom": 9.8
             },
             "skillLevels": {
-                "basicStrength": 40,
-                "basicAgility": 40,
-                "basicConstitution": 35,
-                "basicParry": 30,
-                "vue_code_template": 40,
-                "vue_tune_router": 40,
-                "vue_arch_reactive": 35,
-                "vue_parry_keepalive": 30,
-                "literacy": 40
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 40,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 40,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 35,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 30,
+                "bf405613-2fce-5cdd-9106-6936c89b036f": 40,
+                "59972225-62ad-5180-844f-17e05b24b55c": 40,
+                "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc": 35,
+                "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2": 30,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 40
             },
             "equippedSkillIds": [
-                "vue_code_template",
-                "vue_tune_router",
-                "vue_arch_reactive",
-                "vue_parry_keepalive",
-                "literacy"
+                "bf405613-2fce-5cdd-9106-6936c89b036f",
+                "59972225-62ad-5180-844f-17e05b24b55c",
+                "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc",
+                "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "money": 4888,
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "iamkun": {
-            "displayName": "iamkun",
+        "6ff590e8-67ff-5743-ab8b-99e7a22a4ad5": {
+            "displayName": "6ff590e8-67ff-5743-ab8b-99e7a22a4ad5",
             "gender": "male",
             "age": 36,
             "sprite": "npc-27",
@@ -1707,29 +1707,29 @@
                 "wisdom": 12.2
             },
             "skillLevels": {
-                "basicStrength": 40,
-                "basicAgility": 40,
-                "basicConstitution": 40,
-                "basicParry": 40,
-                "vue_code_template": 40,
-                "vue_tune_router": 40,
-                "vue_arch_reactive": 40,
-                "vue_parry_keepalive": 40,
-                "literacy": 40
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 40,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 40,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 40,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 40,
+                "bf405613-2fce-5cdd-9106-6936c89b036f": 40,
+                "59972225-62ad-5180-844f-17e05b24b55c": 40,
+                "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc": 40,
+                "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2": 40,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 40
             },
             "equippedSkillIds": [
-                "vue_code_template",
-                "vue_tune_router",
-                "vue_arch_reactive",
-                "vue_parry_keepalive",
-                "literacy"
+                "bf405613-2fce-5cdd-9106-6936c89b036f",
+                "59972225-62ad-5180-844f-17e05b24b55c",
+                "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc",
+                "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "money": 6666,
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "tang_ruo_xi": {
+        "402a6e75-28a7-5ddb-8a1a-1fae27ba2596": {
             "displayName": "糖若曦",
             "gender": "female",
             "age": 29,
@@ -1749,29 +1749,29 @@
                 "wisdom": 14.2
             },
             "skillLevels": {
-                "basicStrength": 40,
-                "basicAgility": 40,
-                "basicConstitution": 40,
-                "basicParry": 40,
-                "vue_code_template": 40,
-                "vue_tune_router": 40,
-                "vue_arch_reactive": 40,
-                "vue_parry_keepalive": 40,
-                "literacy": 40
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 40,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 40,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 40,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 40,
+                "bf405613-2fce-5cdd-9106-6936c89b036f": 40,
+                "59972225-62ad-5180-844f-17e05b24b55c": 40,
+                "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc": 40,
+                "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2": 40,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 40
             },
             "equippedSkillIds": [
-                "vue_code_template",
-                "vue_tune_router",
-                "vue_arch_reactive",
-                "vue_parry_keepalive",
-                "literacy"
+                "bf405613-2fce-5cdd-9106-6936c89b036f",
+                "59972225-62ad-5180-844f-17e05b24b55c",
+                "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc",
+                "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "money": 6666,
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "ji_xiao_xi": {
+        "651c7bc6-4e42-5bc5-a4a1-c1db3ba2edc6": {
             "displayName": "姬小溪",
             "gender": "female",
             "age": 30,
@@ -1791,29 +1791,29 @@
                 "wisdom": 14.2
             },
             "skillLevels": {
-                "basicStrength": 40,
-                "basicAgility": 40,
-                "basicConstitution": 40,
-                "basicParry": 40,
-                "vue_code_template": 40,
-                "vue_tune_router": 40,
-                "vue_arch_reactive": 40,
-                "vue_parry_keepalive": 40,
-                "literacy": 40
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 40,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 40,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 40,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 40,
+                "bf405613-2fce-5cdd-9106-6936c89b036f": 40,
+                "59972225-62ad-5180-844f-17e05b24b55c": 40,
+                "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc": 40,
+                "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2": 40,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 40
             },
             "equippedSkillIds": [
-                "vue_code_template",
-                "vue_tune_router",
-                "vue_arch_reactive",
-                "vue_parry_keepalive",
-                "literacy"
+                "bf405613-2fce-5cdd-9106-6936c89b036f",
+                "59972225-62ad-5180-844f-17e05b24b55c",
+                "f135d54a-b891-5b4e-a7b2-bbd3c3d824fc",
+                "67ba1dea-3c4a-5bf2-ada5-57c98551e9c2",
+                "1011d493-be02-53e2-86a2-a6a439328f84"
             ],
             "money": 6666,
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "xun": {
+        "7450f4e4-4e6d-56e6-9743-7f843914f7b0": {
             "displayName": "寻",
             "gender": "female",
             "age": 18,
@@ -1834,27 +1834,27 @@
                 "wisdom": 6.4
             },
             "skillLevels": {
-                "basicStrength": 10,
-                "basicAgility": 10,
-                "basicConstitution": 10,
-                "basicParry": 10,
-                "vanilla_code_dom": 10,
-                "vanilla_tune_event_loop": 10,
-                "vanilla_arch_closure": 10,
-                "vanilla_parry_prevent": 10
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 10,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 10,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 10,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 10,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 10,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 10,
+                "bf770011-a135-56d5-8537-ee85f77df325": 10,
+                "d2f9550c-9725-56a5-8929-363aed058324": 10
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324"
             ]
         },
-        "tian_kong": {
+        "1afe56fb-6990-560d-922e-9cfd49ce528f": {
             "displayName": "天空",
             "gender": "female",
             "age": 18,
@@ -1875,27 +1875,27 @@
                 "wisdom": 9.9
             },
             "skillLevels": {
-                "basicStrength": 10,
-                "basicAgility": 10,
-                "basicConstitution": 10,
-                "basicParry": 10,
-                "vanilla_code_dom": 10,
-                "vanilla_tune_event_loop": 10,
-                "vanilla_arch_closure": 10,
-                "vanilla_parry_prevent": 10
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 10,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 10,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 10,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 10,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 10,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 10,
+                "bf770011-a135-56d5-8537-ee85f77df325": 10,
+                "d2f9550c-9725-56a5-8929-363aed058324": 10
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324"
             ]
         },
-        "kong_kong": {
+        "3be9a9b9-8d8d-59ed-b780-2a9c3533c236": {
             "displayName": "空空",
             "gender": "female",
             "age": 38,
@@ -1916,27 +1916,27 @@
                 "wisdom": 8.4
             },
             "skillLevels": {
-                "basicStrength": 40,
-                "basicAgility": 40,
-                "basicConstitution": 40,
-                "basicParry": 40,
-                "vanilla_code_dom": 40,
-                "vanilla_tune_event_loop": 40,
-                "vanilla_arch_closure": 40,
-                "vanilla_parry_prevent": 40
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 40,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 40,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 40,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 40,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 40,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 40,
+                "bf770011-a135-56d5-8537-ee85f77df325": 40,
+                "d2f9550c-9725-56a5-8929-363aed058324": 40
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324"
             ]
         },
-        "deng_deng": {
+        "9cfe265a-8fbc-5df7-851b-eaa87bb16248": {
             "displayName": "等等",
             "gender": "female",
             "age": 18,
@@ -1957,27 +1957,27 @@
                 "wisdom": 8.2
             },
             "skillLevels": {
-                "basicStrength": 20,
-                "basicAgility": 20,
-                "basicConstitution": 20,
-                "basicParry": 20,
-                "vanilla_code_dom": 20,
-                "vanilla_tune_event_loop": 20,
-                "vanilla_arch_closure": 20,
-                "vanilla_parry_prevent": 20
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 20,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 20,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 20,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 20,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 20,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 20,
+                "bf770011-a135-56d5-8537-ee85f77df325": 20,
+                "d2f9550c-9725-56a5-8929-363aed058324": 20
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324"
             ]
         },
-        "ray": {
+        "28859d4b-116d-578d-9a11-b1288243d966": {
             "displayName": "Ray",
             "gender": "male",
             "age": 30,
@@ -1998,27 +1998,27 @@
                 "wisdom": 9.9
             },
             "skillLevels": {
-                "basicStrength": 40,
-                "basicAgility": 40,
-                "basicConstitution": 40,
-                "basicParry": 40,
-                "vanilla_code_dom": 40,
-                "vanilla_tune_event_loop": 40,
-                "vanilla_arch_closure": 40,
-                "vanilla_parry_prevent": 40
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 40,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 40,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 40,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 40,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 40,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 40,
+                "bf770011-a135-56d5-8537-ee85f77df325": 40,
+                "d2f9550c-9725-56a5-8929-363aed058324": 40
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324"
             ]
         },
-        "qq": {
+        "26b12368-99c9-5fe9-8a8c-b0198fe29e2f": {
             "displayName": "QQ",
             "gender": "female",
             "age": 18,
@@ -2039,27 +2039,27 @@
                 "wisdom": 7.1
             },
             "skillLevels": {
-                "basicStrength": 15,
-                "basicAgility": 15,
-                "basicConstitution": 15,
-                "basicParry": 15,
-                "vanilla_code_dom": 15,
-                "vanilla_tune_event_loop": 15,
-                "vanilla_arch_closure": 15,
-                "vanilla_parry_prevent": 15
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 15,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 15,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 15,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 15,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 15,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 15,
+                "bf770011-a135-56d5-8537-ee85f77df325": 15,
+                "d2f9550c-9725-56a5-8929-363aed058324": 15
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324"
             ]
         },
-        "qing_mu": {
+        "2537da28-ab5c-52ee-bd0e-5385f9a432a9": {
             "displayName": "倾慕",
             "gender": "female",
             "age": 18,
@@ -2080,27 +2080,27 @@
                 "wisdom": 9.9
             },
             "skillLevels": {
-                "basicStrength": 15,
-                "basicAgility": 15,
-                "basicConstitution": 15,
-                "basicParry": 15,
-                "vanilla_code_dom": 15,
-                "vanilla_tune_event_loop": 15,
-                "vanilla_arch_closure": 15,
-                "vanilla_parry_prevent": 15
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 15,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 15,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 15,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 15,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 15,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 15,
+                "bf770011-a135-56d5-8537-ee85f77df325": 15,
+                "d2f9550c-9725-56a5-8929-363aed058324": 15
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324"
             ]
         },
-        "hai_bao": {
+        "96b8f5c4-1d0d-556d-a8f3-71675f9b0fb5": {
             "displayName": "海豹",
             "gender": "female",
             "age": 18,
@@ -2121,27 +2121,27 @@
                 "wisdom": 16.6
             },
             "skillLevels": {
-                "basicStrength": 20,
-                "basicAgility": 20,
-                "basicConstitution": 20,
-                "basicParry": 20,
-                "vanilla_code_dom": 20,
-                "vanilla_tune_event_loop": 20,
-                "vanilla_arch_closure": 20,
-                "vanilla_parry_prevent": 20
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 20,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 20,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 20,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 20,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 20,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 20,
+                "bf770011-a135-56d5-8537-ee85f77df325": 20,
+                "d2f9550c-9725-56a5-8929-363aed058324": 20
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324"
             ]
         },
-        "a_zhu": {
+        "8e2db40d-ec24-5e49-99d6-d75c4369d3fc": {
             "displayName": "阿朱",
             "gender": "female",
             "age": 21,
@@ -2162,27 +2162,27 @@
                 "wisdom": 5.6
             },
             "skillLevels": {
-                "basicStrength": 30,
-                "basicAgility": 30,
-                "basicConstitution": 30,
-                "basicParry": 30,
-                "vanilla_code_dom": 30,
-                "vanilla_tune_event_loop": 30,
-                "vanilla_arch_closure": 30,
-                "vanilla_parry_prevent": 30
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 30,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 30,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 30,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 30,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 30,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 30,
+                "bf770011-a135-56d5-8537-ee85f77df325": 30,
+                "d2f9550c-9725-56a5-8929-363aed058324": 30
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324"
             ]
         },
-        "shu_yan": {
+        "649ae1b0-2a25-59d2-90d8-c52744587221": {
             "displayName": "书颜",
             "gender": "female",
             "age": 21,
@@ -2203,28 +2203,28 @@
                 "wisdom": 25.2
             },
             "skillLevels": {
-                "basicStrength": 40,
-                "basicAgility": 40,
-                "basicConstitution": 40,
-                "basicParry": 40,
-                "vanilla_code_dom": 40,
-                "vanilla_tune_event_loop": 40,
-                "vanilla_arch_closure": 40,
-                "vanilla_parry_prevent": 40,
-                "literacy": 100
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 40,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 40,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 40,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 40,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 40,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 40,
+                "bf770011-a135-56d5-8537-ee85f77df325": 40,
+                "d2f9550c-9725-56a5-8929-363aed058324": 40,
+                "1011d493-be02-53e2-86a2-a6a439328f84": 100
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324"
             ]
         },
-        "nan_sheng": {
+        "0a6c6295-33cd-5ade-ba37-722bdd2cd8b5": {
             "displayName": "南笙",
             "gender": "female",
             "age": 26,
@@ -2245,27 +2245,27 @@
                 "wisdom": 11.2
             },
             "skillLevels": {
-                "basicStrength": 66,
-                "basicAgility": 66,
-                "basicConstitution": 66,
-                "basicParry": 66,
-                "vanilla_code_dom": 66,
-                "vanilla_tune_event_loop": 66,
-                "vanilla_arch_closure": 66,
-                "vanilla_parry_prevent": 66
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 66,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 66,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 66,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 66,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 66,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 66,
+                "bf770011-a135-56d5-8537-ee85f77df325": 66,
+                "d2f9550c-9725-56a5-8929-363aed058324": 66
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324"
             ]
         },
-        "ye_mao": {
+        "01ee8ae2-af17-500d-a659-4f2d3c3315a5": {
             "displayName": "野猫",
             "gender": "female",
             "age": 26,
@@ -2286,27 +2286,27 @@
                 "wisdom": 6.1
             },
             "skillLevels": {
-                "basicStrength": 20,
-                "basicAgility": 20,
-                "basicConstitution": 20,
-                "basicParry": 20,
-                "vanilla_code_dom": 20,
-                "vanilla_tune_event_loop": 20,
-                "vanilla_arch_closure": 20,
-                "vanilla_parry_prevent": 20
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 20,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 20,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 20,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 20,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 20,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 20,
+                "bf770011-a135-56d5-8537-ee85f77df325": 20,
+                "d2f9550c-9725-56a5-8929-363aed058324": 20
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324"
             ]
         },
-        "gou_tuan": {
+        "9db4110f-3a44-5d88-a064-4fadb7f81fdc": {
             "displayName": "狗团",
             "gender": "male",
             "age": 32,
@@ -2327,27 +2327,27 @@
                 "wisdom": 9.8
             },
             "skillLevels": {
-                "basicStrength": 40,
-                "basicAgility": 40,
-                "basicConstitution": 40,
-                "basicParry": 40,
-                "vanilla_code_dom": 40,
-                "vanilla_tune_event_loop": 40,
-                "vanilla_arch_closure": 40,
-                "vanilla_parry_prevent": 40
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 40,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 40,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 40,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 40,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 40,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 40,
+                "bf770011-a135-56d5-8537-ee85f77df325": 40,
+                "d2f9550c-9725-56a5-8929-363aed058324": 40
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324"
             ]
         },
-        "pete_hunt": {
+        "9dd3e6a1-754c-5982-8ddb-a968597126d1": {
             "displayName": "Pete Hunt",
             "gender": "male",
             "age": 44,
@@ -2368,20 +2368,20 @@
                 "wisdom": 34.9
             },
             "skillLevels": {
-                "basicStrength": 50,
-                "basicAgility": 50,
-                "basicConstitution": 50,
-                "basicParry": 50,
-                "react_code_jsx": 50,
-                "react_tune_virtual": 50,
-                "react_arch_state": 50,
-                "react_parry_boundary": 50
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 50,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 50,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 50,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 50,
+                "31cae377-72c7-5210-affd-b738c917c6d4": 50,
+                "ba00f74e-8309-5097-a096-a6145dc5fb6e": 50,
+                "d6bd0498-0551-54de-b5bf-1ededfe9aa06": 50,
+                "6e43fafa-2f44-58c1-ad30-1e8bd86b2a14": 50
             },
             "equippedSkillIds": [
-                "react_code_jsx",
-                "react_tune_virtual",
-                "react_arch_state",
-                "react_parry_boundary"
+                "31cae377-72c7-5210-affd-b738c917c6d4",
+                "ba00f74e-8309-5097-a096-a6145dc5fb6e",
+                "d6bd0498-0551-54de-b5bf-1ededfe9aa06",
+                "6e43fafa-2f44-58c1-ad30-1e8bd86b2a14"
             ],
             "joinSect": {
                 "strength": 25,
@@ -2390,10 +2390,10 @@
                 "wisdom": 0
             },
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "tanner_linsley": {
+        "0ba1e18a-db68-577c-b892-fd80fb253197": {
             "displayName": "Tanner Linsley",
             "gender": "male",
             "age": 36,
@@ -2414,26 +2414,26 @@
                 "wisdom": 13.6
             },
             "skillLevels": {
-                "basicStrength": 40,
-                "basicAgility": 40,
-                "basicConstitution": 60,
-                "basicParry": 60,
-                "react_code_jsx": 40,
-                "react_tune_virtual": 40,
-                "react_arch_state": 60,
-                "react_parry_boundary": 60
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 40,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 40,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 60,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 60,
+                "31cae377-72c7-5210-affd-b738c917c6d4": 40,
+                "ba00f74e-8309-5097-a096-a6145dc5fb6e": 40,
+                "d6bd0498-0551-54de-b5bf-1ededfe9aa06": 60,
+                "6e43fafa-2f44-58c1-ad30-1e8bd86b2a14": 60
             },
             "equippedSkillIds": [
-                "react_code_jsx",
-                "react_tune_virtual",
-                "react_arch_state",
-                "react_parry_boundary"
+                "31cae377-72c7-5210-affd-b738c917c6d4",
+                "ba00f74e-8309-5097-a096-a6145dc5fb6e",
+                "d6bd0498-0551-54de-b5bf-1ededfe9aa06",
+                "6e43fafa-2f44-58c1-ad30-1e8bd86b2a14"
             ],
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "kato_taishi": {
+        "72ebc625-0d87-55a4-ba96-ea7e9e5b0ed6": {
             "displayName": "加藤大志",
             "gender": "male",
             "age": 50,
@@ -2454,26 +2454,26 @@
                 "wisdom": 10.1
             },
             "skillLevels": {
-                "basicStrength": 40,
-                "basicAgility": 40,
-                "basicConstitution": 40,
-                "basicParry": 40,
-                "react_code_jsx": 40,
-                "react_tune_virtual": 40,
-                "react_arch_state": 40,
-                "react_parry_boundary": 40
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 40,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 40,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 40,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 40,
+                "31cae377-72c7-5210-affd-b738c917c6d4": 40,
+                "ba00f74e-8309-5097-a096-a6145dc5fb6e": 40,
+                "d6bd0498-0551-54de-b5bf-1ededfe9aa06": 40,
+                "6e43fafa-2f44-58c1-ad30-1e8bd86b2a14": 40
             },
             "equippedSkillIds": [
-                "react_code_jsx",
-                "react_tune_virtual",
-                "react_arch_state",
-                "react_parry_boundary"
+                "31cae377-72c7-5210-affd-b738c917c6d4",
+                "ba00f74e-8309-5097-a096-a6145dc5fb6e",
+                "d6bd0498-0551-54de-b5bf-1ededfe9aa06",
+                "6e43fafa-2f44-58c1-ad30-1e8bd86b2a14"
             ],
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "vitaly_rtishchev": {
+        "d82ff4b6-7bbd-5efc-982d-3f98a0cac929": {
             "displayName": "Vitaly Rtishchev",
             "gender": "male",
             "age": 30,
@@ -2494,26 +2494,26 @@
                 "wisdom": 22.1
             },
             "skillLevels": {
-                "basicStrength": 60,
-                "basicAgility": 60,
-                "basicConstitution": 60,
-                "basicParry": 60,
-                "react_code_jsx": 60,
-                "react_tune_virtual": 60,
-                "react_arch_state": 60,
-                "react_parry_boundary": 60
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 60,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 60,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 60,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 60,
+                "31cae377-72c7-5210-affd-b738c917c6d4": 60,
+                "ba00f74e-8309-5097-a096-a6145dc5fb6e": 60,
+                "d6bd0498-0551-54de-b5bf-1ededfe9aa06": 60,
+                "6e43fafa-2f44-58c1-ad30-1e8bd86b2a14": 60
             },
             "equippedSkillIds": [
-                "react_code_jsx",
-                "react_tune_virtual",
-                "react_arch_state",
-                "react_parry_boundary"
+                "31cae377-72c7-5210-affd-b738c917c6d4",
+                "ba00f74e-8309-5097-a096-a6145dc5fb6e",
+                "d6bd0498-0551-54de-b5bf-1ededfe9aa06",
+                "6e43fafa-2f44-58c1-ad30-1e8bd86b2a14"
             ],
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "matt_debergalis": {
+        "52721b2c-3124-507b-9f65-97a6a9720d56": {
             "displayName": "Matt DeBergalis",
             "gender": "male",
             "age": 47,
@@ -2534,26 +2534,26 @@
                 "wisdom": 18.4
             },
             "skillLevels": {
-                "basicStrength": 40,
-                "basicAgility": 40,
-                "basicConstitution": 40,
-                "basicParry": 40,
-                "react_code_jsx": 40,
-                "react_tune_virtual": 40,
-                "react_arch_state": 40,
-                "react_parry_boundary": 40
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 40,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 40,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 40,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 40,
+                "31cae377-72c7-5210-affd-b738c917c6d4": 40,
+                "ba00f74e-8309-5097-a096-a6145dc5fb6e": 40,
+                "d6bd0498-0551-54de-b5bf-1ededfe9aa06": 40,
+                "6e43fafa-2f44-58c1-ad30-1e8bd86b2a14": 40
             },
             "equippedSkillIds": [
-                "react_code_jsx",
-                "react_tune_virtual",
-                "react_arch_state",
-                "react_parry_boundary"
+                "31cae377-72c7-5210-affd-b738c917c6d4",
+                "ba00f74e-8309-5097-a096-a6145dc5fb6e",
+                "d6bd0498-0551-54de-b5bf-1ededfe9aa06",
+                "6e43fafa-2f44-58c1-ad30-1e8bd86b2a14"
             ],
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "geoff_schmidt": {
+        "a90cc3ef-7e58-544c-b944-8a8414ffb934": {
             "displayName": "Geoff Schmidt",
             "gender": "male",
             "age": 44,
@@ -2574,26 +2574,26 @@
                 "wisdom": 18.9
             },
             "skillLevels": {
-                "basicStrength": 40,
-                "basicAgility": 40,
-                "basicConstitution": 40,
-                "basicParry": 40,
-                "react_code_jsx": 40,
-                "react_tune_virtual": 40,
-                "react_arch_state": 40,
-                "react_parry_boundary": 40
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 40,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 40,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 40,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 40,
+                "31cae377-72c7-5210-affd-b738c917c6d4": 40,
+                "ba00f74e-8309-5097-a096-a6145dc5fb6e": 40,
+                "d6bd0498-0551-54de-b5bf-1ededfe9aa06": 40,
+                "6e43fafa-2f44-58c1-ad30-1e8bd86b2a14": 40
             },
             "equippedSkillIds": [
-                "react_code_jsx",
-                "react_tune_virtual",
-                "react_arch_state",
-                "react_parry_boundary"
+                "31cae377-72c7-5210-affd-b738c917c6d4",
+                "ba00f74e-8309-5097-a096-a6145dc5fb6e",
+                "d6bd0498-0551-54de-b5bf-1ededfe9aa06",
+                "6e43fafa-2f44-58c1-ad30-1e8bd86b2a14"
             ],
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "zha_ke_bo_ge": {
+        "365fcbd4-e6fc-5c95-8101-ffa518ab5ed5": {
             "displayName": "扎克伯格",
             "gender": "male",
             "age": 42,
@@ -2614,26 +2614,26 @@
                 "wisdom": 26.4
             },
             "skillLevels": {
-                "basicStrength": 70,
-                "basicAgility": 70,
-                "basicConstitution": 70,
-                "basicParry": 70,
-                "react_code_jsx": 70,
-                "react_tune_virtual": 70,
-                "react_arch_state": 70,
-                "react_parry_boundary": 70
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 70,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 70,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 70,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 70,
+                "31cae377-72c7-5210-affd-b738c917c6d4": 70,
+                "ba00f74e-8309-5097-a096-a6145dc5fb6e": 70,
+                "d6bd0498-0551-54de-b5bf-1ededfe9aa06": 70,
+                "6e43fafa-2f44-58c1-ad30-1e8bd86b2a14": 70
             },
             "equippedSkillIds": [
-                "react_code_jsx",
-                "react_tune_virtual",
-                "react_arch_state",
-                "react_parry_boundary"
+                "31cae377-72c7-5210-affd-b738c917c6d4",
+                "ba00f74e-8309-5097-a096-a6145dc5fb6e",
+                "d6bd0498-0551-54de-b5bf-1ededfe9aa06",
+                "6e43fafa-2f44-58c1-ad30-1e8bd86b2a14"
             ],
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "jordan_walke": {
+        "1ca9a5e1-db3c-5fa9-af19-eba11e3f86e1": {
             "displayName": "Jordan Walke",
             "gender": "male",
             "age": 42,
@@ -2654,20 +2654,20 @@
                 "wisdom": 27.6
             },
             "skillLevels": {
-                "basicStrength": 75,
-                "basicAgility": 75,
-                "basicConstitution": 75,
-                "basicParry": 75,
-                "react_code_jsx": 75,
-                "react_tune_virtual": 75,
-                "react_arch_state": 75,
-                "react_parry_boundary": 75
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 75,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 75,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 75,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 75,
+                "31cae377-72c7-5210-affd-b738c917c6d4": 75,
+                "ba00f74e-8309-5097-a096-a6145dc5fb6e": 75,
+                "d6bd0498-0551-54de-b5bf-1ededfe9aa06": 75,
+                "6e43fafa-2f44-58c1-ad30-1e8bd86b2a14": 75
             },
             "equippedSkillIds": [
-                "react_code_jsx",
-                "react_tune_virtual",
-                "react_arch_state",
-                "react_parry_boundary"
+                "31cae377-72c7-5210-affd-b738c917c6d4",
+                "ba00f74e-8309-5097-a096-a6145dc5fb6e",
+                "d6bd0498-0551-54de-b5bf-1ededfe9aa06",
+                "6e43fafa-2f44-58c1-ad30-1e8bd86b2a14"
             ],
             "joinSect": {
                 "strength": 0,
@@ -2676,14 +2676,14 @@
                 "wisdom": 0
             },
             "joinSkillRequirements": {
-                "basicConstitution": 50,
-                "react_arch_state": 50
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 50,
+                "d6bd0498-0551-54de-b5bf-1ededfe9aa06": 50
             },
             "equipment": [
-                "gezi_shan"
+                "94a05563-1bca-55c1-86c0-1d9cb902ab73"
             ]
         },
-        "liu_mang": {
+        "b192b55f-2abe-5d6c-beba-0b97e5a96c75": {
             "displayName": "流氓",
             "gender": "male",
             "age": 38,
@@ -2704,27 +2704,27 @@
                 "wisdom": 8.1
             },
             "skillLevels": {
-                "basicStrength": 60,
-                "basicAgility": 60,
-                "basicConstitution": 60,
-                "basicParry": 60,
-                "ng_code_decorator": 60,
-                "ng_tune_rx_step": 60,
-                "ng_arch_zone": 60,
-                "ng_parry_interceptor": 60
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 60,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 60,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 60,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 60,
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64": 60,
+                "4d75539d-7873-5039-a596-d3dacc29c4d1": 60,
+                "9287473e-59a9-5dc8-a914-324ec57ffc14": 60,
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6": 60
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "ng_code_decorator",
-                "ng_tune_rx_step",
-                "ng_arch_zone",
-                "ng_parry_interceptor"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "bcb538e2-4d6a-52ae-990d-20377e27ab64",
+                "4d75539d-7873-5039-a596-d3dacc29c4d1",
+                "9287473e-59a9-5dc8-a914-324ec57ffc14",
+                "394fdd1b-c49d-52fc-a31b-41adf88a32d6"
             ]
         },
-        "ge_bi_lao_wang": {
+        "dd90cddb-633f-5174-9900-be963eb2dee9": {
             "displayName": "隔壁老王",
             "gender": "male",
             "age": 37,
@@ -2745,24 +2745,24 @@
                 "wisdom": 10.4
             },
             "skillLevels": {
-                "basicStrength": 20,
-                "basicAgility": 20,
-                "basicConstitution": 20,
-                "basicParry": 20,
-                "vanilla_code_dom": 20,
-                "vanilla_tune_event_loop": 20,
-                "vanilla_arch_closure": 20,
-                "vanilla_parry_prevent": 20
+                "2224675d-63f2-50e8-a2c6-064acd5c5623": 20,
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056": 20,
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355": 20,
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2": 20,
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1": 20,
+                "0bd48657-0a35-5ec5-9068-adc9762736d8": 20,
+                "bf770011-a135-56d5-8537-ee85f77df325": 20,
+                "d2f9550c-9725-56a5-8929-363aed058324": 20
             },
             "equippedSkillIds": [
-                "basicStrength",
-                "basicAgility",
-                "basicConstitution",
-                "basicParry",
-                "vanilla_code_dom",
-                "vanilla_tune_event_loop",
-                "vanilla_arch_closure",
-                "vanilla_parry_prevent"
+                "2224675d-63f2-50e8-a2c6-064acd5c5623",
+                "af088f07-4c52-5a8c-aa16-df96e6b3e056",
+                "dcebef7e-09b8-5a69-8e3d-159cb2b0c355",
+                "74903f7d-7f7f-52c2-a6da-b3f4b12b97f2",
+                "b9814e27-ea44-5a59-83fb-d452b79ee0f1",
+                "0bd48657-0a35-5ec5-9068-adc9762736d8",
+                "bf770011-a135-56d5-8537-ee85f77df325",
+                "d2f9550c-9725-56a5-8929-363aed058324"
             ]
         }
     }

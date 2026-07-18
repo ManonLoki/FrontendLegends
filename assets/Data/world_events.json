@@ -1,57 +1,328 @@
 {
-    "version": 1,
+    "version": 5,
     "_note": "世界事件统一表。archetypes 定义行为，placements 仅定义地图与格子范围；TMX 只维护地形、传送、NPC 和纯视觉对象。tile/size 均以地图格为单位。",
     "archetypes": {
-        "message": {
+        "02924916-de75-5ea5-8af0-7df2d5024649": {
             "action": "message",
             "displayName": "告示"
         },
-        "sign": {
+        "9401b0ae-dbb2-594e-af80-fb2b5190fd39": {
             "action": "message",
             "displayName": "路牌"
         },
-        "bounty_board": {
+        "c401d158-0723-5d5e-a0cf-bc7030b89f5d": {
             "action": "bounty_board",
             "displayName": "悬赏告示"
         },
-        "quest_terminal": {
+        "7c7afda7-3c1e-5394-b1ee-6bf1a551c51c": {
             "action": "quest_endpoint",
             "displayName": "电脑"
         },
-        "dangerous_tree": {
+        "90b517e4-cc6f-5de1-a829-c478b535ebbf": {
             "action": "delete_save",
             "displayName": "歪脖树",
             "prompt": "这棵歪脖树正合上吊。真要吊死吗？（存档将被删除）",
             "acceptLabel": "吊死",
             "cancelLabel": "再想想"
         },
-        "drink_source": {
+        "9c4c3618-658b-522d-bf60-40b0b8f3beeb": {
             "action": "drink",
             "displayName": "水井",
             "amount": 20
         }
     },
     "placements": [
-        {"id": "angular_welcome", "map": "Angular", "archetype": "message", "tile": [37, 22], "size": [1, 2], "data": {"displayName": "告示牌", "text": "欢迎来到NG神教"}},
-        {"id": "beijiao_vanilla_sign", "map": "Beijiao", "archetype": "sign", "tile": [25, 5], "data": {"text": "↑香草派"}},
-        {"id": "dongjiao_forest_sign", "map": "Dongjiao", "archetype": "sign", "tile": [25, 0], "size": [2, 3], "data": {"text": "↑迷雾森林"}},
-        {"id": "dongjiao_youyu_sign", "map": "Dongjiao", "archetype": "sign", "tile": [18, 16], "data": {"text": "去往鱿鱼山庄"}},
-        {"id": "anwang_bounty_board", "map": "AnWang", "archetype": "bounty_board", "tile": [8, 4], "size": [3, 3]},
-        {"id": "darkxue_computer", "map": "DarkXue", "archetype": "quest_terminal", "tile": [12, 6], "data": {"questEndpoint": "darkxue_computer", "text": "你在电脑前辛辛苦苦码完了导师的任务"}},
-        {"id": "kaiyuan_dangerous_tree", "map": "KaiyuanTown", "archetype": "dangerous_tree", "tile": [5, 36], "size": [3, 2]},
-        {"id": "kaiyuan_well", "map": "KaiyuanTown", "archetype": "drink_source", "tile": [15, 36], "size": [2, 1], "data": {"text": "你舀起了水塘里的水喝了一口，感觉舒服多了"}},
-        {"id": "kaiyuan_pit", "map": "KaiyuanTown", "archetype": "message", "tile": [69, 6], "size": [3, 2], "data": {"displayName": "坑", "text": "你猜猜这是谁挖的……又有谁掉了进去？"}},
-        {"id": "kaiyuan_north_sign", "map": "KaiyuanTown", "archetype": "sign", "tile": [39, 3], "size": [1, 2], "data": {"text": "↑北郊，去往香草派"}},
-        {"id": "kaiyuan_south_sign", "map": "KaiyuanTown", "archetype": "sign", "tile": [57, 29], "data": {"text": "↓南郊，去往量子仙宗，笙火喵喵教"}},
-        {"id": "kaiyuan_east_sign", "map": "KaiyuanTown", "archetype": "sign", "tile": [73, 19], "data": {"text": "前方东郊，去往迷雾森林，鱿鱼山庄"}},
-        {"id": "kaiyuan_west_sign", "map": "KaiyuanTown", "archetype": "sign", "tile": [3, 36], "data": {"text": "前方西郊，去往空の国，NG神教"}},
-        {"id": "player_home_tutorial", "map": "PlayerHome", "archetype": "message", "tile": [10, 1], "size": [3, 3], "data": {"displayName": "新手提示", "text": "先去隔壁做导师任务\n然后外出拜师喜欢的门派\n技能能练功不要直接学\n最后尽情的探索吧"}},
-        {"id": "nanjiao_shenghuo_sign", "map": "Nanjiao", "archetype": "sign", "tile": [21, 4], "data": {"text": "去往笙火喵喵教"}},
-        {"id": "nanjiao_liangzi_sign", "map": "Nanjiao", "archetype": "sign", "tile": [2, 12], "data": {"text": "↓量子仙宗"}},
-        {"id": "shenghuo_notice", "map": "ShengHuoMiaoMiao", "archetype": "message", "tile": [18, 30], "data": {"displayName": "告示牌", "text": "笙火昭昭，笙火耀耀，请我奶茶，喵喵喵喵"}},
-        {"id": "shenghuo_lingyin_sign", "map": "ShengHuoMiaoMiao", "archetype": "sign", "tile": [36, 37], "data": {"text": "前往西湖灵隐"}},
-        {"id": "xijiao_kong_sign", "map": "Xijiao", "archetype": "sign", "tile": [19, 16], "data": {"text": "↓空の国"}},
-        {"id": "xijiao_angular_sign", "map": "Xijiao", "archetype": "sign", "tile": [4, 16], "size": [2, 1], "data": {"text": "去往NG神教"}},
-        {"id": "youyu_dog_house", "map": "YouyuShanzhuang", "archetype": "message", "tile": [1, 12], "size": [4, 1], "data": {"displayName": "狗窝", "text": "不知为何，你总能听到时不时传来几声狗叫"}}
+        {
+            "id": "faa3c229-dc65-5452-b583-c16a13739a84",
+            "map": "44ebb310-6990-5d82-bc23-623343b9acca",
+            "archetype": "02924916-de75-5ea5-8af0-7df2d5024649",
+            "tile": [
+                37,
+                22
+            ],
+            "size": [
+                1,
+                2
+            ],
+            "data": {
+                "displayName": "告示牌",
+                "text": "欢迎来到NG神教"
+            }
+        },
+        {
+            "id": "9e7b39d0-f4d2-5e9a-93a4-e77321e6f16b",
+            "map": "9b5bdbd9-3999-5e1e-aa17-5099491e841c",
+            "archetype": "9401b0ae-dbb2-594e-af80-fb2b5190fd39",
+            "tile": [
+                25,
+                5
+            ],
+            "data": {
+                "text": "↑香草派"
+            }
+        },
+        {
+            "id": "e7333a2a-1b32-5a84-92bf-560ddb1872fc",
+            "map": "294515d0-c122-5720-85d6-e5eeda2cf05d",
+            "archetype": "9401b0ae-dbb2-594e-af80-fb2b5190fd39",
+            "tile": [
+                25,
+                0
+            ],
+            "size": [
+                2,
+                3
+            ],
+            "data": {
+                "text": "↑迷雾森林"
+            }
+        },
+        {
+            "id": "7a31970a-c2ef-5b0f-ad54-b5710eb36a6a",
+            "map": "294515d0-c122-5720-85d6-e5eeda2cf05d",
+            "archetype": "9401b0ae-dbb2-594e-af80-fb2b5190fd39",
+            "tile": [
+                18,
+                16
+            ],
+            "data": {
+                "text": "去往鱿鱼山庄"
+            }
+        },
+        {
+            "id": "0e5c04bf-f3b2-57bd-83ee-19dcbd607934",
+            "map": "06467980-5568-5a03-8d5d-2d5df42db6a0",
+            "archetype": "c401d158-0723-5d5e-a0cf-bc7030b89f5d",
+            "tile": [
+                8,
+                4
+            ],
+            "size": [
+                3,
+                3
+            ]
+        },
+        {
+            "id": "d07dc3ae-a94f-5bf5-a352-b2c487682d31",
+            "map": "8f8add5e-93f8-5afe-b3e6-ba96dfc273c8",
+            "archetype": "7c7afda7-3c1e-5394-b1ee-6bf1a551c51c",
+            "tile": [
+                12,
+                6
+            ],
+            "data": {
+                "questEndpoint": "d07dc3ae-a94f-5bf5-a352-b2c487682d31",
+                "text": "你在电脑前辛辛苦苦码完了导师的任务"
+            }
+        },
+        {
+            "id": "8f6b8e94-c46b-5e84-9957-3ee31029475b",
+            "map": "25f3952d-ec39-53af-a8c1-d523c43b80b0",
+            "archetype": "90b517e4-cc6f-5de1-a829-c478b535ebbf",
+            "tile": [
+                5,
+                36
+            ],
+            "size": [
+                3,
+                2
+            ]
+        },
+        {
+            "id": "726327b8-5af3-5e8b-be47-1be065b9a80d",
+            "map": "25f3952d-ec39-53af-a8c1-d523c43b80b0",
+            "archetype": "9c4c3618-658b-522d-bf60-40b0b8f3beeb",
+            "tile": [
+                15,
+                36
+            ],
+            "size": [
+                2,
+                1
+            ],
+            "data": {
+                "text": "你舀起了水塘里的水喝了一口，感觉舒服多了"
+            }
+        },
+        {
+            "id": "a09c532a-53f3-5236-9df8-bed5a08266be",
+            "map": "25f3952d-ec39-53af-a8c1-d523c43b80b0",
+            "archetype": "02924916-de75-5ea5-8af0-7df2d5024649",
+            "tile": [
+                69,
+                6
+            ],
+            "size": [
+                3,
+                2
+            ],
+            "data": {
+                "displayName": "坑",
+                "text": "你猜猜这是谁挖的……又有谁掉了进去？"
+            }
+        },
+        {
+            "id": "e8e13eba-e4a5-5b42-afd9-ae66885bbfaf",
+            "map": "25f3952d-ec39-53af-a8c1-d523c43b80b0",
+            "archetype": "9401b0ae-dbb2-594e-af80-fb2b5190fd39",
+            "tile": [
+                39,
+                3
+            ],
+            "size": [
+                1,
+                2
+            ],
+            "data": {
+                "text": "↑北郊，去往香草派"
+            }
+        },
+        {
+            "id": "38343b67-3221-5530-8136-dff67e090c0b",
+            "map": "25f3952d-ec39-53af-a8c1-d523c43b80b0",
+            "archetype": "9401b0ae-dbb2-594e-af80-fb2b5190fd39",
+            "tile": [
+                57,
+                29
+            ],
+            "data": {
+                "text": "↓南郊，去往量子仙宗，笙火喵喵教"
+            }
+        },
+        {
+            "id": "d02d9be2-9e6f-5192-bc7c-9570e12b60af",
+            "map": "25f3952d-ec39-53af-a8c1-d523c43b80b0",
+            "archetype": "9401b0ae-dbb2-594e-af80-fb2b5190fd39",
+            "tile": [
+                73,
+                19
+            ],
+            "data": {
+                "text": "前方东郊，去往迷雾森林，鱿鱼山庄"
+            }
+        },
+        {
+            "id": "2ff5c066-fbfc-594b-a47a-c6a50f99e89d",
+            "map": "25f3952d-ec39-53af-a8c1-d523c43b80b0",
+            "archetype": "9401b0ae-dbb2-594e-af80-fb2b5190fd39",
+            "tile": [
+                3,
+                36
+            ],
+            "data": {
+                "text": "前方西郊，去往空の国，NG神教"
+            }
+        },
+        {
+            "id": "0d987a3d-59c5-5a66-9229-691801526274",
+            "map": "aa8f90d3-05e2-5f9a-9dee-a6adcd60db60",
+            "archetype": "02924916-de75-5ea5-8af0-7df2d5024649",
+            "tile": [
+                10,
+                1
+            ],
+            "size": [
+                3,
+                3
+            ],
+            "data": {
+                "displayName": "新手提示",
+                "text": "先去隔壁做导师任务\n然后外出拜师喜欢的门派\n技能能练功不要直接学\n最后尽情的探索吧"
+            }
+        },
+        {
+            "id": "96c4d9ce-d79e-50dc-bdcf-e0835d34e8c5",
+            "map": "fb215e50-cd81-5f1a-a285-b32c09a09834",
+            "archetype": "9401b0ae-dbb2-594e-af80-fb2b5190fd39",
+            "tile": [
+                21,
+                4
+            ],
+            "data": {
+                "text": "去往笙火喵喵教"
+            }
+        },
+        {
+            "id": "ab99f129-ea73-5a18-a33e-8520fd8789e6",
+            "map": "fb215e50-cd81-5f1a-a285-b32c09a09834",
+            "archetype": "9401b0ae-dbb2-594e-af80-fb2b5190fd39",
+            "tile": [
+                2,
+                12
+            ],
+            "data": {
+                "text": "↓量子仙宗"
+            }
+        },
+        {
+            "id": "4ddadb4f-e54c-5743-9580-456c56915323",
+            "map": "0c9615d7-aeba-5e40-9b22-2a4d0254b66b",
+            "archetype": "02924916-de75-5ea5-8af0-7df2d5024649",
+            "tile": [
+                18,
+                30
+            ],
+            "data": {
+                "displayName": "告示牌",
+                "text": "笙火昭昭，笙火耀耀，请我奶茶，喵喵喵喵"
+            }
+        },
+        {
+            "id": "96ed07cd-4509-54af-a22b-741839a07d97",
+            "map": "0c9615d7-aeba-5e40-9b22-2a4d0254b66b",
+            "archetype": "9401b0ae-dbb2-594e-af80-fb2b5190fd39",
+            "tile": [
+                36,
+                37
+            ],
+            "data": {
+                "text": "前往西湖灵隐"
+            }
+        },
+        {
+            "id": "fc36aa25-650e-5e76-8437-cad254f43ca4",
+            "map": "f11a4867-c98d-5857-8c6a-e93bd568eda3",
+            "archetype": "9401b0ae-dbb2-594e-af80-fb2b5190fd39",
+            "tile": [
+                19,
+                16
+            ],
+            "data": {
+                "text": "↓空の国"
+            }
+        },
+        {
+            "id": "8c419544-f0ac-587c-884f-d188844f9ad1",
+            "map": "f11a4867-c98d-5857-8c6a-e93bd568eda3",
+            "archetype": "9401b0ae-dbb2-594e-af80-fb2b5190fd39",
+            "tile": [
+                4,
+                16
+            ],
+            "size": [
+                2,
+                1
+            ],
+            "data": {
+                "text": "去往NG神教"
+            }
+        },
+        {
+            "id": "531e5a57-5ed5-5d6c-a4c9-2aa599de2c0f",
+            "map": "f832cbde-46e4-52d6-92fb-860bee93c8a8",
+            "archetype": "02924916-de75-5ea5-8af0-7df2d5024649",
+            "tile": [
+                1,
+                12
+            ],
+            "size": [
+                4,
+                1
+            ],
+            "data": {
+                "displayName": "狗窝",
+                "text": "不知为何，你总能听到时不时传来几声狗叫"
+            }
+        }
     ]
 }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="42" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="29">
  <properties>
+  <property name="mapId" value="46c0823c-c650-5200-a391-2cfb37761b30"/>
   <property name="Sort" type="int" value="9"/>
   <property name="mapName" value="香草派"/>
   <property name="region" value="香草派"/>
@@ -28,55 +29,55 @@
  <objectgroup id="4" name="Interactive" visible="0">
   <object id="19" type="Transaction" x="0" y="512" width="16" height="16">
    <properties>
-    <property name="from" value="XiangCaoPai"/>
-    <property name="to" value="Beijiao"/>
+    <property name="from" value="46c0823c-c650-5200-a391-2cfb37761b30"/>
+    <property name="to" value="9b5bdbd9-3999-5e1e-aa17-5099491e841c"/>
    </properties>
   </object>
   <object id="20" type="Transaction" x="16" y="512" width="16" height="16">
    <properties>
-    <property name="from" value="Beijiao"/>
-    <property name="to" value="XiangCaoPai"/>
+    <property name="from" value="9b5bdbd9-3999-5e1e-aa17-5099491e841c"/>
+    <property name="to" value="46c0823c-c650-5200-a391-2cfb37761b30"/>
    </properties>
   </object>
   <object id="21" name="道格拉斯·克罗克福德" type="NPC" x="278.552" y="505.521">
    <properties>
-    <property name="npcId" value="douglas_crockford"/>
+    <property name="npcId" value="00175cfc-77cd-5b4a-b38e-a26cf617bab1"/>
    </properties>
    <point/>
   </object>
   <object id="22" name="陈白水" type="NPC" x="75.3123" y="506.553">
    <properties>
-    <property name="npcId" value="chen_baishui"/>
+    <property name="npcId" value="9f159d86-c4e7-5b20-be78-5c8226128b2a"/>
    </properties>
    <point/>
   </object>
   <object id="23" name="约翰·雷西格" type="NPC" x="327.041" y="310.534">
    <properties>
-    <property name="npcId" value="john_resig"/>
+    <property name="npcId" value="006623e0-420d-5866-b012-31cc28f7da69"/>
    </properties>
    <point/>
   </object>
   <object id="24" name="布兰登·艾奇" type="NPC" x="328.073" y="134.118">
    <properties>
-    <property name="npcId" value="brendan_eich"/>
+    <property name="npcId" value="de6328e3-32c7-5560-b6c7-298a7fa02a03"/>
    </properties>
    <point/>
   </object>
   <object id="25" name="司徒正美" type="NPC" x="136.181" y="133.086">
    <properties>
-    <property name="npcId" value="situ_zhengmei"/>
+    <property name="npcId" value="66b4afcf-15d2-555d-adc2-a4cd240760c5"/>
    </properties>
    <point/>
   </object>
   <object id="26" name="远藤 雅伸" type="NPC" x="489.014" y="133.086">
    <properties>
-    <property name="npcId" value="endo_masanobu"/>
+    <property name="npcId" value="6bb0b4fe-6cec-5524-9c1b-2e69fda8bafa"/>
    </properties>
    <point/>
   </object>
   <object id="27" name="齐藤 祐也" type="NPC" x="552.978" y="508.616">
    <properties>
-    <property name="npcId" value="saito_yuya"/>
+    <property name="npcId" value="8df741f7-d27e-5f0b-b096-13aca2e48ebf"/>
    </properties>
    <point/>
   </object>

@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="40" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="13">
  <properties>
+  <property name="mapId" value="d1388237-5d83-5a08-a68c-41c18fe7d699"/>
   <property name="Sort" type="int" value="11"/>
   <property name="mapName" value="西湖灵隐"/>
-  <property name="parentMap" value="ShengHuoMiaoMiao"/>
+  <property name="parentMap" value="0c9615d7-aeba-5e40-9b22-2a4d0254b66b"/>
   <property name="region" value="西湖灵隐"/>
   <property name="type" propertytype="MapType" value="inDoor"/>
  </properties>
@@ -55,21 +56,21 @@
  <objectgroup id="4" name="Interactive">
   <object id="10" name="进香客" type="NPC" x="105.413" y="373.737">
    <properties>
-    <property name="npcId" value="jin_xiang_ke"/>
+    <property name="npcId" value="5327eb7e-10ce-5fad-a200-bd7f9e722723"/>
     <property name="type" value="NPC"/>
    </properties>
    <point/>
   </object>
   <object id="11" type="Transaction" x="0" y="432" width="16" height="16">
    <properties>
-    <property name="from" value="XiHuLingYin"/>
-    <property name="to" value="ShengHuoMiaoMiao"/>
+    <property name="from" value="d1388237-5d83-5a08-a68c-41c18fe7d699"/>
+    <property name="to" value="0c9615d7-aeba-5e40-9b22-2a4d0254b66b"/>
    </properties>
   </object>
   <object id="12" type="Transaction" x="16" y="432" width="16" height="16">
    <properties>
-    <property name="from" value="ShengHuoMiaoMiao"/>
-    <property name="to" value="XiHuLingYin"/>
+    <property name="from" value="0c9615d7-aeba-5e40-9b22-2a4d0254b66b"/>
+    <property name="to" value="d1388237-5d83-5a08-a68c-41c18fe7d699"/>
    </properties>
   </object>
  </objectgroup>

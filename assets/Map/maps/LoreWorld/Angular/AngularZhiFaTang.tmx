@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="20" height="10" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="5">
  <properties>
+  <property name="mapId" value="d13b1890-ac73-5d89-b32c-10fd5563f34c"/>
   <property name="mapName" value="执法堂"/>
-  <property name="parentMap" value="Angular"/>
+  <property name="parentMap" value="44ebb310-6990-5d82-bc23-623343b9acca"/>
   <property name="region" value="NG神教"/>
   <property name="type" propertytype="MapType" value="inDoor"/>
  </properties>
@@ -27,26 +28,26 @@
  <objectgroup id="4" name="Interactive">
   <object id="1" name="布莱克" type="NPC" x="54.623" y="54.1439">
    <properties>
-    <property name="npcId" value="bu_lai_ke"/>
+    <property name="npcId" value="500b8aac-9ac5-5012-8650-49c4813ce413"/>
    </properties>
    <point/>
   </object>
   <object id="2" name="西西弗斯" type="NPC" x="166.744" y="53.1856">
    <properties>
-    <property name="npcId" value="xi_xi_fu_si"/>
+    <property name="npcId" value="688cbec0-c143-5e40-bdd2-57103066fa4e"/>
    </properties>
    <point/>
   </object>
   <object id="3" type="Transaction" x="160" y="128" width="16" height="16">
    <properties>
-    <property name="from" value="Angular"/>
-    <property name="to" value="AngularZhiFaTang"/>
+    <property name="from" value="44ebb310-6990-5d82-bc23-623343b9acca"/>
+    <property name="to" value="d13b1890-ac73-5d89-b32c-10fd5563f34c"/>
    </properties>
   </object>
   <object id="4" type="Transaction" x="144" y="144" width="48" height="16">
    <properties>
-    <property name="from" value="AngularZhiFaTang"/>
-    <property name="to" value="Angular"/>
+    <property name="from" value="d13b1890-ac73-5d89-b32c-10fd5563f34c"/>
+    <property name="to" value="44ebb310-6990-5d82-bc23-623343b9acca"/>
    </properties>
   </object>
  </objectgroup>

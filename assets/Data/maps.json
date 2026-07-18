@@ -1,0 +1,144 @@
+{
+    "version": 5,
+    "_note": "地图 UUID、TMX 路径和父区域关系的维护索引。TMX 中的 mapId 必须与此表主键一致。",
+    "maps": {
+        "44ebb310-6990-5d82-bc23-623343b9acca": {
+            "path": "res://assets/Map/maps/LoreWorld/Angular/Angular.tmx",
+            "displayName": "Ng神教",
+            "mapType": "outDoor"
+        },
+        "d13b1890-ac73-5d89-b32c-10fd5563f34c": {
+            "path": "res://assets/Map/maps/LoreWorld/Angular/AngularZhiFaTang.tmx",
+            "displayName": "执法堂",
+            "mapType": "inDoor",
+            "parentMapId": "44ebb310-6990-5d82-bc23-623343b9acca"
+        },
+        "ac57455f-8917-5ef1-ae25-286d080691eb": {
+            "path": "res://assets/Map/maps/LoreWorld/Angular/AngularZongTan.tmx",
+            "displayName": "NG总坛",
+            "mapType": "inDoor",
+            "parentMapId": "44ebb310-6990-5d82-bc23-623343b9acca"
+        },
+        "9b5bdbd9-3999-5e1e-aa17-5099491e841c": {
+            "path": "res://assets/Map/maps/LoreWorld/Beijiao/Beijiao.tmx",
+            "displayName": "北郊",
+            "mapType": "outDoor"
+        },
+        "294515d0-c122-5720-85d6-e5eeda2cf05d": {
+            "path": "res://assets/Map/maps/LoreWorld/Dongjiao/Dongjiao.tmx",
+            "displayName": "东郊",
+            "mapType": "outDoor"
+        },
+        "06467980-5568-5a03-8d5d-2d5df42db6a0": {
+            "path": "res://assets/Map/maps/LoreWorld/KaiyuanTown/AnWang.tmx",
+            "displayName": "暗网",
+            "mapType": "inDoor",
+            "parentMapId": "25f3952d-ec39-53af-a8c1-d523c43b80b0"
+        },
+        "8f8add5e-93f8-5afe-b3e6-ba96dfc273c8": {
+            "path": "res://assets/Map/maps/LoreWorld/KaiyuanTown/DarkXue.tmx",
+            "displayName": "DARK学",
+            "mapType": "inDoor",
+            "parentMapId": "25f3952d-ec39-53af-a8c1-d523c43b80b0"
+        },
+        "25f3952d-ec39-53af-a8c1-d523c43b80b0": {
+            "path": "res://assets/Map/maps/LoreWorld/KaiyuanTown/KaiyuanTown.tmx",
+            "displayName": "开源镇",
+            "mapType": "outDoor"
+        },
+        "9e19a1a7-85bb-523e-b1aa-5a9e5bd2d5a8": {
+            "path": "res://assets/Map/maps/LoreWorld/KaiyuanTown/Pharmacy.tmx",
+            "displayName": "镇医院",
+            "mapType": "inDoor",
+            "parentMapId": "25f3952d-ec39-53af-a8c1-d523c43b80b0"
+        },
+        "aa8f90d3-05e2-5f9a-9dee-a6adcd60db60": {
+            "path": "res://assets/Map/maps/LoreWorld/KaiyuanTown/PlayerHome.tmx",
+            "displayName": "{playerName}的家",
+            "mapType": "inDoor",
+            "parentMapId": "25f3952d-ec39-53af-a8c1-d523c43b80b0"
+        },
+        "ae6f7dce-7a5c-59cd-92ba-fe8190eaac0b": {
+            "path": "res://assets/Map/maps/LoreWorld/KaiyuanTown/ResidentialHouseDing.tmx",
+            "displayName": "丁师傅的家",
+            "mapType": "inDoor",
+            "parentMapId": "25f3952d-ec39-53af-a8c1-d523c43b80b0"
+        },
+        "a72f4304-63e2-5a71-8609-8570a31f6282": {
+            "path": "res://assets/Map/maps/LoreWorld/KaiyuanTown/ShoppingMall.tmx",
+            "displayName": "商场",
+            "mapType": "inDoor",
+            "parentMapId": "25f3952d-ec39-53af-a8c1-d523c43b80b0"
+        },
+        "da94005d-198e-5e73-8a5a-d0a8ac87911b": {
+            "path": "res://assets/Map/maps/LoreWorld/KongZhiGuo/KongZhiGuo.tmx",
+            "displayName": "空の国",
+            "mapType": "outDoor"
+        },
+        "a8e90daa-ea13-5d87-a4f8-88bd76bff121": {
+            "path": "res://assets/Map/maps/LoreWorld/LIangZiXianZong/LiangZiShiYanShi.tmx",
+            "displayName": "量子实验室",
+            "mapType": "inDoor",
+            "parentMapId": "891e09c1-4118-5933-ab59-4f59be8ada85"
+        },
+        "891e09c1-4118-5933-ab59-4f59be8ada85": {
+            "path": "res://assets/Map/maps/LoreWorld/LIangZiXianZong/LiangZiXianZong.tmx",
+            "displayName": "量子仙宗",
+            "mapType": "outDoor"
+        },
+        "e4c8dc5c-474d-58be-aa33-f092e17f1f8c": {
+            "path": "res://assets/Map/maps/LoreWorld/MiWuSenLin/MiWuSenLin.tmx",
+            "displayName": "迷雾森林",
+            "mapType": "outDoor"
+        },
+        "fb215e50-cd81-5f1a-a285-b32c09a09834": {
+            "path": "res://assets/Map/maps/LoreWorld/Nanjiao/Nanjiao.tmx",
+            "displayName": "南郊",
+            "mapType": "outDoor"
+        },
+        "580b0929-4c5b-5a2b-a555-2509c7c7f3f6": {
+            "path": "res://assets/Map/maps/LoreWorld/ShengHuoMiaoMiao/ShengHuoMansion.tmx",
+            "displayName": "笙堡",
+            "mapType": "inDoor",
+            "parentMapId": "0c9615d7-aeba-5e40-9b22-2a4d0254b66b"
+        },
+        "0c9615d7-aeba-5e40-9b22-2a4d0254b66b": {
+            "path": "res://assets/Map/maps/LoreWorld/ShengHuoMiaoMiao/ShengHuoMiaoMiao.tmx",
+            "displayName": "笙火喵喵教",
+            "mapType": "outDoor"
+        },
+        "d1388237-5d83-5a08-a68c-41c18fe7d699": {
+            "path": "res://assets/Map/maps/LoreWorld/ShengHuoMiaoMiao/XiHuLingYin.tmx",
+            "displayName": "西湖灵隐",
+            "mapType": "inDoor",
+            "parentMapId": "0c9615d7-aeba-5e40-9b22-2a4d0254b66b"
+        },
+        "46c0823c-c650-5200-a391-2cfb37761b30": {
+            "path": "res://assets/Map/maps/LoreWorld/XiangCaoPai/XiangCaoPai.tmx",
+            "displayName": "香草派",
+            "mapType": "outDoor"
+        },
+        "f11a4867-c98d-5857-8c6a-e93bd568eda3": {
+            "path": "res://assets/Map/maps/LoreWorld/Xijiao/Xijiao.tmx",
+            "displayName": "西郊",
+            "mapType": "outDoor"
+        },
+        "10ed5235-d761-5009-9033-a156038ee534": {
+            "path": "res://assets/Map/maps/LoreWorld/YouyuShanzhuang/VUEHome.tmx",
+            "displayName": "VUE之家",
+            "mapType": "inDoor",
+            "parentMapId": "f832cbde-46e4-52d6-92fb-860bee93c8a8"
+        },
+        "c7b1abd6-df38-5fe2-bfdd-1fa39b1515f9": {
+            "path": "res://assets/Map/maps/LoreWorld/YouyuShanzhuang/YYXResidentialHouse.tmx",
+            "displayName": "鱿鱼养殖场",
+            "mapType": "inDoor",
+            "parentMapId": "f832cbde-46e4-52d6-92fb-860bee93c8a8"
+        },
+        "f832cbde-46e4-52d6-92fb-860bee93c8a8": {
+            "path": "res://assets/Map/maps/LoreWorld/YouyuShanzhuang/YouyuShanzhuang.tmx",
+            "displayName": "鱿鱼山庄",
+            "mapType": "outDoor"
+        }
+    }
+}

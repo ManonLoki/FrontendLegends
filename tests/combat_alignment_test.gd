@@ -22,7 +22,7 @@ func _run() -> void:
 		"attack": {"base": 0.22, "per_move": 0.025, "cap": 0.45},
 		"dodge": {"base": 0.12, "per_move": 0.015, "cap": 0.27},
 		"parry": {"base": 0.18, "per_move": 0.020, "cap": 0.35},
-	}, "三类招式应使用 v4 的独立触发曲线")
+	}, "三类招式应使用当前独立触发曲线")
 	_assert_true(
 		is_equal_approx(combat.rules.move_trigger_rate("attack", 1), 0.245)
 			and is_equal_approx(combat.rules.move_trigger_rate("attack", 20), 0.45)
@@ -31,13 +31,13 @@ func _run() -> void:
 		"招式触发率应按各自增量成长，并分别封顶 45%/27%/35%"
 	)
 	_assert_true(combat.rules.ATTACK_MOVE_STATUS_TABLE == {20: "paralysis", 40: "weakness", 50: "poison", 70: "paralysis", 80: "weakness", 90: "poison"}, "攻击招式应仅在六个明确档位附加异常")
-	var jiu_ri: Dictionary = npc_system.build_instance("jiu_ri")
-	var jiu_ri_mp_bonus: int = int(combat.rules.npc_combat_bonus(jiu_ri).get("mp_max", 0))
-	_assert_true(combat.rules.npc_inner_power(jiu_ri) == 150 and jiu_ri_mp_bonus == 150 and combat.rules.npc_mp_max(jiu_ri) == 3322, "九日精力应由 150 内功、17.3 架构修正和 150 点已装备功法上限加成共同构成")
-	var jiu_ri_veteran := jiu_ri.duplicate(true)
-	jiu_ri_veteran.combatRank = "veteran"
-	_assert_true(combat.rules.npc_hp_max(jiu_ri_veteran) == 451 and combat.rules.npc_hp_max(jiu_ri) == 496, "同一套属性的精英 NPC 应在 451 基础体力上按 1.10 位阶缩放到 496")
-	var student: Dictionary = npc_system.build_instance("xiao_xue_sheng")
+	var task_giver: Dictionary = npc_system.build_instance("ac079dbc-e7f3-5aa7-9ef1-6db6e8ec3eb1")
+	var task_giver_mp_bonus: int = int(combat.rules.npc_combat_bonus(task_giver).get("mp_max", 0))
+	_assert_true(combat.rules.npc_inner_power(task_giver) == 150 and task_giver_mp_bonus == 150 and combat.rules.npc_mp_max(task_giver) == 3322, "九日精力应由 150 内功、17.3 架构修正和 150 点已装备功法上限加成共同构成")
+	var veteran_task_giver := task_giver.duplicate(true)
+	veteran_task_giver.combatRank = "veteran"
+	_assert_true(combat.rules.npc_hp_max(veteran_task_giver) == 451 and combat.rules.npc_hp_max(task_giver) == 496, "同一套属性的精英 NPC 应在 451 基础体力上按 1.10 位阶缩放到 496")
+	var student: Dictionary = npc_system.build_instance("98138ebf-d4f4-515c-aea7-d95bf6155994")
 	_assert_true(combat.rules.npc_mp_max(student) == 0 and combat.rules.npc_hp_max(student) == 48, "小学生作为 noncombatant 应只有 48 体力且没有精力，不得形成同级战斗耐久")
 	state.delete_save()
 	state.create_profile("战斗测试", {"strength": 25, "agility": 25, "constitution": 25, "wisdom": 25})
@@ -52,7 +52,7 @@ func _run() -> void:
 	_assert_true(state.player_effective_hp_max() == true_max - 20, "伤势应逐点压低有效体力上限")
 	_assert_true(state.player_effective_hp_percent() == int(round(float(true_max - 20) / true_max * 100.0)), "受伤百分比应按有效上限/真实上限计算")
 
-	var session: Dictionary = combat.create_session("jiu_ri", true)
+	var session: Dictionary = combat.create_session("ac079dbc-e7f3-5aa7-9ef1-6db6e8ec3eb1", true)
 	_assert_true(int(session.player_max_hp) == state.player_effective_hp_max(), "开战应使用受伤后的有效体力上限")
 	_assert_true(int(session.player_true_max_hp) == true_max, "战斗会话应保留真实体力上限供百分比展示")
 
@@ -103,7 +103,7 @@ func _run() -> void:
 	state.inventory.erase("test_battle_medicine")
 
 	# NPC 摸鱼同样受单次次数与 18% 体力上限约束。
-	var npc_rest_session: Dictionary = combat.create_session("jiu_ri", true)
+	var npc_rest_session: Dictionary = combat.create_session("ac079dbc-e7f3-5aa7-9ef1-6db6e8ec3eb1", true)
 	var npc_rest_ai: Dictionary = npc_rest_session.enemy.get("ai", {}).duplicate(true)
 	npc_rest_ai.restUseRate = 1.0
 	npc_rest_ai.restHpRatio = 1.0
@@ -120,7 +120,7 @@ func _run() -> void:
 	_assert_true(npc_second_rest.is_empty() and int(npc_rest_session.enemy_hp) == npc_hp_after_rest and int(npc_rest_session.enemy_mp) == npc_mp_after_rest, "NPC 摸鱼次数耗尽后不得再次恢复")
 
 	# NPC 加力每次只动用四分之一内功；连续两击也不得按完整内功逐击扣除。
-	var force_session: Dictionary = combat.create_session("jiu_ri", true)
+	var force_session: Dictionary = combat.create_session("ac079dbc-e7f3-5aa7-9ef1-6db6e8ec3eb1", true)
 	var force_ai: Dictionary = force_session.enemy.get("ai", {}).duplicate(true)
 	force_ai.forceUseRate = 1.0
 	force_ai.forceRatio = combat.NPC_FORCE_INNER_POWER_RATIO
@@ -160,7 +160,7 @@ func _run() -> void:
 	var game = load("res://scenes/game.tscn").instantiate()
 	root.add_child(game)
 	await process_frame
-	game.nearby_npc_id = "jiu_ri"
+	game.nearby_npc_id = "ac079dbc-e7f3-5aa7-9ef1-6db6e8ec3eb1"
 	game.battle_ui.lethal = true
 	seed(1)
 	game.battle_ui.start()
@@ -231,15 +231,15 @@ func _run() -> void:
 	# 绝招：菜单只列精力可支付项；施展时扣精力并生成权威战报，本函数本身不代跑敌方回合。
 	state.profile.sect = "NG神教"
 	var skills: Dictionary = root.get_node("SkillSystem").ensure_skills()
-	skills.levels.basicConstitution = 80
-	skills.levels.ng_arch_zone = 80
-	skills.equipped_basic.arch = "basicConstitution"
-	skills.equipped_special.arch = "ng_arch_zone"
+	skills.levels["dcebef7e-09b8-5a69-8e3d-159cb2b0c355"] = 80
+	skills.levels["9287473e-59a9-5dc8-a914-324ec57ffc14"] = 80
+	skills.equipped_basic.arch = "dcebef7e-09b8-5a69-8e3d-159cb2b0c355"
+	skills.equipped_special.arch = "9287473e-59a9-5dc8-a914-324ec57ffc14"
 	state.profile.vitals.cultivation = 100
 	state.combat_state.mp = state.player_mp_max()
 	state.combat_state.injury = 0
 	state.combat_state.hp = state.player_effective_hp_max()
-	var ult_session: Dictionary = combat.create_session("jiu_ri", true)
+	var ult_session: Dictionary = combat.create_session("ac079dbc-e7f3-5aa7-9ef1-6db6e8ec3eb1", true)
 	var ults: Array = root.get_node("SkillSystem").unlocked_ults()
 	_assert_true(ults.size() == 2, "架构功法 80 级应解锁两档门派绝招")
 	var mp_before_ult: int = state.combat_state.mp
@@ -257,7 +257,7 @@ func _run() -> void:
 	state.profile.attributes.constitution = 500
 	state.combat_state.injury = 0
 	state.combat_state.hp = state.player_effective_hp_max()
-	var npc_ult_session: Dictionary = combat.create_session("xiao_bu_er", true)
+	var npc_ult_session: Dictionary = combat.create_session("c6592971-0e60-5f47-969c-2db122c7c011", true)
 	var npc_ult_ai: Dictionary = npc_ult_session.enemy.get("ai", {}).duplicate(true)
 	npc_ult_ai.forceUseRate = 1.0
 	npc_ult_ai.forceRatio = combat.NPC_FORCE_INNER_POWER_RATIO

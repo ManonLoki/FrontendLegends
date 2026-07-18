@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="30" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="28">
  <properties>
+  <property name="mapId" value="891e09c1-4118-5933-ab59-4f59be8ada85"/>
   <property name="Sort" type="int" value="8"/>
   <property name="mapName" value="量子仙宗"/>
   <property name="region" value="量子仙宗"/>
@@ -27,61 +28,61 @@
  <objectgroup id="4" name="Interactive">
   <object id="16" type="Transaction" x="432" y="0" width="16" height="16">
    <properties>
-    <property name="from" value="LiangZiXianZong"/>
-    <property name="to" value="Nanjiao"/>
+    <property name="from" value="891e09c1-4118-5933-ab59-4f59be8ada85"/>
+    <property name="to" value="fb215e50-cd81-5f1a-a285-b32c09a09834"/>
    </properties>
   </object>
   <object id="17" type="Transaction" x="432" y="16" width="15.8228" height="15.6904">
    <properties>
-    <property name="from" value="Nanjiao"/>
-    <property name="to" value="LiangZiXianZong"/>
+    <property name="from" value="fb215e50-cd81-5f1a-a285-b32c09a09834"/>
+    <property name="to" value="891e09c1-4118-5933-ab59-4f59be8ada85"/>
    </properties>
   </object>
   <object id="18" type="Transaction" x="224" y="432" width="16" height="16">
    <properties>
-    <property name="from" value="LiangZiXianZong"/>
-    <property name="to" value="LiangZiShiYanShi"/>
+    <property name="from" value="891e09c1-4118-5933-ab59-4f59be8ada85"/>
+    <property name="to" value="a8e90daa-ea13-5d87-a4f8-88bd76bff121"/>
    </properties>
   </object>
   <object id="19" type="Transaction" x="224" y="448" width="16" height="16">
    <properties>
-    <property name="from" value="LiangZiShiYanShi"/>
-    <property name="to" value="LiangZiXianZong"/>
+    <property name="from" value="a8e90daa-ea13-5d87-a4f8-88bd76bff121"/>
+    <property name="to" value="891e09c1-4118-5933-ab59-4f59be8ada85"/>
    </properties>
   </object>
   <object id="20" name="Pete Hunt" type="NPC" x="406.605" y="85.9993">
    <properties>
-    <property name="npcId" value="pete_hunt"/>
+    <property name="npcId" value="9dd3e6a1-754c-5982-8ddb-a968597126d1"/>
    </properties>
    <point/>
   </object>
   <object id="21" name="Tanner Linsley" type="NPC" x="169.247" y="83.9353">
    <properties>
-    <property name="npcId" value="tanner_linsley"/>
+    <property name="npcId" value="0ba1e18a-db68-577c-b892-fd80fb253197"/>
    </properties>
    <point/>
   </object>
   <object id="22" name="加藤大志" type="NPC" x="421.741" y="437.564">
    <properties>
-    <property name="npcId" value="kato_taishi"/>
+    <property name="npcId" value="72ebc625-0d87-55a4-ba96-ea7e9e5b0ed6"/>
    </properties>
    <point/>
   </object>
   <object id="23" name="Vitaly Rtishchev" type="NPC" x="39.2157" y="436.877">
    <properties>
-    <property name="npcId" value="vitaly_rtishchev"/>
+    <property name="npcId" value="d82ff4b6-7bbd-5efc-982d-3f98a0cac929"/>
    </properties>
    <point/>
   </object>
   <object id="24" name="Matt DeBergalis" type="NPC" x="328.861" y="86.6873">
    <properties>
-    <property name="npcId" value="matt_debergalis"/>
+    <property name="npcId" value="52721b2c-3124-507b-9f65-97a6a9720d56"/>
    </properties>
    <point/>
   </object>
   <object id="25" name="Geoff Schmidt" type="NPC" x="344.685" y="88.0633">
    <properties>
-    <property name="npcId" value="geoff_schmidt"/>
+    <property name="npcId" value="a90cc3ef-7e58-544c-b944-8a8414ffb934"/>
    </properties>
    <point/>
   </object>

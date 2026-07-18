@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.2" class="MapMeta" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="10">
  <properties>
+  <property name="mapId" value="e4c8dc5c-474d-58be-aa33-f092e17f1f8c"/>
   <property name="Sort" type="int" value="14"/>
   <property name="mapName" value="迷雾森林"/>
   <property name="region" value="迷雾森林"/>
@@ -26,20 +27,20 @@
  <objectgroup id="4" name="Interactive">
   <object id="4" name="Lucian" type="NPC" x="247.905" y="186.887">
    <properties>
-    <property name="npcId" value="lucian"/>
+    <property name="npcId" value="772129be-db40-5e99-929c-e77fde74174c"/>
    </properties>
    <point/>
   </object>
   <object id="8" type="Transaction" x="240" y="288" width="16" height="16">
    <properties>
-    <property name="from" value="Dongjiao"/>
-    <property name="to" value="MiWuSenLin"/>
+    <property name="from" value="294515d0-c122-5720-85d6-e5eeda2cf05d"/>
+    <property name="to" value="e4c8dc5c-474d-58be-aa33-f092e17f1f8c"/>
    </properties>
   </object>
   <object id="9" type="Transaction" x="240" y="304" width="16" height="16">
    <properties>
-    <property name="from" value="MiWuSenLin"/>
-    <property name="to" value="Dongjiao"/>
+    <property name="from" value="e4c8dc5c-474d-58be-aa33-f092e17f1f8c"/>
+    <property name="to" value="294515d0-c122-5720-85d6-e5eeda2cf05d"/>
    </properties>
   </object>
  </objectgroup>
