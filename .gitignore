@@ -6,6 +6,7 @@
 
 # Local tooling and operating-system files
 node_modules/
+.worktrees/
 .DS_Store
 *.tiled-session
 
