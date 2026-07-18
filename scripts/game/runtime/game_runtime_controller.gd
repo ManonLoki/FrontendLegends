@@ -100,14 +100,18 @@ func _update_continuous_skill_actions(delta: float) -> void:
 	if game.learn_open and not game.learning_skill_id.is_empty():
 		game.learning_tick_accumulator += maxf(0.0, delta)
 		var learn_changed := false
+		var learning_failure_message := ""
 		while game.learning_tick_accumulator >= SkillSystem.LEARNING_TICK_SECONDS and not game.learning_skill_id.is_empty():
 			game.learning_tick_accumulator -= SkillSystem.LEARNING_TICK_SECONDS
 			var result: Dictionary = SkillSystem.learn_tick(game.nearby_npc_id, game.learning_skill_id)
 			game.message = str(result.get("message", ""))
 			learn_changed = true
 			# 原项目在升级成功或资源/门槛阻断时停止持续研习。
-			if bool(result.get("ok", false)) or not str(result.get("reason", "")).is_empty():
+			var failure_reason := str(result.get("reason", ""))
+			if bool(result.get("ok", false)) or not failure_reason.is_empty():
 				game.learning_skill_id = ""
+				if failure_reason in ["potential", "token"]:
+					learning_failure_message = game.message
 		if learn_changed:
 			# 升级或阻断都会清空 learning_skill_id 并改变列表内容，需要整页重绘；
 			# 普通 tick 只需刷新顶部进度条。
@@ -116,6 +120,8 @@ func _update_continuous_skill_actions(delta: float) -> void:
 			else:
 				game.learning_controller.update_tick_feedback()
 			game._render_learning_progress()
+			if not learning_failure_message.is_empty():
+				game._show_dialogue("学习", learning_failure_message)
 	if game.practice_open and not game.practicing_skill_id.is_empty():
 		game.practice_tick_accumulator += maxf(0.0, delta)
 		while game.practice_tick_accumulator >= SkillSystem.PRACTICE_TICK_SECONDS and not game.practicing_skill_id.is_empty():

@@ -57,6 +57,7 @@ func handle_key(key: Key) -> void:
 			game.learning_tick_accumulator = 0.0
 			clear_progress()
 			render()
+			game._show_dialogue("学习", game.message)
 			return
 		game.learning_skill_id = selected_skill
 		game.learning_tick_accumulator = 0.0

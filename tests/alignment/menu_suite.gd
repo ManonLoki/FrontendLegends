@@ -104,6 +104,7 @@ func _run_menu_suite(game: Node) -> void:
 	game._update_continuous_skill_actions(skill_system.PRACTICE_TICK_SECONDS)
 	_assert_true(game.practicing_skill_id.is_empty() and game.practice_progress_widgets.is_empty(), "练功失败后应停止并清理进度条")
 	_assert_true(game.dialogue_open and game.dialogue_panel.visible and game.dialogue_content.text.contains("精力不足，练不动功。"), "精力不足时应在底部练功对话框显示参考文案")
+	_assert_true(game.dialogue_panel.z_index > game.details_panel.z_index, "练功资源不足的对话 HUD 应显示在练功面板上方")
 	game._close_dialogue()
 	skill_system.ensure_skills().levels["bcb538e2-4d6a-52ae-990d-20377e27ab64"] = 7
 	game_state.profile.vitals.cultivation = 2
@@ -137,7 +138,8 @@ func _run_menu_suite(game: Node) -> void:
 	_assert_true(not game.learn_focus_category and game.learning_progress_widgets.is_empty(), "仅进入功法右栏时不应显示学习进度条")
 	game_state.profile.vitals.potential = 0
 	game._handle_learn_key(KEY_SPACE)
-	_assert_true(str(game.learning_skill_id).is_empty() and game.learning_progress_widgets.is_empty() and str(game.message).contains("潜能不足"), "潜能不足时应直接提示且不得启动或闪现学习进度条")
+	_assert_true(str(game.learning_skill_id).is_empty() and game.learning_progress_widgets.is_empty() and str(game.message).contains("潜能不足") and game.dialogue_open and game.dialogue_content.text.contains("潜能不足"), "潜能不足时应弹出提示且不得启动或闪现学习进度条")
+	game._close_dialogue()
 	game_state.profile.vitals.potential = 1000
 	game._handle_learn_key(KEY_SPACE)
 	_assert_true(not str(game.learning_skill_id).is_empty() and game.learning_progress_widgets.size() == 1, "选中功法按空格后才应显示并启动进度条")
@@ -147,7 +149,8 @@ func _run_menu_suite(game: Node) -> void:
 	var interrupted_progress := int(skill_system.ensure_skills().learn_progress.get(selected_skill, 0))
 	_assert_true(interrupted_progress > 0 and not str(game.learning_skill_id).is_empty(), "最后一点潜能应先推进并保存当前学习经验")
 	game._update_continuous_skill_actions(skill_system.LEARNING_TICK_SECONDS)
-	_assert_true(str(game.learning_skill_id).is_empty() and game.learning_progress_widgets.is_empty() and int(skill_system.ensure_skills().learn_progress.get(selected_skill, 0)) == interrupted_progress, "潜能不足应中断并停留在当前学习经验")
+	_assert_true(str(game.learning_skill_id).is_empty() and game.learning_progress_widgets.is_empty() and int(skill_system.ensure_skills().learn_progress.get(selected_skill, 0)) == interrupted_progress and game.dialogue_open and game.dialogue_content.text.contains("潜能不足"), "潜能不足应弹出提示、中断并停留在当前学习经验")
+	game._close_dialogue()
 	var selected_definition: Dictionary = data_registry.get_skill(selected_skill)
 	var selected_level: int = skill_system.level(selected_skill)
 	var selected_required: int = skill_system._learning_xp_required(selected_definition, selected_level + 1)
@@ -171,7 +174,8 @@ func _run_menu_suite(game: Node) -> void:
 	skill_system.ensure_skills().learn_potential_spent[selected_skill] = token_blocked_spent
 	game_state.profile.vitals.money = 0
 	game._handle_learn_key(KEY_SPACE)
-	_assert_true(str(game.learning_skill_id).is_empty() and game.learning_progress_widgets.is_empty() and str(game.message).contains("Token 不足") and int(skill_system.ensure_skills().learn_progress[selected_skill]) == token_blocked_required, "Token 不足应在启动前中断并保留满额学习经验")
+	_assert_true(str(game.learning_skill_id).is_empty() and game.learning_progress_widgets.is_empty() and str(game.message).contains("Token 不足") and int(skill_system.ensure_skills().learn_progress[selected_skill]) == token_blocked_required and game.dialogue_open and game.dialogue_content.text.contains("Token 不足"), "Token 不足应弹出提示、在启动前中断并保留满额学习经验")
+	game._close_dialogue()
 	var token_tuition := ceili(float(token_blocked_spent) * 0.65)
 	game_state.profile.vitals.money = token_tuition
 	game._handle_learn_key(KEY_SPACE)

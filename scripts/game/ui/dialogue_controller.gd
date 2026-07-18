@@ -22,6 +22,7 @@ func show(speaker: String, text: String, lock_seconds: float = 0.0, after_last: 
 		game.dialogue_auto_close_at_msec = Time.get_ticks_msec() + game.DIALOGUE_AUTO_CLOSE_MSEC
 	render(clean_speaker)
 	game.dialogue_open = true
+	game.dialogue_panel.z_index = game.details_panel.z_index + 2
 	game.dialogue_panel.visible = true
 
 func paginate(text: String) -> Array[String]:
