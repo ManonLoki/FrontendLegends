@@ -208,7 +208,8 @@
             },
             "ult": {
                 "key": "ng",
-                "kind": "multi",
+                "abilitySets": [["multi"], ["multi"]],
+                "mpCosts": [25, 45],
                 "names": [
                     "依赖注入·定海",
                     "AOT·万法归一"
@@ -416,7 +417,8 @@
             },
             "ult": {
                 "key": "vanilla",
-                "kind": "abnormal",
+                "abilitySets": [["abnormal"], ["abnormal"]],
+                "mpCosts": [30, 50],
                 "names": [
                     "闭包·封天",
                     "原生·归真一击"
@@ -625,7 +627,8 @@
             },
             "ult": {
                 "key": "react",
-                "kind": "reduceMax",
+                "abilitySets": [["drain_hp"], ["drain_mp"]],
+                "mpCosts": [35, 60],
                 "names": [
                     "钩式·千手",
                     "并发·量子千幻"
@@ -834,7 +837,8 @@
             },
             "ult": {
                 "key": "vue",
-                "kind": "hugeDamage",
+                "abilitySets": [["guaranteed_hit"], ["guaranteed_hit"]],
+                "mpCosts": [40, 70],
                 "names": [
                     "响应·千丝",
                     "Vite·瞬息万变"

@@ -1,6 +1,7 @@
 extends SceneTree
 
 const RULES := preload("res://scripts/combat/combat_ability_rules.gd")
+const LOADOUT := preload("res://scripts/skills/skill_loadout.gd")
 
 var failures: Array[String] = []
 
@@ -20,5 +21,15 @@ func _initialize() -> void:
 	_assert_true(bool(guaranteed.guaranteedHit) and is_equal_approx(float(guaranteed.damageScale), 1.75), "必中绝招必须生成标准攻击效果")
 	var drains := RULES.attack_effects({"abilities": ["drain_hp", "drain_mp"], "inner_level": 100})
 	_assert_true(is_equal_approx(float(drains.drainHpRatio), 0.35) and is_equal_approx(float(drains.drainMpMaxRatio), 0.15), "吸取能力必须生成标准攻击效果")
+	var config := {
+		"key": "test", "names": ["一档", "二档"],
+		"abilitySets": [["drain_hp"], ["drain_mp"]], "mpCosts": [35, 60],
+	}
+	var tier_one := LOADOUT.build_ult(config, 1, 190, 80)
+	var tier_two := LOADOUT.build_ult(config, 2, 190, 80)
+	_assert_true(tier_one.abilities == ["drain_hp"] and tier_two.abilities == ["drain_mp"], "两档绝招必须携带各自能力")
+	_assert_true(int(tier_one.inner_level) == 80 and int(tier_one.inner_power) == 190, "标准绝招必须区分特性等级与攻击内功")
+	_assert_true(int(tier_one.mp_cost) == 35 and int(tier_two.mp_cost) == 60, "精力消耗必须由绝招数据提供")
+	_assert_true(tier_one.kind == "reduceMax" and tier_two.kind == "reduceMax", "能力数据必须临时映射到旧执行器类型")
 	print("ultimate_ability_rules_test: PASS" if failures.is_empty() else "ultimate_ability_rules_test: FAIL (%d)" % failures.size())
 	quit(0 if failures.is_empty() else 1)

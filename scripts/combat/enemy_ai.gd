@@ -75,7 +75,7 @@ func _try_item(session: Dictionary, ai: Dictionary, hp: int, hp_max: int, hp_rat
 	session.log.append("%s 服下一颗丹药，体力 +%d" % [session.enemy.get("displayName", "敌人"), healed])
 	return {"ok": true, "item": true, "damage": 0, "message": "敌方服药回复 %d 体力" % healed}
 
-## 按 NPC 已装备架构功法等级构建两档绝招列表；档位门槛与消耗表复用玩家侧定义。
+## 按 NPC 已装备架构功法等级构建两档绝招列表；构造逻辑与玩家侧共用。
 func npc_ults(npc: Dictionary) -> Array:
 	var result: Array = []
 	var skill_levels: Dictionary = npc.get("skillLevels", {})
@@ -86,10 +86,8 @@ func npc_ults(npc: Dictionary) -> Array:
 		var level := int(skill_levels.get(str(skill_id), 0))
 		var inner_power := int(skill_levels.get("dcebef7e-09b8-5a69-8e3d-159cb2b0c355", 0)) + level * 2
 		var config: Dictionary = definition.get("ult", {})
-		var kind := str(config.get("kind", "hugeDamage"))
-		var names: Array = config.get("names", ["绝招", "绝招"])
 		if level >= SKILL_LOADOUT.ULT_TIER1_ARCH_LEVEL:
-			result.append({"name": names[0], "kind": kind, "tier": 1, "inner_power": inner_power, "mp_cost": SKILL_LOADOUT.ULT_MP_COSTS.get(kind, [40, 70])[0]})
+			result.append(SKILL_LOADOUT.build_ult(config, 1, inner_power, level))
 		if level >= SKILL_LOADOUT.ULT_TIER2_ARCH_LEVEL:
-			result.append({"name": names[1], "kind": kind, "tier": 2, "inner_power": inner_power, "mp_cost": SKILL_LOADOUT.ULT_MP_COSTS.get(kind, [40, 70])[1]})
+			result.append(SKILL_LOADOUT.build_ult(config, 2, inner_power, level))
 	return result
