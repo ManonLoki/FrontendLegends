@@ -74,6 +74,7 @@ func _run_menu_suite(game: Node) -> void:
 	var practice_meter = game.practice_progress_widgets[0]
 	var expected_practice_progress: Dictionary = skill_system.practice_progress("bcb538e2-4d6a-52ae-990d-20377e27ab64")
 	_assert_true(practice_meter.current == int(expected_practice_progress.current) and practice_meter.total == int(expected_practice_progress.total), "练功进度条应显示当前等级内的真实进度")
+	_assert_true(practice_meter.z_index > game.details_panel.z_index, "练功进度 HUD 应显示在练功面板上方")
 	_assert_true(not Rect2(game.map_badge_panel.position, game.map_badge_panel.size).intersects(Rect2(practice_meter.position, practice_meter.size)), "房间名 HUD 不得与练功进度条重叠")
 	skill_system.ensure_skills().practice_progress["bcb538e2-4d6a-52ae-990d-20377e27ab64"] = 4
 	game._refresh_practice()

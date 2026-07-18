@@ -40,7 +40,7 @@ npm run data:ids:check
 ## 验证
 
 ```sh
-/Applications/Godot.app/Contents/MacOS/Godot --headless --path . --log-file /tmp/frontend-legends-world-event-test.log --script res://tests/world_event_test.gd
+./tools/godot-safe.sh --headless --script res://tests/world_event_test.gd
 tools/check_file_size.sh
 ```
 

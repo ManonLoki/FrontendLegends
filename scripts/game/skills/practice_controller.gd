@@ -115,6 +115,7 @@ func render_progress() -> void:
 	if game.practice_progress_widgets.is_empty():
 		meter = UI_PROGRESS_METER.new()
 		game.hud.add_child(meter)
+		meter.z_index = game.details_panel.z_index + 1
 		game.practice_progress_widgets.append(meter)
 		game._layout_top_progress_meter(meter)
 		meter.set_font_size(maxi(11, int(round(12.0 * game._display_scale()))))

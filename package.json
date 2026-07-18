@@ -3,6 +3,7 @@
 
   "scripts": {
     "build:web": "node tools/build-web.mjs",
+    "test:godot": "./tools/run-godot-tests.sh",
     "web:hash": "node tools/hash-web-build.mjs dist/web",
     "data:excel": "node tools/data-excel/json-to-excel.mjs",
     "data:json": "node tools/data-excel/excel-to-json.mjs",

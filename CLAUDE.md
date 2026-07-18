@@ -2,6 +2,10 @@
 
 当前 Godot 项目架构、命令和仓库规则见 `AGENTS.md`。
 
+## Godot 稳定启动强制规则
+
+Godot 4.7 在 macOS 受限环境中无法创建默认 `user://logs` 时可能直接触发 `SIGSEGV`。所有命令行启动、无界面测试与自动化必须使用 `tools/godot-safe.sh`，或显式传入位于可写临时目录的 `--log-file`；禁止直接调用 Godot 二进制。出现 `Failed to open 'user://logs/...'` 时先修正启动入口，不得删除项目数据、`.godot/` 或正式存档。完整说明见 `docs/godot_stability.md`。
+
 ## 强制冻结场景规则
 
 未获得用户单独且明确的二次确认前，不得修改下列受保护文件：

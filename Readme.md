@@ -56,8 +56,10 @@
 macOS 也可以在仓库根目录执行：
 
 ```sh
-/Applications/Godot.app/Contents/MacOS/Godot --path . --editor
+./tools/godot-safe.sh --editor
 ```
+
+请优先使用该安全入口。Godot 4.7 在部分 macOS 或受限环境中无法写入默认 `user://logs` 时可能直接崩溃；脚本会为每次运行显式创建位于 `/tmp` 的独立日志。故障说明见 [Godot 稳定启动与崩溃处理](docs/godot_stability.md)。
 
 构建 Web 版本：
 

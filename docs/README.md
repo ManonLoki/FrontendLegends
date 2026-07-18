@@ -10,6 +10,7 @@ FrontendLegends 是一款使用 Godot 4.7 与 GDScript 开发的 2D 俯视角格
 - [师父学习经验与人物养成曲线](growth_curve_72h.md)：固定学习经验、潜能转换、Token 学费、阶段耗时和四维边界。
 - [世界事件维护](world_events.md)：Excel 事件原型/摆放表、地图职责与 JSON 导出流程。
 - [代码与存档规范](code_and_save_standards.md)：中文注释、英文标识符、UUID 规则、存档 v5 与版本边界。
+- [Godot 稳定启动与崩溃处理](godot_stability.md)：统一安全入口、日志隔离和 `user://logs` 崩溃诊断。
 - [参照项目差异审计](reference_alignment_audit.md)：当前实现从参照项目保留的语义与有意改变的数值。
 - 仓库根目录的 `AGENTS.md`：开发、测试、冻结文件和文件规模规则。
 - 仓库根目录的 `CLAUDE.md`：与自动化开发工具共享的强制维护约束。
@@ -37,7 +38,7 @@ FrontendLegends 是一款使用 Godot 4.7 与 GDScript 开发的 2D 俯视角格
 使用 Godot 4.7 打开仓库根目录，默认入口为 `scenes/splash.tscn`。也可以执行：
 
 ```sh
-/Applications/Godot.app/Contents/MacOS/Godot --path . --editor
+./tools/godot-safe.sh --editor
 ```
 
 游戏逻辑视口与地图相机统一为 480×320，地图瓦片尺寸为 16×16。Windows 与 macOS 默认窗口为 1280×960；桌面端使用键盘操作，移动端会安装虚拟方向键和确认、取消按钮，并请求横屏显示。
@@ -75,9 +76,7 @@ FrontendLegends 是一款使用 Godot 4.7 与 GDScript 开发的 2D 俯视角格
 
 ```sh
 ./tools/check_file_size.sh
-/Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script tests/alignment_test.gd
-/Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script tests/combat_alignment_test.gd
-/Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script tests/combat_balance_test.gd
+npm run test:godot
 ```
 
 测试必须使用 `GameState.use_test_save_path(...)` 写入系统临时目录，不能污染正式存档。数据表变更还必须执行 `npm run data:check`，校验 UUID 引用并确保六个独立工作簿覆盖的 JSON 往返不变。

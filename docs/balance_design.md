@@ -220,9 +220,7 @@ ceil(净体力损失×15%×(1-功法伤势减免)) + 当场重伤
 必须通过：
 
 ```sh
-/Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script tests/alignment_test.gd
-/Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script tests/combat_alignment_test.gd
-/Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script tests/combat_balance_test.gd
+npm run test:godot
 ./tools/check_file_size.sh
 ```
 
