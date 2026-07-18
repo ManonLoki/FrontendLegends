@@ -171,22 +171,7 @@ static func build_ult(config: Dictionary, tier: int, inner_power: int, inner_lev
 		"name": names[index], "tier": tier,
 		"inner_power": inner_power, "inner_level": inner_level,
 		"mp_cost": int(costs[index]), "abilities": abilities,
-		# Task 4 removes this adapter when the executor reads abilities directly.
-		"kind": _legacy_kind(abilities),
 	}
-
-## 绝招执行器尚未迁移能力数组时，将首个能力映射为其旧有类型。
-static func _legacy_kind(abilities: Array) -> String:
-	var primary_ability := str(abilities[0]) if not abilities.is_empty() else ""
-	if primary_ability == "multi":
-		return "multi"
-	if primary_ability == "abnormal":
-		return "abnormal"
-	if primary_ability == "guaranteed_hit":
-		return "hugeDamage"
-	if primary_ability == "drain_hp" or primary_ability == "drain_mp":
-		return "reduceMax"
-	return "hugeDamage"
 
 func _make_ult(config: Dictionary, tier: int, inner_power: int, inner_level: int = 0) -> Dictionary:
 	return build_ult(config, tier, inner_power, inner_level)

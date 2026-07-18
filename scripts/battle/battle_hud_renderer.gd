@@ -3,6 +3,7 @@ extends RefCounted
 
 const FONT := preload("res://assets/Font/fusion-pixel-12px-proportional-zh_hans.ttf")
 const UI_WIDGETS := preload("res://scripts/game/ui/ui_widgets.gd")
+const ABILITY_RULES := preload("res://scripts/combat/combat_ability_rules.gd")
 const REPORT_MAX_ENTRIES := 8
 const STAT_LANE_INSET := 8.0
 const STAT_LANE_GAP := 8.0
@@ -223,13 +224,6 @@ func _render_submenu(area: Vector2, scale: float) -> void:
 			item_label = _format_ult_label(view.submenu_items[index])
 		_label(game._cursor(item_label, index == view.submenu_index), Rect2(panel_position + Vector2(18.0, 32.0 + index * 26.0) * scale, Vector2(panel_size.x - 36.0 * scale, 24.0 * scale)), 12)
 
-## 将绝招类型、倍率、命中修正和附加效果格式化为选择项文本。
+## 使用执行器同源规则格式化绝招能力，避免菜单数值与实战不一致。
 func _format_ult_label(ult: Dictionary) -> String:
-	var name_cost := "%s（耗精力 %d）" % [ult.get("name", "绝招"), int(ult.get("mp_cost", 0))]
-	var tier := int(ult.get("tier", 1))
-	match str(ult.get("kind", "")):
-		"multi": return "%s  连击%d击（每击%d%%伤、命中-5，独立判定）" % [name_cost, 3 if tier == 1 else 5, 55 if tier == 1 else 50]
-		"abnormal": return "%s  %d%%伤命中+10，%d%%令对方麻痹跳%s回合" % [name_cost, 60 if tier == 1 else 70, 80 if tier == 1 else 95, "1" if tier == 1 else "1–2"]
-		"reduceMax": return "%s  %d%%伤命中+5，命中后削减体力上限%d%%（同步削血）" % [name_cost, 55 if tier == 1 else 65, 8 if tier == 1 else 15]
-		"hugeDamage": return "%s  %d%%倍率伤害（命中-15）" % [name_cost, 250 if tier == 1 else 400]
-	return name_cost
+	return ABILITY_RULES.format_ult_label(ult)

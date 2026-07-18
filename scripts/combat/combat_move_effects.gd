@@ -63,6 +63,7 @@ func _transfer_mp(session: Dictionary, player_side: bool, ratio: float) -> int:
 		var amount := mini(int(floor(float(target_max) * ratio)), mini(target_current, maxi(0, attacker_max - attacker_current)))
 		session.enemy_mp = target_current - amount
 		GameState.combat_state.mp = attacker_current + amount
+		session.player_mp = GameState.combat_state.mp
 		return amount
 	var player_max := maxi(0, GameState.player_mp_max())
 	var player_current := maxi(0, int(GameState.combat_state.mp))
@@ -70,5 +71,6 @@ func _transfer_mp(session: Dictionary, player_side: bool, ratio: float) -> int:
 	var enemy_current := maxi(0, int(session.get("enemy_mp", 0)))
 	var enemy_amount := mini(int(floor(float(player_max) * ratio)), mini(player_current, maxi(0, enemy_max - enemy_current)))
 	GameState.combat_state.mp = player_current - enemy_amount
+	session.player_mp = GameState.combat_state.mp
 	session.enemy_mp = enemy_current + enemy_amount
 	return enemy_amount

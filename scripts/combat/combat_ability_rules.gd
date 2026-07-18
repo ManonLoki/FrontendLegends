@@ -38,3 +38,21 @@ static func attack_effects(ult: Dictionary) -> Dictionary:
 	if "drain_hp" in abilities: result.drainHpRatio = drain_hp_ratio(level)
 	if "drain_mp" in abilities: result.drainMpMaxRatio = drain_mp_ratio(level)
 	return result
+
+## 从同一组运行时曲线生成绝招菜单说明。
+static func format_ult_label(ult: Dictionary) -> String:
+	var name_cost := "%s（耗精力 %d）" % [ult.get("name", "绝招"), int(ult.get("mp_cost", 0))]
+	var abilities: Array = ult.get("abilities", [])
+	var level := int(ult.get("inner_level", MIN_INNER_LEVEL))
+	var details: Array[String] = []
+	if "multi" in abilities:
+		details.append("连击%d击（每击%d%%伤）" % [multi_hits(level), int(round(multi_power(level) * 100.0))])
+	if "abnormal" in abilities:
+		details.append("必定附加%d种异常（各2回合）" % abnormal_count(level))
+	if "guaranteed_hit" in abilities:
+		details.append("必中，%d%%倍率伤害" % int(round(guaranteed_damage_scale(level) * 100.0)))
+	if "drain_hp" in abilities:
+		details.append("吸取实际伤害的%d%%体力" % int(round(drain_hp_ratio(level) * 100.0)))
+	if "drain_mp" in abilities:
+		details.append("吸取目标最大精力的%d%%" % int(round(drain_mp_ratio(level) * 100.0)))
+	return name_cost if details.is_empty() else "%s  %s" % [name_cost, "；".join(details)]
