@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/splash.gd" id="1"]
+[ext_resource type="AudioStream" path="res://assets/Audio/前端群侠传.ogg" id="2_title_bgm"]
 
 [node name="Splash" type="Control"]
 layout_mode = 3
@@ -11,3 +12,8 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1")
+
+[node name="TitleBgm" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_title_bgm")
+volume_db = -8.0
+autoplay = true

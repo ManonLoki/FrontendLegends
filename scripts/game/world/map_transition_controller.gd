@@ -1,10 +1,14 @@
 extends RefCounted
 ## 地图发现、加载、出生点选择与 Transaction 跳转。
 
+const BGM_CONTROLLER := preload("res://scripts/game/audio/bgm_controller.gd")
+
 var game: Node
+var bgm_controller: RefCounted
 
 func _init(owner: Node) -> void:
 	game = owner
+	bgm_controller = BGM_CONTROLLER.new(owner)
 
 func load_initial_map() -> void:
 	if DataRegistry.map_files.is_empty():
@@ -33,6 +37,7 @@ func load_map(index: int, arrival_from := "", cyber := false) -> void:
 	game._close_dialogue()
 	game.map_context = next_context
 	game.map_renderer.set_context(game.map_context)
+	bgm_controller.sync_for_map(game.map_context)
 	var display_name := str(game.map_context.properties.get("mapName", game.map_context.map_id))
 	game.map_badge.text = display_name.replace("{playerName}", str(GameState.profile.get("name", "")))
 	game.transition_overlay.color.a = 1.0
