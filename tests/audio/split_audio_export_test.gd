@@ -1,5 +1,5 @@
 extends SceneTree
-## 在隔离的 Web Split 主 PCK 中验证地区音频缺席，逐个挂载分包后验证可加载。
+## 在隔离的 Web 主 PCK 中验证地区音频缺席，逐个挂载分包后验证可加载。
 
 const TITLE_AUDIO := "res://assets/Audio/前端群侠传.ogg"
 const PACK_AUDIO := {

@@ -1,5 +1,5 @@
 extends SceneTree
-## 在隔离的 Web Split 主 PCK 中验证地图图块缺席，挂载分包后逐图加载。
+## 在隔离的 Web 主 PCK 中验证地图图块缺席，挂载分包后逐图加载。
 
 const MAP_CATALOG_PATH := "res://assets/Data/maps.json"
 const PACK_CATALOG_PATH := "res://assets/Data/map_packs.json"

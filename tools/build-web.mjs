@@ -28,7 +28,7 @@ await mkdir(packsDirectory, { recursive: true });
 // godot-safe.sh 是 Godot 命令行唯一入口，负责选择二进制并把日志固定到可写目录。
 const exportResult = spawnSync(
   godotSafe,
-  ["--headless", "--export-release", "Web Split", outputFile],
+  ["--headless", "--export-release", "Web", outputFile],
   { cwd: projectRoot, stdio: "inherit" },
 );
 if (exportResult.error) throw exportResult.error;
