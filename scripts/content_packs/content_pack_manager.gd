@@ -78,13 +78,13 @@ func _ensure_manifest() -> bool:
 		await manifest_finished
 		return not manifest.is_empty()
 	manifest_pending = true
-	var version := str(ProjectSettings.get_setting("application/config/version", "0"))
-	var response := await _request_bytes(_web_url(MANIFEST_PATH + "?v=" + version.uri_encode()))
+	var manifest_path := _web_manifest_path()
+	var response := await _request_bytes(_web_url(manifest_path))
 	var parsed = JSON.parse_string((response.get("body", PackedByteArray()) as PackedByteArray).get_string_from_utf8())
 	if bool(response.get("ok", false)) and parsed is Dictionary:
 		manifest = parsed
 	else:
-		push_warning("无法加载 Web 音频分包清单")
+		push_warning("无法加载 Web 内容分包清单：%s（HTTP %d）" % [manifest_path, int(response.get("status", 0))])
 	manifest_pending = false
 	manifest_finished.emit(not manifest.is_empty())
 	return not manifest.is_empty()
@@ -119,8 +119,14 @@ func _request_bytes(url: String) -> Dictionary:
 	request.queue_free()
 	return {
 		"ok": int(response[0]) == HTTPRequest.RESULT_SUCCESS and int(response[1]) == 200,
+		"status": int(response[1]),
 		"body": response[3],
 	}
+
+func _web_manifest_path() -> String:
+	var expression := "String(window.FrontendContentPackManifest || %s)" % JSON.stringify(MANIFEST_PATH)
+	var path := str(JavaScriptBridge.eval(expression))
+	return path if not path.is_empty() else MANIFEST_PATH
 
 func _cached_file_matches(path: String, expected_size: int) -> bool:
 	var file := FileAccess.open(path, FileAccess.READ)

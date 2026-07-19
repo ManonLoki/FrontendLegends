@@ -30,6 +30,9 @@ func load_map(index: int, arrival_from := "", cyber := false) -> void:
 		var target_map_id := DataRegistry.map_id_at(target_index)
 		if not pack_manager or not await pack_manager.ensure_map_pack(target_map_id):
 			push_warning("地图分包不可用：%s" % target_map_id)
+			game.transition_overlay.color.a = 0.0
+			game.message = "地图资源加载失败，请检查网络并重新进入游戏"
+			game.queue_redraw()
 			game.map_transitioning = false
 			return
 	if game.has_loaded_map:

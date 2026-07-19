@@ -41,4 +41,5 @@ if (mapPacksResult.status !== 0) process.exit(mapPacksResult.status ?? 1);
 const result = await hashWebBuild(outputDirectory);
 console.log(`Web build ready: ${result.directory}`);
 console.log(`Asset version: ${result.hash}`);
+console.log(`Content pack manifest: ${result.packManifest}`);
 console.log(`Lazy content packs: ${result.packs.length}`);

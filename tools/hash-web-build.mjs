@@ -37,7 +37,7 @@ export async function hashWebBuild(outputDirectory) {
     await rename(resolve(directory, oldName), resolve(directory, newName));
   }
 
-  const packs = await hashContentPacks(directory);
+  const contentPacks = await hashContentPacks(directory);
 
   const finalNames = await readdir(directory);
   for (const name of finalNames.filter((candidate) => TEXT_FILE_RE.test(candidate))) {
@@ -47,10 +47,18 @@ export async function hashWebBuild(outputDirectory) {
       content = content.split(oldName).join(newName);
     }
     content = content.replace(/("executable"\s*:\s*)"index"/g, `$1"${executable}"`);
+    content = content.split("__CONTENT_PACK_MANIFEST__").join(contentPacks.manifest);
     await writeFile(path, content);
   }
 
-  return { directory, executable, files: [...replacements.values()].sort(), hash, packs };
+  return {
+    directory,
+    executable,
+    files: [...replacements.values()].sort(),
+    hash,
+    packs: contentPacks.files,
+    packManifest: contentPacks.manifest,
+  };
 }
 
 async function hashContentPacks(directory) {
@@ -74,8 +82,13 @@ async function hashContentPacks(directory) {
     outputNames.push(outputName);
   }
   if (outputNames.length === 0) throw new Error(`Web content packs are missing in ${packsDirectory}`);
-  await writeFile(resolve(packsDirectory, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
-  return outputNames;
+  const manifestContent = `${JSON.stringify(manifest, null, 2)}\n`;
+  const manifestHash = createHash("sha256").update(manifestContent).digest("hex").slice(0, HASH_LENGTH);
+  const manifestName = `packs/manifest.${manifestHash}.json`;
+  await writeFile(resolve(directory, manifestName), manifestContent);
+  // 保留稳定文件名供导出测试和人工排查；游戏运行时始终使用内容哈希文件名。
+  await writeFile(resolve(packsDirectory, "manifest.json"), manifestContent);
+  return { files: outputNames, manifest: manifestName };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
