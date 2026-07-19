@@ -110,6 +110,8 @@ func _download_file(relative_path: String, cache_path: String, expected_size: in
 
 func _request_bytes(url: String) -> Dictionary:
 	var request := HTTPRequest.new()
+	# 浏览器已经负责 Content-Encoding 解压；关闭 Godot 的二次 gzip 解码，避免 Nginx JSON 响应解析失败。
+	request.accept_gzip = false
 	add_child(request)
 	var request_error := request.request(url)
 	if request_error != OK:

@@ -84,7 +84,8 @@ async function hashContentPacks(directory) {
   if (outputNames.length === 0) throw new Error(`Web content packs are missing in ${packsDirectory}`);
   const manifestContent = `${JSON.stringify(manifest, null, 2)}\n`;
   const manifestHash = createHash("sha256").update(manifestContent).digest("hex").slice(0, HASH_LENGTH);
-  const manifestName = `packs/manifest.${manifestHash}.json`;
+  // 运行时使用二进制扩展名，避免常见 Nginx gzip_types 对 JSON 触发 Web 端二次解压。
+  const manifestName = `packs/manifest.${manifestHash}.bin`;
   await writeFile(resolve(directory, manifestName), manifestContent);
   // 保留稳定文件名供导出测试和人工排查；游戏运行时始终使用内容哈希文件名。
   await writeFile(resolve(packsDirectory, "manifest.json"), manifestContent);
