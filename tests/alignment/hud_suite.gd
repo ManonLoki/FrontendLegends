@@ -22,7 +22,7 @@ func _run_hud_suite() -> Node:
 	_assert_true(not web_builder.contains("writeFile(exportPresets"), "Web 构建不得临时改写导出预设")
 	var export_presets := FileAccess.get_file_as_string("res://export_presets.cfg")
 	_assert_true(export_presets.contains("export_path=\"dist/web-preview/index.html\"") and export_presets.contains("html/canvas_resize_policy=0"), "编辑器 Web 预览不得覆盖正式构建，且必须保持固定 Canvas")
-	_assert_true(export_presets.count("include_filter=\"*.tmx,*.tsx,*.tpsheet\"") == 4, "Web、macOS、Windows 与 Android 导出都必须包含运行时地图和图集定义")
+	_assert_true(export_presets.count("include_filter=\"*.ogg,*.tmx,*.tsx,*.tpsheet\"") == 4, "Web、macOS、Windows 与 Android 导出都必须包含音频、运行时地图和图集定义")
 	var dark_study_map := TiledMapLoader.new()
 	_assert_true(dark_study_map.load_file("res://assets/Map/maps/LoreWorld/KaiyuanTown/DarkXue.tmx"), "HUD 测试应能加载 DARK学地图")
 	dark_study_map.inject_objects(data_registry.world_event_objects(dark_study_map.map_id, dark_study_map.tile_width, dark_study_map.tile_height))
