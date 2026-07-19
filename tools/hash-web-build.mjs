@@ -37,6 +37,8 @@ export async function hashWebBuild(outputDirectory) {
     await rename(resolve(directory, oldName), resolve(directory, newName));
   }
 
+  const packs = await hashContentPacks(directory);
+
   const finalNames = await readdir(directory);
   for (const name of finalNames.filter((candidate) => TEXT_FILE_RE.test(candidate))) {
     const path = resolve(directory, name);
@@ -48,7 +50,32 @@ export async function hashWebBuild(outputDirectory) {
     await writeFile(path, content);
   }
 
-  return { directory, executable, files: [...replacements.values()].sort(), hash };
+  return { directory, executable, files: [...replacements.values()].sort(), hash, packs };
+}
+
+async function hashContentPacks(directory) {
+  const packsDirectory = resolve(directory, "packs");
+  const names = (await readdir(packsDirectory)).filter((name) => name.endsWith(".pck")).sort();
+  const manifest = { version: 1, packs: {} };
+  const outputNames = [];
+  for (const name of names) {
+    const packId = name.split(".")[0];
+    const data = await readFile(resolve(packsDirectory, name));
+    const fullHash = createHash("sha256").update(data).digest("hex");
+    const outputName = `${packId}.${fullHash.slice(0, HASH_LENGTH)}.pck`;
+    if (name !== outputName) {
+      await rename(resolve(packsDirectory, name), resolve(packsDirectory, outputName));
+    }
+    manifest.packs[packId] = {
+      file: `packs/${outputName}`,
+      sha256: fullHash,
+      bytes: data.length,
+    };
+    outputNames.push(outputName);
+  }
+  if (outputNames.length === 0) throw new Error(`Web content packs are missing in ${packsDirectory}`);
+  await writeFile(resolve(packsDirectory, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+  return outputNames;
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

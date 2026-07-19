@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "sharedUseThreshold": 5,
+  "packs": {
+    "map_ng": { "regionIds": ["44ebb310-6990-5d82-bc23-623343b9acca"] },
+    "map_beijiao": { "regionIds": ["9b5bdbd9-3999-5e1e-aa17-5099491e841c"] },
+    "map_dongjiao": { "regionIds": ["294515d0-c122-5720-85d6-e5eeda2cf05d"] },
+    "map_kaiyuan": { "regionIds": ["25f3952d-ec39-53af-a8c1-d523c43b80b0"] },
+    "map_sky": { "regionIds": ["da94005d-198e-5e73-8a5a-d0a8ac87911b"] },
+    "map_quantum": { "regionIds": ["891e09c1-4118-5933-ab59-4f59be8ada85"] },
+    "map_mist": { "regionIds": ["e4c8dc5c-474d-58be-aa33-f092e17f1f8c"] },
+    "map_nanjiao": { "regionIds": ["fb215e50-cd81-5f1a-a285-b32c09a09834"] },
+    "map_shenghuo": { "regionIds": ["0c9615d7-aeba-5e40-9b22-2a4d0254b66b"] },
+    "map_vanilla": { "regionIds": ["46c0823c-c650-5200-a391-2cfb37761b30"] },
+    "map_xijiao": { "regionIds": ["f11a4867-c98d-5857-8c6a-e93bd568eda3"] },
+    "map_squid": { "regionIds": ["f832cbde-46e4-52d6-92fb-860bee93c8a8"] }
+  }
+}

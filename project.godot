@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="前端群侠传"
-config/version="0.7.9"
+config/version="0.8.0"
 run/main_scene="res://scenes/splash.tscn"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="FrontendLegends"
@@ -23,6 +23,7 @@ config/icon="res://icons/frontend-legends.svg"
 [autoload]
 
 DataRegistry="*res://scripts/data_registry.gd"
+ContentPackManager="*res://scripts/content_packs/content_pack_manager.gd"
 SkillSystem="*res://scripts/skill_system.gd"
 GameState="*res://scripts/game_state.gd"
 InventorySystem="*res://scripts/inventory_system.gd"

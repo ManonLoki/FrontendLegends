@@ -24,11 +24,19 @@ func load_map(index: int, arrival_from := "", cyber := false) -> void:
 	if DataRegistry.map_files.is_empty() or game.map_transitioning:
 		return
 	game.map_transitioning = true
+	var target_index := clampi(index, 0, DataRegistry.map_files.size() - 1)
+	if OS.has_feature("web"):
+		var pack_manager := game.get_node_or_null("/root/ContentPackManager")
+		var target_map_id := DataRegistry.map_id_at(target_index)
+		if not pack_manager or not await pack_manager.ensure_map_pack(target_map_id):
+			push_warning("地图分包不可用：%s" % target_map_id)
+			game.map_transitioning = false
+			return
 	if game.has_loaded_map:
 		var fade_in := game.create_tween()
 		fade_in.tween_property(game.transition_overlay, "color:a", 1.0, 0.12)
 		await fade_in.finished
-	game.map_index = clampi(index, 0, DataRegistry.map_files.size() - 1)
+	game.map_index = target_index
 	var next_context := TiledMapLoader.new()
 	if not next_context.load_file(DataRegistry.map_files[game.map_index]):
 		game.map_transitioning = false

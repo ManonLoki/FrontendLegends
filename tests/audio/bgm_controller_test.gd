@@ -57,6 +57,9 @@ func _test_named_region_tracks(controller: RefCounted) -> void:
 		_assert(controller.track_path_for_properties({"mapId": suburb_id}).ends_with("郊区.ogg"), "四个郊区应共用郊区.ogg")
 	var west_lake := {"mapId": "d1388237-5d83-5a08-a68c-41c18fe7d699", "parentMap": "0c9615d7-aeba-5e40-9b22-2a4d0254b66b"}
 	_assert(controller.track_path_for_properties(west_lake).ends_with("笙火喵喵教.ogg"), "西湖灵隐应与笙火喵喵教共用 BGM")
+	_assert(controller.pack_id_for_properties(west_lake) == "shenghuo", "西湖灵隐应解析到笙火地区分包")
+	var controller_source := FileAccess.get_file_as_string("res://scripts/game/audio/bgm_controller.gd")
+	_assert(not controller_source.contains("preload(\"res://assets/Audio/"), "地区 BGM 不得通过 preload 被强制打进 Web 主包")
 
 func _test_every_map_has_a_track(controller: RefCounted) -> void:
 	var data_registry: Node = root.get_node("DataRegistry")
