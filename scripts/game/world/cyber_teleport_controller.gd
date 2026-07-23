@@ -1,7 +1,9 @@
 extends RefCounted
-## 赛博传送资格、费用、目的地状态与输入；HUD 几何仍由 Game 布局接口负责。
+## 传送资格、费用、目的地状态与输入；HUD 几何仍由 Game 布局接口负责。
 
 var game: Node
+var pending_destination := -1
+var pending_cost := 0
 
 func _init(owner: Node) -> void:
 	game = owner
@@ -9,15 +11,15 @@ func _init(owner: Node) -> void:
 func try_open() -> void:
 	var basic_tune_id := SkillSystem.equipped_id("tune", "basic")
 	if SkillSystem.level(basic_tune_id) < game.CYBER_TELEPORT_SKILL_REQUIREMENT or SkillSystem.equipped_sect_skill_level("tune") < game.CYBER_TELEPORT_SKILL_REQUIREMENT:
-		game.message = "赛博传送需要装备的基础轻功与特殊轻功均达到 30 级。"
+		game.message = "传送需要装备的基础轻功与特殊轻功均达到 30 级。"
 		game._close_menu()
-		game._show_dialogue("赛博传送", game.message)
+		game._show_dialogue("传送", game.message)
 		return
 	var teleport_cost := cost()
 	if int(GameState.combat_state.mp) < teleport_cost:
-		game.message = "精力不足，赛博传送需要 %d 点精力。" % teleport_cost
+		game.message = "精力不足，传送需要 %d 点精力。" % teleport_cost
 		game._close_menu()
-		game._show_dialogue("赛博传送", game.message)
+		game._show_dialogue("传送", game.message)
 		return
 	game.cyber_maps.clear()
 	for index in DataRegistry.map_files.size():
@@ -27,7 +29,7 @@ func try_open() -> void:
 	if game.cyber_maps.is_empty():
 		game.message = "暂无可传送的野外地图。"
 		game._close_menu()
-		game._show_dialogue("赛博传送", game.message)
+		game._show_dialogue("传送", game.message)
 		return
 	game.cyber_open = true
 	game.cyber_index = 0
@@ -43,9 +45,9 @@ func handle_key(key: Key) -> void:
 		game.details_panel.visible = false
 		game.menu_open = true
 		game.menu_panel.visible = true
-		game.menu_index = 3
-		game.system_open = true
-		game.system_index = 0
+		game.menu_index = 2
+		game.skill_open = true
+		game.skill_index = game.SKILL_ITEMS.size() - 1
 		game._refresh_menu()
 		return
 	if key == KEY_UP:
@@ -54,16 +56,18 @@ func handle_key(key: Key) -> void:
 		game.cyber_index = posmod(game.cyber_index + 1, game.cyber_maps.size())
 	elif key == KEY_SPACE:
 		if int(GameState.combat_state.mp) < teleport_cost:
-			game.message = "精力不足，赛博传送需要 %d 点精力。" % teleport_cost
+			game.message = "精力不足，传送需要 %d 点精力。" % teleport_cost
 		else:
-			GameState.combat_state.mp -= teleport_cost
-			GameState.advance_time(1.0)
 			var destination: int = game.cyber_maps[game.cyber_index]
+			var destination_id := DataRegistry.map_id_at(destination)
+			var destination_name := DataRegistry.map_display_name(destination_id)
 			game.cyber_open = false
 			game.details_panel.visible = false
 			game._close_menu()
-			game._load_map(destination, game.map_context.map_id if game.map_context else "", true)
-			game.message = "赛博传送完成，消耗 %d 精力" % teleport_cost
+			pending_destination = destination
+			pending_cost = teleport_cost
+			var text := "你在赛博世界中，靠着量子纠缠，嗖的一下就到达了%s" % destination_name
+			game._show_dialogue("传送", text, 0.0, _complete_teleport)
 			return
 	if game.cyber_open:
 		refresh_menu(teleport_cost)
@@ -80,7 +84,23 @@ func refresh_menu(teleport_cost: int) -> void:
 	else:
 		game._layout_cyber_widgets()
 	game.message = "↑↓选择目的地　空格确认　ESC返回　消耗 %d 精力" % teleport_cost
-	game._set_menu_hint("赛博传送", game.message)
+	game._set_menu_hint("传送", game.message)
+
+func _complete_teleport() -> String:
+	if pending_destination < 0:
+		return ""
+	var destination := pending_destination
+	var teleport_cost := pending_cost
+	pending_destination = -1
+	pending_cost = 0
+	if int(GameState.combat_state.mp) < teleport_cost:
+		return "精力不足，传送需要 %d 点精力。" % teleport_cost
+	GameState.combat_state.mp -= teleport_cost
+	GameState.advance_time(1.0)
+	var arrival_from: String = str(game.map_context.map_id) if game.map_context else ""
+	game._load_map(destination, arrival_from, true)
+	game.message = "传送完成，消耗 %d 精力" % teleport_cost
+	return ""
 
 func build_menu() -> void:
 	game.details_content.visible = true

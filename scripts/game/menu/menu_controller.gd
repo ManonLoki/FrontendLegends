@@ -74,10 +74,10 @@ func _handle_menu_key(key: Key) -> void:
 func _refresh_menu() -> void:
 	game._render_menu_widgets()
 	if game.skill_open:
-		var skill_hints := ["冥想：静坐调息，恢复精力。", "练功：选择已学会的门派功法修炼。", "加力：调整本次攻击额外消耗的精力与伤害。", "功法：查看已经学会的基础与门派功法。"]
+		var skill_hints := ["冥想：静坐调息，恢复精力。", "练功：选择已学会的门派功法修炼。", "加力：调整本次攻击额外消耗的精力与伤害。", "功法：查看已经学会的基础与门派功法。", "传送：消耗精力前往选定的野外地点。"]
 		_set_menu_hint(game.SKILL_ITEMS[game.skill_index], skill_hints[game.skill_index])
 	elif game.system_open:
-		var system_hints := ["赛博传送将消耗精力。选择目的地后立即传送。", "摸鱼：消磨时间并恢复体力。", "疗伤：消耗资源治疗伤势。", "保存：将当前进度写入存档。", "退出：返回标题页面，不修改当前存档。"]
+		var system_hints := ["摸鱼：消磨时间并恢复体力。", "疗伤：消耗资源治疗伤势。", "保存：将当前进度写入存档。", "设置：调整独立于角色存档的系统选项。"]
 		_set_menu_hint(game.SYSTEM_ITEMS[game.system_index], system_hints[game.system_index])
 	else:
 		_clear_menu_hint()
@@ -122,6 +122,9 @@ func _select_skill_menu() -> void:
 		3:
 			_close_menu()
 			game._open_skill_book()
+			return
+		4:
+			game.cyber_teleport_controller.try_open()
 			return
 
 func _open_meditation() -> void:
@@ -210,26 +213,24 @@ func _close_meditation() -> void:
 func _select_system_menu() -> void:
 	match game.system_index:
 		0:
-			game.cyber_teleport_controller.try_open()
-			return
-		1:
 			var channel_result: Dictionary = SkillSystem.channel_hp()
 			_close_menu()
 			game._show_dialogue("摸鱼", str(channel_result.get("message", "")))
 			return
-		2:
+		1:
 			var heal_result: Dictionary = SkillSystem.heal_injury()
 			_close_menu()
 			game._show_dialogue("疗伤", str(heal_result.get("message", "")))
 			return
-		3:
+		2:
 			GameState.save_game()
 			game.message = "游戏已保存"
 			# 保存不会生成新窗口，继续保留当前父子菜单。
 			_set_menu_hint("保存", game.message)
 			return
-		4:
-			game.get_tree().change_scene_to_file("res://scenes/splash.tscn")
+		3:
+			game.settings_controller.open()
+			return
 	if game.menu_open:
 		_refresh_menu()
 

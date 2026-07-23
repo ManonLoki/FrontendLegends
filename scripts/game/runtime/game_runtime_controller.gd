@@ -206,6 +206,9 @@ func _input(event: InputEvent) -> void:
 		if game.skill_book_open:
 			game._handle_skill_book_key(event.keycode)
 			return
+		if game.settings_open:
+			game.settings_controller.handle_key(event.keycode)
+			return
 		if game.cyber_open:
 			game._handle_cyber_key(event.keycode)
 			return
@@ -252,7 +255,7 @@ func _on_virtual_key_up(keycode: int) -> void:
 		game.virtual_direction.x = 0.0
 
 func _has_modal_input() -> bool:
-	return game.delete_confirm_open or game.dialogue_open or game.trade_open or game.inventory_open or game.learn_open or game.meditation_open or game.practice_open or game.skill_book_open or game.cyber_open or game.npc_menu_open or game.battle_ui.active or game.menu_open or game.details_panel.visible or game.dialogue_panel.visible
+	return game.delete_confirm_open or game.dialogue_open or game.trade_open or game.inventory_open or game.learn_open or game.meditation_open or game.practice_open or game.skill_book_open or game.settings_open or game.cyber_open or game.npc_menu_open or game.battle_ui.active or game.menu_open or game.details_panel.visible or game.dialogue_panel.visible
 
 func _dispatch_virtual_key(keycode: int) -> void:
 	var event := InputEventKey.new()

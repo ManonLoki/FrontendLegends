@@ -73,6 +73,7 @@ func _ensure_players() -> void:
 	for index in 2:
 		var player := AudioStreamPlayer.new()
 		player.name = "BgmPlayer%d" % (index + 1)
+		player.bus = SystemSettings.BGM_BUS_NAME
 		player.process_mode = Node.PROCESS_MODE_ALWAYS
 		player.volume_db = SILENT_VOLUME_DB
 		game.add_child(player)

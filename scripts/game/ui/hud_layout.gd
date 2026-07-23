@@ -9,7 +9,7 @@ func _init(owner: Node) -> void:
 func _build_detail_huds() -> void:
 	game.detail_huds["npc_view"] = {"panel": game.details_panel, "content": game.details_content}
 	game.detail_widget_sets["npc_view"] = game.details_widgets
-	for kind in ["profile", "inventory", "skill_book", "learn", "practice", "cyber", "buy", "sell", "generic"]:
+	for kind in ["profile", "inventory", "skill_book", "learn", "practice", "cyber", "settings", "buy", "sell", "generic"]:
 		var panel := PanelContainer.new()
 		panel.name = "%sHUD" % kind.to_pascal_case()
 		panel.visible = false
@@ -48,6 +48,9 @@ func _layout_active_detail_hud() -> void:
 		game._layout_npc_view_panel()
 	elif game.active_detail_hud == "cyber":
 		_layout_cyber_panel()
+	elif game.active_detail_hud == "settings":
+		_layout_details_overlay()
+		game.settings_controller.layout()
 	else:
 		_layout_details_overlay()
 
@@ -68,6 +71,9 @@ func _layout_game_view() -> void:
 	elif game.cyber_open and game.active_detail_hud == "cyber":
 		_layout_cyber_panel()
 		game._layout_cyber_widgets()
+	elif game.settings_open and game.active_detail_hud == "settings":
+		_layout_details_overlay()
+		game.settings_controller.layout()
 	else:
 		_layout_details_overlay()
 	_layout_battle_panel()
@@ -112,8 +118,8 @@ func _layout_cyber_panel() -> void:
 	var group_width: float = tab_width * game.MENU_ITEMS.size() + item_gap * (game.MENU_ITEMS.size() - 1)
 	var group_x: float = (game.menu_panel.size.x - group_width) * 0.5
 	var panel_width: float = 184.0 * scale
-	var system_tab_x: float = group_x + (tab_width + item_gap) * 3.0
-	var panel_x: float = system_tab_x - (panel_width - tab_width) * 0.5
+	var skill_tab_x: float = group_x + (tab_width + item_gap) * 2.0
+	var panel_x: float = skill_tab_x - (panel_width - tab_width) * 0.5
 	var row_height: float = 24.0 * scale
 	game.details_panel.position = Vector2(panel_x, game.menu_panel.position.y + game.menu_panel.size.y)
 	game.details_panel.size = Vector2(panel_width, row_height * maxi(1, game.cyber_maps.size()))

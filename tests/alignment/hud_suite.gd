@@ -49,6 +49,7 @@ func _run_hud_suite() -> Node:
 	await process_frame
 	var splash_bgm: AudioStreamPlayer = splash.get_node("TitleBgm")
 	_assert_true(splash_bgm.playing and splash_bgm.stream.resource_path.ends_with("前端群侠传.ogg"), "Splash 应自动播放前端群侠传 OGG")
+	_assert_true(splash_bgm.bus == root.get_node("SystemSettings").BGM_BUS_NAME, "Splash 标题音乐必须接入可独立静音的 BGM 总线")
 	_assert_true((splash_bgm.stream as AudioStreamOggVorbis).loop, "Splash 标题音乐应循环播放")
 	var splash_view_center: Vector2 = splash.get_viewport_rect().size * 0.5
 	_assert_true(splash.stage.size == Vector2(480.0, 320.0) and splash.stage.scale == Vector2.ONE and splash.stage.get_rect().get_center().is_equal_approx(splash_view_center), "Splash 的 480×320 设计舞台应与逻辑视口重合")
@@ -60,6 +61,7 @@ func _run_hud_suite() -> Node:
 	await process_frame
 	var creation_bgm: AudioStreamPlayer = character_creation.get_node("TitleBgm")
 	_assert_true(creation_bgm.playing and creation_bgm.stream.resource_path.ends_with("前端群侠传.ogg"), "CharacterCreation 应自动播放前端群侠传 OGG")
+	_assert_true(creation_bgm.bus == root.get_node("SystemSettings").BGM_BUS_NAME, "角色创建标题音乐必须接入可独立静音的 BGM 总线")
 	_assert_true((creation_bgm.stream as AudioStreamOggVorbis).loop, "CharacterCreation 标题音乐应循环播放")
 	var creation_view_center: Vector2 = character_creation.get_viewport_rect().size * 0.5
 	_assert_true(character_creation.stage.size == Vector2(480.0, 320.0) and character_creation.stage.scale == Vector2.ONE and character_creation.stage.get_rect().get_center().is_equal_approx(creation_view_center), "CharacterCreation 的 480×320 设计舞台应与逻辑视口重合")
@@ -95,6 +97,7 @@ func _run_hud_suite() -> Node:
 	var runtime_bgm = game.map_transition_controller.bgm_controller
 	_assert_true(not runtime_bgm.current_track_path().is_empty(), "游戏场景加载初始地图时应同步启动对应 BGM")
 	_assert_true(runtime_bgm.active_player_index >= 0 and runtime_bgm.players[runtime_bgm.active_player_index].playing, "初始地图 BGM 应在实际游戏场景中持续播放")
+	_assert_true(runtime_bgm.players.all(func(player): return player.bus == root.get_node("SystemSettings").BGM_BUS_NAME), "地图 BGM 播放器必须全部接入独立 BGM 总线")
 	# 新 TexturePacker 图集必须直接按 tpsheet 载入，不能继续使用旧横排图集坐标。
 	_assert_true(game.player_sprite_regions.size() == 64 and game.player_foot_anchors.size() == 64, "Player 图集应载入男女、四方向、idle/run 各四帧，共 64 帧")
 	_assert_true(npc_system.sprite_regions.size() == 70, "NPC 图集应从 NPC.tpsheet 载入全部 70 个角色区域")

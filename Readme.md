@@ -76,4 +76,4 @@ npm run build:web
 - [世界与玩法设定](docs/lore_bible.md)
 - [代码与存档规范](docs/code_and_save_standards.md)
 
-当前版本：`0.7.8`（以 `project.godot` 的 `config/version` 为准）
+当前版本：`0.8.1`（以 `project.godot` 的 `config/version` 为准）
