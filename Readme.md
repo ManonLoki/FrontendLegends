@@ -61,14 +61,24 @@ macOS 也可以在仓库根目录执行：
 
 请优先使用该安全入口。Godot 4.7 在部分 macOS 或受限环境中无法写入默认 `user://logs` 时可能直接崩溃；脚本会为每次运行显式创建位于 `/tmp` 的独立日志。故障说明见 [Godot 稳定启动与崩溃处理](docs/godot_stability.md)。
 
-构建 Web 版本：
+## 导出发布版本
 
-```sh
-npm install
-npm run build:web
-```
+所有平台统一从 Godot 的“项目 → 导出”面板发布，不再运行独立构建脚本。项目已配置
+Web、macOS、Windows Desktop、Android 和 iOS 五个预设：
 
-构建结果会生成到 `dist/web/`。项目还配置了 Web、macOS、Windows Desktop 和 Android 导出预设。
+- Web：选择 `Web` 后点“导出项目”，生成 `dist/web/index.html` 及配套文件。音频、TMX、
+  TSX 和图集定义都直接进入主包，不再需要 Node 哈希或地区分包步骤。
+- macOS：选择 `macOS` 后导出 `dist/macos/FrontendLegends.app`。预设已选择
+  `Developer ID Application: Manon Loki (GKVE4TEFQ6)` 证书；若要面向公网分发，请在
+  “Notarization”中选择“Xcode notarytool”，并在本机面板填写 Apple ID 专用密码或
+  App Store Connect API 凭据。凭据属于本机秘密，不应提交到 `export_presets.cfg`。
+- iOS：选择 `iOS` 后导出 `dist/ios/FrontendLegends.ipa`。勾选导出窗口中的
+  “Export With Debug”会使用 Development 签名，适合连接的真机；不勾选则使用
+  App Store 发布签名。预设已配置 Bundle ID `com.manonloki.frontendlegends`、Team ID
+  `GKVE4TEFQ6`、自动签名、iOS 15 最低版本以及 iPhone/iPad 目标。
+
+iOS 真机首次使用时，仍需在设备上开启开发者模式，并在 Xcode 中完成设备配对和 Apple
+开发者账号登录；这些是本机钥匙串与设备信任状态，不能安全写入项目配置。
 
 ## 项目资料
 

@@ -9,6 +9,7 @@ const CACHE_DIRECTORY := "user://content_packs"
 const CATALOG_PATH := "res://assets/Data/bgm_packs.json"
 const MAP_PACK_CATALOG_PATH := "res://assets/Data/map_packs.json"
 const MAP_CATALOG_PATH := "res://assets/Data/maps.json"
+const SPLIT_CONTENT_FEATURE := "split_content_packs"
 
 var manifest: Dictionary = {}
 var manifest_pending := false
@@ -19,11 +20,11 @@ var map_region_by_id: Dictionary = {}
 
 func _ready() -> void:
 	_load_map_catalogs()
-	if OS.has_feature("web"):
+	if _uses_split_content_packs():
 		call_deferred("_prefetch_initial_pack")
 
 func ensure_map_pack(map_id: String) -> bool:
-	if not OS.has_feature("web"):
+	if not _uses_split_content_packs():
 		return true
 	var region_id := str(map_region_by_id.get(map_id.to_lower(), map_id)).to_lower()
 	var pack_id := str(map_pack_by_region.get(region_id, ""))
@@ -35,7 +36,7 @@ func ensure_map_pack(map_id: String) -> bool:
 	return await ensure_pack(pack_id)
 
 func ensure_pack(pack_id: String) -> bool:
-	if not OS.has_feature("web"):
+	if not _uses_split_content_packs():
 		return true
 	if loaded_packs.has(pack_id):
 		return true
@@ -137,6 +138,9 @@ func _cached_file_matches(path: String, expected_size: int) -> bool:
 func _web_url(relative_path: String) -> String:
 	var expression := "new URL(%s, window.location.href).href" % JSON.stringify(relative_path)
 	return str(JavaScriptBridge.eval(expression))
+
+func _uses_split_content_packs() -> bool:
+	return OS.has_feature("web") and OS.has_feature(SPLIT_CONTENT_FEATURE)
 
 func _prefetch_initial_pack() -> void:
 	var parsed = JSON.parse_string(FileAccess.get_file_as_string(CATALOG_PATH))

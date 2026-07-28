@@ -94,7 +94,6 @@
   </div>
   <script src="$GODOT_URL"></script>
   <script>
-    window.FrontendContentPackManifest = '__CONTENT_PACK_MANIFEST__';
     const GODOT_CONFIG = $GODOT_CONFIG;
     const GODOT_THREADS_ENABLED = $GODOT_THREADS_ENABLED;
     const engine = new Engine(GODOT_CONFIG);
@@ -230,7 +229,7 @@
     const invalidMobileBuild = mobileBrowser && GODOT_CONFIG.canvasResizePolicy !== 0;
     overlay.style.visibility = 'visible';
     if (invalidMobileBuild) {
-      fail('移动 Web 构建配置无效，请使用 npm run build:web 重新完整构建。');
+      fail('移动 Web 构建配置无效，请在 Godot 导出面板中使用 Web 预设重新导出。');
     } else if (missing.length) {
       fail(`当前浏览器缺少以下功能：\n${missing.join('\n')}`);
     } else {
