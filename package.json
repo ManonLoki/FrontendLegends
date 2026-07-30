@@ -3,6 +3,7 @@
 
   "scripts": {
     "test:godot": "./tools/run-godot-tests.sh",
+    "release:check": "./tools/release-check.sh",
     "data:excel": "node tools/data-excel/json-to-excel.mjs",
     "data:json": "node tools/data-excel/excel-to-json.mjs",
     "data:ids:check": "node tools/validate-data-ids.mjs",

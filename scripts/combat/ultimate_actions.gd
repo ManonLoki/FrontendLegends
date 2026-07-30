@@ -35,9 +35,13 @@ func player_use(session: Dictionary, ult_ref: Variant = 0) -> Dictionary:
 	return _execute(session, ult, true)
 
 func _resolve_player_ult(ult_ref: Variant) -> Dictionary:
-	if ult_ref is Dictionary:
-		return ult_ref
 	var ults: Array = SkillSystem.unlocked_ults()
+	if ult_ref is Dictionary:
+		var requested_id := str(ult_ref.get("id", ""))
+		for candidate in ults:
+			if not requested_id.is_empty() and str(candidate.get("id", "")) == requested_id:
+				return candidate
+		return {}
 	var index := int(ult_ref)
 	return ults[index] if index >= 0 and index < ults.size() else {}
 
@@ -45,7 +49,7 @@ func _resolve_player_ult(ult_ref: Variant) -> Dictionary:
 ## 进入权威结算管线，攻击无关的异常能力在攻击循环后统一施加。
 func _execute(session: Dictionary, ult: Dictionary, player_side: bool) -> Dictionary:
 	var abilities: Array = ult.get("abilities", [])
-	var level := int(ult.get("inner_level", ABILITY_RULES.MIN_INNER_LEVEL))
+	var level := int(ult.get("effect_level", ult.get("inner_level", ABILITY_RULES.MIN_INNER_LEVEL)))
 	var label := "施展【%s】" % ult.get("name", "绝招" if player_side else "敌方绝招")
 	var power_bonus: float = float(combat.rules.inner_power_attack_bonus(int(ult.get("inner_power", 0))))
 	var is_multi := "multi" in abilities

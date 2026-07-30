@@ -75,8 +75,7 @@ FrontendLegends 是一款使用 Godot 4.7 与 GDScript 开发的 2D 俯视角格
 修改运行时后至少执行：
 
 ```sh
-./tools/check_file_size.sh
-npm run test:godot
+npm run release:check
 ```
 
-测试必须使用 `GameState.use_test_save_path(...)` 写入系统临时目录，不能污染正式存档。数据表变更还必须执行 `npm run data:check`，校验 UUID 引用并确保六个独立工作簿覆盖的 JSON 往返不变。
+该发布闸门会检查数据、导出预设、源码规模并运行全量 Godot 测试。测试启动器在自动加载前设置隔离环境，角色存档、系统设置和日志都写入系统临时目录，不能污染正式数据。

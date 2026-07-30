@@ -4,8 +4,8 @@ func _ready() -> void:
 	hud_layout._build_detail_huds()
 	# 任务槽、冷却、环计数与动态悬赏均为本局内存态，不随存档恢复。
 	QuestSystem.reset_runtime()
-	# NPC 击杀隐藏同样只在一次 Game 场景存续期间有效；重新进入即全部恢复。
-	NpcSystem.clear_defeated()
+	# NPC 击败冷却与累计战绩属于角色世界状态，重新进入场景后继续生效。
+	NpcSystem.clear_runtime_defeated()
 	MOBILE_ORIENTATION.apply()
 	_install_virtual_controls()
 	_apply_hud_theme()

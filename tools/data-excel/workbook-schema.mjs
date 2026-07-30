@@ -130,4 +130,9 @@ export const BALANCE_RULE_ROWS = [
   { category: '界面', key: '战斗大数值排版', value: '体力与精力支持5–6位数', formula: '双方统计分列显示；伤势百分比独立位于体力条上方', notes: '数值、标签和进度条不得互相覆盖' },
   { category: '界面', key: '顶部进度条宽度', value: '从地图徽标后8px延伸至右边界前16px', formula: 'left=mapBadge.right+8；right=viewportWidth-16', notes: '480逻辑视口下约316px，充分使用右侧空间' },
   { category: '存档', key: 'v5 版本边界', value: '仅接受当前版本', formula: 'version == 5', notes: '资源主键已切换为 UUID；v2、v3、v4 存档全部作废且不迁移' },
+  { category: '技能', key: '绝招成长硬锁', value: '仅接受当前门派、装备与等级解锁列表中的标准绝招 ID', formula: '门派架构30级解锁一档，80级解锁二档；执行前按ID重新解析权威配置', notes: '外部字典不能伪造能力、精力消耗或等级绕过门槛' },
+  { category: '技能', key: '绝招两档平衡', value: '一档效果等级最多74；二档使用完整功力', formula: 'effect_level = min(innerLevel,74)（一档）/ innerLevel（二档）', notes: '80级后形成低耗稳定与高耗完整的选择，不再是同效果不同价格' },
+  { category: 'AI', key: '角色化意图决策', value: 'striker偏加力；controller偏绝招；tank偏恢复；其余原型各有概率曲线', formula: 'combatRole默认行为可由ai.ultUseRate/forceUseRate/restUseRate/itemUseRate覆盖', notes: '下一回合意图先写入【预判】战报；原型不直接修改攻防命中或伤害' },
+  { category: '人物', key: 'NPC击败后果', value: '静态NPC冷却300游戏秒，累计落败次数随v5角色存档保持', formula: 'defeated_until + defeat_counts；动态任务NPC仍只保留本局状态', notes: '胜利立即安全保存；复出后对白与人物详情反馈历史交手' },
+  { category: '发布', key: '发布前闸门', value: '数据/预设/文件规模/Godot全量测试全部通过', formula: 'npm run release:check', notes: '测试先完整--import，使用/tmp日志与存档，逐例90秒超时并扫描脚本加载错误' },
 ];

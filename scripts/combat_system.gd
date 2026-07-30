@@ -30,7 +30,9 @@ const MOVE_HIT_BONUS := 0.12
 ## initial_player_hp 记录开战体力，结算时按净损失的 15%、功法减免和当场重伤计算伤势，
 ## 再以真实体力上限的 20% 封顶，避免治疗或临时削上限重复放大惩罚。
 func create_session(enemy_id: String, lethal: bool = true) -> Dictionary:
-	return rules.create_session(enemy_id, lethal)
+	var session := rules.create_session(enemy_id, lethal)
+	enemy_ai.prepare_intent(session)
+	return session
 
 ## 执行玩家攻击并依次结算招式、加力、装备、状态和战报。
 func player_attack(session: Dictionary, turn_started := false, damage_scale := 1.0, hit_bonus_extra := 0.0, attack_power_bonus := 0.0, action_label := "出手", allow_attack_move := true, attack_effects: Dictionary = {}) -> Dictionary:
@@ -161,7 +163,9 @@ func enemy_attack(session: Dictionary, turn_started := false, damage_scale := 1.
 ## 这样高阶人物仍有爆发，但不会每次普攻都按全部内功自动增伤。
 func _apply_enemy_force_power(session: Dictionary, result: Dictionary) -> int:
 	var ai: Dictionary = session.enemy.get("ai", {})
-	if randf() >= clampf(float(ai.get("forceUseRate", NPC_FORCE_USE_RATE)), 0.0, 1.0):
+	var intent: Dictionary = session.get("enemy_current_intent", {})
+	var use_force := bool(intent.get("use_force", false)) if intent.has("use_force") else randf() < clampf(float(ai.get("forceUseRate", NPC_FORCE_USE_RATE)), 0.0, 1.0)
+	if not use_force:
 		return 0
 	var ratio := clampf(float(ai.get("forceRatio", NPC_FORCE_INNER_POWER_RATIO)), 0.0, 1.0)
 	var force := maxi(0, int(ceil(float(_npc_inner_power(session.enemy)) * ratio)))

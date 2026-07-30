@@ -21,6 +21,9 @@ var item_cooldowns: Dictionary = {}
 
 ## 自动加载单例就绪时尝试读取现有存档。
 func _ready() -> void:
+	var test_suite := OS.get_environment("FRONTEND_LEGENDS_TEST_SUITE").strip_edges()
+	if not test_suite.is_empty():
+		use_test_save_path("bootstrap-" + test_suite)
 	load_game()
 
 ## 将测试切换到独立存档；正式存档路径和备份绝不会被测试删除或覆盖。
@@ -63,6 +66,7 @@ func create_profile(player_name: String, custom_attributes: Dictionary = {}, gen
 		"sect": "",
 		"master": "",
 		"skills": SkillSystem.create_default_skills(),
+		"world_state": {"defeated_until": {}, "defeat_counts": {}},
 		"money": 0
 	}
 	combat_state = _default_combat_state(player_hp_max())
@@ -201,6 +205,13 @@ func _normalize_loaded_profile() -> void:
 	for key in ["money", "potential", "experience", "cultivation"]:
 		vitals[key] = maxi(0, int(vitals.get(key, 0)))
 	profile.vitals = vitals
+	var raw_world_state = profile.get("world_state", {})
+	var world_state: Dictionary = raw_world_state if raw_world_state is Dictionary else {}
+	if not world_state.has("defeated_until") or not world_state.get("defeated_until", {}) is Dictionary:
+		world_state.defeated_until = {}
+	if not world_state.has("defeat_counts") or not world_state.get("defeat_counts", {}) is Dictionary:
+		world_state.defeat_counts = {}
+	profile.world_state = world_state
 	var item_catalog: Dictionary = _load_data_document("items.json").get("items", {})
 	inventory = _normalize_item_map(inventory, item_catalog, true)
 	item_cooldowns = _normalize_item_map(item_cooldowns, item_catalog, false)
@@ -229,6 +240,9 @@ func _load_data_document(file_name: String) -> Dictionary:
 ## 清空全部本局状态并删除正式存档文件。
 func delete_save() -> void:
 	QuestSystem.reset_runtime()
+	var npc_system := get_node_or_null("/root/NpcSystem")
+	if npc_system:
+		npc_system.clear_runtime_defeated()
 	profile = {}
 	combat_state = _default_combat_state()
 	game_time_sec = 0.0

@@ -45,6 +45,8 @@
 | `inventory` | 字典 | 物品 ID 到持有数量的映射 |
 | `item_cooldowns` | 字典 | 物品 ID 到剩余冷却时间的映射 |
 
+`profile.world_state` 保存静态世界后果：`defeated_until` 为 NPC ID 到复出游戏时间的映射，`defeat_counts` 为累计落败次数。动态任务 NPC 的临时 ID 只存在于 `NpcSystem` 本局内存，不写入存档。
+
 技能状态字段如下：
 
 | 字段 | 含义 |
@@ -68,7 +70,7 @@
 
 - 自动加载依赖顺序固定为 `DataRegistry → SkillSystem → GameState`，之后再加载背包、任务、NPC、战斗和结算系统。
 - 读档、卸下功法、战败降级等会改变体力或精力上限的路径，必须重算派生四维并调用战斗状态规范化，把当前值钳制到新上限。
-- 测试必须使用 `GameState.use_test_save_path(...)` 写入系统临时目录，不得读取或覆盖正式 `user://` 存档。
+- 测试启动器必须设置 `FRONTEND_LEGENDS_TEST_SUITE`；`GameState` 与 `SystemSettings` 会在自动加载读取之前切换到系统临时目录。用例内仍可使用 `GameState.use_test_save_path(...)` 进一步隔离，不得读取或覆盖正式 `user://` 存档和设置。
 
 ## 验证要求
 
@@ -78,3 +80,4 @@
 - 每次更改自动加载顺序或生命资源公式必须执行隔离 `user://` 的冷启动测试。
 - 每次拆分领域模块后必须运行无界面全量对齐测试。
 - 完成中文化前必须扫描英文自然语言注释、拼音标识符和超过 500 行的源码。
+- 发布前统一执行 `npm run release:check`；闸门包含数据往返、导出预设、文件规模、完整资源导入和全量 Godot 测试，并为每例设置独立临时日志与 90 秒超时。

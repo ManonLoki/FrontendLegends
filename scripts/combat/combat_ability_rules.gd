@@ -6,6 +6,9 @@ const MAX_INNER_LEVEL := 100
 ## 门派绝招按内力功法等级解锁：一档 30 级、二档 80 级。
 const ULT_TIER1_ARCH_LEVEL := 30
 const ULT_TIER2_ARCH_LEVEL := 80
+## 一档绝招继续随功力成长，但效果等级封在二档爆发节点之前；80级后两档因此
+## 保持“低耗稳定 / 高耗完整”的真实选择，而不是同效果不同价格。
+const ULT_TIER1_EFFECT_LEVEL_CAP := 74
 
 static func progress(inner_level: int) -> float:
 	return clampf(float(inner_level - MIN_INNER_LEVEL) / float(MAX_INNER_LEVEL - MIN_INNER_LEVEL), 0.0, 1.0)
@@ -42,12 +45,13 @@ static func build_ult(config: Dictionary, tier: int, inner_power: int, inner_lev
 		"id": "ult:%s:%d" % [config.get("key", "sect"), unlock_level],
 		"name": names[index], "tier": tier,
 		"inner_power": inner_power, "inner_level": inner_level,
+		"effect_level": mini(inner_level, ULT_TIER1_EFFECT_LEVEL_CAP) if tier == 1 else inner_level,
 		"mp_cost": int(costs[index]), "abilities": sets[index].duplicate(),
 	}
 
 static func attack_effects(ult: Dictionary) -> Dictionary:
 	var abilities: Array = ult.get("abilities", [])
-	var level := int(ult.get("inner_level", MIN_INNER_LEVEL))
+	var level := int(ult.get("effect_level", ult.get("inner_level", MIN_INNER_LEVEL)))
 	var result := {}
 	if "guaranteed_hit" in abilities:
 		result.guaranteedHit = true
@@ -60,7 +64,7 @@ static func attack_effects(ult: Dictionary) -> Dictionary:
 static func format_ult_label(ult: Dictionary) -> String:
 	var name_cost := "%s（耗精力 %d）" % [ult.get("name", "绝招"), int(ult.get("mp_cost", 0))]
 	var abilities: Array = ult.get("abilities", [])
-	var level := int(ult.get("inner_level", MIN_INNER_LEVEL))
+	var level := int(ult.get("effect_level", ult.get("inner_level", MIN_INNER_LEVEL)))
 	var details: Array[String] = []
 	if "multi" in abilities:
 		details.append("连击%d击（每击%d%%伤）" % [multi_hits(level), int(round(multi_power(level) * 100.0))])

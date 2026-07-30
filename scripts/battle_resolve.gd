@@ -42,7 +42,10 @@ func resolve_victory(session: Dictionary, lethal: bool = true) -> String:
 		lines.append("拾获：%s。" % "、".join(gained))
 	var disfigure_text := str(session.get("disfigurement_text", ""))
 	if not disfigure_text.is_empty(): lines.append(disfigure_text)
-	NpcSystem.mark_defeated(enemy_id)
+	var consequence := NpcSystem.mark_defeated(enemy_id, float(enemy.get("respawnSec", NpcSystem.DEFAULT_RESPAWN_SECONDS)))
+	var remaining_minutes := maxi(1, int(ceil((float(consequence.get("until", GameState.game_time_sec)) - GameState.game_time_sec) / 60.0)))
+	lines.append("%s暂时退出江湖，约 %d 分钟后重整旗鼓（累计落败 %d 次）。" % [enemy.get("displayName", "对手"), remaining_minutes, int(consequence.get("count", 1))])
+	GameState.save_game()
 	return " ".join(lines)
 
 ## 战败惩罚保留资源风险，但一场战败最多令一门功法倒退一级，避免抹去长时间成长。

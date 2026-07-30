@@ -1,7 +1,8 @@
 extends Node
 
-## 记录人物 ID 到复活游戏时刻的映射；使用全局游戏秒数而非现实时间，暂停模拟时冷却也暂停。
-var defeated_until: Dictionary = {}
+## 静态人物的击败后果写入角色世界状态；动态任务人物只保留本局冷却，避免把临时 ID 写进存档。
+const DEFAULT_RESPAWN_SECONDS := 300.0
+var runtime_defeated_until: Dictionary = {}
 ## 本局人物覆盖数据叠加在静态注册表之上，用于任务生成或临时移动；构建实例时合并，
 ## 不修改静态注册表，确保新会话始终从干净数据开始。
 var runtime_npcs: Dictionary = {}
@@ -54,7 +55,11 @@ func build_instance(npc_id: String, overrides: Dictionary = {}) -> Dictionary:
 
 func dialogue(npc_id: String) -> String:
 	var npc: Dictionary = build_instance(npc_id)
-	return str(npc.get("defaultLine", "……"))
+	var line := str(npc.get("defaultLine", "……"))
+	if defeat_count(npc_id) > 0:
+		var rematch_line := str(npc.get("rematchLine", "上次是我大意了，这次可没那么容易。"))
+		return "%s\n%s" % [rematch_line, line]
+	return line
 
 func can_interact(npc_id: String) -> bool:
 	return (runtime_npcs.has(npc_id) or not DataRegistry.get_npc(npc_id).is_empty()) and not is_defeated(npc_id)
@@ -65,26 +70,77 @@ func register_runtime(npc_id: String, definition: Dictionary) -> void:
 func unregister_runtime(npc_id: String) -> void:
 	runtime_npcs.erase(npc_id)
 
-func mark_defeated(npc_id: String, duration_sec: float = 300.0) -> void:
-	defeated_until[npc_id] = GameState.game_time_sec + duration_sec
+func mark_defeated(npc_id: String, duration_sec: float = DEFAULT_RESPAWN_SECONDS) -> Dictionary:
+	var until := GameState.game_time_sec + maxf(0.0, duration_sec)
+	if DataRegistry.get_npc(npc_id).is_empty():
+		runtime_defeated_until[npc_id] = until
+		return {"until": until, "count": 1, "persistent": false}
+	var world := _world_state()
+	var defeated: Dictionary = world.get("defeated_until", {})
+	var counts: Dictionary = world.get("defeat_counts", {})
+	defeated[npc_id] = until
+	counts[npc_id] = int(counts.get(npc_id, 0)) + 1
+	world.defeated_until = defeated
+	world.defeat_counts = counts
+	world.last_defeated_npc_id = npc_id
+	world.last_defeated_at = GameState.game_time_sec
+	GameState.profile.world_state = world
+	return {"until": until, "count": int(counts[npc_id]), "persistent": true}
 
 func clear_defeated() -> void:
-	defeated_until.clear()
+	clear_runtime_defeated()
+	if GameState.profile.is_empty():
+		return
+	var world := _world_state()
+	world.defeated_until = {}
+	world.defeat_counts = {}
+	world.erase("last_defeated_npc_id")
+	world.erase("last_defeated_at")
+	GameState.profile.world_state = world
+
+## 场景或角色重置时只清除动态任务人物的本局状态，不触碰角色存档中的静态人物后果。
+func clear_runtime_defeated() -> void:
+	runtime_defeated_until.clear()
 
 ## 读取击败状态时惰性清理到期记录；逐帧清扫只负责移除长期未被查询的过期项。
 func is_defeated(npc_id: String) -> bool:
-	if not defeated_until.has(npc_id):
+	if runtime_defeated_until.has(npc_id):
+		if GameState.game_time_sec < float(runtime_defeated_until[npc_id]):
+			return true
+		runtime_defeated_until.erase(npc_id)
+	var world := _world_state(false)
+	var defeated: Dictionary = world.get("defeated_until", {})
+	if not defeated.has(npc_id):
 		return false
-	if GameState.game_time_sec >= float(defeated_until[npc_id]):
-		defeated_until.erase(npc_id)
-		return false
-	return true
+	if GameState.game_time_sec < float(defeated[npc_id]):
+		return true
+	defeated.erase(npc_id)
+	world.defeated_until = defeated
+	GameState.profile.world_state = world
+	return false
 
 func sweep_defeated() -> void:
-	if defeated_until.is_empty():
-		return
-	for npc_id in defeated_until.keys():
+	for npc_id in runtime_defeated_until.keys():
 		is_defeated(npc_id)
+	var defeated: Dictionary = _world_state(false).get("defeated_until", {})
+	for npc_id in defeated.keys():
+		is_defeated(npc_id)
+
+func defeat_count(npc_id: String) -> int:
+	return maxi(0, int(_world_state(false).get("defeat_counts", {}).get(npc_id, 0)))
+
+func consequence_summary(npc_id: String) -> String:
+	var count := defeat_count(npc_id)
+	return "与你的战绩：落败 %d 次" % count if count > 0 else ""
+
+func _world_state(create := true) -> Dictionary:
+	if GameState.profile.is_empty():
+		return {}
+	var raw = GameState.profile.get("world_state", {})
+	var world: Dictionary = raw if raw is Dictionary else {}
+	if create and not GameState.profile.has("world_state"):
+		GameState.profile.world_state = world
+	return world
 
 ## 掉落采用反向查询：物品通过 dropNpcId 声明来源人物，使掉落规则只保存在物品定义旁边。
 func get_drop_items(npc_id: String) -> Array:

@@ -8,6 +8,9 @@ var active_settings_path := PRODUCTION_SETTINGS_PATH
 var _bgm_enabled := true
 
 func _ready() -> void:
+	var test_suite := OS.get_environment("FRONTEND_LEGENDS_TEST_SUITE").strip_edges()
+	if not test_suite.is_empty():
+		active_settings_path = OS.get_temp_dir().path_join("frontend_legends_test_settings/bootstrap-%s.json" % test_suite.validate_filename())
 	_ensure_bgm_bus()
 	get_tree().node_added.connect(_on_node_added)
 	load_settings()

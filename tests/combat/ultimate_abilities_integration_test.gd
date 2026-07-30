@@ -23,12 +23,16 @@ func _run() -> void:
 	state.combat_state.mp = state.player_mp_max()
 	state.combat_state.hp = state.player_effective_hp_max()
 	_assert_true(RULES.multi_hits(30) == 3 and RULES.multi_hits(100) == 6, "连击成长边界必须为3至6击")
+	var rejected_session: Dictionary = combat.create_session(TEST_ENEMY_ID, true)
+	var mp_before_rejected := int(state.combat_state.mp)
+	var rejected: Dictionary = combat.use_ult(rejected_session, {"name": "伪造绝招", "abilities": ["guaranteed_hit"], "inner_level": 100, "mp_cost": 0})
+	_assert_true(not bool(rejected.get("ok", true)) and int(state.combat_state.mp) == mp_before_rejected, "外部绝招字典不得绕过门派、装备与等级硬锁")
 
 	var abnormal_session: Dictionary = combat.create_session(TEST_ENEMY_ID, true)
 	var abnormal := {"name": "测试异常", "abilities": ["abnormal"], "inner_level": 80, "inner_power": 0, "mp_cost": 0, "tier": 2}
 	abnormal_session.enemy.attributes.agility = 100000
 	seed(101)
-	combat.use_ult(abnormal_session, abnormal)
+	combat.ultimate_actions._execute(abnormal_session, abnormal, true)
 	_assert_true(abnormal_session.enemy_status.size() == 2, "80级异常绝招必须附加两种不同状态，即使攻击落空")
 	for turns in abnormal_session.enemy_status.values():
 		_assert_true(int(turns) == 2, "必定异常必须持续两回合")
@@ -38,7 +42,7 @@ func _run() -> void:
 	var hp_before := int(state.combat_state.hp)
 	var hp_drain := {"name": "测试吸血", "abilities": ["guaranteed_hit", "drain_hp"], "inner_level": 100, "inner_power": 0, "mp_cost": 0, "tier": 1}
 	seed(7)
-	var hp_result: Dictionary = combat.use_ult(hp_drain_session, hp_drain)
+	var hp_result: Dictionary = combat.ultimate_actions._execute(hp_drain_session, hp_drain, true)
 	var healed := int(state.combat_state.hp) - hp_before
 	_assert_true(healed >= 0 and healed <= int(floor(float(hp_result.damage) * 0.35)), "吸血必须以实际伤害为基数且不得超过35%")
 
@@ -49,7 +53,7 @@ func _run() -> void:
 	var mp_drain := {"name": "测试吸精", "abilities": ["guaranteed_hit", "drain_mp"], "inner_level": 100, "inner_power": 0, "mp_cost": 0, "tier": 2}
 	seed(9)
 	var enemy_mp_before := int(mp_drain_session.enemy_mp)
-	combat.use_ult(mp_drain_session, mp_drain)
+	combat.ultimate_actions._execute(mp_drain_session, mp_drain, true)
 	var transferred := enemy_mp_before - int(mp_drain_session.enemy_mp)
 	_assert_true(transferred <= int(floor(float(mp_drain_session.enemy_mp_max) * 0.15)) and transferred == int(state.combat_state.mp) and transferred == int(mp_drain_session.player_mp), "吸精必须按目标最大精力转移、守恒并同步会话")
 
@@ -57,7 +61,7 @@ func _run() -> void:
 	for index in 50:
 		var guaranteed_session: Dictionary = combat.create_session(TEST_ENEMY_ID, true)
 		guaranteed_session.enemy.attributes.agility = 100000
-		var result: Dictionary = combat.use_ult(guaranteed_session, guaranteed)
+		var result: Dictionary = combat.ultimate_actions._execute(guaranteed_session, guaranteed, true)
 		_assert_true(int(result.landed) == 1, "必中绝招第%d次不应落空" % index)
 
 	var multi_session: Dictionary = combat.create_session(TEST_ENEMY_ID, true)
@@ -65,12 +69,12 @@ func _run() -> void:
 	multi_session.enemy_max_hp = 100000
 	var multi := {"name": "测试连击", "abilities": ["multi", "guaranteed_hit"], "inner_level": 100, "inner_power": 0, "mp_cost": 0, "tier": 2}
 	seed(19)
-	var multi_result: Dictionary = combat.use_ult(multi_session, multi)
+	var multi_result: Dictionary = combat.ultimate_actions._execute(multi_session, multi, true)
 	_assert_true(int(multi_result.attempted) == 6, "100级连击必须尝试6击")
 	multi_session.enemy_hp = 1
 	multi_session.enemy_max_hp = 1
 	seed(23)
-	var stopped_result: Dictionary = combat.use_ult(multi_session, multi)
+	var stopped_result: Dictionary = combat.ultimate_actions._execute(multi_session, multi, true)
 	_assert_true(int(stopped_result.attempted) == 1, "目标倒下后必须停止后续连击")
 
 	state.delete_save()

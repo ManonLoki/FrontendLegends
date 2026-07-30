@@ -129,11 +129,18 @@ func unlocked_ults() -> Array:
 	var result: Array = []
 	var arch_id := equipped_id("arch", "sect")
 	var definition: Dictionary = DataRegistry.get_skill(arch_id)
+	if str(definition.get("category", "")) != "sect" or str(definition.get("theme", "")) != "arch":
+		return result
+	if str(definition.get("sect", "")) != str(GameState.profile.get("sect", "")):
+		return result
 	var ult: Dictionary = definition.get("ult", {})
 	if ult.is_empty():
 		return result
 	var arch_level: int = skills.level(arch_id)
-	var inner_power: int = skills.level("dcebef7e-09b8-5a69-8e3d-159cb2b0c355") + arch_level * 2
+	var basic_arch_id := equipped_id("arch", "basic")
+	var basic_arch: Dictionary = DataRegistry.get_skill(basic_arch_id)
+	var basic_level: int = skills.level(basic_arch_id) if str(basic_arch.get("category", "")) == "basic" and str(basic_arch.get("theme", "")) == "arch" else 0
+	var inner_power: int = basic_level + arch_level * 2
 	if arch_level >= ABILITY_RULES.ULT_TIER1_ARCH_LEVEL:
 		result.append(ABILITY_RULES.build_ult(ult, 1, inner_power, arch_level))
 	if arch_level >= ABILITY_RULES.ULT_TIER2_ARCH_LEVEL:

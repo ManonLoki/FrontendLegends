@@ -162,7 +162,9 @@ func _show_npc_view_panel(npc: Dictionary) -> void:
 	var right_label := _detail_label("%s\n%s" % [game._gender_label(str(npc.get("gender", ""))), _npc_skill_rating(npc)], Rect2(Vector2(205.0, 86.0) * scale, Vector2(95.0, 58.0) * scale), 12, HORIZONTAL_ALIGNMENT_RIGHT)
 	left_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	right_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	var description := _detail_label(str(npc.get("description", "")), Rect2(Vector2(30.0, 154.0) * scale, Vector2(270.0, 42.0) * scale), 12, HORIZONTAL_ALIGNMENT_LEFT)
+	var consequence := NpcSystem.consequence_summary(game.nearby_npc_id)
+	var description_text := str(npc.get("description", "")) + ("\n" + consequence if not consequence.is_empty() else "")
+	var description := _detail_label(description_text, Rect2(Vector2(30.0, 154.0) * scale, Vector2(270.0, 42.0) * scale), 12, HORIZONTAL_ALIGNMENT_LEFT)
 	description.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
