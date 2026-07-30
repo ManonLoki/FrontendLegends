@@ -13,6 +13,7 @@ func _run_hud_suite() -> Node:
 	_assert_true(web_script.contains("if (true)") and not web_script.contains("__FROM_USER_GESTURE__"), "Web 横屏脚本必须安全替换用户手势标记")
 	_assert_true(web_script.contains("FrontendMobileOrientation.request()"), "移动 Web 横屏必须通过 HTML 用户手势桥请求")
 	var web_shell := FileAccess.get_file_as_string("res://web/index_shell.html")
+	_assert_true(web_shell.contains("<div id=\"loading-version\">v__FRONTEND_LEGENDS_VERSION__</div>"), "Web 加载页必须保留导出期版本令牌，不得手写版本号")
 	_assert_true(web_shell.contains("id=\"game-frame\"") and web_shell.contains("remapRotatedTouch"), "微信 CSS 横屏必须在 Godot Canvas 外层旋转并重映射触摸坐标")
 	_assert_true(web_shell.contains("width=\"480\" height=\"320\""), "Web Canvas 必须在 HTML 层声明固定 480×320 内部尺寸")
 	_assert_true(web_shell.contains("gameFrame.style.left") and web_shell.contains("matrix(0, ${uniformScale}"), "旋转容器必须按实时可视区使用像素矩阵居中")

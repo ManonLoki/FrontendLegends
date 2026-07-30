@@ -70,13 +70,14 @@ macOS 也可以在仓库根目录执行：
 npm run release:check
 ```
 
-闸门会验证数据与工作簿、五个平台预设、`0.8.2` 版本一致性、发布包资源过滤、源码规模和全量 Godot 测试。测试存档、设置和日志均隔离到 `/tmp`，不会读取或覆盖正式 `user://` 数据。
+闸门会验证数据与工作簿、五个平台预设、`0.8.2` 版本一致性、发布包资源过滤、源码规模和全量 Godot 测试，并实际导出一次 Web 包检查加载页版本。测试存档、设置、日志和检查用导出包均隔离到 `/tmp`，不会读取或覆盖正式 `user://` 数据。
 
 所有平台统一从 Godot 的“项目 → 导出”面板发布，不再运行独立构建脚本。项目已配置
 Web、macOS、Windows Desktop、Android 和 iOS 五个预设：
 
 - Web：选择 `Web` 后点“导出项目”，生成 `dist/web/index.html` 及配套文件。音频、TMX、
-  TSX 和图集定义都直接进入主包，不再需要 Node 哈希或地区分包步骤。
+  TSX 和图集定义都直接进入主包，不再需要 Node 哈希或地区分包步骤。加载页版本会在导出
+  完成后自动读取 `project.godot` 的 `config/version`，无需修改 HTML。
 - macOS：选择 `macOS` 后导出 `dist/macos/FrontendLegends.app`。预设已选择
   `Developer ID Application: Manon Loki (GKVE4TEFQ6)` 证书；若要面向公网分发，请在
   “Notarization”中选择“Xcode notarytool”，并在本机面板填写 Apple ID 专用密码或

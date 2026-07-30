@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const project = fs.readFileSync(path.join(root, 'project.godot'), 'utf8');
 const presetsSource = fs.readFileSync(path.join(root, 'export_presets.cfg'), 'utf8');
+const webShell = fs.readFileSync(path.join(root, 'web/index_shell.html'), 'utf8');
 const version = project.match(/^config\/version="([^"]+)"$/m)?.[1] ?? '';
 const failures = [];
 
@@ -14,7 +15,10 @@ const androidVersionCode = versionMajor * 10000 + versionMinor * 100 + versionPa
 const baseSections = [...presetsSource.matchAll(/\[preset\.(\d+)\]\n([\s\S]*?)(?=\n\[preset\.\1\.options\])/g)];
 const optionSections = new Map([...presetsSource.matchAll(/\[preset\.(\d+)\.options\]\n([\s\S]*?)(?=\n\[preset\.\d+\]|$)/g)].map(match => [match[1], match[2]]));
 const expectedPlatforms = new Set(['macOS', 'Windows Desktop', 'Android', 'Web', 'iOS']);
-const requiredExcludes = ['dist/*', 'node_modules/*', 'tests/*', 'tools/*', 'docs/*'];
+const requiredExcludes = ['addons/web_version_sync/*', 'dist/*', 'node_modules/*', 'tests/*', 'tools/*', 'docs/*'];
+
+if (!project.includes('enabled=PackedStringArray("res://addons/web_version_sync/plugin.cfg")')) failures.push('Web version sync export plugin is not enabled');
+if (!webShell.includes('<div id="loading-version">v__FRONTEND_LEGENDS_VERSION__</div>')) failures.push('Web loading page must use the project version token');
 
 for (const [, index, body] of baseSections) {
   const platform = body.match(/^platform="([^"]+)"$/m)?.[1] ?? '';
